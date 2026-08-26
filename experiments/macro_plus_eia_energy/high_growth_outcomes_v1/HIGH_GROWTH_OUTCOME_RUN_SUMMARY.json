@@ -1,0 +1,90 @@
+{
+  "run_id": "high_growth_outcome_families_v1",
+  "rule": "target[t] > 4.0",
+  "spec_count": 21,
+  "families": [
+    "contraction",
+    "onset_contraction",
+    "material_drop_2pp",
+    "deterioration",
+    "adverse_tail_q10",
+    "any_contraction",
+    "persistent_contraction"
+  ],
+  "horizons": [
+    1,
+    2,
+    3
+  ],
+  "folds": [
+    [
+      "fold_A",
+      [
+        2006,
+        2010
+      ],
+      [
+        2011,
+        2013
+      ],
+      [
+        2014,
+        2016
+      ]
+    ],
+    [
+      "fold_B",
+      [
+        2006,
+        2012
+      ],
+      [
+        2013,
+        2015
+      ],
+      [
+        2016,
+        2019
+      ]
+    ],
+    [
+      "fold_C",
+      [
+        2007,
+        2011
+      ],
+      [
+        2012,
+        2014
+      ],
+      [
+        2015,
+        2018
+      ]
+    ]
+  ],
+  "best_by_ba": {
+    "family": "deterioration",
+    "horizon": 3,
+    "observed_mean_ba": 0.7194294764061344,
+    "observed_mean_f1": 0.6868413398071286
+  },
+  "best_by_f1": {
+    "family": "deterioration",
+    "horizon": 3,
+    "observed_mean_ba": 0.7194294764061344,
+    "observed_mean_f1": 0.6868413398071286
+  },
+  "null_replicates": 2000,
+  "null_max_mean_ba_mean": 0.6118934382641079,
+  "null_max_mean_ba_q975": 0.627141170833164,
+  "null_max_mean_f1_mean": 0.5651258890606664,
+  "null_max_mean_f1_q975": 0.5822097656948751,
+  "p_best_ba_maxstat": 0.0004997501249375312,
+  "p_best_f1_maxstat": 0.0004997501249375312,
+  "locked_test_reopened": false,
+  "raw_data_modified": false,
+  "imputation": false,
+  "normalization": false,
+  "decision": "outcome-family exploratory only; prior locked test remains closed"
+}

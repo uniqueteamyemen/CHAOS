@@ -1,0 +1,62 @@
+{
+  "manifest_type": "CHAOS_high_growth_outcome_families_qa",
+  "run_id": "high_growth_outcome_families_v1",
+  "counts": {
+    "spec_count": 21,
+    "metric_rows": 189,
+    "aggregate_rows": 21,
+    "null_replicates": 2000,
+    "families": 7,
+    "horizons": 3
+  },
+  "best_by_ba": {
+    "family": "deterioration",
+    "horizon": 3,
+    "observed_mean_ba": 0.7194294764061344,
+    "observed_mean_f1": 0.6868413398071286
+  },
+  "best_by_f1": {
+    "family": "deterioration",
+    "horizon": 3,
+    "observed_mean_ba": 0.7194294764061344,
+    "observed_mean_f1": 0.6868413398071286
+  },
+  "maxstat": {
+    "p_ba": 0.0004997501249375312,
+    "p_f1": 0.0004997501249375312,
+    "null_ba_q975": 0.627141170833164,
+    "null_f1_q975": 0.5822097656948751
+  },
+  "raw_integrity": {
+    "panel_sha256": "015736245ac4010aa1c97055930c69ca3c7da5fdd5970f5da34456b67a3172ad",
+    "panel_head_sha256": "015736245ac4010aa1c97055930c69ca3c7da5fdd5970f5da34456b67a3172ad",
+    "raw_sha256": "89a17937187a340947cb000fba1892fbe5c4c99fffd51edc3d4d1124dbea19e8",
+    "raw_head_sha256": "89a17937187a340947cb000fba1892fbe5c4c99fffd51edc3d4d1124dbea19e8",
+    "panel_matches_head": true,
+    "raw_matches_head": true
+  },
+  "flags": {
+    "locked_test_reopened": false,
+    "raw_data_modified": false,
+    "imputation": false,
+    "normalization": false
+  },
+  "qa_pass_conditions": {
+    "21_specs": true,
+    "null_2000": true,
+    "three_horizons": true,
+    "seven_families": true,
+    "locked_test_closed": true,
+    "raw_unchanged": true,
+    "no_transformations": true
+  },
+  "artifacts": [
+    "experiments/macro_plus_eia_energy/high_growth_outcomes_v1/HIGH_GROWTH_OUTCOME_AGGREGATE.csv",
+    "experiments/macro_plus_eia_energy/high_growth_outcomes_v1/HIGH_GROWTH_OUTCOME_FAMILIES_REPORT_AR.md",
+    "experiments/macro_plus_eia_energy/high_growth_outcomes_v1/HIGH_GROWTH_OUTCOME_MAXSTAT_NULL.csv",
+    "experiments/macro_plus_eia_energy/high_growth_outcomes_v1/HIGH_GROWTH_OUTCOME_METRICS.csv",
+    "experiments/macro_plus_eia_energy/high_growth_outcomes_v1/HIGH_GROWTH_OUTCOME_RUN_SUMMARY.json",
+    "experiments/macro_plus_eia_energy/high_growth_outcomes_v1/high_growth_null_fast.log",
+    "experiments/macro_plus_eia_energy/high_growth_outcomes_v1/high_growth_outcomes.log"
+  ]
+}
