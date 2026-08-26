@@ -1,0 +1,101 @@
+{
+  "artifacts": [
+    {
+      "bytes": 3991,
+      "path": "experiments/macro_plus_eia_energy/reverse_extraction_v1_draft/RUN_SUMMARY.json",
+      "sha256": "2942b9b570cc75b4c378360728a05df89884d6c5c2877720e4327544e1314a51"
+    },
+    {
+      "bytes": 2863,
+      "path": "experiments/macro_plus_eia_energy/reverse_extraction_v1_draft/FROZEN_SELECTED_PATH.json",
+      "sha256": "481f5047ccce2fd1a9636aa28902eb699d293a1b727ba4ec036d9368095ec79d"
+    },
+    {
+      "bytes": 2545,
+      "path": "experiments/macro_plus_eia_energy/reverse_extraction_v1_draft/FROZEN_MULTINODE_PATH.json",
+      "sha256": "f957164d016c325f353136c01651d36cf2e63c3cf7ed454ce8b93d3c4a838718"
+    },
+    {
+      "bytes": 845,
+      "path": "experiments/macro_plus_eia_energy/reverse_extraction_v1_draft/FROZEN_PATH_METRICS_BY_SPLIT.csv",
+      "sha256": "c97cf6bbe1c6ab12324d3d24141c8913bde01e7bec9f1fadf562886c4febeb0b"
+    },
+    {
+      "bytes": 1109,
+      "path": "experiments/macro_plus_eia_energy/reverse_extraction_v1_draft/MULTINODE_PATH_METRICS_BY_SPLIT.csv",
+      "sha256": "78dcabbcf446599ae3aad574a2a6287bc9b747792b26314034ff885b32cf4192"
+    },
+    {
+      "bytes": 1238,
+      "path": "experiments/macro_plus_eia_energy/reverse_extraction_v1_draft/BASELINE_CLASSIFICATION_COMPARISON.csv",
+      "sha256": "3064ccf50e22acf1954c958e248825ecfe892a67ab06b51a6a18569697f08925"
+    },
+    {
+      "bytes": 19451,
+      "path": "experiments/macro_plus_eia_energy/reverse_extraction_v1_draft/DISCOVERY_UNIVARIATE_SHORTLIST.csv",
+      "sha256": "435bfabc20af32d063e8378e5466a24e2cd991e0236aff41cedefe5ebf726b6c"
+    },
+    {
+      "bytes": 36479,
+      "path": "experiments/macro_plus_eia_energy/reverse_extraction_v1_draft/DISCOVERY_INNER_TOP_PATHS.csv",
+      "sha256": "ed8830dc42c7da07b51c40405579545e0bc3e1d5b2e8907392bb577d6cc6714b"
+    },
+    {
+      "bytes": 201105,
+      "path": "experiments/macro_plus_eia_energy/reverse_extraction_v1_draft/FROZEN_PATH_REPLAY_ORIGINS.csv",
+      "sha256": "24c43cfe84d1f8e4db5f9f28019916ff9d5aae9712f08b9433aafb781197f0ab"
+    },
+    {
+      "bytes": 432,
+      "path": "experiments/macro_plus_eia_energy/reverse_extraction_v1_draft/run.log",
+      "sha256": "ce9394d6c045cea0de90fffee2d84d0975a18629dd50c2df15371b2d87f420f4"
+    }
+  ],
+  "candidate_paths_generated": 2324,
+  "contract": "experimental_contracts/REVERSE_EXTRACTION_CONTRACT_V1_DRAFT.json",
+  "execution_flags": {
+    "causal_claim": false,
+    "imputation": false,
+    "locked_test_executed": false,
+    "normalization": false,
+    "null_executed": false,
+    "raw_data_modified": false
+  },
+  "inner_supported_paths": 1989,
+  "manifest_type": "CHAOS_reverse_extraction_v1_draft_qa",
+  "panel": "catalog_first/readiness_gate/macro_plus_eia_energy/MACRO_PLUS_EIA_ENERGY_COMPLETE_139_NUMERIC_RAW_2000_2024_WIDE.csv",
+  "qa_pass_conditions": {
+    "candidate_paths_positive": true,
+    "locked_test_false": true,
+    "no_imputation_or_normalization": true,
+    "null_false": true,
+    "panel_matches_HEAD": true,
+    "raw_matches_HEAD": true,
+    "raw_unchanged": true,
+    "replay_has_fit_inner_validation_only": true,
+    "replay_max_origin_2019": true,
+    "selected_path_status_is_not_validated": true
+  },
+  "raw_integrity": {
+    "panel_current_sha256": "015736245ac4010aa1c97055930c69ca3c7da5fdd5970f5da34456b67a3172ad",
+    "panel_head_sha256": "015736245ac4010aa1c97055930c69ca3c7da5fdd5970f5da34456b67a3172ad",
+    "panel_matches_HEAD": true,
+    "raw_current_sha256": "89a17937187a340947cb000fba1892fbe5c4c99fffd51edc3d4d1124dbea19e8",
+    "raw_head_sha256": "89a17937187a340947cb000fba1892fbe5c4c99fffd51edc3d4d1124dbea19e8",
+    "raw_matches_HEAD": true
+  },
+  "replay": {
+    "contains_locked_test_split": false,
+    "max_origin_year": 2019,
+    "metrics_rows": 3,
+    "row_count": 1946,
+    "splits": [
+      "discovery_fit",
+      "discovery_inner",
+      "validation"
+    ]
+  },
+  "run_id": "reverse_extraction_v1_draft_symbolic",
+  "selected_rule_id": "imf__NGDP_RPCH[t-0]=low_or_negative",
+  "selected_status": "rejected_or_null_like"
+}

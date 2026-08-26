@@ -1,0 +1,94 @@
+{
+  "contract_id": "reverse_extraction_macro_plus_eia_energy_v1_draft",
+  "status": "draft_for_discovery_and_validation_only",
+  "purpose": "Extract a compact temporal rule path from historical discovery data and replay it on later validation origins without using future outcomes during trigger generation.",
+  "dataset": {
+    "matrix_id": "macro_plus_eia_energy",
+    "panel_path": "catalog_first/readiness_gate/macro_plus_eia_energy/MACRO_PLUS_EIA_ENERGY_COMPLETE_139_NUMERIC_RAW_2000_2024_WIDE.csv",
+    "native_frequency": "annual",
+    "entities": 139,
+    "years": [2000, 2024],
+    "raw_immutable": true,
+    "no_imputation": true,
+    "no_source_reconciliation": true,
+    "raw_values_preserved": true
+  },
+  "target": {
+    "id": "wdi__NY.GDP.MKTP.KD.ZG",
+    "outcome_family": "contraction",
+    "outcome_definition": "target at t+1 < 0",
+    "prediction_horizon_years": 1,
+    "target_is_hidden_during_trigger": true
+  },
+  "candidate_inputs": {
+    "full_feature_set": [
+      "wdi__NY.GDP.MKTP.KD.ZG",
+      "wdi__NY.GDP.PCAP.KD",
+      "wdi__FP.CPI.TOTL_ZG",
+      "wdi__SP.POP.TOTL",
+      "wdi__PA.NUS.PPP",
+      "imf__NGDP_RPCH",
+      "imf__PCPI",
+      "imf__PPPEX",
+      "imf__BCA_NGDPD",
+      "eia__energy_consumption_per_capita",
+      "eia__energy_consumption_per_gdp"
+    ],
+    "note": "The source panel retains the original WDI dotted identifier wdi__FP.CPI.TOTL.ZG; the alias is corrected in the execution script before use.",
+    "candidate_lags": [2, 1, 0],
+    "lag_meaning": {"2": "t-2", "1": "t-1", "0": "t"}
+  },
+  "state_derivation": {
+    "purpose": "Create auditable rule states without replacing raw values.",
+    "fixed_zero_threshold_features": ["wdi__NY.GDP.MKTP.KD.ZG", "imf__NGDP_RPCH"],
+    "quantile_features": "All other candidate inputs use q33 and q67 thresholds estimated only from discovery_fit rows.",
+    "states": ["low_or_negative", "middle", "high_or_nonnegative"],
+    "thresholds_frozen_after_discovery_fit": true,
+    "no_future_rows_in_threshold_estimation": true
+  },
+  "search_space": {
+    "path_lengths": [1, 2, 3],
+    "max_path_nodes": 3,
+    "candidate_univariate_shortlist_size": 24,
+    "relation": "conjunction_of_ordered_temporal_states",
+    "minimum_fit_support": 20,
+    "minimum_inner_support": 10,
+    "selection_metric": "inner_discovery_balanced_accuracy_then_f1_then_simplicity",
+    "tie_break": "shorter_path_then_higher_inner_support_then_lexicographic_rule_id",
+    "candidate_generation_uses_only": "discovery_fit",
+    "path_selection_uses_only": "discovery_inner",
+    "test_used_for_selection": false
+  },
+  "splits": {
+    "discovery_fit_target_years": [2006, 2012],
+    "discovery_inner_target_years": [2013, 2015],
+    "external_validation_target_years": [2016, 2019],
+    "locked_test_target_years": [2020, 2024],
+    "replay_origin_rule": "At origin t, trigger reads rows through t only and is scored against outcome at t+1.",
+    "test_execution": "deferred_until_independent_review"
+  },
+  "null_plan": {
+    "status": "not_run_in_draft",
+    "planned_controls": ["entity_label_permutation_within_fit", "temporal_block_permutation", "prevalence_matched_random_trigger"],
+    "promotion_requires_null_comparison": true
+  },
+  "metrics": [
+    "support",
+    "precision",
+    "recall",
+    "f1",
+    "balanced_accuracy",
+    "false_alarm_rate",
+    "lead_time_years",
+    "entity_coverage",
+    "year_coverage"
+  ],
+  "registry_states": [
+    "reconstructed_validation_only",
+    "unstable_candidate",
+    "rejected_or_null_like",
+    "reconstructed_oos_pending_locked_test"
+  ],
+  "promotion_policy": "No candidate is promoted to validated structural pattern or operational algorithm from this draft; causality is not inferred from any score or rule weight.",
+  "stop_before": ["locked_test_selection", "reverse_extraction_operational_promotion", "event_data_annualization", "new_data_collection"]
+}
