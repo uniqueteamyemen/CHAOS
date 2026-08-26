@@ -120,6 +120,10 @@
       "type": "pattern_record"
     },
     {
+      "node_id": "OECD_PMR_WITHIN_DOMAIN_DIRECTIONAL_CONCENTRATION_DEPENDENCY_AWARE_V1_1",
+      "type": "pattern_record"
+    },
+    {
       "node_id": "WHO_COVID_DAILY_REPORTED_ACTIVITY"
     },
     {
@@ -166,6 +170,12 @@
     },
     {
       "node_id": "oecd_pmr_regulatory_transition_at_next_source_wave"
+    },
+    {
+      "node_id": "OECD_PMR_ARCHIVE2013_COMPLETE_ECONOMY_INDICATOR_SERIES"
+    },
+    {
+      "node_id": "OECD_PMR_ADJACENT_SOURCE_WAVE_DIRECTIONAL_CONCENTRATION_DEPENDENCY_AWARE"
     }
   ],
   "edges": [
@@ -798,6 +808,21 @@
       ]
     },
     {
+      "edge_id": "OECD_PMR_WITHIN_DOMAIN_DIRECTIONAL_CONCENTRATION_DEPENDENCY_AWARE_V1_1_registry",
+      "source": "OECD_PMR_WITHIN_DOMAIN_DIRECTIONAL_CONCENTRATION_DEPENDENCY_AWARE_V1_1",
+      "target": "PMR source-wave directional concentration as a dependency-aware within-domain pattern",
+      "split": "registry",
+      "metric": null,
+      "p_value": null,
+      "null_method": "registry_summary",
+      "status": "rejected",
+      "causal_claim": false,
+      "source_refs": "experiments/multi_domain_native_edges_v1/pmr_within_domain_v1/PMR_STABILITY_NULL_SENSITIVITY_V1_1.json",
+      "failure_cases": [
+        "common-wave permutation null is not exceeded (p=1.0); cluster bootstrap includes observed statistic; four waves do not support OOS promotion"
+      ]
+    },
+    {
       "edge_id": "WHO_COVID_DAILY_TO_ANNUAL_GDP_V1",
       "source": "WHO_COVID_DAILY_REPORTED_ACTIVITY",
       "target": "ANNUAL_MATERIAL_DETERIORATION",
@@ -1333,6 +1358,42 @@
         "current PMR 2023-2024 wave not joined",
         "null/OOS design would be underpowered before current wave is obtained"
       ]
+    },
+    {
+      "edge_id": "OECD_PMR_WITHIN_DOMAIN_DIRECTIONAL_CONCENTRATION_DEPENDENCY_AWARE_V1_1",
+      "source": "OECD_PMR_ARCHIVE2013_COMPLETE_ECONOMY_INDICATOR_SERIES",
+      "target": "OECD_PMR_ADJACENT_SOURCE_WAVE_DIRECTIONAL_CONCENTRATION_DEPENDENCY_AWARE",
+      "lag": 1,
+      "split": "descriptive_all_waves",
+      "metric": {
+        "cluster_bootstrap_q025": 0.8134711064632156,
+        "cluster_bootstrap_q975": 0.8838399474622385,
+        "common_wave_exact_p_value": 1.0,
+        "interval_scores": [
+          0.8446455505279035,
+          0.8258620689655173,
+          0.757527733755943
+        ],
+        "name": "max_directional_concentration_across_adjacent_source_wave_intervals",
+        "value": 0.8446455505279035
+      },
+      "p_value": 1.0,
+      "null_method": "enumerate all 24 permutations of the four wave labels and apply the same permutation to every complete economy-indicator series; retain the maximum directional concentration across three adjacent positions; resample complete economies with replacement, preserving all indicators within each economy; 10000 deterministic replicates; calculate observed directional concentration per interval and max across intervals",
+      "status": "rejected",
+      "causal_claim": false,
+      "source_refs": [
+        "experimental_contracts/OECD_PMR_WITHIN_DOMAIN_STABILITY_NULL_CONTRACT_V1_1.json",
+        "experiments/multi_domain_native_edges_v1/pmr_within_domain_v1/PMR_STABILITY_NULL_SENSITIVITY_V1_1.json",
+        "campaigns/research_rounds/20260827_BROWSER_DEEP_RESEARCH/raw/oecd_pmr_2013/OECD_DF_PMR_UNFILTERED.csv"
+      ],
+      "failure_cases": [
+        "common-wave exact permutation null was not exceeded; p=1.0",
+        "cluster bootstrap interval contains observed statistic",
+        "only four source-defined waves",
+        "no out-of-sample split",
+        "no dated policy shock",
+        "descriptive sensitivity only; no predictive or causal promotion"
+      ]
     }
   ],
   "rules": {
@@ -1352,13 +1413,14 @@
   },
   "input_hashes": {
     "transition_evidence": "7e758b1f3ab323ee9a5bd1bcae2dca498b619b6d15754163c4908c7f057d4abf",
-    "registry": "3bdc455c4590f6dadca45b36f0eced8efdf75fe714bed1857f57c2d669e2fc6d",
+    "registry": "ea33a70f7f820c442a6318e8d154f269a027ea1d3a74f4e0e55f5754d1605f7e",
     "native_domain_transition_evidence": "21b2d619ff31cc71705613140fda5e9faa582fbe1ec39ff4e6d76354722c8f34",
     "cross_domain_transition_evidence": "079f739ead4bdbe9e18c3641f7728962cc2c3196a2bc3bf728adcdaf40bb1620",
     "trade_transition_evidence": "f2b97903d37dd349587fe63d88c77812040a0be7fde76b1962ce25b4156c19ca",
     "wgi_transition_evidence": "9d3f4070893c5c7ab8f62991fb35f7e45a1f31b9feb405504186ba2f7d4787de",
     "wdi_trade_transition_evidence": "1945b9f3ef1392548ca9643e423cd99c220d8513815ae81048d152eea16177d3",
     "trade_to_economic_transition_evidence": "25299da644f7dc9a201e5c5d61de29fee28f89d115f812fbd46e8ea0726557fd",
-    "pmr_transition_evidence": "6de52d41f8196baa2bd5a5428d4a4eda5e3763c713c28cb3f54b35293a34cd75"
+    "pmr_transition_evidence": "6de52d41f8196baa2bd5a5428d4a4eda5e3763c713c28cb3f54b35293a34cd75",
+    "pmr_sensitivity_transition_evidence": "7c28f75aa683e4654f617e878cf1a1b46abce681d1356fc684107017c8dd3329"
   }
 }

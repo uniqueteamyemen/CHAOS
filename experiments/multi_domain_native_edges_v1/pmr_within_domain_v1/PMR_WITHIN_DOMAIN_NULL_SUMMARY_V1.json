@@ -1,0 +1,30 @@
+{
+  "test_id": "OECD_PMR_WITHIN_DOMAIN_TRANSITION_V1",
+  "contract_ref": "experimental_contracts/OECD_PMR_WITHIN_DOMAIN_TRANSITION_CONTRACT_V1.json",
+  "source_ref": "campaigns/research_rounds/20260827_BROWSER_DEEP_RESEARCH/raw/oecd_pmr_2013/OECD_DF_PMR_UNFILTERED.csv",
+  "source_waves": [
+    1998,
+    2003,
+    2008,
+    2013
+  ],
+  "complete_economy_indicator_series": 801,
+  "raw_rows_considered": 4134,
+  "observed_interval_scores": [
+    0.8446455505279035,
+    0.8258620689655173,
+    0.757527733755943
+  ],
+  "observed_max_stat": 0.8446455505279035,
+  "null_method": "within-series permutation of the four source-wave labels independently for every complete economy-indicator series; 10000 deterministic Monte Carlo replicates; maximum statistic retained across all three intervals",
+  "n_null_replicates": 10000,
+  "null_max_mean": 0.5250545741567731,
+  "null_max_sd": 0.011405889104550121,
+  "null_max_q95": 0.5462686567164179,
+  "max_stat_empirical_p_value": 9.999000099990002e-05,
+  "oos_available": false,
+  "entity_holdout": false,
+  "edge_status": "not_testable",
+  "causal_claim": false,
+  "interpretation": "descriptive source-wave directional concentration only; four waves provide no predictive OOS design and no policy-shock date"
+}

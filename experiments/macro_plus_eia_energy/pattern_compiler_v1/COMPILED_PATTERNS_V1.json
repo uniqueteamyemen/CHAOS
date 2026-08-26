@@ -2,9 +2,9 @@
   "compiler_id": "CHAOS_PATTERN_COMPILER_V1",
   "inputs": {
     "registry": "experiments/macro_plus_eia_energy/CONTROLLED_PATTERN_REGISTRY_V1.jsonl",
-    "registry_sha256": "3bdc455c4590f6dadca45b36f0eced8efdf75fe714bed1857f57c2d669e2fc6d",
+    "registry_sha256": "ea33a70f7f820c442a6318e8d154f269a027ea1d3a74f4e0e55f5754d1605f7e",
     "evidence_graph": "experiments/macro_plus_eia_energy/evidence_graph_v1/EVIDENCE_GRAPH_V1.json",
-    "evidence_graph_sha256": "c7aec406499a202b5cc60228df76c2fcd51a18d5fbae2d500a5b4f0325610601"
+    "evidence_graph_sha256": "46f867cf8efab14555ee502311601b14f7fe18278b798a7b799710f6461260f0"
   },
   "eligible_supported_predictive": [],
   "research_only_candidates": [
@@ -61,7 +61,8 @@
     "WGI_GOV_WGI_VA.EST_institutional_decline_persistence_V1",
     "WDI_TRADE_OPENNESS_SQUEEZE_PERSISTENCE_V1",
     "WDI_TRADE_SQUEEZE_TO_MATERIAL_GDP_DETERIORATION_V1",
-    "OECD_PMR_REGULATORY_REGIME_CHANGE_V1"
+    "OECD_PMR_REGULATORY_REGIME_CHANGE_V1",
+    "OECD_PMR_WITHIN_DOMAIN_DIRECTIONAL_CONCENTRATION_DEPENDENCY_AWARE_V1_1"
   ],
   "rules": {
     "causal_claims_permitted": false,

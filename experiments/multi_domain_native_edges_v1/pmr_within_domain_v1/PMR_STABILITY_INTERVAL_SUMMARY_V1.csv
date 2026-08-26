@@ -1,0 +1,4 @@
+interval_start,interval_end,indicators,indicator_down_majority,indicator_mean_down_fraction,entities
+1998,2003,28,27,0.8408327213745933,29
+2003,2008,28,26,0.8342750876119905,29
+2008,2013,28,25,0.7549008280650072,29

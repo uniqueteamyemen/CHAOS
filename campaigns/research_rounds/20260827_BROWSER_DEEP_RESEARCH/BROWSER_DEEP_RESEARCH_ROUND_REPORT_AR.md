@@ -68,7 +68,7 @@ campaigns/research_rounds/20260827_BROWSER_DEEP_RESEARCH/raw/oecd_pmr_2013/OECD_
 
 الـadapter أنتج `OECD_PMR_DOMAIN_STATES_SOURCE_WAVES_V1.jsonl` مع الحفاظ على تعريفات المصدر ووحداته وموجاته. ولم يُحوَّل PMR إلى annual panel، ولم يُربط قسراً بمصفوفة GDP 2000–2024.
 
-سجل `OECD_PMR_TRANSITION_EVIDENCE_V1.jsonl` في الـControlled Pattern Registry بالحالة `not_testable`. سبب القرار ليس أن PMR بلا قيمة، بل أن التصميم المتاح أرشيفي ذو أربع نقاط زمنية فقط ولا يمثل shock مؤرخاً يمكن فصله عن continuity أو measurement regime. المسار الآمن اللاحق هو اكتساب PMR الحالي 2023–2024 أو vintage أطول بعقد مستقل، لا annualization للأرشيف.
+سجل `OECD_PMR_TRANSITION_EVIDENCE_V1.jsonl` في الـControlled Pattern Registry بالحالة `not_testable`. ثم نُفّذ اختبار داخل المجال على 801 سلسلة مكتملة من 29 اقتصاداً و28 مؤشراً. أعطى الاختبار المستقل max-stat `0.8446456` و`p=0.0001`، لكن ضابط common-wave الذي يحافظ على الاعتماد المشترك أعطى `p=1.0`، واحتوى cluster bootstrap statistic المرصود. لذلك سُجلت الحساسية الاعتمادية كـ`rejected`، وبقيت النتيجة الأصلية غير قابلة للترقية بسبب غياب OOS وأربع موجات فقط. التفاصيل في `PMR_WITHIN_DOMAIN_TEST_REPORT_AR.md`. المسار الآمن اللاحق هو اكتساب PMR الحالي 2023–2024 أو vintage أطول بعقد مستقل، لا annualization للأرشيف.
 
 ## 4. مقارنة WGI–PMR
 
@@ -105,17 +105,18 @@ UN Comtrade ما زال مصدراً مهماً لأن بنيته تشمل repor
 | DomainState schema | PASS |
 | TransitionEvidence schema | PASS |
 | Supervisor final gate | PASS |
-| graph nodes | 47 |
-| graph edges | 50 |
+| graph nodes | 50 |
+| graph edges | 52 |
 | admitted `supported_predictive` historical records | 2 |
-| quarantined records | 23 |
+| quarantined records | 24 |
 | compiled runtime-eligible patterns | 0 |
 | causal claims | 0 |
-| PMR transition | `not_testable` |
+| PMR transition الأساسي | `not_testable`؛ الاختبار المستقل p=0.0001 لكن بلا OOS |
+| PMR dependency-aware sensitivity | `rejected`؛ common-wave p=1.0 والـbootstrap يحتوي المرصود |
 | cross-domain edges admitted from this round | 0 |
 | raw/frequency/causal safety checks | PASS |
 
-الرقمان `2` و`23` لا يعنيان أن PMR أو التجارة الجديدة أصبحتا positive. الرقم 2 هو ما كان admitted من historical baseline السابق، بينما PMR والجديدة غير المؤهلة بقيت quarantined أو not-testable. كما أن وجود حواف في graph لا يعني صلاحيتها للـComposer؛ الـregistry والـgate هما المرجع.
+الرقمان `2` و`24` لا يعنيان أن PMR أو التجارة الجديدة أصبحتا positive. الرقم 2 هو ما كان admitted من historical baseline السابق، بينما PMR ونتيجة الحساسية الجديدة بقيتا quarantined أو rejected/not-testable. كما أن وجود حواف في graph لا يعني صلاحيتها للـComposer؛ الـregistry والـgate هما المرجع.
 
 ## 8. الملفات والأدوات المرفوعة
 
@@ -133,7 +134,15 @@ campaigns/research_rounds/20260827_BROWSER_DEEP_RESEARCH/
 ├── WGI_PMR_SOURCE_COMPARISON_V1.json
 ├── WGI_PMR_SOURCE_COMPARISON_REPORT_AR.md
 ├── TRADE_OFFICIAL_SOURCE_FINDINGS_ROUND1_AR.md … ROUND9_AR.md
-└── IMF_ITG_IMTS_LINK_ANALYSIS_V1.json
+├── IMF_ITG_IMTS_LINK_ANALYSIS_V1.json
+└── PMR_WITHIN_DOMAIN_TEST_REPORT_AR.md
+
+experiments/multi_domain_native_edges_v1/pmr_within_domain_v1/
+├── PMR_WITHIN_DOMAIN_TRANSITION_METRICS_V1.csv
+├── PMR_STABILITY_SUMMARY_V1.json
+├── PMR_STABILITY_NULL_SENSITIVITY_V1_1.json
+├── PMR_WITHIN_DOMAIN_TRANSITION_EVIDENCE_V1_1.jsonl
+└── PMR_WITHIN_DOMAIN_TEST_REPORT_AR.md
 ```
 
 وأضيفت أدوات إعادة التشغيل الخاصة بالاقتناء والتوصيف والـadapter والمقارنة وتسجيل الـregistry وتحديث الـQA. الخام ليس ضمن commit، بينما states المصدرية وملفات provenance والـcontracts والـQA قابلة للتتبع.
@@ -144,25 +153,25 @@ campaigns/research_rounds/20260827_BROWSER_DEEP_RESEARCH/
 
 | عنصر التسليم | النتيجة |
 |---|---|
-| QA manifest | PASS، ويضم 33 artifact دون raw |
+| QA manifest | PASS؛ 41 artifact مثبتة دون raw |
 | `.gitignore` | يتضمن مسار raw لجولة 2026-08-27 |
 | raw PMR staged | لا |
 | secret scan | clean |
-| commit | `ace27df0887d4d0da57f55a5a95661cf8bf767a5` |
-| remote SHA | `ace27df0887d4d0da57f55a5a95661cf8bf767a5` |
-| SHA match | نعم |
-| working tree | clean |
+| commit السابق للجولة | `41a4bff8b6b221f7f98397cec55d09f4e73a6664` |
+| commit النهائي لاختبار PMR | مثبت في GitHub؛ راجع SHA في رسالة التسليم |
+| SHA match | نعم، بعد التحقق المحلي/البعيد |
+| working tree | clean بعد الرفع |
 | `market-intelligence-engine` | لم يُعدّل |
 
 ## 10. ما لم أَدّعه
 
-لم أدّعِ تنزيل IMF ITG أو IMTS، ولم أدّعِ امتلاك شبكة Comtrade كاملة، ولم أعتبر WGI–PMR علاقة سببية، ولم أحوّل PMR إلى annual GDP panel، ولم أحوّل WHO أو USGS إلى annual shocks، ولم أستخرج policy shock أو leader deviation من WGI/PMR، ولم أوسّع Composer أو runtime، ولم أعد تشغيل TFT أو surrogate grid.
+لم أدّعِ تنزيل IMF ITG أو IMTS، ولم أدّعِ امتلاك شبكة Comtrade كاملة، ولم أعتبر WGI–PMR علاقة سببية، ولم أحوّل PMR إلى annual GDP panel، ولم أحوّل WHO أو USGS إلى annual shocks، ولم أستخرج policy shock أو leader deviation من WGI/PMR. شغّلت اختبار PMR داخل المجال، لكن لم أعتبر p=0.0001 نمطاً تنبؤياً؛ common-wave null أعطى p=1.0، والـOOS غير متاح. لم أوسّع Composer أو runtime، ولم أعد تشغيل TFT أو surrogate grid.
 
 ## 11. المسار البحثي التالي
 
 الأولوية العملية التالية هي استعادة رابط IMF IMTS الرسمي من بطاقة dataset نفسها أو من metadata/download flow موثق، ثم إنشاء `IMF_IMTS_ADAPTER_CONTRACT_V1.json` قبل أي تنزيل. يجب فصل annual عن monthly وquarterly، وتثبيت vintage والتغطية وreporter/partner/flow والوحدات قبل بناء states. إذا تعذر الوصول مرة أخرى، يبقى IMTS catalog-only ولا يجوز تحويله إلى مصدر تجريبي.
 
-بعد ذلك، إذا توفر PMR الحالي أو vintage أطول، يُبنى عقد source-defined wave مستقل لا annualized. أما البحث التركيبي متعدد المجالات فلا يُفتح قبل وجود Edge داخل-المجال ذي coverage كافٍ، null/OOS واضح، وholdout مستقل. الوضع الحالي قرار بحثي إيجابي من ناحية البنية: **جولة رسمية أعمق أضافت مصدر PMR قابلاً لإعادة التشغيل، لكنها لم تُنتج بعد Edge جديدة مؤهلة للتركيب**.
+أما PMR، فقد أُنجز الاختبار المتاح حالياً وأظهر أن الاتجاه الهابط العام لا يتجاوز ضابطاً يحافظ على الاعتماد المشترك. لا توجد حاجة لإعادة ملاءمة metric داخل هذا الأرشيف؛ التقدم الحقيقي يتطلب vintage أطول أو بيانات PMR الحالية. أما البحث التركيبي متعدد المجالات فلا يُفتح قبل وجود Edge داخل-المجال ذي coverage كافٍ، null/OOS واضح، وholdout مستقل. الوضع الحالي قرار بحثي واضح: **PMR أصبح قابلاً للاختبار وإعادة الإنتاج، لكن الاختبار الأكثر تحفظاً رفض اعتباره نمطاً تنبؤياً**.
 
 ## المراجع الرسمية
 

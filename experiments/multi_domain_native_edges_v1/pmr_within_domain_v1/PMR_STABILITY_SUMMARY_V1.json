@@ -1,0 +1,42 @@
+{
+  "test_id": "OECD_PMR_WITHIN_DOMAIN_STABILITY_V1",
+  "complete_series": 801,
+  "indicators": 28,
+  "entities": 29,
+  "intervals": [
+    1998,
+    2003,
+    2008
+  ],
+  "interval_summary": [
+    {
+      "interval_start": 1998,
+      "interval_end": 2003,
+      "indicators": 28,
+      "indicator_down_majority": 27,
+      "indicator_mean_down_fraction": 0.8408327213745933,
+      "entities": 29
+    },
+    {
+      "interval_start": 2003,
+      "interval_end": 2008,
+      "indicators": 28,
+      "indicator_down_majority": 26,
+      "indicator_mean_down_fraction": 0.8342750876119905,
+      "entities": 29
+    },
+    {
+      "interval_start": 2008,
+      "interval_end": 2013,
+      "indicators": 28,
+      "indicator_down_majority": 25,
+      "indicator_mean_down_fraction": 0.7549008280650072,
+      "entities": 29
+    }
+  ],
+  "indicators_down_majority_all_3": 23,
+  "indicators_down_majority_at_least_2": 27,
+  "entities_down_majority_all_3": 25,
+  "entities_down_majority_at_least_2": 29,
+  "interpretation": "stability decomposition is descriptive; no OOS split and no causal or policy-shock inference"
+}

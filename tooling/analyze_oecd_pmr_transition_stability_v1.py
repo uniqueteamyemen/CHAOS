@@ -1,0 +1,20 @@
+#!/usr/bin/env python3
+from pathlib import Path
+import json
+import pandas as pd
+ROOT=Path('/home/ubuntu/CHAOS'); RAW=ROOT/'campaigns/research_rounds/20260827_BROWSER_DEEP_RESEARCH/raw/oecd_pmr_2013/OECD_DF_PMR_UNFILTERED.csv'; OUT=ROOT/'experiments/multi_domain_native_edges_v1/pmr_within_domain_v1'; OUT.mkdir(parents=True,exist_ok=True)
+def agg(df, group_cols, label):
+ rows=[]
+ for keys,g in df.groupby(group_cols,dropna=False):
+  d=g['delta']; nz=d[d!=0]; n=len(nz); up=int((nz>0).sum()); down=int((nz<0).sum()); r=dict(zip(group_cols,keys if isinstance(keys,tuple) else (keys,))); r.update({'interval_start':g['interval_start'].iloc[0],'interval_end':g['interval_end'].iloc[0],'nonzero_changes':n,'up_changes':up,'down_changes':down,'zero_changes':int((d==0).sum()),'down_fraction':down/n if n else None,'directional_concentration':max(up,down)/n if n else None}); rows.append(r)
+ return pd.DataFrame(rows)
+def main():
+ d=pd.read_csv(RAW,low_memory=False); d['wave']=pd.to_numeric(d.TIME_PERIOD,errors='coerce').astype('Int64'); d['value']=pd.to_numeric(d.OBS_VALUE,errors='coerce'); waves=[1998,2003,2008,2013]; w=d[d.wave.isin(waves)][['COU','Country','IND','Indicator','wave','value']].pivot_table(index=['COU','Country','IND','Indicator'],columns='wave',values='value',aggfunc='first').dropna(subset=waves).reset_index(); records=[]
+ for i in range(3):
+  x=w[['COU','Country','IND','Indicator',waves[i],waves[i+1]]].copy(); x['interval_start']=waves[i]; x['interval_end']=waves[i+1]; x['delta']=x[waves[i+1]]-x[waves[i]]; records.append(x[['COU','Country','IND','Indicator','interval_start','interval_end','delta']])
+ long=pd.concat(records,ignore_index=True)
+ by_ind=agg(long,['IND','Indicator','interval_start','interval_end'],'indicator'); by_ent=agg(long,['COU','Country','interval_start','interval_end'],'entity'); by_ind.to_csv(OUT/'PMR_STABILITY_BY_INDICATOR_INTERVAL_V1.csv',index=False); by_ent.to_csv(OUT/'PMR_STABILITY_BY_ENTITY_INTERVAL_V1.csv',index=False)
+ ind_p=by_ind.groupby(['IND','Indicator']).agg(intervals=('interval_start','count'),down_majority_intervals=('down_fraction',lambda s:int((s>.5).sum())),mean_down_fraction=('down_fraction','mean'),min_down_fraction=('down_fraction','min'),max_down_fraction=('down_fraction','max')).reset_index(); ent_p=by_ent.groupby(['COU','Country']).agg(intervals=('interval_start','count'),down_majority_intervals=('down_fraction',lambda s:int((s>.5).sum())),mean_down_fraction=('down_fraction','mean'),min_down_fraction=('down_fraction','min'),max_down_fraction=('down_fraction','max')).reset_index(); ind_p.to_csv(OUT/'PMR_STABILITY_BY_INDICATOR_V1.csv',index=False); ent_p.to_csv(OUT/'PMR_STABILITY_BY_ENTITY_V1.csv',index=False)
+ interval=by_ind.groupby(['interval_start','interval_end']).agg(indicators=('IND','nunique'),indicator_down_majority=('down_fraction',lambda s:int((s>.5).sum())),indicator_mean_down_fraction=('down_fraction','mean')).reset_index(); entity_counts=by_ent.groupby(['interval_start','interval_end'])['COU'].nunique().reset_index(name='entities'); interval=interval.merge(entity_counts,on=['interval_start','interval_end'],how='left'); interval.to_csv(OUT/'PMR_STABILITY_INTERVAL_SUMMARY_V1.csv',index=False)
+ summary={'test_id':'OECD_PMR_WITHIN_DOMAIN_STABILITY_V1','complete_series':int(len(w)),'indicators':int(w.IND.nunique()),'entities':int(w.COU.nunique()),'intervals':waves[:-1],'interval_summary':interval.to_dict(orient='records'),'indicators_down_majority_all_3':int((ind_p.down_majority_intervals==3).sum()),'indicators_down_majority_at_least_2':int((ind_p.down_majority_intervals>=2).sum()),'entities_down_majority_all_3':int((ent_p.down_majority_intervals==3).sum()),'entities_down_majority_at_least_2':int((ent_p.down_majority_intervals>=2).sum()),'interpretation':'stability decomposition is descriptive; no OOS split and no causal or policy-shock inference'}; (OUT/'PMR_STABILITY_SUMMARY_V1.json').write_text(json.dumps(summary,ensure_ascii=False,indent=2)+'\n'); print(json.dumps(summary,ensure_ascii=False,indent=2))
+if __name__=='__main__': main()

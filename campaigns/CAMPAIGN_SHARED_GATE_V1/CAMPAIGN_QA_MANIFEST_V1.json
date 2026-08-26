@@ -33,23 +33,33 @@
     },
     {
       "path": "campaigns/CAMPAIGN_SHARED_GATE_V1/TRANSITION_EVIDENCE_SCHEMA_VALIDATION_V1.json",
-      "bytes": 1206,
-      "sha256": "1a99a4e28832d9cb143258cbaa9f4e86931f58a245656821bf4f6d25fa3b2305"
+      "bytes": 1366,
+      "sha256": "df01bbcc18bd09e091297ef0ab5b9c64556f0f04b09c2735371f7fe3b612fd27"
     },
     {
       "path": "campaigns/CAMPAIGN_SHARED_GATE_V1/SUPERVISOR_GATE_DECISION_V1.json",
-      "bytes": 1813,
-      "sha256": "a54d24cfa75569ef0542092d9716a94362b1d5211267e1d9db7fcd75d620c994"
+      "bytes": 1999,
+      "sha256": "274d0ab708391394619f146f9685ade4ad3d25818d78aeb435554582b9dd3fff"
     },
     {
       "path": "campaigns/CAMPAIGN_SHARED_GATE_V1/FINAL_SUPERVISOR_ELIGIBILITY_GATE_V1.json",
       "bytes": 1440,
-      "sha256": "8cbe44be488e1628cd0183dff747b9337b701434a612dcf880c3a723d21da9b5"
+      "sha256": "6f49586059c46922903cf03839b7e7eaffb1e11f203e466d9b5d820e43594a92"
     },
     {
       "path": "campaigns/CAMPAIGN_SHARED_GATE_V1/COMPOSITE_PATH_ADMISSION_DECISION_V1.json",
       "bytes": 1247,
       "sha256": "2d1ebdfb4552644933a6c844dd1930b296e18c120563de9ae5ec86222406e319"
+    },
+    {
+      "path": "experimental_contracts/OECD_PMR_WITHIN_DOMAIN_TRANSITION_CONTRACT_V1.json",
+      "bytes": 2255,
+      "sha256": "b30a364383b71569f831024f4813ef9b2cd3826792dc21d9085c7aef4310d253"
+    },
+    {
+      "path": "experimental_contracts/OECD_PMR_WITHIN_DOMAIN_STABILITY_NULL_CONTRACT_V1_1.json",
+      "bytes": 1399,
+      "sha256": "6ccfe16ba2173d134d55c458c5f6157d8917e62dd793998a1e98dd231ddcd936"
     },
     {
       "path": "experimental_contracts/WDI_TRADE_EDGE_CONTRACT_V1.json",
@@ -99,12 +109,12 @@
     {
       "path": "experiments/macro_plus_eia_energy/evidence_graph_v1/EVIDENCE_GRAPH_SUMMARY.json",
       "bytes": 630,
-      "sha256": "9d10a8000e59754e7dee884f4452aa58434d837d86779d2eb179e8c75a2a288d"
+      "sha256": "89e9b0d0cf997485c69554e87d74105e8d3db6ad0b30a266d325b7f2b1152b0d"
     },
     {
       "path": "experiments/macro_plus_eia_energy/pattern_compiler_v1/PATTERN_COMPILER_SUMMARY.json",
       "bytes": 186,
-      "sha256": "7033a236ac9d6f0a3eb8b944acfb64751a01280dc270708be58026470855b971"
+      "sha256": "9bf5465cac6a00166e0190fb06f1f5162fe494d3be2c3e0a71ee495d0b97e479"
     },
     {
       "path": "campaigns/research_rounds/20260827_BROWSER_DEEP_RESEARCH/BROWSER_DEEP_RESEARCH_ROUND_CONTRACT_V1.json",
@@ -168,8 +178,33 @@
     },
     {
       "path": "campaigns/research_rounds/20260827_BROWSER_DEEP_RESEARCH/BROWSER_DEEP_RESEARCH_ROUND_REPORT_AR.md",
-      "bytes": 18122,
-      "sha256": "2e7e9127157186f0f69862117864786ab77f4ec383e03d3ab93e13942ae2c222"
+      "bytes": 19622,
+      "sha256": "60e5c5f06abba8ac800be16a75823ac29326d4ecdc67889a528589fae1139b70"
+    },
+    {
+      "path": "experiments/multi_domain_native_edges_v1/pmr_within_domain_v1/PMR_WITHIN_DOMAIN_TRANSITION_METRICS_V1.csv",
+      "bytes": 579,
+      "sha256": "beda700405b0aea6a366b7c650d97fe364550feec4d6df911dcb93332551602c"
+    },
+    {
+      "path": "experiments/multi_domain_native_edges_v1/pmr_within_domain_v1/PMR_STABILITY_SUMMARY_V1.json",
+      "bytes": 1113,
+      "sha256": "7bcd6e88a8f2dd80c026a1dbebc5f8a734a92934f954d60b418dc031843cab55"
+    },
+    {
+      "path": "experiments/multi_domain_native_edges_v1/pmr_within_domain_v1/PMR_STABILITY_NULL_SENSITIVITY_V1_1.json",
+      "bytes": 1668,
+      "sha256": "dd4682023372ba988936e3e2c456f062300927904dd84f7b0d9c980c26fb8f6d"
+    },
+    {
+      "path": "experiments/multi_domain_native_edges_v1/pmr_within_domain_v1/PMR_WITHIN_DOMAIN_TRANSITION_EVIDENCE_V1_1.jsonl",
+      "bytes": 1754,
+      "sha256": "7c28f75aa683e4654f617e878cf1a1b46abce681d1356fc684107017c8dd3329"
+    },
+    {
+      "path": "experiments/multi_domain_native_edges_v1/pmr_within_domain_v1/PMR_WITHIN_DOMAIN_TEST_REPORT_AR.md",
+      "bytes": 6554,
+      "sha256": "5886ad28d96ccba30ca1a12bb526b15a31af48d370841703c6883eeac7471eef"
     }
   ],
   "checks": {
