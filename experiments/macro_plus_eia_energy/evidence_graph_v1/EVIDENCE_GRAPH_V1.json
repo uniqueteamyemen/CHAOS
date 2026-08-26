@@ -116,6 +116,10 @@
       "type": "pattern_record"
     },
     {
+      "node_id": "OECD_PMR_REGULATORY_REGIME_CHANGE_V1",
+      "type": "pattern_record"
+    },
+    {
       "node_id": "WHO_COVID_DAILY_REPORTED_ACTIVITY"
     },
     {
@@ -137,6 +141,15 @@
       "node_id": "trade_disruption"
     },
     {
+      "node_id": "wdi_trade_openness_squeeze_at_t"
+    },
+    {
+      "node_id": "wdi_trade_openness_squeeze_at_t_plus_h"
+    },
+    {
+      "node_id": "material_gdp_deterioration_at_t_plus_h"
+    },
+    {
       "node_id": "institutional_continuity_persistence_source"
     },
     {
@@ -147,6 +160,12 @@
     },
     {
       "node_id": "institutional_decline_persistence_target"
+    },
+    {
+      "node_id": "oecd_pmr_regulatory_indicator_at_wave_t"
+    },
+    {
+      "node_id": "oecd_pmr_regulatory_transition_at_next_source_wave"
     }
   ],
   "edges": [
@@ -764,6 +783,21 @@
       ]
     },
     {
+      "edge_id": "OECD_PMR_REGULATORY_REGIME_CHANGE_V1_registry",
+      "source": "OECD_PMR_REGULATORY_REGIME_CHANGE_V1",
+      "target": "PMR regulatory indicator at source wave to regulatory transition at next source wave",
+      "split": "registry",
+      "metric": null,
+      "p_value": null,
+      "null_method": "registry_summary",
+      "status": "not_testable",
+      "causal_claim": false,
+      "source_refs": "campaigns/research_rounds/20260827_BROWSER_DEEP_RESEARCH/OECD_PMR_TRANSITION_EVIDENCE_V1.jsonl",
+      "failure_cases": [
+        "archive vintage has only four source-defined waves and no dated policy shock; no edge test admitted"
+      ]
+    },
+    {
       "edge_id": "WHO_COVID_DAILY_TO_ANNUAL_GDP_V1",
       "source": "WHO_COVID_DAILY_REPORTED_ACTIVITY",
       "target": "ANNUAL_MATERIAL_DETERIORATION",
@@ -873,6 +907,80 @@
         "commodity/partner network is not sufficiently covered",
         "one request timed out",
         "no disruption definition contract executed"
+      ]
+    },
+    {
+      "edge_id": "WDI_TRADE_OPENNESS_SQUEEZE_PERSISTENCE_V1",
+      "source": "wdi_trade_openness_squeeze_at_t",
+      "target": "wdi_trade_openness_squeeze_at_t_plus_h",
+      "lag": {
+        "values": [
+          1,
+          2
+        ],
+        "unit": "years",
+        "direction": "forward"
+      },
+      "split": "fit_validation_confirmation",
+      "metric": {
+        "observed_max_balanced_accuracy": 0.6943799948440319,
+        "lead_1_validation_ba": 0.6943799948440319,
+        "lead_1_confirmation_ba": 0.499365502114993,
+        "lead_2_validation_ba": 0.5963738368910783,
+        "lead_2_confirmation_ba": 0.46935826180760754
+      },
+      "p_value": 0.4547726136931534,
+      "null_method": "within-entity label permutation; 2000 reps; max-stat across leads and splits",
+      "status": "rejected",
+      "causal_claim": false,
+      "source_refs": [
+        "WDI_TRADE_EDGE_METRICS.csv",
+        "WDI_TRADE_EDGE_MAXSTAT_NULL_SUMMARY.json",
+        "WDI_TRADE_EDGE_CONTRACT_V1.json"
+      ],
+      "failure_cases": [
+        "max-stat p-value above threshold",
+        "confirmation does not reproduce validation advantage",
+        "aggregate trade openness only",
+        "no partner/commodity network or disruption observation"
+      ]
+    },
+    {
+      "edge_id": "WDI_TRADE_SQUEEZE_TO_MATERIAL_GDP_DETERIORATION_V1",
+      "source": "wdi_trade_openness_squeeze_at_t",
+      "target": "material_gdp_deterioration_at_t_plus_h",
+      "lag": {
+        "values": [
+          1,
+          2,
+          3
+        ],
+        "unit": "years",
+        "direction": "forward"
+      },
+      "split": "fit_validation_confirmation",
+      "metric": {
+        "observed_max_balanced_accuracy": 0.5348039215686274,
+        "joined_rows_by_horizon": {
+          "1": 3089,
+          "2": 2960,
+          "3": 2830
+        }
+      },
+      "p_value": 0.5897051474262869,
+      "null_method": "within-entity target-label permutation; 2000 reps; max-stat across horizons and splits",
+      "status": "rejected",
+      "causal_claim": false,
+      "source_refs": [
+        "WDI_TRADE_TO_ECONOMIC_DETERIORATION_METRICS.csv",
+        "WDI_TRADE_TO_ECONOMIC_DETERIORATION_MAXSTAT_NULL_SUMMARY.json",
+        "WDI_TRADE_TO_ECONOMIC_DETERIORATION_CONTRACT_V1.json"
+      ],
+      "failure_cases": [
+        "max-stat p-value above threshold",
+        "confirmation did not reproduce validation advantage",
+        "trade indicator is aggregate openness share",
+        "no partner/commodity network or mechanism observed"
       ]
     },
     {
@@ -1194,6 +1302,37 @@
         "WGI estimate is composite perception-based measurement",
         "no policy shock or leader deviation inferred"
       ]
+    },
+    {
+      "edge_id": "OECD_PMR_REGULATORY_REGIME_CHANGE_V1",
+      "source": "oecd_pmr_regulatory_indicator_at_wave_t",
+      "target": "oecd_pmr_regulatory_transition_at_next_source_wave",
+      "lag": {
+        "unit": "source_defined_wave",
+        "direction": "forward",
+        "values": [
+          1
+        ]
+      },
+      "split": "not_run",
+      "metric": null,
+      "p_value": null,
+      "null_method": "not_run_due_to_four_source_waves_and_archive_vintage",
+      "status": "not_testable",
+      "causal_claim": false,
+      "source_refs": [
+        "OECD_PMR_DOMAIN_STATES_SOURCE_WAVES_V1.jsonl",
+        "OECD_PMR_RAW_PROFILE_V1.json",
+        "OECD_PMR_ACQUISITION_SUMMARY_V1.json"
+      ],
+      "failure_cases": [
+        "only four waves: 1998, 2003, 2008, 2013",
+        "archive vintage named Product Market Regulation 2013",
+        "no annual continuity between waves",
+        "no policy shock date or leader-specific deviation",
+        "current PMR 2023-2024 wave not joined",
+        "null/OOS design would be underpowered before current wave is obtained"
+      ]
     }
   ],
   "rules": {
@@ -1213,10 +1352,13 @@
   },
   "input_hashes": {
     "transition_evidence": "7e758b1f3ab323ee9a5bd1bcae2dca498b619b6d15754163c4908c7f057d4abf",
-    "registry": "7f884a918f816c7c6c6c718b4f3bedfb0bec756d1c21d14940836fb3701f5a6a",
+    "registry": "3bdc455c4590f6dadca45b36f0eced8efdf75fe714bed1857f57c2d669e2fc6d",
     "native_domain_transition_evidence": "21b2d619ff31cc71705613140fda5e9faa582fbe1ec39ff4e6d76354722c8f34",
     "cross_domain_transition_evidence": "079f739ead4bdbe9e18c3641f7728962cc2c3196a2bc3bf728adcdaf40bb1620",
     "trade_transition_evidence": "f2b97903d37dd349587fe63d88c77812040a0be7fde76b1962ce25b4156c19ca",
-    "wgi_transition_evidence": "9d3f4070893c5c7ab8f62991fb35f7e45a1f31b9feb405504186ba2f7d4787de"
+    "wgi_transition_evidence": "9d3f4070893c5c7ab8f62991fb35f7e45a1f31b9feb405504186ba2f7d4787de",
+    "wdi_trade_transition_evidence": "1945b9f3ef1392548ca9643e423cd99c220d8513815ae81048d152eea16177d3",
+    "trade_to_economic_transition_evidence": "25299da644f7dc9a201e5c5d61de29fee28f89d115f812fbd46e8ea0726557fd",
+    "pmr_transition_evidence": "6de52d41f8196baa2bd5a5428d4a4eda5e3763c713c28cb3f54b35293a34cd75"
   }
 }

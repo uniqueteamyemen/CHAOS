@@ -1,0 +1,21 @@
+{
+  "adapter_id": "OECD_PMR_ARCHIVE_DOMAIN_STATE_ADAPTER_V1",
+  "input": "campaigns/research_rounds/20260827_BROWSER_DEEP_RESEARCH/raw/oecd_pmr_2013/OECD_DF_PMR_UNFILTERED.csv",
+  "input_sha256": "e769acf52535a50bbb059de08aca8a73ebcc64c607a4c5d1dfb35ebdc59a467e",
+  "records": 4134,
+  "entities": 47,
+  "indicators": 29,
+  "years": [
+    1998,
+    2003,
+    2008,
+    2013
+  ],
+  "native_frequency": "source_defined_wave",
+  "raw_modified": false,
+  "interpolation": false,
+  "imputation": false,
+  "source_averaging": false,
+  "composite_created": false,
+  "status": "source_native_states_ready_not_annual"
+}

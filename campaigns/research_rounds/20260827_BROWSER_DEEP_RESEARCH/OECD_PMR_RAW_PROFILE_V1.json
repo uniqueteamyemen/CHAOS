@@ -1,0 +1,217 @@
+{
+  "source": "campaigns/research_rounds/20260827_BROWSER_DEEP_RESEARCH/raw/oecd_pmr_2013/OECD_DF_PMR_UNFILTERED.csv",
+  "rows": 4134,
+  "columns": [
+    "STRUCTURE",
+    "STRUCTURE_ID",
+    "STRUCTURE_NAME",
+    "ACTION",
+    "IND",
+    "Indicator",
+    "COU",
+    "Country",
+    "TIME_PERIOD",
+    "Year",
+    "OBS_VALUE",
+    "Observation Value",
+    "OBS_STATUS",
+    "Observation Status",
+    "UNIT_MEASURE",
+    "Unit of Measures",
+    "UNIT_MULT",
+    "Multiplier",
+    "BASE_PER",
+    "Base reference period"
+  ],
+  "indicators": 29,
+  "indicator_examples": [
+    {
+      "IND": "OBR",
+      "Indicator": "Other barriers to trade and investment",
+      "UNIT_MEASURE": "",
+      "Unit of Measures": ""
+    },
+    {
+      "IND": "TRF",
+      "Indicator": "Tariff barriers",
+      "UNIT_MEASURE": "",
+      "Unit of Measures": ""
+    },
+    {
+      "IND": "ATX",
+      "Indicator": "Antitrust exemptions",
+      "UNIT_MEASURE": "",
+      "Unit of Measures": ""
+    },
+    {
+      "IND": "ABC",
+      "Indicator": "Administrative burdens for corporation",
+      "UNIT_MEASURE": "",
+      "Unit of Measures": ""
+    },
+    {
+      "IND": "ABP",
+      "Indicator": "Administrative burdens for sole proprietor firms",
+      "UNIT_MEASURE": "",
+      "Unit of Measures": ""
+    },
+    {
+      "IND": "CSR",
+      "Indicator": "Communication and simplification of rules and procedures",
+      "UNIT_MEASURE": "",
+      "Unit of Measures": ""
+    },
+    {
+      "IND": "LPS",
+      "Indicator": "Licences and permits system",
+      "UNIT_MEASURE": "",
+      "Unit of Measures": ""
+    },
+    {
+      "IND": "TRD",
+      "Indicator": "Barriers to trade facilitation",
+      "UNIT_MEASURE": "",
+      "Unit of Measures": ""
+    },
+    {
+      "IND": "TFS",
+      "Indicator": "Differential treatment of foreign suppliers",
+      "UNIT_MEASURE": "",
+      "Unit of Measures": ""
+    },
+    {
+      "IND": "DCB",
+      "Indicator": "Direct control over enterprises",
+      "UNIT_MEASURE": "",
+      "Unit of Measures": ""
+    },
+    {
+      "IND": "SCP",
+      "Indicator": "Scope of state-owned enterprises (SOEs)",
+      "UNIT_MEASURE": "",
+      "Unit of Measures": ""
+    },
+    {
+      "IND": "PMR",
+      "Indicator": "Product market regulation",
+      "UNIT_MEASURE": "",
+      "Unit of Measures": ""
+    },
+    {
+      "IND": "STC",
+      "Indicator": "State control",
+      "UNIT_MEASURE": "",
+      "Unit of Measures": ""
+    },
+    {
+      "IND": "POW",
+      "Indicator": "Public ownership",
+      "UNIT_MEASURE": "",
+      "Unit of Measures": ""
+    },
+    {
+      "IND": "IBO",
+      "Indicator": "Involvement in business operations",
+      "UNIT_MEASURE": "",
+      "Unit of Measures": ""
+    },
+    {
+      "IND": "BTE",
+      "Indicator": "Barriers to entrepreneurship",
+      "UNIT_MEASURE": "",
+      "Unit of Measures": ""
+    },
+    {
+      "IND": "ABS",
+      "Indicator": "Administrative burdens on startups",
+      "UNIT_MEASURE": "",
+      "Unit of Measures": ""
+    },
+    {
+      "IND": "BTI",
+      "Indicator": "Barriers to trade and investment",
+      "UNIT_MEASURE": "",
+      "Unit of Measures": ""
+    },
+    {
+      "IND": "XBR",
+      "Indicator": "Explicit barriers to trade and investment",
+      "UNIT_MEASURE": "",
+      "Unit of Measures": ""
+    },
+    {
+      "IND": "CCR",
+      "Indicator": "Command and control regulation",
+      "UNIT_MEASURE": "",
+      "Unit of Measures": ""
+    },
+    {
+      "IND": "PCT",
+      "Indicator": "Price controls",
+      "UNIT_MEASURE": "",
+      "Unit of Measures": ""
+    },
+    {
+      "IND": "LBR",
+      "Indicator": "Legal barriers",
+      "UNIT_MEASURE": "",
+      "Unit of Measures": ""
+    },
+    {
+      "IND": "FDI",
+      "Indicator": "Barriers to FDI",
+      "UNIT_MEASURE": "",
+      "Unit of Measures": ""
+    },
+    {
+      "IND": "GIN",
+      "Indicator": "Government involvement in network sectors",
+      "UNIT_MEASURE": "",
+      "Unit of Measures": ""
+    },
+    {
+      "IND": "BEN",
+      "Indicator": "Barriers in network sectors",
+      "UNIT_MEASURE": "",
+      "Unit of Measures": ""
+    },
+    {
+      "IND": "CRP",
+      "Indicator": "Complexity of regulatory procedures",
+      "UNIT_MEASURE": "",
+      "Unit of Measures": ""
+    },
+    {
+      "IND": "BSS",
+      "Indicator": "Barriers in services sectors",
+      "UNIT_MEASURE": "",
+      "Unit of Measures": ""
+    },
+    {
+      "IND": "RPI",
+      "Indicator": "Regulatory protection of incumbents",
+      "UNIT_MEASURE": "",
+      "Unit of Measures": ""
+    },
+    {
+      "IND": "GOV",
+      "Indicator": "Governance of state-owned enterprises",
+      "UNIT_MEASURE": "",
+      "Unit of Measures": ""
+    }
+  ],
+  "countries": 47,
+  "years": [
+    1998,
+    2003,
+    2008,
+    2013
+  ],
+  "units": [],
+  "status_codes": [
+    "A"
+  ],
+  "missing_obs_value": 0,
+  "duplicate_key_rows": 0,
+  "status": "profile_complete"
+}

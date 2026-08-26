@@ -10,19 +10,19 @@
     "rejected_quarantine_rule": true
   },
   "admitted_supported_predictive_records": 2,
-  "quarantined_records": 22,
-  "graph_nodes": 41,
-  "graph_edges": 46,
+  "quarantined_records": 23,
+  "graph_nodes": 47,
+  "graph_edges": 50,
   "compiled_runtime_eligible": 0,
   "causal_claims": 0,
   "decision": "admit_only_supported_predictive_to_shared_composition",
   "market_intelligence_engine_modified": false,
   "status": "pass",
   "input_hashes": {
-    "campaigns/CAMPAIGN_SHARED_GATE_V1/DOMAIN_STATE_SCHEMA_VALIDATION_V1.json": "25c30c520ef2052c47ef37893212375ae7b0d8d3f2b17ecdab0870bc25865a4a",
-    "campaigns/CAMPAIGN_SHARED_GATE_V1/TRANSITION_EVIDENCE_SCHEMA_VALIDATION_V1.json": "2b753d53c4bdd574631186355b1d747270941678bf7b75fb708dcc9b98c37b52",
-    "campaigns/CAMPAIGN_SHARED_GATE_V1/SUPERVISOR_GATE_DECISION_V1.json": "5d7f0ff5f238eae9c10ebfe95c8f72be1a355321d062923d71ba3d8e48cad6f1",
-    "experiments/macro_plus_eia_energy/evidence_graph_v1/EVIDENCE_GRAPH_SUMMARY.json": "aaacd88e5b15e3c171ed0a73536f0355e9f7913a9247534b5074b639d00cce58",
-    "experiments/macro_plus_eia_energy/pattern_compiler_v1/PATTERN_COMPILER_SUMMARY.json": "bb026c889952fe5793dfd36e79c7173e24e13046982aae21f05fcf99aa8bc33c"
+    "campaigns/CAMPAIGN_SHARED_GATE_V1/DOMAIN_STATE_SCHEMA_VALIDATION_V1.json": "93a549fc734a6c0b17bb1e0e2ae6315328cc8566a5123d801d9e16abd1632a92",
+    "campaigns/CAMPAIGN_SHARED_GATE_V1/TRANSITION_EVIDENCE_SCHEMA_VALIDATION_V1.json": "1a99a4e28832d9cb143258cbaa9f4e86931f58a245656821bf4f6d25fa3b2305",
+    "campaigns/CAMPAIGN_SHARED_GATE_V1/SUPERVISOR_GATE_DECISION_V1.json": "a54d24cfa75569ef0542092d9716a94362b1d5211267e1d9db7fcd75d620c994",
+    "experiments/macro_plus_eia_energy/evidence_graph_v1/EVIDENCE_GRAPH_SUMMARY.json": "9d10a8000e59754e7dee884f4452aa58434d837d86779d2eb179e8c75a2a288d",
+    "experiments/macro_plus_eia_energy/pattern_compiler_v1/PATTERN_COMPILER_SUMMARY.json": "7033a236ac9d6f0a3eb8b944acfb64751a01280dc270708be58026470855b971"
   }
 }

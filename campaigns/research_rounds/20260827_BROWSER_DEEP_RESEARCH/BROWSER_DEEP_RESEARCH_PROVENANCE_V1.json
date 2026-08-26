@@ -1,0 +1,19 @@
+{
+  "round_id":"CHAOS_BROWSER_DEEP_RESEARCH_ROUND_2026_08_27_V1",
+  "browser":"My Browser",
+  "access_mode":"browser_review_with_official_url_fallback_where_extension_disconnected",
+  "sources":[
+    {"source_id":"WB_WDI_TRADE","url":"https://data.worldbank.org/indicator/NE.TRD.GNFS.ZS","result":"official_indicator_page_reviewed","artifact":"TRADE_OFFICIAL_SOURCE_FINDINGS_ROUND1_AR.md"},
+    {"source_id":"UN_COMTRADE","url":"https://comtradeplus.un.org/TradeFlow","result":"official_trade_flow_page_reviewed","artifact":"TRADE_OFFICIAL_SOURCE_FINDINGS_ROUND1_AR.md"},
+    {"source_id":"WTO_STATS","url":"https://stats.wto.org/inventory/en","result":"inventory_and_export_options_reviewed; interactive_filter_timeout_later","artifact":"TRADE_OFFICIAL_SOURCE_FINDINGS_ROUND5_AR.md"},
+    {"source_id":"IMF_DATA","url":"https://data.imf.org/en","result":"data_home_reviewed; old DOT endpoint returned Page Not Found","artifact":"TRADE_OFFICIAL_SOURCE_FINDINGS_ROUND2_AR.md"},
+    {"source_id":"UNCTAD_DATA_HUB","url":"https://unctadstat.unctad.org/EN/Index.html","result":"catalog_reviewed; old BulkDownload path returned 404","artifact":"TRADE_OFFICIAL_SOURCE_FINDINGS_ROUND4_AR.md"},
+    {"source_id":"WB_WGI","url":"https://databank.worldbank.org/source/worldwide-governance-indicators","result":"official_databank_reviewed; 216 economies and 36 series visible","artifact":"INSTITUTIONS_OFFICIAL_SOURCE_FINDINGS_ROUND1_AR.md"},
+    {"source_id":"OECD_GOVERNMENT_AT_A_GLANCE_2025","url":"https://www.oecd.org/en/publications/government-at-a-glance-2025_0efd0bcd-en.html","result":"official_publication_reviewed","artifact":"INSTITUTIONS_OFFICIAL_SOURCE_FINDINGS_ROUND2_AR.md"},
+    {"source_id":"OECD_PMR_ARCHIVE_2013","url":"https://sdmx.oecd.org/archive/rest/data/OECD,DF_PMR,/all?dimensionAtObservation=AllDimensions&format=csvfilewithlabels","result":"HTTP 200 via official fallback; 554050 bytes; SHA e769acf52535a50bbb059de08aca8a73ebcc64c607a4c5d1dfb35ebdc59a467e","artifact":"OECD_PMR_ACQUISITION_SUMMARY_V1.json"}
+  ],
+  "raw_rules":{"raw_immutable":true,"raw_git_tracked":false,"raw_path":"campaigns/research_rounds/20260827_BROWSER_DEEP_RESEARCH/raw/"},
+  "frequency_rules":{"native_frequency_preserved":true,"annualization_of_event_or_daily":false},
+  "causal_claims_permitted":false,
+  "status":"pass_with_documented_browser_and_endpoint_failures"
+}

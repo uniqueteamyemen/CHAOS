@@ -1,6 +1,6 @@
 {
   "validator_id": "CHAOS_TRANSITION_EVIDENCE_SCHEMA_VALIDATOR_V1",
-  "record_count": 24,
+  "record_count": 25,
   "files": [
     {
       "path": "experiments/macro_plus_eia_energy/transition_evidence_v1/TRANSITION_EVIDENCE_V1.jsonl",
@@ -29,6 +29,10 @@
     {
       "path": "campaigns/agents/institutions_policy_v1/WGI_TRANSITION_EVIDENCE_V1.jsonl",
       "records": 10
+    },
+    {
+      "path": "campaigns/research_rounds/20260827_BROWSER_DEEP_RESEARCH/OECD_PMR_TRANSITION_EVIDENCE_V1.jsonl",
+      "records": 1
     }
   ],
   "causal_claims_allowed": false,

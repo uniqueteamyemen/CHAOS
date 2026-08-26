@@ -28,23 +28,23 @@
     },
     {
       "path": "campaigns/CAMPAIGN_SHARED_GATE_V1/DOMAIN_STATE_SCHEMA_VALIDATION_V1.json",
-      "bytes": 1256,
-      "sha256": "25c30c520ef2052c47ef37893212375ae7b0d8d3f2b17ecdab0870bc25865a4a"
+      "bytes": 1683,
+      "sha256": "93a549fc734a6c0b17bb1e0e2ae6315328cc8566a5123d801d9e16abd1632a92"
     },
     {
       "path": "campaigns/CAMPAIGN_SHARED_GATE_V1/TRANSITION_EVIDENCE_SCHEMA_VALIDATION_V1.json",
-      "bytes": 1062,
-      "sha256": "2b753d53c4bdd574631186355b1d747270941678bf7b75fb708dcc9b98c37b52"
+      "bytes": 1206,
+      "sha256": "1a99a4e28832d9cb143258cbaa9f4e86931f58a245656821bf4f6d25fa3b2305"
     },
     {
       "path": "campaigns/CAMPAIGN_SHARED_GATE_V1/SUPERVISOR_GATE_DECISION_V1.json",
-      "bytes": 1643,
-      "sha256": "5d7f0ff5f238eae9c10ebfe95c8f72be1a355321d062923d71ba3d8e48cad6f1"
+      "bytes": 1813,
+      "sha256": "a54d24cfa75569ef0542092d9716a94362b1d5211267e1d9db7fcd75d620c994"
     },
     {
       "path": "campaigns/CAMPAIGN_SHARED_GATE_V1/FINAL_SUPERVISOR_ELIGIBILITY_GATE_V1.json",
       "bytes": 1440,
-      "sha256": "ce3a98e2cf455be672650dc38bed831385106b702307fe0cf5df8533a78f5396"
+      "sha256": "8cbe44be488e1628cd0183dff747b9337b701434a612dcf880c3a723d21da9b5"
     },
     {
       "path": "campaigns/CAMPAIGN_SHARED_GATE_V1/COMPOSITE_PATH_ADMISSION_DECISION_V1.json",
@@ -99,17 +99,72 @@
     {
       "path": "experiments/macro_plus_eia_energy/evidence_graph_v1/EVIDENCE_GRAPH_SUMMARY.json",
       "bytes": 630,
-      "sha256": "aaacd88e5b15e3c171ed0a73536f0355e9f7913a9247534b5074b639d00cce58"
+      "sha256": "9d10a8000e59754e7dee884f4452aa58434d837d86779d2eb179e8c75a2a288d"
     },
     {
       "path": "experiments/macro_plus_eia_energy/pattern_compiler_v1/PATTERN_COMPILER_SUMMARY.json",
       "bytes": 186,
-      "sha256": "bb026c889952fe5793dfd36e79c7173e24e13046982aae21f05fcf99aa8bc33c"
+      "sha256": "7033a236ac9d6f0a3eb8b944acfb64751a01280dc270708be58026470855b971"
     },
     {
-      "path": "research_ledger/RESEARCH_LEDGER_V1.jsonl",
-      "bytes": 18943,
-      "sha256": "ebfc955480f74a567db253106ff6445bf75c09e8368dafd549bb9b24ca3ed2d1"
+      "path": "campaigns/research_rounds/20260827_BROWSER_DEEP_RESEARCH/BROWSER_DEEP_RESEARCH_ROUND_CONTRACT_V1.json",
+      "bytes": 1609,
+      "sha256": "49a8b40702c9d92ddebe193e6e7ee5cc89a0f208376d2b21f91dd9c7dc6dc4b2"
+    },
+    {
+      "path": "campaigns/research_rounds/20260827_BROWSER_DEEP_RESEARCH/BROWSER_DEEP_RESEARCH_PROVENANCE_V1.json",
+      "bytes": 2366,
+      "sha256": "33977f77834d871596c49224cf70fcfbf533b59c0a29a38804706dc1549a34ea"
+    },
+    {
+      "path": "campaigns/research_rounds/20260827_BROWSER_DEEP_RESEARCH/OFFICIAL_SOURCE_RESEARCH_INDEX_V1.json",
+      "bytes": 4314,
+      "sha256": "a14d118833af3c8eba0f87a9bd4cd0e9dda507e3068ac5226e1c3d65e8646fb4"
+    },
+    {
+      "path": "campaigns/research_rounds/20260827_BROWSER_DEEP_RESEARCH/OECD_PMR_ACQUISITION_SUMMARY_V1.json",
+      "bytes": 591,
+      "sha256": "1f267804413671f28886ad4ad2e584e16e5dcfbcdb0524b668fd283fc27dc983"
+    },
+    {
+      "path": "campaigns/research_rounds/20260827_BROWSER_DEEP_RESEARCH/OECD_PMR_RAW_PROFILE_V1.json",
+      "bytes": 4885,
+      "sha256": "340e67b304812dbf49467886b439db10c9bf4ad81c30ba7fc0d57c63f8421f09"
+    },
+    {
+      "path": "campaigns/research_rounds/20260827_BROWSER_DEEP_RESEARCH/OECD_PMR_DOMAIN_ADAPTER_SUMMARY_V1.json",
+      "bytes": 610,
+      "sha256": "dc79a9ca4811eadd193ca8713f663c2983dd0629f893063a1348fe674353ec3e"
+    },
+    {
+      "path": "campaigns/research_rounds/20260827_BROWSER_DEEP_RESEARCH/WGI_PMR_SOURCE_COMPARISON_V1.json",
+      "bytes": 4077,
+      "sha256": "98309da34392b079b339f2991b1fcd8a6ee633a3209fe638df213cdba816de47"
+    },
+    {
+      "path": "campaigns/research_rounds/20260827_BROWSER_DEEP_RESEARCH/WGI_PMR_SOURCE_COMPARISON_REPORT_AR.md",
+      "bytes": 2322,
+      "sha256": "f001aa1d164bb25dffa03768d9d8bc861b2c3b73fdff885a5230235bbf1e564d"
+    },
+    {
+      "path": "campaigns/research_rounds/20260827_BROWSER_DEEP_RESEARCH/INSTITUTIONS_OFFICIAL_SOURCE_FINDINGS_ROUND4_AR.md",
+      "bytes": 2331,
+      "sha256": "7231ff885d41c892910466d555a597018e5002f38e832c63adee942f282014dc"
+    },
+    {
+      "path": "campaigns/research_rounds/20260827_BROWSER_DEEP_RESEARCH/TRADE_OFFICIAL_SOURCE_FINDINGS_ROUND8_AR.md",
+      "bytes": 1984,
+      "sha256": "d0c4a22f42fe21993c084551fc065c7874a429c904a4e26d9dd050cc461f4ac8"
+    },
+    {
+      "path": "campaigns/research_rounds/20260827_BROWSER_DEEP_RESEARCH/TRADE_OFFICIAL_SOURCE_FINDINGS_ROUND9_AR.md",
+      "bytes": 1876,
+      "sha256": "2af7f8aca32be839b42fe339e1488b8fdd40f09a9ff4d0407a12a8b92e192726"
+    },
+    {
+      "path": "campaigns/research_rounds/20260827_BROWSER_DEEP_RESEARCH/IMF_ITG_IMTS_LINK_ANALYSIS_V1.json",
+      "bytes": 177,
+      "sha256": "8434049920616c8e46ad1ca028ef9a35eb8ff0a5d514fe335f3ff1f99af1cab1"
     }
   ],
   "checks": {
