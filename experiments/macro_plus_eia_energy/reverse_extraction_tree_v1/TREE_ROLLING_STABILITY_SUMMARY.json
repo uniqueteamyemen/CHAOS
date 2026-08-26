@@ -1,0 +1,58 @@
+{
+  "run_id": "reverse_extraction_tree_rolling_stability_v1",
+  "family": "material_drop_2pp",
+  "horizon": 3,
+  "folds": [
+    {
+      "id": "fold_A",
+      "fit": [
+        2006,
+        2010
+      ],
+      "inner": [
+        2011,
+        2013
+      ],
+      "validation": [
+        2014,
+        2016
+      ]
+    },
+    {
+      "id": "fold_B",
+      "fit": [
+        2006,
+        2012
+      ],
+      "inner": [
+        2013,
+        2015
+      ],
+      "validation": [
+        2016,
+        2019
+      ]
+    },
+    {
+      "id": "fold_C",
+      "fit": [
+        2007,
+        2011
+      ],
+      "inner": [
+        2012,
+        2014
+      ],
+      "validation": [
+        2015,
+        2018
+      ]
+    }
+  ],
+  "validation_rows": 36,
+  "locked_test_executed": false,
+  "raw_data_modified": false,
+  "imputation": false,
+  "normalization": false,
+  "decision": "rolling stability diagnostic; no promotion"
+}
