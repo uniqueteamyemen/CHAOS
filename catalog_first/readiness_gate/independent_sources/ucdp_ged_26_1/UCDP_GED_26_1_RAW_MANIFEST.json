@@ -1,0 +1,14 @@
+{
+  "dataset": "UCDP Georeferenced Event Dataset GED Global version 26.1",
+  "download_url": "https://ucdp.uu.se/downloads/ged/ged261-csv.zip",
+  "codebook_url": "https://ucdp.uu.se/downloads/ged/ged261.pdf",
+  "raw_zip_path": "catalog_first/readiness_gate/independent_sources/ucdp_ged_26_1/raw/UCDP_GED_26_1_RAW.zip",
+  "raw_zip_bytes": 39122522,
+  "raw_zip_sha256": "8c941d84954e555ee2e54f40fa04d9203bf1e2f962203d0a9930966c4947c667",
+  "codebook_path": "catalog_first/readiness_gate/independent_sources/ucdp_ged_26_1/raw/UCDP_GED_26_1_CODEBOOK.pdf",
+  "codebook_bytes": 917038,
+  "codebook_sha256": "f767380ebbf365aec7586f98b6d100cafb69fb54010a908604d53bd9ad655972",
+  "git_policy": "raw GED zip remains outside Git; only manifest and codebook/inspection metadata are tracked",
+  "used_in_current_replication": false,
+  "reason_not_used": "daily event-native data was intentionally not annualized; current cross-domain test used native UCDP Country-Year 26.1 instead"
+}

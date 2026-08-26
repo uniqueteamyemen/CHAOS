@@ -32,3 +32,17 @@ AMA مرشح مستقل آخر، لكنه ليس خاماً رسمياً بال�
 اُستخرجت منهما صفوف `Gross Domestic Product (GDP)` و`Population` فقط إلى staging مشتق، مع إبقاء الخام دون تعديل. اللوحة الناتجة 12,100 صفاً، 220 CountryID، وتغطي 1970–2024 سنوياً. لم تُستخدم 2020–2024 في replication الحالية لتجنب إعادة استخدام نافذة locked test السابقة، رغم وجودها في المصدر.
 
 الصفحة الرسمية للـAMA تذكر أن قاعدة Main Aggregates تغطي من 1970 لأكثر من 200 دولة/منطقة وتُحدّث سنوياً، وأن بعض السلاسل قد تستخدم إجراءات تقدير عند نقص البيانات الرسمية. لذلك تعالج CHAOS AMA كمصدر مستقل موثق مع metadata، لا كحقيقة خام موحدة لكل observation.
+
+## UCDP كمسار domain مستقل
+
+صفحة مركز تنزيل UCDP الرسمي https://ucdp.uu.se/downloads/ تعلن أن UCDP GED Global version 26.1 يغطي أحداث العنف المنظم الفردية، مع إحداثيات جغرافية دقيقة وزمن مفصل إلى أيام منفردة. الملفات متاحة CSV وExcel وCodebook، وكل datasets مجانية تحت CC BY 4.0 مع اشتراط الاستشهاد.
+
+هذا المصدر مناسب للمرحلة متعددة المجالات، لكن لا يجوز تحويل GED إلى قيمة سنوية وإدخالها في لوحة AMA أو WDI. إذا استُخدم، سيبقى event-native: تُحفظ event_date والمكان والوفيات ونوع العنف كما هي، ويُعرّف الربط مع الحالة الاقتصادية بعقد صريح على مستوى الحدث أو origin، لا بتجميع سنوي قسري.
+
+الاستشهادات الرسمية المعلنة تشمل Davies, Pettersson and Öberg (2026) وSundberg and Melander (2013). لا يوجد تنزيل لـUCDP في هذه المذكرة حتى الآن؛ هذه نتيجة screening قبل الاكتساب.
+
+## تنزيل UCDP الفعلي
+
+تم تنزيل UCDP Organized Violence Country-Year 26.1 من الرابط الرسمي https://ucdp.uu.se/downloads/organizedviolencecy/organizedviolencecy-261-csv.zip. هذا ملف سنوي أصلي، واستُخدم في cross-domain replication مع AMA دون تحويل GED اليومي.
+
+كما تم تنزيل UCDP GED 26.1 بصيغة CSV المضغوطة من https://ucdp.uu.se/downloads/ged/ged261-csv.zip مع codebook. بقي GED event-native خارج cross-domain الحالي ولم يُستخدم لبناء outcome سنوي. هذا الفصل مقصود حتى لا نخلط event frequency مع Country-Year frequency.

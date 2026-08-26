@@ -23,3 +23,6 @@
 *.tar
 *.gz
 *.parquet
+
+# Large raw UCDP GED remains outside Git; tracked manifest/codebook only
+/catalog_first/readiness_gate/independent_sources/ucdp_ged_26_1/raw/
