@@ -1,0 +1,8 @@
+   variant  threshold_target  threshold_size  mean_ba    sd_ba  mean_f1  mean_support  entity_folds_with_support  groups
+population               4.0      75000000.0  0.72504 0.059337 0.511271     34.266667                         15      15
+   variant  threshold_target  threshold_size  mean_ba    sd_ba  mean_f1  mean_support  entity_folds_with_support  groups
+population               4.0     250000000.0 0.727518 0.059042 0.501781     39.466667                         15      15
+       variant  threshold_target  threshold_size  mean_ba    sd_ba  mean_f1  mean_support  entity_folds_with_support  groups
+energy_per_gdp               4.0            10.0 0.723502 0.059644  0.49605     40.933333                         15      15
+       variant  threshold_target  threshold_size  mean_ba    sd_ba  mean_f1  mean_support  entity_folds_with_support  groups
+gdp_per_capita               4.0         10000.0 0.676041 0.068203 0.452945     35.133333                         15      15

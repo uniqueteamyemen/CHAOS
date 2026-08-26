@@ -1,0 +1,49 @@
+{
+  "run_id": "regime_entity_holdout_v1",
+  "horizon": 3,
+  "family": "material_drop_2pp",
+  "entity_folds": 5,
+  "time_folds": 3,
+  "grid_cells": 108,
+  "entity_assignment": "sha256(entity_code) mod 5, fixed before metrics",
+  "best_cell_by_variant": [
+    {
+      "variant": "energy_per_gdp",
+      "threshold_target": 4.0,
+      "threshold_size": 10.0,
+      "mean_ba": 0.7235019185648389,
+      "sd_ba": 0.05964389535131797,
+      "mean_f1": 0.49605033151487876,
+      "mean_support": 40.93333333333333,
+      "entity_folds_with_support": 15,
+      "groups": 15
+    },
+    {
+      "variant": "gdp_per_capita",
+      "threshold_target": 4.0,
+      "threshold_size": 10000.0,
+      "mean_ba": 0.6760405365746055,
+      "sd_ba": 0.06820259262531578,
+      "mean_f1": 0.45294525532515295,
+      "mean_support": 35.13333333333333,
+      "entity_folds_with_support": 15,
+      "groups": 15
+    },
+    {
+      "variant": "population",
+      "threshold_target": 4.0,
+      "threshold_size": 250000000.0,
+      "mean_ba": 0.7275184392512796,
+      "sd_ba": 0.05904215709913423,
+      "mean_f1": 0.501780794142277,
+      "mean_support": 39.46666666666667,
+      "entity_folds_with_support": 15,
+      "groups": 15
+    }
+  ],
+  "locked_test_executed": false,
+  "raw_data_modified": false,
+  "imputation": false,
+  "normalization": false,
+  "decision": "entity-holdout descriptive robustness; no promotion"
+}
