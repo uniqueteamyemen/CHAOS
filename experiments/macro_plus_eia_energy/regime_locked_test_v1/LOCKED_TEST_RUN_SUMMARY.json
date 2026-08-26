@@ -1,0 +1,37 @@
+{
+  "run_id": "regime_locked_test_v1",
+  "contract": "experimental_contracts/REGIME_LOCKED_TEST_CONTRACT_V1.json",
+  "target_years": [
+    2020,
+    2021,
+    2022,
+    2023,
+    2024
+  ],
+  "origin_years": [
+    2017,
+    2018,
+    2019,
+    2020,
+    2021
+  ],
+  "n_origins": 695,
+  "entities": 139,
+  "models_replayed": [
+    "population_regime_v1",
+    "energy_per_gdp_regime_v1",
+    "always_negative",
+    "always_positive",
+    "target_history_growth_gt_4",
+    "population_only_bounded",
+    "energy_per_gdp_only_bounded"
+  ],
+  "test_used_for_selection": false,
+  "path_or_threshold_changed_after_test": false,
+  "locked_test_executed": true,
+  "raw_data_modified": false,
+  "imputation": false,
+  "normalization": false,
+  "causal_claims_permitted": false,
+  "promotion_decision": "deferred_until_report_review; both frozen paths reported without winner selection"
+}

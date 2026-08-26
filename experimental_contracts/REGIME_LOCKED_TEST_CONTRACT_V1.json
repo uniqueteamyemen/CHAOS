@@ -1,0 +1,46 @@
+{
+  "contract_id": "REGIME_LOCKED_TEST_CONTRACT_V1",
+  "status": "frozen_before_test",
+  "dataset_id": "macro_plus_eia_energy_v1_1",
+  "target": "wdi__NY_GDP_MKTP_KD_ZG",
+  "outcome_family": "material_drop_2pp",
+  "outcome_definition": "target[t+3] <= target[t] - 2.0 percentage points",
+  "lead_horizon_years": 3,
+  "frozen_paths": [
+    {
+      "path_id": "population_regime_v1",
+      "rule": "target[t] > 4.0 AND wdi__SP_POP_TOTL[t-2] <= 75000000",
+      "size_proxy": "wdi__SP_POP_TOTL",
+      "size_lag": 2,
+      "size_threshold": 75000000,
+      "target_threshold": 4.0
+    },
+    {
+      "path_id": "energy_per_gdp_regime_v1",
+      "rule": "target[t] > 4.0 AND eia__energy_consumption_per_gdp[t-2] <= 10.0",
+      "size_proxy": "eia__energy_consumption_per_gdp",
+      "size_lag": 2,
+      "size_threshold": 10.0,
+      "target_threshold": 4.0
+    }
+  ],
+  "locked_test_target_years": [2020, 2021, 2022, 2023, 2024],
+  "locked_test_origin_years": [2017, 2018, 2019, 2020, 2021],
+  "selection_policy": "No path, proxy, threshold, outcome definition, metric, or entity subset may be selected or changed after test evaluation.",
+  "comparison_policy": "Report both paths regardless of outcome; do not choose a winner for operational promotion.",
+  "metrics": ["balanced_accuracy", "f1", "precision", "recall", "support", "positive_outcomes", "entity_coverage", "year_coverage", "false_alarm_rate"],
+  "baselines": ["always_negative", "always_positive", "target_history_frozen_population_rule", "global_test_prevalence"],
+  "test_use": "first_and_single_locked_replay_for_this_contract",
+  "test_used_for_selection": false,
+  "null_controls_used_for_selection": false,
+  "raw_data_modified": false,
+  "imputation": false,
+  "normalization": false,
+  "causal_claims_permitted": false,
+  "promotion_rule": "No operational promotion from this replay alone. A result is labeled test_supported_descriptive_candidate only if the frozen path exceeds its predeclared baselines and is reported without post-test selection.",
+  "provenance": {
+    "preceding_commit": "209191d46170a288c183387c941555b886bf459c",
+    "source_grid": "experiments/macro_plus_eia_energy/threshold_grid_v1",
+    "source_entity_holdout": "experiments/macro_plus_eia_energy/regime_entity_holdout_v1"
+  }
+}
