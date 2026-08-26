@@ -1,0 +1,27 @@
+{
+  "dictionary_id":"CHAOS_STATE_PATH_DICTIONARY_V1",
+  "states":[
+    {"id":"high_growth","domain":"economic","entry":"GDP growth > 4 percentage points at t","exit":"next observation is <=4pp or missing","frequency":"annual","future_data_required":false},
+    {"id":"material_deterioration","domain":"economic","entry":"GDP growth at t+h <= GDP growth at t - 2pp","exit":"outcome label at h","frequency":"annual","future_data_required":true,"usable_as_current_state":false},
+    {"id":"energy_intensity_shift","domain":"energy","entry":"energy consumption per GDP changes relative to prior native observation","exit":"next native observation","frequency":"annual","future_data_required":false},
+    {"id":"trade_disruption","domain":"trade","entry":"source-specific flow interruption rule to be contracted","exit":"flow recovery or expiry","frequency":"source_native","future_data_required":false,"status":"not_testable_until_trade_adapter"},
+    {"id":"conflict_presence","domain":"conflict","entry":"UCDP state-based conflict present","exit":"no conflict or missing","frequency":"annual","future_data_required":false},
+    {"id":"environmental_stress","domain":"environment_disaster","entry":"source-specific environmental threshold to be contracted","exit":"recovery or expiry","frequency":"source_native","future_data_required":false,"status":"not_testable_until_environment_adapter"},
+    {"id":"event_shock","domain":"disaster_or_health","entry":"dated event record","exit":"event end or contracted shock window","frequency":"event","future_data_required":false},
+    {"id":"production_shock","domain":"economic","entry":"contracted change after event, preserving native source timing","exit":"recovery state or expiry","frequency":"source_native","future_data_required":false},
+    {"id":"recovery","domain":"economic_or_event","entry":"recovery definition relative to pre-shock baseline","exit":"stable regime or new shock","frequency":"source_native","future_data_required":false,"status":"requires_separate_alignment_contract"},
+    {"id":"institutional_transition","domain":"institutions_policy","entry":"dated documented institutional change","exit":"new institutional state","frequency":"event_or_annual","future_data_required":false,"status":"not_testable_until_policy_adapter"},
+    {"id":"policy_shock","domain":"institutions_policy","entry":"dated policy intervention with source evidence","exit":"policy reversal, expiry, or persistence","frequency":"event_or_annual","future_data_required":false,"status":"not_testable_until_policy_adapter"},
+    {"id":"pandemic_health_shock","domain":"health_pandemic","entry":"dated outbreak/health shock record","exit":"contracted end or recovery","frequency":"daily_or_monthly","future_data_required":false,"status":"not_testable_until_health_adapter"}
+  ],
+  "paths":[
+    {"id":"event_to_shock_to_recovery","nodes":["event_shock","production_shock","recovery"],"status":"candidate","requires_alignment_contract":true},
+    {"id":"high_growth_to_deterioration","nodes":["high_growth","material_deterioration"],"status":"supported_predictive_provisional","requires_alignment_contract":false},
+    {"id":"high_growth_to_conflict","nodes":["high_growth","conflict_presence"],"status":"rejected_or_unresolved","requires_alignment_contract":false},
+    {"id":"energy_to_economy","nodes":["energy_intensity_shift","material_deterioration"],"status":"candidate","requires_alignment_contract":false},
+    {"id":"health_to_economy","nodes":["pandemic_health_shock","material_deterioration"],"status":"not_testable_until_health_adapter","requires_alignment_contract":true}
+  ],
+  "allowed_statuses":["candidate","supported_predictive_provisional","rejected","unresolved","not_testable"],
+  "no_forced_frequency_conversion":true,
+  "causal_claims_permitted":false
+}
