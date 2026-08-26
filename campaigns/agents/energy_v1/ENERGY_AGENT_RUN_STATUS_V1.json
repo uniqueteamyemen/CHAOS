@@ -1,0 +1,13 @@
+{
+  "agent_id":"ENERGY_AGENT_V1",
+  "status":"completed_current_scope_no_new_positive_edge",
+  "input":"catalog_first/readiness_gate/macro_plus_eia_energy/MACRO_PLUS_EIA_ENERGY_COMPLETE_139_NUMERIC_RAW_2000_2024_WIDE.csv",
+  "existing_edge_artifact":"experiments/macro_plus_eia_energy/within_domain_edges_v1/WITHIN_DOMAIN_EDGE_METRICS.csv",
+  "tested_state":"energy_intensity_increase_to_deterioration",
+  "horizons":[1,2,3],
+  "decision":"rejected_as_additive_within_domain_edge",
+  "null_p":0.3013493253,
+  "composer_admission":false,
+  "raw_modified":false,
+  "supervisor_review_required":true
+}

@@ -1,0 +1,18 @@
+{
+  "contract_id":"CHAOS_INSTITUTIONS_POLICY_ADAPTER_V1",
+  "source":"World Bank Worldwide Governance Indicators 2025 update",
+  "native_frequency":"annual_with_source_defined_years",
+  "coverage":"1996-2024; historical estimates recalculated by source",
+  "observed_variables":["GOV_WGI_VA.EST","GOV_WGI_PS.EST","GOV_WGI_GE.EST","GOV_WGI_RQ.EST","GOV_WGI_RL.EST","GOV_WGI_CC.EST"],
+  "unit":"governance estimate approximately -2.5 to +2.5",
+  "state_ontology":["institutional_measurement_observed","institutional_continuity_candidate","institutional_transition_candidate"],
+  "policy_ontology":["policy_shock","leader_specific_deviation"],
+  "policy_status":"not_testable_from_WGI_composite_alone; requires dated policy observations and provenance",
+  "leader_labels":"not_used_as_causal_variables",
+  "transformation":false,
+  "imputation":false,
+  "source_reconciliation":false,
+  "future_outcome_cannot_define_current_state":true,
+  "causal_claims_permitted":false,
+  "promotion_requires":"source-specific edge contract, chronological OOS, null, stability, coverage audit, and supervisor review"
+}

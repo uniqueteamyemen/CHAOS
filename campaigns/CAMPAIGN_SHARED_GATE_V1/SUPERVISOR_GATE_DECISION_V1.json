@@ -1,0 +1,26 @@
+{
+  "gate_id": "CHAOS_SUPERVISOR_ADMISSION_GATE_V1",
+  "input_files": 5,
+  "admitted_supported_predictive_records": 2,
+  "quarantined_records": 20,
+  "positive_composition_statuses": [
+    "supported_predictive"
+  ],
+  "causal_claims_admitted": 0,
+  "missing_or_failed_inputs": 0,
+  "input_hashes": {
+    "experiments/macro_plus_eia_energy/transition_evidence_v1/TRANSITION_EVIDENCE_V1.jsonl": "7e758b1f3ab323ee9a5bd1bcae2dca498b619b6d15754163c4908c7f057d4abf",
+    "experiments/multi_domain_native_adapters_v1/TRANSITION_EVIDENCE_NATIVE_DOMAINS_V1.jsonl": "21b2d619ff31cc71705613140fda5e9faa582fbe1ec39ff4e6d76354722c8f34",
+    "experiments/multi_domain_native_edges_v1/TRANSITION_EVIDENCE_ECONOMIC_TO_CONFLICT_V1.jsonl": "079f739ead4bdbe9e18c3641f7728962cc2c3196a2bc3bf728adcdaf40bb1620",
+    "campaigns/agents/trade_v1/TRADE_TRANSITION_EVIDENCE_V1.jsonl": "965c14e11712b3d5a78bcd9ce9f3a786569ee0a6ccad35bf054f71408a85510f",
+    "campaigns/agents/institutions_policy_v1/WGI_TRANSITION_EVIDENCE_V1.jsonl": "9d3f4070893c5c7ab8f62991fb35f7e45a1f31b9feb405504186ba2f7d4787de"
+  },
+  "rules": {
+    "rejected_positive_weight": false,
+    "unresolved_positive_weight": false,
+    "not_testable_positive_weight": false,
+    "provisional_descriptive_positive_weight": false,
+    "future_outcome_current_state": false
+  },
+  "status": "pass"
+}

@@ -30,3 +30,5 @@
 # New raw source downloads; retain provenance manifests and derived adapters only
 /catalog_first/readiness_gate/independent_sources/who_covid_2026/raw/
 /catalog_first/readiness_gate/independent_sources/usgs_earthquake_2026/raw/
+/catalog_first/readiness_gate/independent_sources/worldbank_wgi_2025/raw/
+/campaigns/agents/trade_v1/raw/

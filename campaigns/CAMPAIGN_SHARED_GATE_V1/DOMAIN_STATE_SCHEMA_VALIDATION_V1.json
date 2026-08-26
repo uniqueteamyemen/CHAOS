@@ -1,0 +1,46 @@
+{
+  "validator_id": "CHAOS_DOMAIN_STATE_SCHEMA_VALIDATOR_V1",
+  "required_fields": [
+    "domain",
+    "edge_status",
+    "entity_id",
+    "entity_name",
+    "evidence_refs",
+    "failure_cases",
+    "lead_profile",
+    "native_frequency",
+    "pattern_id",
+    "source_observations",
+    "state_label",
+    "state_probability",
+    "timestamp",
+    "uncertainty"
+  ],
+  "files": [
+    {
+      "path": "campaigns/agents/institutions_policy_v1/WGI_INSTITUTIONAL_DOMAIN_STATES_ANNUAL_SOURCE_YEARS_V1.jsonl",
+      "missing": [],
+      "native_frequency": "annual_source_defined_years",
+      "edge_status": "not_testable"
+    },
+    {
+      "path": "campaigns/agents/trade_v1/TRADE_DOMAIN_STATES_ANNUAL_V1.jsonl",
+      "missing": [],
+      "native_frequency": "annual",
+      "edge_status": "not_testable"
+    },
+    {
+      "path": "experiments/multi_domain_native_adapters_v1/USGS_EARTHQUAKE_DOMAIN_STATES_EVENT_V1.jsonl",
+      "missing": [],
+      "native_frequency": "event",
+      "edge_status": "not_testable"
+    },
+    {
+      "path": "experiments/multi_domain_native_adapters_v1/WHO_COVID_DOMAIN_STATES_DAILY_V1.jsonl.gz",
+      "missing": [],
+      "native_frequency": "daily",
+      "edge_status": "not_testable"
+    }
+  ],
+  "status": "pass"
+}

@@ -1,0 +1,18 @@
+{
+  "source_id":"UN_COMTRADE_PUBLIC_PREVIEW_BOUNDED",
+  "publisher":"United Nations Statistics Division / UN Comtrade",
+  "endpoint":"https://comtradeapi.un.org/public/v1/preview/C/A/HS",
+  "query_scope":{"reporters":[36,124,156,276,392],"years":[2000,2024],"flow":"M","partner":0,"commodity":"TOTAL","customs":"C00","maxRecords":5},
+  "request_count":125,
+  "http_200":124,
+  "http_429":0,
+  "http_000_timeout":1,
+  "raw_directory":"campaigns/agents/trade_v1/raw/comtrade_queries/",
+  "native_frequency":"annual",
+  "observed_concept":"reported aggregate imports with world partner",
+  "not_observed":["complete reporter-partner network","commodity detail","trade disruption","production shock","recovery"],
+  "rate_limit_note":"Initial burst returned 50 HTTP 429 responses; backoff resume recovered 49 and one request timed out. All responses retained locally with status and request URL.",
+  "license_note":"UN Comtrade terms and API limits apply; bounded preview only; no premium bulk source purchased.",
+  "raw_immutable":true,
+  "causal_claims_permitted":false
+}

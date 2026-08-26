@@ -2,9 +2,9 @@
   "compiler_id": "CHAOS_PATTERN_COMPILER_V1",
   "inputs": {
     "registry": "experiments/macro_plus_eia_energy/CONTROLLED_PATTERN_REGISTRY_V1.jsonl",
-    "registry_sha256": "c29ae9cc89c59beaec50a1dec2b93d4330bff0537951572cf5ac372ccd2c5dcd",
+    "registry_sha256": "832201fdf186fdc4a76577a0889c1f2703baad1e0bac9d6535d0438467d5560c",
     "evidence_graph": "experiments/macro_plus_eia_energy/evidence_graph_v1/EVIDENCE_GRAPH_V1.json",
-    "evidence_graph_sha256": "6a0d9b85afaefaedd7a6c2d4dd94ae84e3997322567b13a213925bdb86c28efe"
+    "evidence_graph_sha256": "3d3d2c5271dda7acb09f169a1a17bdf865076c075b55e06af8a541af8a32b5d0"
   },
   "eligible_supported_predictive": [],
   "research_only_candidates": [
@@ -48,7 +48,17 @@
     "ENERGY_INTENSITY_INCREASE_TO_MATERIAL_DETERIORATION_WITHIN_DOMAIN_V1",
     "WHO_COVID_DAILY_TO_ANNUAL_MATERIAL_DETERIORATION_V1",
     "USGS_EARTHQUAKE_EVENT_TO_ANNUAL_MATERIAL_DETERIORATION_V1",
-    "ECONOMIC_DETERIORATION_TO_UCDP_CONFLICT_V1"
+    "ECONOMIC_DETERIORATION_TO_UCDP_CONFLICT_V1",
+    "WGI_GOV_WGI_CC.EST_institutional_continuity_persistence_V1",
+    "WGI_GOV_WGI_CC.EST_institutional_decline_persistence_V1",
+    "WGI_GOV_WGI_GE.EST_institutional_continuity_persistence_V1",
+    "WGI_GOV_WGI_GE.EST_institutional_decline_persistence_V1",
+    "WGI_GOV_WGI_RL.EST_institutional_continuity_persistence_V1",
+    "WGI_GOV_WGI_RL.EST_institutional_decline_persistence_V1",
+    "WGI_GOV_WGI_RQ.EST_institutional_continuity_persistence_V1",
+    "WGI_GOV_WGI_RQ.EST_institutional_decline_persistence_V1",
+    "WGI_GOV_WGI_VA.EST_institutional_continuity_persistence_V1",
+    "WGI_GOV_WGI_VA.EST_institutional_decline_persistence_V1"
   ],
   "rules": {
     "causal_claims_permitted": false,

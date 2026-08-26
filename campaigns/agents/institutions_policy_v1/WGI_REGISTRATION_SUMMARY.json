@@ -1,0 +1,9 @@
+{
+  "registered": 10,
+  "status_counts": {
+    "rejected": 5,
+    "not_testable": 5
+  },
+  "positive_composer_edges": 0,
+  "source_sha256": "81670905d6a85673b5027856bb3d11096e951303ba1cefad498a982a69de7eac"
+}

@@ -1,0 +1,15 @@
+{
+  "agent_id":"ENVIRONMENT_DISASTER_AGENT_V1",
+  "status":"native_states_ready_edge_blocked",
+  "input":"experiments/multi_domain_native_adapters_v1/USGS_EARTHQUAKE_DOMAIN_STATES_EVENT_V1.jsonl",
+  "source":"USGS_EARTHQUAKE_M6_5_2000_2024_RAW.csv",
+  "native_frequency":"event",
+  "event_count":1141,
+  "state":"earthquake_magnitude_ge_6_5",
+  "required_path":["event_shock","production_shock","recovery"],
+  "decision":"not_testable",
+  "blockers":["country attribution absent","production shock not observed","recovery contract not executed","event-to-annual alignment prohibited without new contract"],
+  "composer_admission":false,
+  "raw_modified":false,
+  "supervisor_review_required":true
+}

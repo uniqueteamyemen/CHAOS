@@ -1,0 +1,17 @@
+{
+  "agent_id":"HEALTH_PANDEMIC_AGENT_V1",
+  "status":"native_states_ready_edge_blocked",
+  "input":"experiments/multi_domain_native_adapters_v1/WHO_COVID_DOMAIN_STATES_DAILY_V1.jsonl.gz",
+  "source":"WHO_COVID_GLOBAL_DAILY_RAW.csv",
+  "native_frequency":"daily",
+  "raw_rows":573360,
+  "reported_rows_used_for_states":215751,
+  "entities":239,
+  "state":"pandemic_reported_activity",
+  "required_path":["health_shock","mobility_or_policy_response","production_or_supply_shock","recovery"],
+  "decision":"not_testable_for_annual_GDP_edge",
+  "blockers":["reported-date semantics","country reporting differences","retrospective revisions","no production shock observation in current source","daily-to-annual alignment prohibited without new contract"],
+  "composer_admission":false,
+  "raw_modified":false,
+  "supervisor_review_required":true
+}

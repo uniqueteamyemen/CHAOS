@@ -68,6 +68,46 @@
       "type": "pattern_record"
     },
     {
+      "node_id": "WGI_GOV_WGI_CC.EST_institutional_continuity_persistence_V1",
+      "type": "pattern_record"
+    },
+    {
+      "node_id": "WGI_GOV_WGI_CC.EST_institutional_decline_persistence_V1",
+      "type": "pattern_record"
+    },
+    {
+      "node_id": "WGI_GOV_WGI_GE.EST_institutional_continuity_persistence_V1",
+      "type": "pattern_record"
+    },
+    {
+      "node_id": "WGI_GOV_WGI_GE.EST_institutional_decline_persistence_V1",
+      "type": "pattern_record"
+    },
+    {
+      "node_id": "WGI_GOV_WGI_RL.EST_institutional_continuity_persistence_V1",
+      "type": "pattern_record"
+    },
+    {
+      "node_id": "WGI_GOV_WGI_RL.EST_institutional_decline_persistence_V1",
+      "type": "pattern_record"
+    },
+    {
+      "node_id": "WGI_GOV_WGI_RQ.EST_institutional_continuity_persistence_V1",
+      "type": "pattern_record"
+    },
+    {
+      "node_id": "WGI_GOV_WGI_RQ.EST_institutional_decline_persistence_V1",
+      "type": "pattern_record"
+    },
+    {
+      "node_id": "WGI_GOV_WGI_VA.EST_institutional_continuity_persistence_V1",
+      "type": "pattern_record"
+    },
+    {
+      "node_id": "WGI_GOV_WGI_VA.EST_institutional_decline_persistence_V1",
+      "type": "pattern_record"
+    },
+    {
       "node_id": "WHO_COVID_DAILY_REPORTED_ACTIVITY"
     },
     {
@@ -81,6 +121,24 @@
     },
     {
       "node_id": "UCDP_STATE_BASED_CONFLICT_AT_T_PLUS_H"
+    },
+    {
+      "node_id": "trade_import_reported_total_partner"
+    },
+    {
+      "node_id": "trade_disruption"
+    },
+    {
+      "node_id": "institutional_continuity_persistence_source"
+    },
+    {
+      "node_id": "institutional_continuity_persistence_target"
+    },
+    {
+      "node_id": "institutional_decline_persistence_source"
+    },
+    {
+      "node_id": "institutional_decline_persistence_target"
     }
   ],
   "edges": [
@@ -478,6 +536,196 @@
       ]
     },
     {
+      "edge_id": "WGI_GOV_WGI_CC.EST_institutional_continuity_persistence_V1_registry",
+      "source": "WGI_GOV_WGI_CC.EST_institutional_continuity_persistence_V1",
+      "target": "WGI institutional_continuity_persistence_source to institutional_continuity_persistence_target",
+      "split": "registry",
+      "metric": null,
+      "p_value": null,
+      "null_method": "registry_summary",
+      "status": "rejected",
+      "causal_claim": false,
+      "source_refs": null,
+      "failure_cases": [
+        [
+          "rejected_as_trivial_prevalence_persistence",
+          "WGI estimate is composite perception-based measurement",
+          "no policy shock or leader deviation inferred"
+        ]
+      ]
+    },
+    {
+      "edge_id": "WGI_GOV_WGI_CC.EST_institutional_decline_persistence_V1_registry",
+      "source": "WGI_GOV_WGI_CC.EST_institutional_decline_persistence_V1",
+      "target": "WGI institutional_decline_persistence_source to institutional_decline_persistence_target",
+      "split": "registry",
+      "metric": null,
+      "p_value": null,
+      "null_method": "registry_summary",
+      "status": "not_testable",
+      "causal_claim": false,
+      "source_refs": null,
+      "failure_cases": [
+        [
+          "not_testable_due_rare_target_or_split_support",
+          "WGI estimate is composite perception-based measurement",
+          "no policy shock or leader deviation inferred"
+        ]
+      ]
+    },
+    {
+      "edge_id": "WGI_GOV_WGI_GE.EST_institutional_continuity_persistence_V1_registry",
+      "source": "WGI_GOV_WGI_GE.EST_institutional_continuity_persistence_V1",
+      "target": "WGI institutional_continuity_persistence_source to institutional_continuity_persistence_target",
+      "split": "registry",
+      "metric": null,
+      "p_value": null,
+      "null_method": "registry_summary",
+      "status": "rejected",
+      "causal_claim": false,
+      "source_refs": null,
+      "failure_cases": [
+        [
+          "rejected_as_trivial_prevalence_persistence",
+          "WGI estimate is composite perception-based measurement",
+          "no policy shock or leader deviation inferred"
+        ]
+      ]
+    },
+    {
+      "edge_id": "WGI_GOV_WGI_GE.EST_institutional_decline_persistence_V1_registry",
+      "source": "WGI_GOV_WGI_GE.EST_institutional_decline_persistence_V1",
+      "target": "WGI institutional_decline_persistence_source to institutional_decline_persistence_target",
+      "split": "registry",
+      "metric": null,
+      "p_value": null,
+      "null_method": "registry_summary",
+      "status": "not_testable",
+      "causal_claim": false,
+      "source_refs": null,
+      "failure_cases": [
+        [
+          "not_testable_due_rare_target_or_split_support",
+          "WGI estimate is composite perception-based measurement",
+          "no policy shock or leader deviation inferred"
+        ]
+      ]
+    },
+    {
+      "edge_id": "WGI_GOV_WGI_RL.EST_institutional_continuity_persistence_V1_registry",
+      "source": "WGI_GOV_WGI_RL.EST_institutional_continuity_persistence_V1",
+      "target": "WGI institutional_continuity_persistence_source to institutional_continuity_persistence_target",
+      "split": "registry",
+      "metric": null,
+      "p_value": null,
+      "null_method": "registry_summary",
+      "status": "rejected",
+      "causal_claim": false,
+      "source_refs": null,
+      "failure_cases": [
+        [
+          "rejected_as_trivial_prevalence_persistence",
+          "WGI estimate is composite perception-based measurement",
+          "no policy shock or leader deviation inferred"
+        ]
+      ]
+    },
+    {
+      "edge_id": "WGI_GOV_WGI_RL.EST_institutional_decline_persistence_V1_registry",
+      "source": "WGI_GOV_WGI_RL.EST_institutional_decline_persistence_V1",
+      "target": "WGI institutional_decline_persistence_source to institutional_decline_persistence_target",
+      "split": "registry",
+      "metric": null,
+      "p_value": null,
+      "null_method": "registry_summary",
+      "status": "not_testable",
+      "causal_claim": false,
+      "source_refs": null,
+      "failure_cases": [
+        [
+          "not_testable_due_rare_target_or_split_support",
+          "WGI estimate is composite perception-based measurement",
+          "no policy shock or leader deviation inferred"
+        ]
+      ]
+    },
+    {
+      "edge_id": "WGI_GOV_WGI_RQ.EST_institutional_continuity_persistence_V1_registry",
+      "source": "WGI_GOV_WGI_RQ.EST_institutional_continuity_persistence_V1",
+      "target": "WGI institutional_continuity_persistence_source to institutional_continuity_persistence_target",
+      "split": "registry",
+      "metric": null,
+      "p_value": null,
+      "null_method": "registry_summary",
+      "status": "rejected",
+      "causal_claim": false,
+      "source_refs": null,
+      "failure_cases": [
+        [
+          "rejected_as_trivial_prevalence_persistence",
+          "WGI estimate is composite perception-based measurement",
+          "no policy shock or leader deviation inferred"
+        ]
+      ]
+    },
+    {
+      "edge_id": "WGI_GOV_WGI_RQ.EST_institutional_decline_persistence_V1_registry",
+      "source": "WGI_GOV_WGI_RQ.EST_institutional_decline_persistence_V1",
+      "target": "WGI institutional_decline_persistence_source to institutional_decline_persistence_target",
+      "split": "registry",
+      "metric": null,
+      "p_value": null,
+      "null_method": "registry_summary",
+      "status": "not_testable",
+      "causal_claim": false,
+      "source_refs": null,
+      "failure_cases": [
+        [
+          "not_testable_due_rare_target_or_split_support",
+          "WGI estimate is composite perception-based measurement",
+          "no policy shock or leader deviation inferred"
+        ]
+      ]
+    },
+    {
+      "edge_id": "WGI_GOV_WGI_VA.EST_institutional_continuity_persistence_V1_registry",
+      "source": "WGI_GOV_WGI_VA.EST_institutional_continuity_persistence_V1",
+      "target": "WGI institutional_continuity_persistence_source to institutional_continuity_persistence_target",
+      "split": "registry",
+      "metric": null,
+      "p_value": null,
+      "null_method": "registry_summary",
+      "status": "rejected",
+      "causal_claim": false,
+      "source_refs": null,
+      "failure_cases": [
+        [
+          "rejected_as_trivial_prevalence_persistence",
+          "WGI estimate is composite perception-based measurement",
+          "no policy shock or leader deviation inferred"
+        ]
+      ]
+    },
+    {
+      "edge_id": "WGI_GOV_WGI_VA.EST_institutional_decline_persistence_V1_registry",
+      "source": "WGI_GOV_WGI_VA.EST_institutional_decline_persistence_V1",
+      "target": "WGI institutional_decline_persistence_source to institutional_decline_persistence_target",
+      "split": "registry",
+      "metric": null,
+      "p_value": null,
+      "null_method": "registry_summary",
+      "status": "not_testable",
+      "causal_claim": false,
+      "source_refs": null,
+      "failure_cases": [
+        [
+          "not_testable_due_rare_target_or_split_support",
+          "WGI estimate is composite perception-based measurement",
+          "no policy shock or leader deviation inferred"
+        ]
+      ]
+    },
+    {
       "edge_id": "WHO_COVID_DAILY_TO_ANNUAL_GDP_V1",
       "source": "WHO_COVID_DAILY_REPORTED_ACTIVITY",
       "target": "ANNUAL_MATERIAL_DETERIORATION",
@@ -563,6 +811,351 @@
         "coverage joined only 56 entities",
         "no positive composer weight"
       ]
+    },
+    {
+      "edge_id": "COMTRADE_TRADE_REPORTED_TO_TRADE_DISRUPTION_V1",
+      "source": "trade_import_reported_total_partner",
+      "target": "trade_disruption",
+      "lag": {
+        "value": null,
+        "unit": "not_defined",
+        "direction": "not_testable"
+      },
+      "split": "not_run",
+      "metric": null,
+      "p_value": null,
+      "null_method": null,
+      "status": "not_testable",
+      "causal_claim": false,
+      "source_refs": [
+        "TRADE_DOMAIN_STATES_ANNUAL_V1.jsonl"
+      ],
+      "failure_cases": [
+        "preview data is sparse and single total-flow concept",
+        "commodity/partner network is not sufficiently covered",
+        "one request timed out",
+        "no disruption definition contract executed"
+      ]
+    },
+    {
+      "edge_id": "WGI_GOV_WGI_CC.EST_institutional_continuity_persistence_V1",
+      "source": "institutional_continuity_persistence_source",
+      "target": "institutional_continuity_persistence_target",
+      "lag": {
+        "direction": "forward",
+        "unit": "source_observation_steps",
+        "values": [
+          1,
+          2
+        ]
+      },
+      "split": "validation_confirmation",
+      "metric": {
+        "degenerate_rows": 0,
+        "max_oos_ba_excess_over_trivial": 0.02379161181117173,
+        "valid_oos_rows": 4
+      },
+      "p_value": null,
+      "null_method": "within-entity label permutation; 2000 reps; max-stat across dimensions/edges/leads/splits",
+      "status": "rejected",
+      "causal_claim": false,
+      "source_refs": [
+        "WGI_INSTITUTIONAL_EDGE_METRICS.csv",
+        "WGI_INSTITUTIONAL_EDGE_MAXSTAT_NULL_SUMMARY.json"
+      ],
+      "failure_cases": [
+        "rejected_as_trivial_prevalence_persistence",
+        "WGI estimate is composite perception-based measurement",
+        "no policy shock or leader deviation inferred"
+      ]
+    },
+    {
+      "edge_id": "WGI_GOV_WGI_CC.EST_institutional_decline_persistence_V1",
+      "source": "institutional_decline_persistence_source",
+      "target": "institutional_decline_persistence_target",
+      "lag": {
+        "direction": "forward",
+        "unit": "source_observation_steps",
+        "values": [
+          1,
+          2
+        ]
+      },
+      "split": "validation_confirmation",
+      "metric": {
+        "degenerate_rows": 4,
+        "max_oos_ba_excess_over_trivial": -0.0023764258555132867,
+        "valid_oos_rows": 1
+      },
+      "p_value": null,
+      "null_method": "within-entity label permutation; 2000 reps; max-stat across dimensions/edges/leads/splits",
+      "status": "not_testable",
+      "causal_claim": false,
+      "source_refs": [
+        "WGI_INSTITUTIONAL_EDGE_METRICS.csv",
+        "WGI_INSTITUTIONAL_EDGE_MAXSTAT_NULL_SUMMARY.json"
+      ],
+      "failure_cases": [
+        "not_testable_due_rare_target_or_split_support",
+        "WGI estimate is composite perception-based measurement",
+        "no policy shock or leader deviation inferred"
+      ]
+    },
+    {
+      "edge_id": "WGI_GOV_WGI_GE.EST_institutional_continuity_persistence_V1",
+      "source": "institutional_continuity_persistence_source",
+      "target": "institutional_continuity_persistence_target",
+      "lag": {
+        "direction": "forward",
+        "unit": "source_observation_steps",
+        "values": [
+          1,
+          2
+        ]
+      },
+      "split": "validation_confirmation",
+      "metric": {
+        "degenerate_rows": 0,
+        "max_oos_ba_excess_over_trivial": 0.06656898656898658,
+        "valid_oos_rows": 4
+      },
+      "p_value": null,
+      "null_method": "within-entity label permutation; 2000 reps; max-stat across dimensions/edges/leads/splits",
+      "status": "rejected",
+      "causal_claim": false,
+      "source_refs": [
+        "WGI_INSTITUTIONAL_EDGE_METRICS.csv",
+        "WGI_INSTITUTIONAL_EDGE_MAXSTAT_NULL_SUMMARY.json"
+      ],
+      "failure_cases": [
+        "rejected_as_trivial_prevalence_persistence",
+        "WGI estimate is composite perception-based measurement",
+        "no policy shock or leader deviation inferred"
+      ]
+    },
+    {
+      "edge_id": "WGI_GOV_WGI_GE.EST_institutional_decline_persistence_V1",
+      "source": "institutional_decline_persistence_source",
+      "target": "institutional_decline_persistence_target",
+      "lag": {
+        "direction": "forward",
+        "unit": "source_observation_steps",
+        "values": [
+          1,
+          2
+        ]
+      },
+      "split": "validation_confirmation",
+      "metric": {
+        "degenerate_rows": 4,
+        "max_oos_ba_excess_over_trivial": -0.006024096385542188,
+        "valid_oos_rows": 1
+      },
+      "p_value": null,
+      "null_method": "within-entity label permutation; 2000 reps; max-stat across dimensions/edges/leads/splits",
+      "status": "not_testable",
+      "causal_claim": false,
+      "source_refs": [
+        "WGI_INSTITUTIONAL_EDGE_METRICS.csv",
+        "WGI_INSTITUTIONAL_EDGE_MAXSTAT_NULL_SUMMARY.json"
+      ],
+      "failure_cases": [
+        "not_testable_due_rare_target_or_split_support",
+        "WGI estimate is composite perception-based measurement",
+        "no policy shock or leader deviation inferred"
+      ]
+    },
+    {
+      "edge_id": "WGI_GOV_WGI_RL.EST_institutional_continuity_persistence_V1",
+      "source": "institutional_continuity_persistence_source",
+      "target": "institutional_continuity_persistence_target",
+      "lag": {
+        "direction": "forward",
+        "unit": "source_observation_steps",
+        "values": [
+          1,
+          2
+        ]
+      },
+      "split": "validation_confirmation",
+      "metric": {
+        "degenerate_rows": 0,
+        "max_oos_ba_excess_over_trivial": 0.09935502228967086,
+        "valid_oos_rows": 4
+      },
+      "p_value": null,
+      "null_method": "within-entity label permutation; 2000 reps; max-stat across dimensions/edges/leads/splits",
+      "status": "rejected",
+      "causal_claim": false,
+      "source_refs": [
+        "WGI_INSTITUTIONAL_EDGE_METRICS.csv",
+        "WGI_INSTITUTIONAL_EDGE_MAXSTAT_NULL_SUMMARY.json"
+      ],
+      "failure_cases": [
+        "rejected_as_trivial_prevalence_persistence",
+        "WGI estimate is composite perception-based measurement",
+        "no policy shock or leader deviation inferred"
+      ]
+    },
+    {
+      "edge_id": "WGI_GOV_WGI_RL.EST_institutional_decline_persistence_V1",
+      "source": "institutional_decline_persistence_source",
+      "target": "institutional_decline_persistence_target",
+      "lag": {
+        "direction": "forward",
+        "unit": "source_observation_steps",
+        "values": [
+          1,
+          2
+        ]
+      },
+      "split": "validation_confirmation",
+      "metric": {
+        "degenerate_rows": 5,
+        "max_oos_ba_excess_over_trivial": null,
+        "valid_oos_rows": 0
+      },
+      "p_value": null,
+      "null_method": "within-entity label permutation; 2000 reps; max-stat across dimensions/edges/leads/splits",
+      "status": "not_testable",
+      "causal_claim": false,
+      "source_refs": [
+        "WGI_INSTITUTIONAL_EDGE_METRICS.csv",
+        "WGI_INSTITUTIONAL_EDGE_MAXSTAT_NULL_SUMMARY.json"
+      ],
+      "failure_cases": [
+        "not_testable_due_rare_target_or_split_support",
+        "WGI estimate is composite perception-based measurement",
+        "no policy shock or leader deviation inferred"
+      ]
+    },
+    {
+      "edge_id": "WGI_GOV_WGI_RQ.EST_institutional_continuity_persistence_V1",
+      "source": "institutional_continuity_persistence_source",
+      "target": "institutional_continuity_persistence_target",
+      "lag": {
+        "direction": "forward",
+        "unit": "source_observation_steps",
+        "values": [
+          1,
+          2
+        ]
+      },
+      "split": "validation_confirmation",
+      "metric": {
+        "degenerate_rows": 0,
+        "max_oos_ba_excess_over_trivial": 0.07614253755193356,
+        "valid_oos_rows": 4
+      },
+      "p_value": null,
+      "null_method": "within-entity label permutation; 2000 reps; max-stat across dimensions/edges/leads/splits",
+      "status": "rejected",
+      "causal_claim": false,
+      "source_refs": [
+        "WGI_INSTITUTIONAL_EDGE_METRICS.csv",
+        "WGI_INSTITUTIONAL_EDGE_MAXSTAT_NULL_SUMMARY.json"
+      ],
+      "failure_cases": [
+        "rejected_as_trivial_prevalence_persistence",
+        "WGI estimate is composite perception-based measurement",
+        "no policy shock or leader deviation inferred"
+      ]
+    },
+    {
+      "edge_id": "WGI_GOV_WGI_RQ.EST_institutional_decline_persistence_V1",
+      "source": "institutional_decline_persistence_source",
+      "target": "institutional_decline_persistence_target",
+      "lag": {
+        "direction": "forward",
+        "unit": "source_observation_steps",
+        "values": [
+          1,
+          2
+        ]
+      },
+      "split": "validation_confirmation",
+      "metric": {
+        "degenerate_rows": 5,
+        "max_oos_ba_excess_over_trivial": null,
+        "valid_oos_rows": 0
+      },
+      "p_value": null,
+      "null_method": "within-entity label permutation; 2000 reps; max-stat across dimensions/edges/leads/splits",
+      "status": "not_testable",
+      "causal_claim": false,
+      "source_refs": [
+        "WGI_INSTITUTIONAL_EDGE_METRICS.csv",
+        "WGI_INSTITUTIONAL_EDGE_MAXSTAT_NULL_SUMMARY.json"
+      ],
+      "failure_cases": [
+        "not_testable_due_rare_target_or_split_support",
+        "WGI estimate is composite perception-based measurement",
+        "no policy shock or leader deviation inferred"
+      ]
+    },
+    {
+      "edge_id": "WGI_GOV_WGI_VA.EST_institutional_continuity_persistence_V1",
+      "source": "institutional_continuity_persistence_source",
+      "target": "institutional_continuity_persistence_target",
+      "lag": {
+        "direction": "forward",
+        "unit": "source_observation_steps",
+        "values": [
+          1,
+          2
+        ]
+      },
+      "split": "validation_confirmation",
+      "metric": {
+        "degenerate_rows": 0,
+        "max_oos_ba_excess_over_trivial": 0.06568163019775919,
+        "valid_oos_rows": 4
+      },
+      "p_value": null,
+      "null_method": "within-entity label permutation; 2000 reps; max-stat across dimensions/edges/leads/splits",
+      "status": "rejected",
+      "causal_claim": false,
+      "source_refs": [
+        "WGI_INSTITUTIONAL_EDGE_METRICS.csv",
+        "WGI_INSTITUTIONAL_EDGE_MAXSTAT_NULL_SUMMARY.json"
+      ],
+      "failure_cases": [
+        "rejected_as_trivial_prevalence_persistence",
+        "WGI estimate is composite perception-based measurement",
+        "no policy shock or leader deviation inferred"
+      ]
+    },
+    {
+      "edge_id": "WGI_GOV_WGI_VA.EST_institutional_decline_persistence_V1",
+      "source": "institutional_decline_persistence_source",
+      "target": "institutional_decline_persistence_target",
+      "lag": {
+        "direction": "forward",
+        "unit": "source_observation_steps",
+        "values": [
+          1,
+          2
+        ]
+      },
+      "split": "validation_confirmation",
+      "metric": {
+        "degenerate_rows": 6,
+        "max_oos_ba_excess_over_trivial": null,
+        "valid_oos_rows": 0
+      },
+      "p_value": null,
+      "null_method": "within-entity label permutation; 2000 reps; max-stat across dimensions/edges/leads/splits",
+      "status": "not_testable",
+      "causal_claim": false,
+      "source_refs": [
+        "WGI_INSTITUTIONAL_EDGE_METRICS.csv",
+        "WGI_INSTITUTIONAL_EDGE_MAXSTAT_NULL_SUMMARY.json"
+      ],
+      "failure_cases": [
+        "not_testable_due_rare_target_or_split_support",
+        "WGI estimate is composite perception-based measurement",
+        "no policy shock or leader deviation inferred"
+      ]
     }
   ],
   "rules": {
@@ -582,8 +1175,10 @@
   },
   "input_hashes": {
     "transition_evidence": "7e758b1f3ab323ee9a5bd1bcae2dca498b619b6d15754163c4908c7f057d4abf",
-    "registry": "c29ae9cc89c59beaec50a1dec2b93d4330bff0537951572cf5ac372ccd2c5dcd",
+    "registry": "832201fdf186fdc4a76577a0889c1f2703baad1e0bac9d6535d0438467d5560c",
     "native_domain_transition_evidence": "21b2d619ff31cc71705613140fda5e9faa582fbe1ec39ff4e6d76354722c8f34",
-    "cross_domain_transition_evidence": "079f739ead4bdbe9e18c3641f7728962cc2c3196a2bc3bf728adcdaf40bb1620"
+    "cross_domain_transition_evidence": "079f739ead4bdbe9e18c3641f7728962cc2c3196a2bc3bf728adcdaf40bb1620",
+    "trade_transition_evidence": "965c14e11712b3d5a78bcd9ce9f3a786569ee0a6ccad35bf054f71408a85510f",
+    "wgi_transition_evidence": "9d3f4070893c5c7ab8f62991fb35f7e45a1f31b9feb405504186ba2f7d4787de"
   }
 }
