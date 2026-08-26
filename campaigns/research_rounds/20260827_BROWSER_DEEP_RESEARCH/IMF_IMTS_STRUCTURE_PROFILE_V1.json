@@ -1,0 +1,370 @@
+{
+  "source": "campaigns/research_rounds/20260827_BROWSER_DEEP_RESEARCH/IMF_IMTS_STRUCTURE_RESPONSE.xml",
+  "bytes": 2665607,
+  "dataflows": [
+    {
+      "id": "IMTS",
+      "agencyID": "IMF.STA",
+      "version": "1.0.0",
+      "name": "International Trade in Goods (by partner country) (IMTS)",
+      "description": "The International trade in goods by partner country dataset (formerly Direction of Trade Statistics (DOTS)) includes goods (merchandise) export and import statistics disaggregated according to a country's trading partners. "
+    }
+  ],
+  "data_structure_count": 1,
+  "codelist_count": 49,
+  "structure_keys": [
+    "categorisations",
+    "categorySchemes",
+    "codelists",
+    "conceptSchemes",
+    "dataStructures",
+    "dataflows",
+    "metadataStructures"
+  ],
+  "codelists_summary": [
+    {
+      "id": "CL_CONF_STATUS",
+      "agencyID": "IMF",
+      "version": "1.0.0",
+      "name": "Confidentiality Status",
+      "code_count": 12
+    },
+    {
+      "id": "CL_UNIT",
+      "agencyID": "IMF",
+      "version": "2.11.2",
+      "name": "Unit of Measure",
+      "code_count": 270
+    },
+    {
+      "id": "CL_UNIT_MULT",
+      "agencyID": "IMF",
+      "version": "1.0.2",
+      "name": "Unit Multiplier",
+      "code_count": 31
+    },
+    {
+      "id": "CL_OBS_STATUS",
+      "agencyID": "IMF",
+      "version": "1.1.0",
+      "name": "Observation Status",
+      "code_count": 25
+    },
+    {
+      "id": "CL_FUNCTIONAL_CAT",
+      "agencyID": "IMF",
+      "version": "2.4.1",
+      "name": "Functional category",
+      "code_count": 73
+    },
+    {
+      "id": "CL_S_ADJUSTMENT",
+      "agencyID": "IMF",
+      "version": "1.0.2",
+      "name": "Seasonal Adjustment",
+      "code_count": 17
+    },
+    {
+      "id": "CL_TRADE_FLOW",
+      "agencyID": "IMF",
+      "version": "2.1.0",
+      "name": "Trade flow",
+      "code_count": 50
+    },
+    {
+      "id": "CL_CIVIL_STATUS",
+      "agencyID": "IMF",
+      "version": "1.0.1",
+      "name": "Civil (or Marital) Status",
+      "code_count": 8
+    },
+    {
+      "id": "CL_SEC_CLASSIFICATION",
+      "agencyID": "IMF",
+      "version": "1.0.1",
+      "name": "Security Classification",
+      "code_count": 6
+    },
+    {
+      "id": "CL_TOPIC",
+      "agencyID": "IMF",
+      "version": "2.3.1",
+      "name": "Topic",
+      "code_count": 119
+    },
+    {
+      "id": "CL_COICOP_2018",
+      "agencyID": "IMF",
+      "version": "1.0.1",
+      "name": "COICOP 2018",
+      "code_count": 16
+    },
+    {
+      "id": "CL_INT_ACC_ITEM",
+      "agencyID": "IMF",
+      "version": "2.8.1",
+      "name": "International accounts item",
+      "code_count": 507
+    },
+    {
+      "id": "CL_COICOP_1999",
+      "agencyID": "IMF",
+      "version": "1.1.1",
+      "name": "COICOP 1999",
+      "code_count": 15
+    },
+    {
+      "id": "CL_GENDER",
+      "agencyID": "IMF",
+      "version": "1.0.0",
+      "name": "Gender",
+      "code_count": 15
+    },
+    {
+      "id": "CL_SEX",
+      "agencyID": "IMF",
+      "version": "1.1.0",
+      "name": "Sex",
+      "code_count": 9
+    },
+    {
+      "id": "CL_GFS_STO",
+      "agencyID": "IMF",
+      "version": "2.9.1",
+      "name": "GFS Stocks, Transactions, Other Flows",
+      "code_count": 389
+    },
+    {
+      "id": "CL_SOC_CONCEPTS",
+      "agencyID": "IMF",
+      "version": "1.3.0",
+      "name": "Social Concepts",
+      "code_count": 31
+    },
+    {
+      "id": "CL_TRANSFORMATION",
+      "agencyID": "IMF",
+      "version": "2.21.1",
+      "name": "Transformation",
+      "code_count": 487
+    },
+    {
+      "id": "CL_LANGUAGE",
+      "agencyID": "IMF",
+      "version": "1.1.0",
+      "name": "Language",
+      "code_count": 93
+    },
+    {
+      "id": "CL_COUNTRY",
+      "agencyID": "IMF",
+      "version": "1.6.0",
+      "name": "Country",
+      "code_count": 343
+    },
+    {
+      "id": "CL_DERIVATION_TYPE",
+      "agencyID": "IMF",
+      "version": "1.2.1",
+      "name": "Derivation Type ",
+      "code_count": 12
+    },
+    {
+      "id": "CL_DECIMALS",
+      "agencyID": "IMF",
+      "version": "1.0.3",
+      "name": "Decimals",
+      "code_count": 16
+    },
+    {
+      "id": "CL_FREQ",
+      "agencyID": "IMF",
+      "version": "1.2.0",
+      "name": "Frequency",
+      "code_count": 34
+    },
+    {
+      "id": "CL_ACCESS_SHARING_LEVEL",
+      "agencyID": "IMF",
+      "version": "1.0.2",
+      "name": "Access and Sharing Level",
+      "code_count": 8
+    },
+    {
+      "id": "CL_SECTOR",
+      "agencyID": "IMF",
+      "version": "2.13.1",
+      "name": "Institutional Sector",
+      "code_count": 288
+    },
+    {
+      "id": "CL_ACCOUNTS",
+      "agencyID": "IMF",
+      "version": "2.5.1",
+      "name": "Macroeconomic and financial accounts",
+      "code_count": 40
+    },
+    {
+      "id": "CL_FI_MATURITY",
+      "agencyID": "IMF",
+      "version": "2.1.1",
+      "name": "Maturity of Financial Instrument",
+      "code_count": 32
+    },
+    {
+      "id": "CL_METHODOLOGY",
+      "agencyID": "IMF",
+      "version": "2.8.0",
+      "name": "Methodology",
+      "code_count": 71
+    },
+    {
+      "id": "CL_PRICES",
+      "agencyID": "IMF",
+      "version": "2.3.0",
+      "name": "Prices",
+      "code_count": 15
+    },
+    {
+      "id": "CL_FSENTRY",
+      "agencyID": "IMF",
+      "version": "2.2.0",
+      "name": "Flow or stock entry",
+      "code_count": 43
+    },
+    {
+      "id": "CL_INSTR_ASSET",
+      "agencyID": "IMF",
+      "version": "2.15.2",
+      "name": "Instrument and assets classification",
+      "code_count": 342
+    },
+    {
+      "id": "CL_COMMODITY",
+      "agencyID": "IMF",
+      "version": "2.2.0",
+      "name": "Commodity",
+      "code_count": 135
+    },
+    {
+      "id": "CL_COFOG",
+      "agencyID": "IMF",
+      "version": "2.0.0",
+      "name": "COFOG",
+      "code_count": 190
+    },
+    {
+      "id": "CL_IMTS_INDICATOR",
+      "agencyID": "IMF.STA",
+      "version": "1.0.1",
+      "name": "International Trade in Goods (by partner country) (IMTS) Indicator",
+      "code_count": 4
+    },
+    {
+      "id": "CL_INDEX_TYPE",
+      "agencyID": "IMF",
+      "version": "2.6.0",
+      "name": "Index type",
+      "code_count": 49
+    },
+    {
+      "id": "CL_CLASSIFICATION_TYPE",
+      "agencyID": "IMF",
+      "version": "1.0.1",
+      "name": "Standard Classification Type",
+      "code_count": 16
+    },
+    {
+      "id": "CL_IMTS_COUNTRY",
+      "agencyID": "IMF.STA",
+      "version": "1.0.0",
+      "name": "International Trade in Goods (by partner country) (IMTS) Country",
+      "code_count": 359
+    },
+    {
+      "id": "CL_STATISTICAL_MEASURES",
+      "agencyID": "IMF",
+      "version": "1.6.1",
+      "name": "Statistical Measures",
+      "code_count": 23
+    },
+    {
+      "id": "CL_MFS_INSTR",
+      "agencyID": "IMF",
+      "version": "2.7.1",
+      "name": "Monetary and Financial Instruments",
+      "code_count": 18
+    },
+    {
+      "id": "CL_NA_STO",
+      "agencyID": "IMF",
+      "version": "2.5.0",
+      "name": "NA Stocks, Transactions, Other Flows",
+      "code_count": 636
+    },
+    {
+      "id": "CL_ACCOUNTING_ENTRY",
+      "agencyID": "IMF",
+      "version": "2.2.2",
+      "name": "Accounting Entry",
+      "code_count": 82
+    },
+    {
+      "id": "CL_CURRENCY",
+      "agencyID": "IMF",
+      "version": "2.3.0",
+      "name": "Currency",
+      "code_count": 191
+    },
+    {
+      "id": "CL_OVERLAP",
+      "agencyID": "IMF",
+      "version": "1.0.0",
+      "name": "IMF Data Overlap",
+      "code_count": 1
+    },
+    {
+      "id": "CL_VALUATION",
+      "agencyID": "IMF",
+      "version": "2.4.1",
+      "name": "Valuation",
+      "code_count": 26
+    },
+    {
+      "id": "CL_REPORTING_PERIOD_TYPE",
+      "agencyID": "IMF",
+      "version": "1.4.0",
+      "name": "REPORTING_PERIOD_TYPE",
+      "code_count": 18
+    },
+    {
+      "id": "CL_ORGANIZATION",
+      "agencyID": "IMF",
+      "version": "2.7.1",
+      "name": "Organization",
+      "code_count": 1650
+    },
+    {
+      "id": "CL_DEPARTMENT",
+      "agencyID": "IMF",
+      "version": "1.0.2",
+      "name": "Department",
+      "code_count": 34
+    },
+    {
+      "id": "CL_EXRATE",
+      "agencyID": "IMF",
+      "version": "1.2.1",
+      "name": "Exchange Rate",
+      "code_count": 37
+    },
+    {
+      "id": "CL_INT_TTC",
+      "agencyID": "IMF",
+      "version": "2.7.1",
+      "name": "Interest Rate types, terms and conditions",
+      "code_count": 101
+    }
+  ],
+  "status": "structure_received_official_sdmx_json"
+}

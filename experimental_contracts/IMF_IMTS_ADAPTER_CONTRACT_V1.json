@@ -1,0 +1,23 @@
+{
+  "contract_id": "IMF_IMTS_ADAPTER_CONTRACT_V1",
+  "source_id": "IMF.STA:IMTS",
+  "official_dataset_url": "https://data.imf.org/en/datasets/IMF.STA:IMTS",
+  "dataset_urn": "IMF.STA:IMTS(1.0.0)",
+  "publisher": "International Monetary Fund, Statistics Department",
+  "definition": "International trade in goods by partner country, formerly Direction of Trade Statistics (DOTS), with merchandise exports and imports disaggregated by trading partner",
+  "download_format": "CSV",
+  "download_layout": "Timeseries per row",
+  "metadata_fields_visible_in_download_dialog": ["Country", "Indicator", "Counterpart Country", "Frequency", "Scale", "Decimals Displayed", "Trade flow", "Valuation", "Unit of Measure", "IMF Data Overlap"],
+  "native_frequencies": ["annual", "monthly", "quarterly"],
+  "frequency_policy": "download and profile each native frequency separately; never aggregate monthly or quarterly observations into annual values in this adapter",
+  "historical_scope": "observed historical periods only; no projections; exact available period to be recorded after download",
+  "dimensions_to_preserve": ["country", "indicator", "counterpart_country", "frequency", "trade_flow", "valuation", "unit_of_measure", "imf_data_overlap"],
+  "initial_bounded_extract": "Prefer a reproducible official full-dataset download if accessible; otherwise use an explicitly bounded API extract with exact query and response hash. Do not silently sample.",
+  "raw_policy": "immutable raw bytes, SHA-256, request URL, response headers, retrieval timestamp; raw excluded from Git",
+  "adapter_outputs": ["source-native observations", "coverage profile", "DomainStates only after schema validation"],
+  "edge_scope": "No edge until coverage profile confirms adequate annual historical panel and a separate within-trade edge contract is written",
+  "missing_data_policy": "preserve missing and source status; no imputation, reconciliation, source averaging, normalization, or frequency conversion",
+  "entity_policy": "preserve IMF country and counterpart identifiers as source-defined; map to CHAOS entities only through an explicit versioned mapping if required",
+  "causal_claim": false,
+  "promotion": "no runtime or Composer promotion from acquisition; all new edges require null, chronological holdout, and supervisor admission"
+}

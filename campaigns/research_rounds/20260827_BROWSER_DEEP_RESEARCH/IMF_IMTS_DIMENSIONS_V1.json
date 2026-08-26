@@ -1,0 +1,30 @@
+{
+  "dataflow": "IMF.STA:IMTS(1.0.0)",
+  "dimensions": [
+    {
+      "id": "COUNTRY",
+      "position": 0,
+      "conceptIdentity": "urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=IMF.STA:CS_IMTS(1.0+.0).COUNTRY",
+      "localRepresentation": null
+    },
+    {
+      "id": "INDICATOR",
+      "position": 1,
+      "conceptIdentity": "urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=IMF.STA:CS_IMTS(1.0+.0).INDICATOR",
+      "localRepresentation": null
+    },
+    {
+      "id": "COUNTERPART_COUNTRY",
+      "position": 2,
+      "conceptIdentity": "urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=IMF.STA:CS_IMTS(1.0+.0).COUNTERPART_COUNTRY",
+      "localRepresentation": null
+    },
+    {
+      "id": "FREQUENCY",
+      "position": 3,
+      "conceptIdentity": "urn:sdmx:org.sdmx.infomodel.conceptscheme.Concept=IMF:CS_MASTER_SYSTEM(1.0+.0).FREQ",
+      "localRepresentation": null
+    }
+  ],
+  "status": "dimension_inspection_complete"
+}

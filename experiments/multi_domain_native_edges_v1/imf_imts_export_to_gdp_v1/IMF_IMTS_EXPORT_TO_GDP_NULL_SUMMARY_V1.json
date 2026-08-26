@@ -1,0 +1,130 @@
+{
+  "test_id": "IMF_IMTS_EXPORT_CONTRACTION_TO_GDP_V1",
+  "rows_origins": 315,
+  "entities": 15,
+  "years": [
+    2001,
+    2002,
+    2003,
+    2004,
+    2005,
+    2006,
+    2007,
+    2008,
+    2009,
+    2010,
+    2011,
+    2012,
+    2013,
+    2014,
+    2015,
+    2016,
+    2017,
+    2018,
+    2019,
+    2020,
+    2021
+  ],
+  "metrics": [
+    {
+      "split": "fit",
+      "horizon": 1,
+      "rows": 195,
+      "entities": 15,
+      "contraction_positive": 41,
+      "outcome_positive": 43,
+      "risk_diff": -0.21745327842888817,
+      "event_rate": 0.2205128205128205
+    },
+    {
+      "split": "fit",
+      "horizon": 2,
+      "rows": 195,
+      "entities": 15,
+      "contraction_positive": 41,
+      "outcome_positive": 49,
+      "risk_diff": -0.2255305669939816,
+      "event_rate": 0.2512820512820513
+    },
+    {
+      "split": "fit",
+      "horizon": 3,
+      "rows": 195,
+      "entities": 15,
+      "contraction_positive": 41,
+      "outcome_positive": 44,
+      "risk_diff": -0.19306303452644913,
+      "event_rate": 0.22564102564102564
+    },
+    {
+      "split": "validation",
+      "horizon": 1,
+      "rows": 75,
+      "entities": 15,
+      "contraction_positive": 32,
+      "outcome_positive": 8,
+      "risk_diff": -0.02252906976744186,
+      "event_rate": 0.10666666666666667
+    },
+    {
+      "split": "validation",
+      "horizon": 2,
+      "rows": 75,
+      "entities": 15,
+      "contraction_positive": 32,
+      "outcome_positive": 20,
+      "risk_diff": -0.3015988372093023,
+      "event_rate": 0.26666666666666666
+    },
+    {
+      "split": "validation",
+      "horizon": 3,
+      "rows": 75,
+      "entities": 15,
+      "contraction_positive": 32,
+      "outcome_positive": 20,
+      "risk_diff": -0.1925872093023256,
+      "event_rate": 0.26666666666666666
+    },
+    {
+      "split": "confirmation",
+      "horizon": 1,
+      "rows": 45,
+      "entities": 15,
+      "contraction_positive": 26,
+      "outcome_positive": 25,
+      "risk_diff": -0.22267206477732793,
+      "event_rate": 0.5555555555555556
+    },
+    {
+      "split": "confirmation",
+      "horizon": 2,
+      "rows": 45,
+      "entities": 15,
+      "contraction_positive": 26,
+      "outcome_positive": 14,
+      "risk_diff": -0.7368421052631579,
+      "event_rate": 0.3111111111111111
+    },
+    {
+      "split": "confirmation",
+      "horizon": 3,
+      "rows": 45,
+      "entities": 15,
+      "contraction_positive": 26,
+      "outcome_positive": 15,
+      "risk_diff": -0.6983805668016194,
+      "event_rate": 0.3333333333333333
+    }
+  ],
+  "observed_confirmation_max_risk_difference": -0.22267206477732793,
+  "null_method": "within-reporter permutation of target outcome labels with fixed raw export contraction exposure",
+  "null_replicates": 10000,
+  "null_mean": 0.12185668016194331,
+  "null_sd": 0.11959903020073001,
+  "null_q95": 0.32388663967611336,
+  "p_value": 0.9994000599940006,
+  "validation_at_selected_horizon": -0.02252906976744186,
+  "minimum_coverage_pass": true,
+  "interpretation": "trade-to-GDP edge is research-only; no causal claim; no promotion unless confirmation and null rules pass"
+}

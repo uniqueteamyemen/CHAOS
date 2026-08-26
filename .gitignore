@@ -35,3 +35,6 @@
 
 # Immutable raw files from the 20260827 browser deep-research round
 /campaigns/research_rounds/20260827_BROWSER_DEEP_RESEARCH/raw/
+
+# Large derived IMTS monolithic state file; use tracked reporter shards instead
+experiments/multi_domain_native_adapters_v1/imf_imts_v1/IMF_IMTS_DOMAIN_STATES_ANNUAL_V1.jsonl

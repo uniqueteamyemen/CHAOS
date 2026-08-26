@@ -1,0 +1,116 @@
+{
+  "source": "experiments/multi_domain_native_adapters_v1/imf_imts_v1/IMF_IMTS_DOMAIN_STATES_ANNUAL_V1.jsonl",
+  "source_sha256": "6c4be7b61446d84ebd54feb55b2655b1cdfe09f5c770e0d9d72fc2ed49d219cc",
+  "source_bytes": 121513210,
+  "shard_count": 15,
+  "records": 102495,
+  "shards": [
+    {
+      "entity_id": "BRA",
+      "path": "experiments/multi_domain_native_adapters_v1/imf_imts_v1/domain_state_shards/IMF_IMTS_DOMAIN_STATES_BRA_ANNUAL_V1.jsonl",
+      "records": 10656,
+      "bytes": 12628405,
+      "sha256": "d9503f5ea2a41f1dcf6c7b21822352d47a63a8dc69556fcae27aef50ae7e988a"
+    },
+    {
+      "entity_id": "CAN",
+      "path": "experiments/multi_domain_native_adapters_v1/imf_imts_v1/domain_state_shards/IMF_IMTS_DOMAIN_STATES_CAN_ANNUAL_V1.jsonl",
+      "records": 11023,
+      "bytes": 13065023,
+      "sha256": "4d275bc3cecf93dab8ee853473f53ca3ef369de93fe08707b1c9ebfe7871f334"
+    },
+    {
+      "entity_id": "CHN",
+      "path": "experiments/multi_domain_native_adapters_v1/imf_imts_v1/domain_state_shards/IMF_IMTS_DOMAIN_STATES_CHN_ANNUAL_V1.jsonl",
+      "records": 5548,
+      "bytes": 6583159,
+      "sha256": "9d1248002d820e7803b293232c8051730eec2319913c04d6ec39efc009739c95"
+    },
+    {
+      "entity_id": "DEU",
+      "path": "experiments/multi_domain_native_adapters_v1/imf_imts_v1/domain_state_shards/IMF_IMTS_DOMAIN_STATES_DEU_ANNUAL_V1.jsonl",
+      "records": 5644,
+      "bytes": 6694576,
+      "sha256": "22bd37950867bf328ac173382aa06aaaa458dd9c17045d53d1796306a8926520"
+    },
+    {
+      "entity_id": "FRA",
+      "path": "experiments/multi_domain_native_adapters_v1/imf_imts_v1/domain_state_shards/IMF_IMTS_DOMAIN_STATES_FRA_ANNUAL_V1.jsonl",
+      "records": 5631,
+      "bytes": 6677978,
+      "sha256": "fe1b4dc1b7dec85a193a4a5f3f1bc151898d0ba85da4f19b407b63670459cb65"
+    },
+    {
+      "entity_id": "GBR",
+      "path": "experiments/multi_domain_native_adapters_v1/imf_imts_v1/domain_state_shards/IMF_IMTS_DOMAIN_STATES_GBR_ANNUAL_V1.jsonl",
+      "records": 5621,
+      "bytes": 6665570,
+      "sha256": "f3cb7cd1b05729ea9b07d65e83b0206ecbae0d58eaf51a472390221266fb043c"
+    },
+    {
+      "entity_id": "IND",
+      "path": "experiments/multi_domain_native_adapters_v1/imf_imts_v1/domain_state_shards/IMF_IMTS_DOMAIN_STATES_IND_ANNUAL_V1.jsonl",
+      "records": 5536,
+      "bytes": 6564165,
+      "sha256": "434c4daf5c85f8c32d94ae6cc51ec4abdd104e41a5e0d0412ff59b3011434a00"
+    },
+    {
+      "entity_id": "ITA",
+      "path": "experiments/multi_domain_native_adapters_v1/imf_imts_v1/domain_state_shards/IMF_IMTS_DOMAIN_STATES_ITA_ANNUAL_V1.jsonl",
+      "records": 5617,
+      "bytes": 6661260,
+      "sha256": "7ca252ed2ce934745e090e23bc66e31a2f4b045e623d73bb85dcc2835f9b6411"
+    },
+    {
+      "entity_id": "JPN",
+      "path": "experiments/multi_domain_native_adapters_v1/imf_imts_v1/domain_state_shards/IMF_IMTS_DOMAIN_STATES_JPN_ANNUAL_V1.jsonl",
+      "records": 5522,
+      "bytes": 6548424,
+      "sha256": "56ad7680aa551829ed8d69f95ab0ce741de48ac9bd9e08e828ef15a271625b4e"
+    },
+    {
+      "entity_id": "KOR",
+      "path": "experiments/multi_domain_native_adapters_v1/imf_imts_v1/domain_state_shards/IMF_IMTS_DOMAIN_STATES_KOR_ANNUAL_V1.jsonl",
+      "records": 5569,
+      "bytes": 6603514,
+      "sha256": "2dbd474d08eabb9c2325d2840975232b74fd50df8b91184d8448f15cc958b1c2"
+    },
+    {
+      "entity_id": "MEX",
+      "path": "experiments/multi_domain_native_adapters_v1/imf_imts_v1/domain_state_shards/IMF_IMTS_DOMAIN_STATES_MEX_ANNUAL_V1.jsonl",
+      "records": 10587,
+      "bytes": 12543515,
+      "sha256": "38421e52ba709392f152781ab540ac60e818c3567288973ab14b9adf9e30801a"
+    },
+    {
+      "entity_id": "SAU",
+      "path": "experiments/multi_domain_native_adapters_v1/imf_imts_v1/domain_state_shards/IMF_IMTS_DOMAIN_STATES_SAU_ANNUAL_V1.jsonl",
+      "records": 4084,
+      "bytes": 4841633,
+      "sha256": "1bdb1f76c79565edae8a2ef6a0179a19e23c837236d9d5ce4641941b1d031679"
+    },
+    {
+      "entity_id": "TUR",
+      "path": "experiments/multi_domain_native_adapters_v1/imf_imts_v1/domain_state_shards/IMF_IMTS_DOMAIN_STATES_TUR_ANNUAL_V1.jsonl",
+      "records": 5495,
+      "bytes": 6514241,
+      "sha256": "ce864f448d3e1e4d606ee139fd186a4def2aefd6c19c3e2ef3b2562384584e17"
+    },
+    {
+      "entity_id": "USA",
+      "path": "experiments/multi_domain_native_adapters_v1/imf_imts_v1/domain_state_shards/IMF_IMTS_DOMAIN_STATES_USA_ANNUAL_V1.jsonl",
+      "records": 5561,
+      "bytes": 6597403,
+      "sha256": "fbb6fb33e0069335cf42e3b8d26af2ad8c7b822d436ab581e1b33f82ee71a856"
+    },
+    {
+      "entity_id": "ZAF",
+      "path": "experiments/multi_domain_native_adapters_v1/imf_imts_v1/domain_state_shards/IMF_IMTS_DOMAIN_STATES_ZAF_ANNUAL_V1.jsonl",
+      "records": 10401,
+      "bytes": 12324344,
+      "sha256": "c98ee395a7412e9d6a7b508068658e09033357cd3016a4e6ec8c4f30d9d17ae4"
+    }
+  ],
+  "monolithic_policy": "full local derived file retained for validator/reproducibility but ignored by Git because it exceeds GitHub per-file limit",
+  "status": "sharded"
+}

@@ -52,6 +52,96 @@
       "missing": [],
       "native_frequency": "daily",
       "edge_status": "not_testable"
+    },
+    {
+      "path": "experiments/multi_domain_native_adapters_v1/imf_imts_v1/domain_state_shards/IMF_IMTS_DOMAIN_STATES_BRA_ANNUAL_V1.jsonl",
+      "missing": [],
+      "native_frequency": "annual",
+      "edge_status": "not_testable"
+    },
+    {
+      "path": "experiments/multi_domain_native_adapters_v1/imf_imts_v1/domain_state_shards/IMF_IMTS_DOMAIN_STATES_CAN_ANNUAL_V1.jsonl",
+      "missing": [],
+      "native_frequency": "annual",
+      "edge_status": "not_testable"
+    },
+    {
+      "path": "experiments/multi_domain_native_adapters_v1/imf_imts_v1/domain_state_shards/IMF_IMTS_DOMAIN_STATES_CHN_ANNUAL_V1.jsonl",
+      "missing": [],
+      "native_frequency": "annual",
+      "edge_status": "not_testable"
+    },
+    {
+      "path": "experiments/multi_domain_native_adapters_v1/imf_imts_v1/domain_state_shards/IMF_IMTS_DOMAIN_STATES_DEU_ANNUAL_V1.jsonl",
+      "missing": [],
+      "native_frequency": "annual",
+      "edge_status": "not_testable"
+    },
+    {
+      "path": "experiments/multi_domain_native_adapters_v1/imf_imts_v1/domain_state_shards/IMF_IMTS_DOMAIN_STATES_FRA_ANNUAL_V1.jsonl",
+      "missing": [],
+      "native_frequency": "annual",
+      "edge_status": "not_testable"
+    },
+    {
+      "path": "experiments/multi_domain_native_adapters_v1/imf_imts_v1/domain_state_shards/IMF_IMTS_DOMAIN_STATES_GBR_ANNUAL_V1.jsonl",
+      "missing": [],
+      "native_frequency": "annual",
+      "edge_status": "not_testable"
+    },
+    {
+      "path": "experiments/multi_domain_native_adapters_v1/imf_imts_v1/domain_state_shards/IMF_IMTS_DOMAIN_STATES_IND_ANNUAL_V1.jsonl",
+      "missing": [],
+      "native_frequency": "annual",
+      "edge_status": "not_testable"
+    },
+    {
+      "path": "experiments/multi_domain_native_adapters_v1/imf_imts_v1/domain_state_shards/IMF_IMTS_DOMAIN_STATES_ITA_ANNUAL_V1.jsonl",
+      "missing": [],
+      "native_frequency": "annual",
+      "edge_status": "not_testable"
+    },
+    {
+      "path": "experiments/multi_domain_native_adapters_v1/imf_imts_v1/domain_state_shards/IMF_IMTS_DOMAIN_STATES_JPN_ANNUAL_V1.jsonl",
+      "missing": [],
+      "native_frequency": "annual",
+      "edge_status": "not_testable"
+    },
+    {
+      "path": "experiments/multi_domain_native_adapters_v1/imf_imts_v1/domain_state_shards/IMF_IMTS_DOMAIN_STATES_KOR_ANNUAL_V1.jsonl",
+      "missing": [],
+      "native_frequency": "annual",
+      "edge_status": "not_testable"
+    },
+    {
+      "path": "experiments/multi_domain_native_adapters_v1/imf_imts_v1/domain_state_shards/IMF_IMTS_DOMAIN_STATES_MEX_ANNUAL_V1.jsonl",
+      "missing": [],
+      "native_frequency": "annual",
+      "edge_status": "not_testable"
+    },
+    {
+      "path": "experiments/multi_domain_native_adapters_v1/imf_imts_v1/domain_state_shards/IMF_IMTS_DOMAIN_STATES_SAU_ANNUAL_V1.jsonl",
+      "missing": [],
+      "native_frequency": "annual",
+      "edge_status": "not_testable"
+    },
+    {
+      "path": "experiments/multi_domain_native_adapters_v1/imf_imts_v1/domain_state_shards/IMF_IMTS_DOMAIN_STATES_TUR_ANNUAL_V1.jsonl",
+      "missing": [],
+      "native_frequency": "annual",
+      "edge_status": "not_testable"
+    },
+    {
+      "path": "experiments/multi_domain_native_adapters_v1/imf_imts_v1/domain_state_shards/IMF_IMTS_DOMAIN_STATES_USA_ANNUAL_V1.jsonl",
+      "missing": [],
+      "native_frequency": "annual",
+      "edge_status": "not_testable"
+    },
+    {
+      "path": "experiments/multi_domain_native_adapters_v1/imf_imts_v1/domain_state_shards/IMF_IMTS_DOMAIN_STATES_ZAF_ANNUAL_V1.jsonl",
+      "missing": [],
+      "native_frequency": "annual",
+      "edge_status": "not_testable"
     }
   ],
   "status": "pass"

@@ -1,0 +1,40 @@
+{
+  "source_id": "IMF.STA:IMTS",
+  "official_dataset_url": "https://data.imf.org/en/datasets/IMF.STA:IMTS",
+  "api_url": "https://api.imf.org/external/sdmx/3.0/data/dataflow/IMF.STA/IMTS/1.0.0/USA+CHN+DEU+JPN+IND+GBR+FRA+ITA+CAN+KOR+BRA+MEX+SAU+TUR+ZAF.XG_FOB_USD+MG_FOB_USD.*.A?c[TIME_PERIOD]=ge:2000-01-01%2Ble:2024-12-31&attributes=all&detail=full&includeHistory=true&limit=500",
+  "retrieved_at_utc": "2026-08-26T23:36:20.382176+00:00",
+  "status_code": 200,
+  "content_type": "application/vnd.sdmx.data+csv;version=2.0",
+  "bytes": 6868188,
+  "sha256": "4c1bb8a8921833ccdeae23ea8cae3357f1f330ed42161cfbd6f4dc48f2bb79f8",
+  "raw_path": "campaigns/research_rounds/20260827_BROWSER_DEEP_RESEARCH/raw/imf_imts_multicountry_15/IMF_IMTS_15_COUNTRIES_XG_MG_ALL_PARTNERS_2000_2024.csv",
+  "raw_immutable": true,
+  "query_scope": {
+    "countries": [
+      "USA",
+      "CHN",
+      "DEU",
+      "JPN",
+      "IND",
+      "GBR",
+      "FRA",
+      "ITA",
+      "CAN",
+      "KOR",
+      "BRA",
+      "MEX",
+      "SAU",
+      "TUR",
+      "ZAF"
+    ],
+    "counterpart_country": "*",
+    "indicators": [
+      "XG_FOB_USD",
+      "MG_FOB_USD"
+    ],
+    "frequency": "A",
+    "period": "2000-2024",
+    "limit": 500
+  },
+  "status": "downloaded_response"
+}

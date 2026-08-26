@@ -184,3 +184,15 @@ experiments/multi_domain_native_edges_v1/pmr_within_domain_v1/
 [7]: https://www.oecd.org/en/publications/government-at-a-glance-2025_0efd0bcd-en.html "OECD Government at a Glance 2025"
 [8]: https://www.oecd.org/en/topics/sub-issues/product-market-regulation.html "OECD Product Market Regulation"
 [9]: https://sdmx.oecd.org/archive/rest/data/OECD,DF_PMR,/all?dimensionAtObservation=AllDimensions&format=csvfilewithlabels "OECD PMR Archive SDMX CSV"
+
+
+## ملحق الجولة العاشرة — IMF IMTS
+
+بعد الجولة السابقة، ثبتت بطاقة IMF الرسمية وstructure API dataflow `IMF.STA:IMTS(1.0.0)`، ثم اكتُسبت استجابات bounded بصيغة CSV من SDMX 3.0. شمل extract متعدد البلدان 15 reporter ومؤشري `XG_FOB_USD` و`MG_FOB_USD` وكل counterpart ضمن query بحد `limit=5000` لكل reporter، للفترة السنوية 2000–2024. أنتج adapter `102,495` observation و239 counterpart code، مع اكتمال XG عبر 15 reporter طوال 25 سنة، بينما MG مكتمل لأربعة reporters فقط.
+
+اختُبرت Edge جديدة مستقلة عن WDI Trade: `IMF IMTS raw export contraction to World → WDI material GDP deterioration`. على 315 origin rows وhorizons من 1 إلى 3، كان confirmation max risk difference `-0.2226720648`، وwithin-reporter permutation null أعطى `p=0.99940006`. سُجلت Edge `rejected`، ولم تحصل على positive Composer weight أو runtime promotion. هذه النتيجة تغلق تعريف export-contraction الحالي ولا تبرر إعادة ضبط عتباته داخل العينة.
+
+تحديث البوابات بعد إدخال IMTS: DomainState وTransitionEvidence schema = PASS؛ Evidence Graph = 53 nodes و54 edges؛ admitted supported_predictive = 2 من baseline السابق؛ quarantined = 25؛ runtime-eligible = 0؛ causal claims = 0. تفاصيل الاقتناء والـadapter والـEdge في `IMF_IMTS_EXPANSION_REPORT_AR.md`. الخام محفوظ خارج Git وموسوم immutable، و`market-intelligence-engine` لم يُعدّل.
+
+[10]: https://data.imf.org/en/datasets/IMF.STA:IMTS "IMF IMTS official dataset card"
+[11]: https://api.imf.org/external/sdmx/3.0/structure/dataflow/IMF.STA/IMTS/1.0.0?detail=full&references=all "IMF IMTS official SDMX structure"

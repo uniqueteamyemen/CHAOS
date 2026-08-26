@@ -1,0 +1,146 @@
+{
+  "html_path": "/home/ubuntu/upload/data.imf.org_en_datasets_IMF.STA_IMTS_1787786643195.html",
+  "relevant_tags": [
+    {
+      "tag": "a",
+      "text": "API",
+      "attrs": {
+        "href": "https://portal.api.imf.org/apis#tags=iData"
+      }
+    },
+    {
+      "tag": "button",
+      "text": "DOWNLOAD",
+      "attrs": {
+        "class": "['dataset-button']"
+      }
+    },
+    {
+      "tag": "a",
+      "text": "11 Mar DASHBOARD RELEASE International Trade in Goods by Partner Country This report provides tables and charts of merchandise export and import statistics, disaggregated by country's primary trading partners, as well as world, regional, and country group aggregates.",
+      "attrs": {
+        "class": "['LatestUpdatesCardstyles__CardLink-sc-5of2xx-1', 'kJFYsq']",
+        "href": "/en/Dashboards/IMTS%20Dashboard"
+      }
+    },
+    {
+      "tag": "a",
+      "text": "30 Mar TABLE RELEASE Exports and Imports by Area and Countries The table includes indicators by area and country.",
+      "attrs": {
+        "href": "https://data.imf.org/en/Data%20Explorer?datasetUrn=IMF.STA:IMTS(1.0.0)&dataPresentation=H_IMTS_EXPORT_IMPORT_AREA_COUNTRY",
+        "class": "['LatestUpdatesCardstyles__CardLink-sc-5of2xx-1', 'kJFYsq']"
+      }
+    },
+    {
+      "tag": "a",
+      "text": "API",
+      "attrs": {
+        "href": "/en/Resource-Pages/IMF-API",
+        "class": "['Linkstyles__Link-sc-f3z6xr-0', 'ggwqDj']"
+      }
+    },
+    {
+      "tag": "a",
+      "text": "Excel Add-in",
+      "attrs": {
+        "href": "/en/Resource-Pages/Download-Excel-Add-in",
+        "class": "['Linkstyles__Link-sc-f3z6xr-0', 'ggwqDj']"
+      }
+    },
+    {
+      "tag": "a",
+      "text": "Release Calendar",
+      "attrs": {
+        "href": "/en/Release-Calendar?urn=IMF.STA:IMTS(1.0.0)",
+        "class": "['Linkstyles__Link-sc-f3z6xr-0', 'ggwqDj']"
+      }
+    },
+    {
+      "tag": "a",
+      "text": "Tables",
+      "attrs": {
+        "href": "/en/Tables#f:Datasets=[International Trade in Goods (by partner country) (IMTS)]",
+        "class": "['Linkstyles__Link-sc-f3z6xr-0', 'ggwqDj']"
+      }
+    },
+    {
+      "tag": "script",
+      "text": "{\"props\":{\"pageProps\":{\"locale\":\"en\",\"layoutData\":{\"sitecore\":{\"context\":{\"pageEditing\":false,\"loginUrls\":[{\"identityProvider\":\"AzureB2C\",\"caption\":\"AzureB2C\",\"icon\":null,\"href\":\"/identity/externallogin?authenticationType=AzureB2C\\u0026ReturnUrl=%2fidentity%2fexternallogincallback%3fReturnUrl%3d%252fen%252fDatasets%252fIMTS\\u0026sc_site=iData\\u0026sc_site=iData\\u0026authenticationSource=Default\"}],\"currentUser\":{\"name\":\"extranet\\\\anonymous\",\"email\":\"\",\"fullName\":\"\"},\"site\":{\"name\":\"iData\"},\"page",
+      "attrs": {
+        "id": "__NEXT_DATA__"
+      }
+    },
+    {
+      "tag": "input",
+      "text": "",
+      "attrs": {
+        "class": "['Switcherstyled__SwitcherInput-sc-17a1gqr-2', 'jEOYnX', 'selected']",
+        "name": "Download full dataset"
+      }
+    },
+    {
+      "tag": "button",
+      "text": "DOWNLOAD",
+      "attrs": {}
+    }
+  ],
+  "relevant_urls": [
+    "http://api/logout",
+    "https://data.imf.org",
+    "https://data.imf.org/_next/static/R7GWnRtbAe5CcDuiQ1Pdc/_buildManifest.js",
+    "https://data.imf.org/_next/static/R7GWnRtbAe5CcDuiQ1Pdc/_ssgManifest.js",
+    "https://data.imf.org/_next/static/chunks/715-ad0d3937eb1a7497.js",
+    "https://data.imf.org/_next/static/chunks/966-a4a5f9386a3b96a6.js",
+    "https://data.imf.org/_next/static/chunks/cdfd8999-e297a5c9c7a35600.js",
+    "https://data.imf.org/_next/static/chunks/fec483df-ea32134b01daf067.js",
+    "https://data.imf.org/_next/static/chunks/framework-0365125e11538b64.js",
+    "https://data.imf.org/_next/static/chunks/main-24d7add05c17add3.js",
+    "https://data.imf.org/_next/static/chunks/pages/%5B%5B...path%5D%5D-2fbb0793b68a6110.js",
+    "https://data.imf.org/_next/static/chunks/pages/_app-98924c886c9332af.js",
+    "https://data.imf.org/_next/static/chunks/polyfills-c67a75d1b6f99dc8.js",
+    "https://data.imf.org/_next/static/chunks/webpack-125aafed853aca85.js",
+    "https://data.imf.org/_next/static/css/345e728e79ae3358.css",
+    "https://data.imf.org/_next/static/css/73cb90bf3787ed4b.css",
+    "https://data.imf.org/en/Data%20Explorer?datasetUrn=IMF.STA:IMTS(1.0.0)&amp;dataPresentation=H_IMTS_EXPORT_IMPORT_AREA_COUNTRY",
+    "https://data.imf.org/en/Data%20Explorer?datasetUrn=IMF.STA:IMTS(1.0.0)\\u0026dataPresentation=H_IMTS_EXPORT_IMPORT_AREA_COUNTRY",
+    "https://data.imf.org/favicon.ico",
+    "https://data.imf.org/resources/96402a060b86fe5a70582645928f72ae986001328fd02",
+    "https://datasupport.imf.org/knowledge",
+    "https://portal.api.imf.org/apis#tags=iData",
+    "https://www.bookstore.imf.org/authgatewaylogin?ssortn=https://data.imf.org/?sk=388dfa60-1d26-4ade-b505-a05a558d9a42",
+    "https://www.imf.org/ar/home",
+    "https://www.imf.org/en/About",
+    "https://www.imf.org/en/About/Recruitment",
+    "https://www.imf.org/en/About/brand",
+    "https://www.imf.org/en/About/glossary",
+    "https://www.imf.org/en/Capacity-Development",
+    "https://www.imf.org/en/Countries",
+    "https://www.imf.org/en/Home",
+    "https://www.imf.org/en/News",
+    "https://www.imf.org/en/News/Seminars",
+    "https://www.imf.org/en/Publications",
+    "https://www.imf.org/en/Publications/AREB",
+    "https://www.imf.org/en/Research",
+    "https://www.imf.org/en/Social-Hub",
+    "https://www.imf.org/en/Videos/index",
+    "https://www.imf.org/en/about/privacy-notice",
+    "https://www.imf.org/en/email-subscription/index",
+    "https://www.imf.org/en/live",
+    "https://www.imf.org/en/news/podcasts",
+    "https://www.imf.org/en/videos/index",
+    "https://www.imf.org/es/home",
+    "https://www.imf.org/external/hrd/integrity/index.htm",
+    "https://www.imf.org/external/np/exr/contacts/contacts.aspx",
+    "https://www.imf.org/external/scams.htm",
+    "https://www.imf.org/external/terms.htm",
+    "https://www.imf.org/fr/home",
+    "https://www.imf.org/ja/home",
+    "https://www.imf.org/ru/home",
+    "https://www.imf.org/zh/home",
+    "https://www.instagram.com/the_imf/",
+    "https://www.threads.net/@the_imf/",
+    "https://www.twitter.com/imfnews",
+    "https://www.youtube.com/imf"
+  ],
+  "status": "dom_analysis_complete"
+}

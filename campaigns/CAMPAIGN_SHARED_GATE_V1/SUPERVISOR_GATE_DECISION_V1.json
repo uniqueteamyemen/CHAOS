@@ -1,8 +1,8 @@
 {
   "gate_id": "CHAOS_SUPERVISOR_ADMISSION_GATE_V1",
-  "input_files": 9,
+  "input_files": 10,
   "admitted_supported_predictive_records": 2,
-  "quarantined_records": 24,
+  "quarantined_records": 25,
   "positive_composition_statuses": [
     "supported_predictive"
   ],
@@ -17,7 +17,8 @@
     "campaigns/agents/trade_v1/WDI_TRADE_TO_ECONOMIC_DETERIORATION_TRANSITION_EVIDENCE_V1.jsonl": "25299da644f7dc9a201e5c5d61de29fee28f89d115f812fbd46e8ea0726557fd",
     "campaigns/agents/institutions_policy_v1/WGI_TRANSITION_EVIDENCE_V1.jsonl": "9d3f4070893c5c7ab8f62991fb35f7e45a1f31b9feb405504186ba2f7d4787de",
     "campaigns/research_rounds/20260827_BROWSER_DEEP_RESEARCH/OECD_PMR_TRANSITION_EVIDENCE_V1.jsonl": "6de52d41f8196baa2bd5a5428d4a4eda5e3763c713c28cb3f54b35293a34cd75",
-    "experiments/multi_domain_native_edges_v1/pmr_within_domain_v1/PMR_WITHIN_DOMAIN_TRANSITION_EVIDENCE_V1_1.jsonl": "7c28f75aa683e4654f617e878cf1a1b46abce681d1356fc684107017c8dd3329"
+    "experiments/multi_domain_native_edges_v1/pmr_within_domain_v1/PMR_WITHIN_DOMAIN_TRANSITION_EVIDENCE_V1_1.jsonl": "7c28f75aa683e4654f617e878cf1a1b46abce681d1356fc684107017c8dd3329",
+    "experiments/multi_domain_native_edges_v1/imf_imts_export_to_gdp_v1/IMF_IMTS_EXPORT_TO_GDP_TRANSITION_EVIDENCE_V1.jsonl": "bf11dcb2f89dfab736e42329b77e25c5c5f1e989012637c7849bdab6f28c212e"
   },
   "rules": {
     "rejected_positive_weight": false,

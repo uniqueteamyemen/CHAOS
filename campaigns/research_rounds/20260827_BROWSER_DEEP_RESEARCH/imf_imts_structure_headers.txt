@@ -1,0 +1,17 @@
+HTTP/2 200 
+date: Wed, 26 Aug 2026 23:32:05 GMT
+content-type: application/vnd.sdmx.structure+json;version=2.0.0
+set-cookie: ApplicationGatewayAffinityCORS=dca9138616203b0df55300d07b8e6a61; Path=/; SameSite=None; Secure
+set-cookie: ApplicationGatewayAffinity=dca9138616203b0df55300d07b8e6a61; Path=/
+x-correlation-id: 5ffae088fbcd9f16050ef9d1dad9f45c
+x-content-type-options: nosniff
+x-xss-protection: 0
+cache-control: no-cache, no-store, max-age=0, must-revalidate
+pragma: no-cache
+expires: 0
+strict-transport-security: max-age=31536000 ; includeSubDomains
+x-frame-options: DENY
+x-envoy-upstream-service-time: 58
+server: istio-envoy
+request-context: appId=cid-v1:e4518baf-f7f4-42d7-900e-7dd820548dc8
+

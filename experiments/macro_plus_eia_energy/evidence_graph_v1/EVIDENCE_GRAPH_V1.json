@@ -124,6 +124,10 @@
       "type": "pattern_record"
     },
     {
+      "node_id": "IMF_IMTS_EXPORT_CONTRACTION_TO_GDP_V1",
+      "type": "pattern_record"
+    },
+    {
       "node_id": "WHO_COVID_DAILY_REPORTED_ACTIVITY"
     },
     {
@@ -176,6 +180,12 @@
     },
     {
       "node_id": "OECD_PMR_ADJACENT_SOURCE_WAVE_DIRECTIONAL_CONCENTRATION_DEPENDENCY_AWARE"
+    },
+    {
+      "node_id": "imf_imts_export_world_raw_contraction"
+    },
+    {
+      "node_id": "wdi_material_gdp_deterioration"
     }
   ],
   "edges": [
@@ -823,6 +833,21 @@
       ]
     },
     {
+      "edge_id": "IMF_IMTS_EXPORT_CONTRACTION_TO_GDP_V1_registry",
+      "source": "IMF_IMTS_EXPORT_CONTRACTION_TO_GDP_V1",
+      "target": "IMF IMTS raw reporter-to-world export contraction precedes material GDP deterioration",
+      "split": "registry",
+      "metric": null,
+      "p_value": null,
+      "null_method": "registry_summary",
+      "status": "rejected",
+      "causal_claim": false,
+      "source_refs": "experiments/multi_domain_native_edges_v1/imf_imts_export_to_gdp_v1/IMF_IMTS_EXPORT_TO_GDP_NULL_SUMMARY_V1.json",
+      "failure_cases": [
+        "confirmation risk difference is negative and null p is near one; no positive predictive support; source-separated trade edge remains research-only"
+      ]
+    },
+    {
       "edge_id": "WHO_COVID_DAILY_TO_ANNUAL_GDP_V1",
       "source": "WHO_COVID_DAILY_REPORTED_ACTIVITY",
       "target": "ANNUAL_MATERIAL_DETERIORATION",
@@ -1394,6 +1419,41 @@
         "no dated policy shock",
         "descriptive sensitivity only; no predictive or causal promotion"
       ]
+    },
+    {
+      "edge_id": "IMF_IMTS_EXPORT_CONTRACTION_TO_GDP_V1",
+      "source": "imf_imts_export_world_raw_contraction",
+      "target": "wdi_material_gdp_deterioration",
+      "lag": {
+        "direction": "forward",
+        "unit": "years",
+        "value": 1
+      },
+      "split": "confirmation_2019_2021",
+      "metric": {
+        "name": "risk_difference",
+        "validation_at_selected_horizon": -0.02252906976744186,
+        "value": -0.22267206477732793
+      },
+      "p_value": 0.9994000599940006,
+      "null_method": "within-reporter permutation of target outcome labels with fixed raw export contraction exposure",
+      "status": "rejected",
+      "causal_claim": false,
+      "source_refs": [
+        "experimental_contracts/IMF_IMTS_EXPORT_CONTRACTION_TO_GDP_CONTRACT_V1.json",
+        "experiments/multi_domain_native_edges_v1/imf_imts_v1/IMF_IMTS_OBSERVED_RECORDS_2000_2024.csv",
+        "catalog_first/readiness_gate/macro_plus_eia_energy/MACRO_PLUS_EIA_ENERGY_COMPLETE_139_NUMERIC_RAW_2000_2024_WIDE.csv",
+        "experiments/multi_domain_native_edges_v1/imf_imts_export_to_gdp_v1/IMF_IMTS_EXPORT_TO_GDP_METRICS_V1.csv",
+        "experiments/multi_domain_native_edges_v1/imf_imts_export_to_gdp_v1/IMF_IMTS_EXPORT_TO_GDP_NULL_SUMMARY_V1.json"
+      ],
+      "failure_cases": [
+        "no entity holdout",
+        "confirmation origins only 2019-2021",
+        "target outcome uses future GDP by design of transition test",
+        "raw export value only; no normalization",
+        "bounded 15-reporter extract",
+        "no source reconciliation"
+      ]
     }
   ],
   "rules": {
@@ -1413,7 +1473,7 @@
   },
   "input_hashes": {
     "transition_evidence": "7e758b1f3ab323ee9a5bd1bcae2dca498b619b6d15754163c4908c7f057d4abf",
-    "registry": "ea33a70f7f820c442a6318e8d154f269a027ea1d3a74f4e0e55f5754d1605f7e",
+    "registry": "3adf45ef125813dd99549b348ee896195c1c8aaeedd3182efe46b66efcf0efea",
     "native_domain_transition_evidence": "21b2d619ff31cc71705613140fda5e9faa582fbe1ec39ff4e6d76354722c8f34",
     "cross_domain_transition_evidence": "079f739ead4bdbe9e18c3641f7728962cc2c3196a2bc3bf728adcdaf40bb1620",
     "trade_transition_evidence": "f2b97903d37dd349587fe63d88c77812040a0be7fde76b1962ce25b4156c19ca",
@@ -1421,6 +1481,7 @@
     "wdi_trade_transition_evidence": "1945b9f3ef1392548ca9643e423cd99c220d8513815ae81048d152eea16177d3",
     "trade_to_economic_transition_evidence": "25299da644f7dc9a201e5c5d61de29fee28f89d115f812fbd46e8ea0726557fd",
     "pmr_transition_evidence": "6de52d41f8196baa2bd5a5428d4a4eda5e3763c713c28cb3f54b35293a34cd75",
-    "pmr_sensitivity_transition_evidence": "7c28f75aa683e4654f617e878cf1a1b46abce681d1356fc684107017c8dd3329"
+    "pmr_sensitivity_transition_evidence": "7c28f75aa683e4654f617e878cf1a1b46abce681d1356fc684107017c8dd3329",
+    "imf_imts_export_to_gdp_transition_evidence": "bf11dcb2f89dfab736e42329b77e25c5c5f1e989012637c7849bdab6f28c212e"
   }
 }
