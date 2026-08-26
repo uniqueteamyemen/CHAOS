@@ -1,0 +1,10 @@
+{
+  "experiment_id": "0d848bd709e23b6f5492e7f6",
+  "candidate_count": 0,
+  "rejected_count": 72,
+  "golden_count": 0,
+  "reason_golden_empty": "No edge is promoted by this bounded exploratory grid; validation is descriptive and annual sample is short.",
+  "raw_mutation": false,
+  "imputation": false,
+  "fdr": "Benjamini-Hochberg-FDR"
+}

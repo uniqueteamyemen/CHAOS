@@ -1,0 +1,6 @@
+source=NOAA NCEI Global Summary of the Day archive
+attempted_years=2000,2010,2020,2025
+endpoint_pattern=https://www.ncei.noaa.gov/data/global-summary-of-the-day/access/{year}/USW00094728.csv
+result=TLS/SSL connection failure from collection environment; no payload captured
+policy=do not infer, interpolate, or create a placeholder observation
+next_action=use an approved NOAA access path or retry in a later collection run

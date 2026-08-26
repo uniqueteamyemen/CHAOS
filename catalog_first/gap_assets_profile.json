@@ -1,0 +1,30 @@
+{
+  "eia_selected_concepts": [
+    "energy_consumption_per_capita",
+    "energy_consumption_per_gdp"
+  ],
+  "eia_selected_series_count": 378,
+  "eia_selected_country_count": 189,
+  "eia_selected_long_rows": 9450,
+  "eia_catalog_candidate_rows": 398,
+  "eia_selected_catalog_rows": 378,
+  "eia_selected_country_concept_counts": {
+    "energy_consumption_per_gdp": 189,
+    "energy_consumption_per_capita": 189
+  },
+  "common_panel_country_count": 194,
+  "ucdp_rows": 7132,
+  "ucdp_columns": 74,
+  "ucdp_country_id_count": 199,
+  "ucdp_country_name_count": 199,
+  "ucdp_year_range": [
+    1989,
+    2025
+  ],
+  "outputs": [
+    "/home/ubuntu/market_intelligence_workspace/catalog_first/gap_assets/EIA_SELECTED_ANNUAL_2000_2024_LONG.csv",
+    "/home/ubuntu/market_intelligence_workspace/catalog_first/gap_assets/EIA_SELECTED_SERIES_CATALOG.csv",
+    "/home/ubuntu/market_intelligence_workspace/catalog_first/ucdp_country_year_variable_profile.json"
+  ],
+  "no_transformations_or_imputation": true
+}

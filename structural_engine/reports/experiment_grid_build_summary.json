@@ -1,0 +1,19 @@
+{
+  "experiments_declared": [
+    "8a11f8e49b5ef1d9f9b258ba",
+    "1683e52f53940af8b0c939e2"
+  ],
+  "variables_seen": [
+    "imf.datamapper.NGDP_RPCH",
+    "worldbank.wdi.WLD.energy_use_per_capita",
+    "worldbank.wdi.WLD.gdp_constant_usd",
+    "worldbank.wdi.WLD.inflation_cpi",
+    "worldbank.wdi.WLD.population",
+    "worldbank.wdi.WLD.trade_growth"
+  ],
+  "annual_rows_with_at_least_two_observed_variables": 26,
+  "imputation_performed": false,
+  "raw_mutation_performed": false,
+  "source_reconciliation_performed": false,
+  "note": "This is an observed inner-join matrix for exploratory validation; no annual value was inferred."
+}

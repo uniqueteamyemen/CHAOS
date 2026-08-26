@@ -1,0 +1,11 @@
+{
+  "experiment_id": "real-annual-10000-surrogate-grid-20260825",
+  "tested_edges": 36,
+  "validated_structural_patterns": 0,
+  "rejected_or_unstable_patterns": 36,
+  "golden_patterns": 0,
+  "surrogates_per_lag": 10000,
+  "all_results_have_real_matrix_provenance": true,
+  "note": "Annual observed sample is bounded; result is a controlled grid outcome, not a claim of global causal truth.",
+  "generated_at_utc": "2026-08-25T20:52:51.827165+00:00"
+}

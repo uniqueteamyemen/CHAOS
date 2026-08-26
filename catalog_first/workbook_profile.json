@@ -1,0 +1,302 @@
+{
+  "worldbank_wdi": {
+    "series_metadata_rows": 1498,
+    "country_aggregate_rows": 264,
+    "observation_table_years": [
+      1960,
+      2025
+    ],
+    "observation_columns": 66,
+    "observation_csv_size_bytes": 198481686,
+    "series_metadata_columns": [
+      "Series Code",
+      "Topic",
+      "Indicator Name",
+      "Short definition",
+      "Long definition",
+      "Unit of measure",
+      "Periodicity",
+      "Base Period",
+      "Other notes",
+      "Aggregation method",
+      "Limitations and exceptions",
+      "Notes from original source",
+      "General comments",
+      "Source",
+      "Statistical concept and methodology",
+      "Development relevance",
+      "Related source links",
+      "Other web links",
+      "Related indicators",
+      "License Type"
+    ],
+    "country_metadata_columns": [
+      "Country Code",
+      "Short Name",
+      "Table Name",
+      "Long Name",
+      "2-alpha code",
+      "Currency Unit",
+      "Special Notes",
+      "Region",
+      "Income Group",
+      "WB-2 code",
+      "National accounts base year",
+      "National accounts reference year",
+      "SNA price valuation",
+      "Lending category",
+      "Other groups",
+      "System of National Accounts",
+      "Alternative conversion factor",
+      "PPP survey year",
+      "Balance of Payments Manual in use",
+      "External debt Reporting status",
+      "System of trade",
+      "Government Accounting concept",
+      "IMF data dissemination standard",
+      "Latest population census",
+      "Latest household survey",
+      "Source of most recent Income and expenditure data",
+      "Vital registration complete",
+      "Latest agricultural census",
+      "Latest industrial data",
+      "Latest trade data",
+      "Latest water withdrawal data"
+    ]
+  },
+  "WEOApr2026all": {
+    "size_bytes": 5585205,
+    "sheets": {
+      "April 2026 WEO": {
+        "rows": 18,
+        "columns": 9,
+        "columns_preview": [
+          "Unnamed: 0",
+          "Unnamed: 1",
+          "Unnamed: 2",
+          "Unnamed: 3",
+          "Unnamed: 4",
+          "Unnamed: 5",
+          "Unnamed: 6",
+          "Unnamed: 7",
+          "Unnamed: 8"
+        ],
+        "columns_tail": [
+          "Unnamed: 1",
+          "Unnamed: 2",
+          "Unnamed: 3",
+          "Unnamed: 4",
+          "Unnamed: 5",
+          "Unnamed: 6",
+          "Unnamed: 7",
+          "Unnamed: 8"
+        ]
+      },
+      "Countries": {
+        "rows": 8668,
+        "columns": 81,
+        "columns_preview": [
+          "DATASET",
+          "SERIES_CODE",
+          "COUNTRY.ID",
+          "COUNTRY",
+          "INDICATOR.ID",
+          "INDICATOR",
+          "INDICATOR.Description",
+          "FREQUENCY",
+          "SCALE",
+          "UNIT",
+          "COUNTRY_UPDATE_DATE",
+          "PUBLICATION_DATE"
+        ],
+        "columns_tail": [
+          "2024",
+          "2025",
+          "2026",
+          "2027",
+          "2028",
+          "2029",
+          "2030",
+          "2031"
+        ]
+      },
+      "Country Groups": {
+        "rows": 689,
+        "columns": 81,
+        "columns_preview": [
+          "DATASET",
+          "SERIES_CODE",
+          "COUNTRY.ID",
+          "COUNTRY",
+          "INDICATOR.ID",
+          "INDICATOR",
+          "INDICATOR.Description",
+          "FREQUENCY",
+          "SCALE",
+          "UNIT",
+          "COUNTRY_UPDATE_DATE",
+          "PUBLICATION_DATE"
+        ],
+        "columns_tail": [
+          "2024",
+          "2025",
+          "2026",
+          "2027",
+          "2028",
+          "2029",
+          "2030",
+          "2031"
+        ]
+      },
+      "Commodity Prices": {
+        "rows": 75,
+        "columns": 81,
+        "columns_preview": [
+          "DATASET",
+          "SERIES_CODE",
+          "COUNTRY.ID",
+          "COUNTRY",
+          "INDICATOR.ID",
+          "INDICATOR",
+          "INDICATOR.Description",
+          "FREQUENCY",
+          "SCALE",
+          "UNIT",
+          "COUNTRY_UPDATE_DATE",
+          "PUBLICATION_DATE"
+        ],
+        "columns_tail": [
+          "2024",
+          "2025",
+          "2026",
+          "2027",
+          "2028",
+          "2029",
+          "2030",
+          "2031"
+        ]
+      },
+      "Country Group Composition": {
+        "rows": 626,
+        "columns": 6,
+        "columns_preview": [
+          "groupcode",
+          "groupname",
+          "groupcode_previous",
+          "countrycode",
+          "countryname",
+          "countrycode_previous"
+        ],
+        "columns_tail": [
+          "groupcode",
+          "groupname",
+          "groupcode_previous",
+          "countrycode",
+          "countryname",
+          "countrycode_previous"
+        ]
+      }
+    }
+  },
+  "WEOhistorical": {
+    "size_bytes": 10863437,
+    "sheets": {
+      "Info": {
+        "rows": 1,
+        "columns": 2,
+        "columns_preview": [
+          "Unnamed: 0",
+          "Unnamed: 1"
+        ],
+        "columns_tail": [
+          "Unnamed: 0",
+          "Unnamed: 1"
+        ]
+      },
+      "ngdp_rpch": {
+        "rows": 8844,
+        "columns": 77,
+        "columns_preview": [
+          "country",
+          "WEO_Country_Code",
+          "ISOAlpha_3Code",
+          "year",
+          "S1990ngdp_rpch",
+          "F1990ngdp_rpch",
+          "S1991ngdp_rpch",
+          "F1991ngdp_rpch",
+          "S1992ngdp_rpch",
+          "F1992ngdp_rpch",
+          "S1993ngdp_rpch",
+          "F1993ngdp_rpch"
+        ],
+        "columns_tail": [
+          "F2022ngdp_rpch",
+          "S2023ngdp_rpch",
+          "F2023ngdp_rpch",
+          "S2024ngdp_rpch",
+          "F2024ngdp_rpch",
+          "S2025ngdp_rpch",
+          "F2025ngdp_rpch",
+          "S2026ngdp_rpch"
+        ]
+      },
+      "pcpi_pch": {
+        "rows": 8844,
+        "columns": 77,
+        "columns_preview": [
+          "country",
+          "WEO_Country_Code",
+          "ISOAlpha_3Code",
+          "year",
+          "S1990pcpi_pch",
+          "F1990pcpi_pch",
+          "S1991pcpi_pch",
+          "F1991pcpi_pch",
+          "S1992pcpi_pch",
+          "F1992pcpi_pch",
+          "S1993pcpi_pch",
+          "F1993pcpi_pch"
+        ],
+        "columns_tail": [
+          "F2022pcpi_pch",
+          "S2023pcpi_pch",
+          "F2023pcpi_pch",
+          "S2024pcpi_pch",
+          "F2024pcpi_pch",
+          "S2025pcpi_pch",
+          "F2025pcpi_pch",
+          "S2026pcpi_pch"
+        ]
+      },
+      "bca_gdp_bp6": {
+        "rows": 8844,
+        "columns": 77,
+        "columns_preview": [
+          "country",
+          "WEO_Country_Code",
+          "ISOAlpha_3Code",
+          "year",
+          "S1990bca_gdp_bp6",
+          "F1990bca_gdp_bp6",
+          "S1991bca_gdp_bp6",
+          "F1991bca_gdp_bp6",
+          "S1992bca_gdp_bp6",
+          "F1992bca_gdp_bp6",
+          "S1993bca_gdp_bp6",
+          "F1993bca_gdp_bp6"
+        ],
+        "columns_tail": [
+          "F2022bca_gdp_bp6",
+          "S2023bca_gdp_bp6",
+          "F2023bca_gdp_bp6",
+          "S2024bca_gdp_bp6",
+          "F2024bca_gdp_bp6",
+          "S2025bca_gdp_bp6",
+          "F2025bca_gdp_bp6",
+          "S2026bca_gdp_bp6"
+        ]
+      }
+    }
+  }
+}

@@ -1,0 +1,194 @@
+{
+  "selection_rule": "PRCP/TMAX/TMIN each cover 2000–2025; closest eligible station to regional target; TAVG not synthesized",
+  "stations": [
+    {
+      "region": "north_america",
+      "elements": {
+        "TMAX": {
+          "start": 1962,
+          "end": 2026
+        },
+        "TMIN": {
+          "start": 1962,
+          "end": 2026
+        },
+        "PRCP": {
+          "start": 1962,
+          "end": 2026
+        }
+      },
+      "id": "USC00145852",
+      "lat": 39.8114,
+      "lon": -99.9386,
+      "name": "NORTON DAM"
+    },
+    {
+      "region": "south_america",
+      "elements": {
+        "TMAX": {
+          "start": 1976,
+          "end": 2025
+        },
+        "TMIN": {
+          "start": 1973,
+          "end": 2025
+        },
+        "PRCP": {
+          "start": 1973,
+          "end": 2025
+        }
+      },
+      "id": "BRM00083208",
+      "lat": -12.694,
+      "lon": -60.098,
+      "name": "VILHENA"
+    },
+    {
+      "region": "europe",
+      "elements": {
+        "TMAX": {
+          "start": 1986,
+          "end": 2026
+        },
+        "TMIN": {
+          "start": 1986,
+          "end": 2026
+        },
+        "PRCP": {
+          "start": 1986,
+          "end": 2026
+        }
+      },
+      "id": "GME00123190",
+      "lat": 49.9706,
+      "lon": 9.9125,
+      "name": "ARNSTEIN-MUDESHEIM"
+    },
+    {
+      "region": "africa",
+      "elements": {
+        "TMAX": {
+          "start": 1973,
+          "end": 2025
+        },
+        "TMIN": {
+          "start": 1973,
+          "end": 2025
+        },
+        "PRCP": {
+          "start": 1973,
+          "end": 2025
+        }
+      },
+      "id": "CF000064459",
+      "lat": 1.617,
+      "lon": 18.067,
+      "name": "IMPFONDO"
+    },
+    {
+      "region": "middle_east",
+      "elements": {
+        "TMAX": {
+          "start": 1949,
+          "end": 2026
+        },
+        "TMIN": {
+          "start": 1949,
+          "end": 2026
+        },
+        "PRCP": {
+          "start": 1949,
+          "end": 2026
+        }
+      },
+      "id": "IZ000040665",
+      "lat": 32.17,
+      "lon": 46.05,
+      "name": "KUT-AL-HAI"
+    },
+    {
+      "region": "south_asia",
+      "elements": {
+        "TMAX": {
+          "start": 1957,
+          "end": 2025
+        },
+        "TMIN": {
+          "start": 1957,
+          "end": 2025
+        },
+        "PRCP": {
+          "start": 1943,
+          "end": 2025
+        }
+      },
+      "id": "IN012141800",
+      "lat": 21.1,
+      "lon": 79.05,
+      "name": "NAGPUR SONEGAON"
+    },
+    {
+      "region": "east_asia",
+      "elements": {
+        "TMAX": {
+          "start": 1951,
+          "end": 2026
+        },
+        "TMIN": {
+          "start": 1951,
+          "end": 2026
+        },
+        "PRCP": {
+          "start": 1951,
+          "end": 2026
+        }
+      },
+      "id": "JA000047770",
+      "lat": 34.7,
+      "lon": 135.217,
+      "name": "KOBE"
+    },
+    {
+      "region": "southeast_asia",
+      "elements": {
+        "TMAX": {
+          "start": 1954,
+          "end": 2025
+        },
+        "TMIN": {
+          "start": 1954,
+          "end": 2025
+        },
+        "PRCP": {
+          "start": 1954,
+          "end": 2025
+        }
+      },
+      "id": "MY000048657",
+      "lat": 3.62,
+      "lon": 103.22,
+      "name": "KUANTAN"
+    },
+    {
+      "region": "oceania",
+      "elements": {
+        "TMAX": {
+          "start": 1941,
+          "end": 2026
+        },
+        "TMIN": {
+          "start": 1941,
+          "end": 2026
+        },
+        "PRCP": {
+          "start": 1941,
+          "end": 2026
+        }
+      },
+      "id": "ASN00015590",
+      "lat": -23.7951,
+      "lon": 133.889,
+      "name": "ALICE SPRINGS AIRPORT"
+    }
+  ]
+}

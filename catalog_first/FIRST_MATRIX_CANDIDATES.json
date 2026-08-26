@@ -1,0 +1,1025 @@
+{
+  "selection_status": "candidate catalog only; no experiment run",
+  "period_target": "2000–2024 annual primary panel; native monthly/daily/event streams remain separate",
+  "wdi_preferred_code_shortlist": [
+    {
+      "role": "energy_environment",
+      "series_code": "AG.LND.PRCP.MM",
+      "indicator_name": "Average precipitation in depth (mm per year)",
+      "unit": "millimeter (mm) per year",
+      "periodicity": "Annual",
+      "source": "FAOSTAT, Food and Agriculture Organization of the United Nations (FAO), publisher: Food and Agriculture Organization of the United Nations (FAO)",
+      "license_type": "CC BY-4.0"
+    },
+    {
+      "role": "trade_flows",
+      "series_code": "EG.USE.PCAP.KG.OE",
+      "indicator_name": "Energy use (kg of oil equivalent per capita)",
+      "unit": "kg of oil equivalent per capita",
+      "periodicity": "Annual",
+      "source": "IEA Energy Statistics Data Browser, International Energy Agency (IEA), uri: https://www.iea.org/data-and-statistics/data-tools/energy-statistics-data-browser, publisher: International Energy Agency (IEA), date accessed: 2025-03-25",
+      "license_type": "CC BY-4.0"
+    },
+    {
+      "role": "prices_purchasing_power",
+      "series_code": "FP.CPI.TOTL.ZG",
+      "indicator_name": "Inflation, consumer prices (annual % growth)",
+      "unit": "%",
+      "periodicity": "Annual",
+      "source": "International Financial Statistics database, International Monetary Fund (IMF)",
+      "license_type": "CC BY-4.0"
+    },
+    {
+      "role": "trade_flows",
+      "series_code": "NE.EXP.GNFS.KD.ZG",
+      "indicator_name": "Exports of goods and services (annual % growth)",
+      "unit": "%",
+      "periodicity": "Annual",
+      "source": "Country official statistics, National Statistical Organizations and/or Central Banks;\nNational Accounts data files, Organisation for Economic Co-operation and Development (OECD);\nStaff estimates, World Bank (WB)",
+      "license_type": "CC BY-4.0"
+    },
+    {
+      "role": "trade_flows",
+      "series_code": "NE.IMP.GNFS.KD.ZG",
+      "indicator_name": "Imports of goods and services (annual % growth)",
+      "unit": "%",
+      "periodicity": "Annual",
+      "source": "Country official statistics, National Statistical Offices (NSOs);\nNational Accounts data files, Central Banks;\nStaff estimates, World Bank (WB)",
+      "license_type": "CC BY-4.0"
+    },
+    {
+      "role": "output_activity",
+      "series_code": "NY.GDP.MKTP.CD",
+      "indicator_name": "GDP (current US$)",
+      "unit": "current US$",
+      "periodicity": "Annual",
+      "source": "Country official statistics, National Statistical Organizations and/or Central Banks;\nNational Accounts data files, Organisation for Economic Co-operation and Development (OECD);\nStaff estimates, World Bank (WB)",
+      "license_type": "CC BY-4.0"
+    },
+    {
+      "role": "output_activity",
+      "series_code": "NY.GDP.MKTP.KD",
+      "indicator_name": "GDP (constant 2015 US$)",
+      "unit": "constant 2015 US$",
+      "periodicity": "Annual",
+      "source": "Country official statistics, National Statistical Organizations and/or Central Banks;\nNational Accounts data files, Organisation for Economic Co-operation and Development (OECD);\nStaff estimates, World Bank (WB)",
+      "license_type": "CC BY-4.0"
+    },
+    {
+      "role": "output_activity",
+      "series_code": "NY.GDP.MKTP.KD.ZG",
+      "indicator_name": "GDP (annual % growth)",
+      "unit": "%",
+      "periodicity": "Annual",
+      "source": "Country official statistics, National Statistical Organizations and/or Central Banks;\nNational Accounts data files, Organisation for Economic Co-operation and Development (OECD);\nStaff estimates, World Bank (WB)",
+      "license_type": "CC BY-4.0"
+    },
+    {
+      "role": "output_activity",
+      "series_code": "NY.GDP.PCAP.KD",
+      "indicator_name": "GDP per capita (constant 2015 US$)",
+      "unit": "constant 2015 US$",
+      "periodicity": "Annual",
+      "source": "Country official statistics, National Statistical Organizations and/or Central Banks;\nNational Accounts data files, Organisation for Economic Co-operation and Development (OECD);\nStaff estimates, World Bank (WB)",
+      "license_type": "CC BY-4.0"
+    },
+    {
+      "role": "output_activity",
+      "series_code": "PA.NUS.PPP",
+      "indicator_name": "PPP conversion factor, GDP (LCU per international $)",
+      "unit": "Local currency unit per international dollar",
+      "periodicity": "Annual",
+      "source": "International Comparison Program (ICP), World Bank (WB), uri: https://www.worldbank.org/en/programs/icp/data, publisher: International Comparison Program, type: International statistical program, date accessed: May 30, 2024, date published: May 30, 2024;\nThe Eurostat PPP Programme, Eurostat (ESTAT), uri: https://ec.europa.eu/eurostat/databrowser/explore/all/all_themes, publisher: Eurostat, type: International statistical program;\nThe OECD PPP Programme, Organisation for Economic Co-operation and Development (OECD), uri: https://data-https://data-explorer.oecd.org/, publisher: OECD",
+      "license_type": "CC BY-4.0"
+    },
+    {
+      "role": "population_social",
+      "series_code": "SL.UEM.TOTL.ZS",
+      "indicator_name": "Unemployment, total (% of total labor force) (modeled ILO estimate)",
+      "unit": "% of total labor force",
+      "periodicity": "Annual",
+      "source": "ILO Modelled Estimates database (ILOEST), International Labour Organization (ILO), uri: https://ilostat.ilo.org/data/bulk/, publisher: ILOSTAT, type: external database, date accessed: January 17, 2026",
+      "license_type": "CC BY-4.0"
+    },
+    {
+      "role": "population_social",
+      "series_code": "SP.POP.TOTL",
+      "indicator_name": "Population, total",
+      "unit": "Unit",
+      "periodicity": "Annual",
+      "source": "World Population Prospects, United Nations (UN), uri: https://population.un.org/wpp/, publisher: UN Population Division;\nStatistical databases and publications from national statistical offices, National Statistical Offices (NSOs), uri: https://unstats.un.org/home/nso_sites/, publisher: National Statistical Offices;\nEurostat: Demographic Statistics, Eurostat (ESTAT), uri: https://ec.europa.eu/eurostat/data/database?node_code=earn_ses_monthly, publisher: Eurostat;\nPopulation and Vital Statistics Report (various years), United Nations (UN), uri: https://unstats.un.org, publisher: UN Statistics Division",
+      "license_type": "CC BY-4.0"
+    }
+  ],
+  "wdi_role_match_count": {
+    "output_activity": 216,
+    "prices_purchasing_power": 27,
+    "trade_flows": 260,
+    "energy_environment": 125,
+    "population_social": 327
+  },
+  "eia_match_count": 54504,
+  "eia_examples_first_100": [
+    {
+      "series_id": "INTL.47-34-WP15-TBTUUSDPP.A",
+      "name": "Energy consumption per GDP, China, Annual",
+      "units": "thousand Btu per USD at purchasing power parities",
+      "frequency": "A",
+      "start": "1980",
+      "end": "2024",
+      "last_updated": "2026-08-21T19:06:13-04:00"
+    },
+    {
+      "series_id": "INTL.47-34-IRN-TBTUUSDPP.A",
+      "name": "Energy consumption per GDP, Iran, Annual",
+      "units": "thousand Btu per USD at purchasing power parities",
+      "frequency": "A",
+      "start": "1980",
+      "end": "2024",
+      "last_updated": "2026-08-21T19:06:13-04:00"
+    },
+    {
+      "series_id": "INTL.47-34-BWA-TBTUUSDPP.A",
+      "name": "Energy consumption per GDP, Botswana, Annual",
+      "units": "thousand Btu per USD at purchasing power parities",
+      "frequency": "A",
+      "start": "1980",
+      "end": "2024",
+      "last_updated": "2026-08-21T19:06:13-04:00"
+    },
+    {
+      "series_id": "INTL.47-34-ROU-TBTUUSDPP.A",
+      "name": "Energy consumption per GDP, Romania, Annual",
+      "units": "thousand Btu per USD at purchasing power parities",
+      "frequency": "A",
+      "start": "1980",
+      "end": "2024",
+      "last_updated": "2026-08-21T19:06:13-04:00"
+    },
+    {
+      "series_id": "INTL.47-34-CHN-TBTUUSDPP.A",
+      "name": "Energy consumption per GDP, China, Annual",
+      "units": "thousand Btu per USD at purchasing power parities",
+      "frequency": "A",
+      "start": "1980",
+      "end": "2024",
+      "last_updated": "2026-08-21T19:06:13-04:00"
+    },
+    {
+      "series_id": "INTL.47-34-HUN-TBTUUSDPP.A",
+      "name": "Energy consumption per GDP, Hungary, Annual",
+      "units": "thousand Btu per USD at purchasing power parities",
+      "frequency": "A",
+      "start": "1980",
+      "end": "2024",
+      "last_updated": "2026-08-21T19:06:13-04:00"
+    },
+    {
+      "series_id": "INTL.47-34-DEU-TBTUUSDPP.A",
+      "name": "Energy consumption per GDP, Germany, Annual",
+      "units": "thousand Btu per USD at purchasing power parities",
+      "frequency": "A",
+      "start": "1980",
+      "end": "2024",
+      "last_updated": "2026-08-21T19:06:13-04:00"
+    },
+    {
+      "series_id": "INTL.4701-34-EURO-BDOLPPP.A",
+      "name": "GDP at purchasing power parities, Europe, Annual",
+      "units": "billion dollars at purchasing power parities",
+      "frequency": "A",
+      "start": "1980",
+      "end": "2025",
+      "last_updated": "2026-08-21T19:06:13-04:00"
+    },
+    {
+      "series_id": "INTL.4701-34-FRA-BDOLPPP.A",
+      "name": "GDP at purchasing power parities, France, Annual",
+      "units": "billion dollars at purchasing power parities",
+      "frequency": "A",
+      "start": "1980",
+      "end": "2025",
+      "last_updated": "2026-08-21T19:06:13-04:00"
+    },
+    {
+      "series_id": "INTL.47-34-MIDE-TBTUUSDPP.A",
+      "name": "Energy consumption per GDP, Middle East, Annual",
+      "units": "thousand Btu per USD at purchasing power parities",
+      "frequency": "A",
+      "start": "1980",
+      "end": "2024",
+      "last_updated": "2026-08-21T19:06:13-04:00"
+    },
+    {
+      "series_id": "INTL.47-34-OPNO-TBTUUSDPP.A",
+      "name": "Energy consumption per GDP, Non-OPEC, Annual",
+      "units": "thousand Btu per USD at purchasing power parities",
+      "frequency": "A",
+      "start": "1980",
+      "end": "2024",
+      "last_updated": "2026-08-21T19:06:13-04:00"
+    },
+    {
+      "series_id": "INTL.47-34-WP19-TBTUUSDPP.A",
+      "name": "Energy consumption per GDP, IEO - Middle East, Annual",
+      "units": "thousand Btu per USD at purchasing power parities",
+      "frequency": "A",
+      "start": "1980",
+      "end": "2024",
+      "last_updated": "2026-08-21T19:06:13-04:00"
+    },
+    {
+      "series_id": "INTL.47-34-WP21-TBTUUSDPP.A",
+      "name": "Energy consumption per GDP, Western Europe, Annual",
+      "units": "thousand Btu per USD at purchasing power parities",
+      "frequency": "A",
+      "start": "1980",
+      "end": "2024",
+      "last_updated": "2026-08-21T19:06:13-04:00"
+    },
+    {
+      "series_id": "INTL.47-34-ZWE-TBTUUSDPP.A",
+      "name": "Energy consumption per GDP, Zimbabwe, Annual",
+      "units": "thousand Btu per USD at purchasing power parities",
+      "frequency": "A",
+      "start": "1980",
+      "end": "2024",
+      "last_updated": "2026-08-21T19:06:13-04:00"
+    },
+    {
+      "series_id": "INTL.4701-34-AFRC-BDOLPPP.A",
+      "name": "GDP at purchasing power parities, Africa, Annual",
+      "units": "billion dollars at purchasing power parities",
+      "frequency": "A",
+      "start": "1980",
+      "end": "2025",
+      "last_updated": "2026-08-21T19:06:13-04:00"
+    },
+    {
+      "series_id": "INTL.4701-34-HUN-BDOLPPP.A",
+      "name": "GDP at purchasing power parities, Hungary, Annual",
+      "units": "billion dollars at purchasing power parities",
+      "frequency": "A",
+      "start": "1991",
+      "end": "2025",
+      "last_updated": "2026-08-21T19:06:13-04:00"
+    },
+    {
+      "series_id": "INTL.4701-34-IRN-BDOLPPP.A",
+      "name": "GDP at purchasing power parities, Iran, Annual",
+      "units": "billion dollars at purchasing power parities",
+      "frequency": "A",
+      "start": "1988",
+      "end": "2025",
+      "last_updated": "2026-08-21T19:06:13-04:00"
+    },
+    {
+      "series_id": "INTL.4701-34-IRQ-BDOLPPP.A",
+      "name": "GDP at purchasing power parities, Iraq, Annual",
+      "units": "billion dollars at purchasing power parities",
+      "frequency": "A",
+      "start": "1988",
+      "end": "2025",
+      "last_updated": "2026-08-21T19:06:13-04:00"
+    },
+    {
+      "series_id": "INTL.4701-34-LBR-BDOLPPP.A",
+      "name": "GDP at purchasing power parities, Liberia, Annual",
+      "units": "billion dollars at purchasing power parities",
+      "frequency": "A",
+      "start": "1980",
+      "end": "2025",
+      "last_updated": "2026-08-21T19:06:13-04:00"
+    },
+    {
+      "series_id": "INTL.4701-34-MIDE-BDOLPPP.A",
+      "name": "GDP at purchasing power parities, Middle East, Annual",
+      "units": "billion dollars at purchasing power parities",
+      "frequency": "A",
+      "start": "1980",
+      "end": "2025",
+      "last_updated": "2026-08-21T19:06:13-04:00"
+    },
+    {
+      "series_id": "INTL.4701-34-MUS-BDOLPPP.A",
+      "name": "GDP at purchasing power parities, Mauritius, Annual",
+      "units": "billion dollars at purchasing power parities",
+      "frequency": "A",
+      "start": "1980",
+      "end": "2025",
+      "last_updated": "2026-08-21T19:06:13-04:00"
+    },
+    {
+      "series_id": "INTL.4701-34-NLD-BDOLPPP.A",
+      "name": "GDP at purchasing power parities, Netherlands, Annual",
+      "units": "billion dollars at purchasing power parities",
+      "frequency": "A",
+      "start": "1980",
+      "end": "2025",
+      "last_updated": "2026-08-21T19:06:13-04:00"
+    },
+    {
+      "series_id": "INTL.4701-34-WORL-BDOLPPP.A",
+      "name": "GDP at purchasing power parities, World, Annual",
+      "units": "billion dollars at purchasing power parities",
+      "frequency": "A",
+      "start": "1980",
+      "end": "2025",
+      "last_updated": "2026-08-21T19:06:13-04:00"
+    },
+    {
+      "series_id": "INTL.4701-34-WP15-BDOLPPP.A",
+      "name": "GDP at purchasing power parities, China, Annual",
+      "units": "billion dollars at purchasing power parities",
+      "frequency": "A",
+      "start": "1980",
+      "end": "2025",
+      "last_updated": "2026-08-21T19:06:13-04:00"
+    },
+    {
+      "series_id": "INTL.4701-34-ZWE-BDOLPPP.A",
+      "name": "GDP at purchasing power parities, Zimbabwe, Annual",
+      "units": "billion dollars at purchasing power parities",
+      "frequency": "A",
+      "start": "1988",
+      "end": "2025",
+      "last_updated": "2026-08-21T19:06:13-04:00"
+    },
+    {
+      "series_id": "INTL.4701-34-WP12-BDOLPPP.A",
+      "name": "GDP at purchasing power parities, IEO - Africa, Annual",
+      "units": "billion dollars at purchasing power parities",
+      "frequency": "A",
+      "start": "1980",
+      "end": "2025",
+      "last_updated": "2026-08-21T19:06:13-04:00"
+    },
+    {
+      "series_id": "INTL.4701-34-WP19-BDOLPPP.A",
+      "name": "GDP at purchasing power parities, IEO - Middle East, Annual",
+      "units": "billion dollars at purchasing power parities",
+      "frequency": "A",
+      "start": "1980",
+      "end": "2025",
+      "last_updated": "2026-08-21T19:06:13-04:00"
+    },
+    {
+      "series_id": "INTL.4701-34-WP21-BDOLPPP.A",
+      "name": "GDP at purchasing power parities, Western Europe, Annual",
+      "units": "billion dollars at purchasing power parities",
+      "frequency": "A",
+      "start": "1980",
+      "end": "2025",
+      "last_updated": "2026-08-21T19:06:13-04:00"
+    },
+    {
+      "series_id": "INTL.47-34-EU27-TBTUUSDPP.A",
+      "name": "Energy consumption per GDP, European Union, Annual",
+      "units": "thousand Btu per USD at purchasing power parities",
+      "frequency": "A",
+      "start": "1980",
+      "end": "2024",
+      "last_updated": "2026-08-21T19:06:13-04:00"
+    },
+    {
+      "series_id": "INTL.47-34-EURO-TBTUUSDPP.A",
+      "name": "Energy consumption per GDP, Europe, Annual",
+      "units": "thousand Btu per USD at purchasing power parities",
+      "frequency": "A",
+      "start": "1980",
+      "end": "2024",
+      "last_updated": "2026-08-21T19:06:13-04:00"
+    },
+    {
+      "series_id": "INTL.47-34-FRA-TBTUUSDPP.A",
+      "name": "Energy consumption per GDP, France, Annual",
+      "units": "thousand Btu per USD at purchasing power parities",
+      "frequency": "A",
+      "start": "1980",
+      "end": "2024",
+      "last_updated": "2026-08-21T19:06:13-04:00"
+    },
+    {
+      "series_id": "INTL.47-34-OECD-TBTUUSDPP.A",
+      "name": "Energy consumption per GDP, OECD, Annual",
+      "units": "thousand Btu per USD at purchasing power parities",
+      "frequency": "A",
+      "start": "1980",
+      "end": "2024",
+      "last_updated": "2026-08-21T19:06:13-04:00"
+    },
+    {
+      "series_id": "INTL.47-34-MUS-TBTUUSDPP.A",
+      "name": "Energy consumption per GDP, Mauritius, Annual",
+      "units": "thousand Btu per USD at purchasing power parities",
+      "frequency": "A",
+      "start": "1980",
+      "end": "2024",
+      "last_updated": "2026-08-21T19:06:13-04:00"
+    },
+    {
+      "series_id": "INTL.47-34-NLD-TBTUUSDPP.A",
+      "name": "Energy consumption per GDP, Netherlands, Annual",
+      "units": "thousand Btu per USD at purchasing power parities",
+      "frequency": "A",
+      "start": "1980",
+      "end": "2024",
+      "last_updated": "2026-08-21T19:06:13-04:00"
+    },
+    {
+      "series_id": "INTL.47-34-NOEC-TBTUUSDPP.A",
+      "name": "Energy consumption per GDP, Non-OECD, Annual",
+      "units": "thousand Btu per USD at purchasing power parities",
+      "frequency": "A",
+      "start": "1980",
+      "end": "2024",
+      "last_updated": "2026-08-21T19:06:13-04:00"
+    },
+    {
+      "series_id": "INTL.47-34-OEEU-TBTUUSDPP.A",
+      "name": "Energy consumption per GDP, OECD - Europe, Annual",
+      "units": "thousand Btu per USD at purchasing power parities",
+      "frequency": "A",
+      "start": "1980",
+      "end": "2024",
+      "last_updated": "2026-08-21T19:06:13-04:00"
+    },
+    {
+      "series_id": "INTL.47-34-SVK-TBTUUSDPP.A",
+      "name": "Energy consumption per GDP, Slovakia, Annual",
+      "units": "thousand Btu per USD at purchasing power parities",
+      "frequency": "A",
+      "start": "1980",
+      "end": "2024",
+      "last_updated": "2026-08-21T19:06:13-04:00"
+    },
+    {
+      "series_id": "INTL.4701-34-ASOC-BDOLPPP.A",
+      "name": "GDP at purchasing power parities, Asia & Oceania, Annual",
+      "units": "billion dollars at purchasing power parities",
+      "frequency": "A",
+      "start": "1980",
+      "end": "2025",
+      "last_updated": "2026-08-21T19:06:13-04:00"
+    },
+    {
+      "series_id": "INTL.47-33-WORL-MBTUPP.A",
+      "name": "Energy consumption per capita, World, Annual",
+      "units": "million Btu per person",
+      "frequency": "A",
+      "start": "1980",
+      "end": "2024",
+      "last_updated": "2026-08-21T19:06:13-04:00"
+    },
+    {
+      "series_id": "INTL.47-33-EURO-MBTUPP.A",
+      "name": "Energy consumption per capita, Europe, Annual",
+      "units": "million Btu per person",
+      "frequency": "A",
+      "start": "1980",
+      "end": "2024",
+      "last_updated": "2026-08-21T19:06:13-04:00"
+    },
+    {
+      "series_id": "INTL.47-34-QAT-TBTUUSDPP.A",
+      "name": "Energy consumption per GDP, Qatar, Annual",
+      "units": "thousand Btu per USD at purchasing power parities",
+      "frequency": "A",
+      "start": "1980",
+      "end": "2024",
+      "last_updated": "2026-08-21T19:06:13-04:00"
+    },
+    {
+      "series_id": "INTL.47-34-OPEC-TBTUUSDPP.A",
+      "name": "Energy consumption per GDP, OPEC, Annual",
+      "units": "thousand Btu per USD at purchasing power parities",
+      "frequency": "A",
+      "start": "1980",
+      "end": "2024",
+      "last_updated": "2026-08-21T19:06:13-04:00"
+    },
+    {
+      "series_id": "INTL.47-34-PERG-TBTUUSDPP.A",
+      "name": "Energy consumption per GDP, Persian Gulf, Annual",
+      "units": "thousand Btu per USD at purchasing power parities",
+      "frequency": "A",
+      "start": "1980",
+      "end": "2024",
+      "last_updated": "2026-08-21T19:06:13-04:00"
+    },
+    {
+      "series_id": "INTL.47-33-CHE-MBTUPP.A",
+      "name": "Energy consumption per capita, Switzerland, Annual",
+      "units": "million Btu per person",
+      "frequency": "A",
+      "start": "1980",
+      "end": "2024",
+      "last_updated": "2026-08-21T19:06:13-04:00"
+    },
+    {
+      "series_id": "INTL.47-33-WP21-MBTUPP.A",
+      "name": "Energy consumption per capita, Western Europe, Annual",
+      "units": "million Btu per person",
+      "frequency": "A",
+      "start": "1980",
+      "end": "2024",
+      "last_updated": "2026-08-21T19:06:13-04:00"
+    },
+    {
+      "series_id": "INTL.47-33-OECD-MBTUPP.A",
+      "name": "Energy consumption per capita, OECD, Annual",
+      "units": "million Btu per person",
+      "frequency": "A",
+      "start": "1980",
+      "end": "2024",
+      "last_updated": "2026-08-21T19:06:13-04:00"
+    },
+    {
+      "series_id": "INTL.47-33-OEEU-MBTUPP.A",
+      "name": "Energy consumption per capita, OECD - Europe, Annual",
+      "units": "million Btu per person",
+      "frequency": "A",
+      "start": "1980",
+      "end": "2024",
+      "last_updated": "2026-08-21T19:06:13-04:00"
+    },
+    {
+      "series_id": "INTL.47-34-AFRC-TBTUUSDPP.A",
+      "name": "Energy consumption per GDP, Africa, Annual",
+      "units": "thousand Btu per USD at purchasing power parities",
+      "frequency": "A",
+      "start": "1980",
+      "end": "2024",
+      "last_updated": "2026-08-21T19:06:13-04:00"
+    },
+    {
+      "series_id": "INTL.47-33-OPNO-MBTUPP.A",
+      "name": "Energy consumption per capita, Non-OPEC, Annual",
+      "units": "million Btu per person",
+      "frequency": "A",
+      "start": "1980",
+      "end": "2024",
+      "last_updated": "2026-08-21T19:06:13-04:00"
+    },
+    {
+      "series_id": "INTL.47-34-WORL-TBTUUSDPP.A",
+      "name": "Energy consumption per GDP, World, Annual",
+      "units": "thousand Btu per USD at purchasing power parities",
+      "frequency": "A",
+      "start": "1980",
+      "end": "2024",
+      "last_updated": "2026-08-21T19:06:13-04:00"
+    },
+    {
+      "series_id": "INTL.4701-34-EU27-BDOLPPP.A",
+      "name": "GDP at purchasing power parities, European Union, Annual",
+      "units": "billion dollars at purchasing power parities",
+      "frequency": "A",
+      "start": "1980",
+      "end": "2025",
+      "last_updated": "2026-08-21T19:06:13-04:00"
+    },
+    {
+      "series_id": "INTL.47-34-SDN-TBTUUSDPP.A",
+      "name": "Energy consumption per GDP, Sudan, Annual",
+      "units": "thousand Btu per USD at purchasing power parities",
+      "frequency": "A",
+      "start": "1980",
+      "end": "2024",
+      "last_updated": "2026-08-21T19:06:13-04:00"
+    },
+    {
+      "series_id": "INTL.4701-34-DEU-BDOLPPP.A",
+      "name": "GDP at purchasing power parities, Germany, Annual",
+      "units": "billion dollars at purchasing power parities",
+      "frequency": "A",
+      "start": "1980",
+      "end": "2025",
+      "last_updated": "2026-08-21T19:06:13-04:00"
+    },
+    {
+      "series_id": "INTL.4701-34-ETH-BDOLPPP.A",
+      "name": "GDP at purchasing power parities, Ethiopia, Annual",
+      "units": "billion dollars at purchasing power parities",
+      "frequency": "A",
+      "start": "1988",
+      "end": "2025",
+      "last_updated": "2026-08-21T19:06:13-04:00"
+    },
+    {
+      "series_id": "INTL.4701-34-ROU-BDOLPPP.A",
+      "name": "GDP at purchasing power parities, Romania, Annual",
+      "units": "billion dollars at purchasing power parities",
+      "frequency": "A",
+      "start": "1980",
+      "end": "2025",
+      "last_updated": "2026-08-21T19:06:13-04:00"
+    },
+    {
+      "series_id": "INTL.47-34-WP12-TBTUUSDPP.A",
+      "name": "Energy consumption per GDP, IEO - Africa, Annual",
+      "units": "thousand Btu per USD at purchasing power parities",
+      "frequency": "A",
+      "start": "1980",
+      "end": "2024",
+      "last_updated": "2026-08-21T19:06:13-04:00"
+    },
+    {
+      "series_id": "INTL.4701-34-BWA-BDOLPPP.A",
+      "name": "GDP at purchasing power parities, Botswana, Annual",
+      "units": "billion dollars at purchasing power parities",
+      "frequency": "A",
+      "start": "1980",
+      "end": "2025",
+      "last_updated": "2026-08-21T19:06:13-04:00"
+    },
+    {
+      "series_id": "INTL.4701-34-NOEC-BDOLPPP.A",
+      "name": "GDP at purchasing power parities, Non-OECD, Annual",
+      "units": "billion dollars at purchasing power parities",
+      "frequency": "A",
+      "start": "1980",
+      "end": "2025",
+      "last_updated": "2026-08-21T19:06:13-04:00"
+    },
+    {
+      "series_id": "INTL.4701-34-CHN-BDOLPPP.A",
+      "name": "GDP at purchasing power parities, China, Annual",
+      "units": "billion dollars at purchasing power parities",
+      "frequency": "A",
+      "start": "1980",
+      "end": "2025",
+      "last_updated": "2026-08-21T19:06:13-04:00"
+    },
+    {
+      "series_id": "INTL.4701-34-CIV-BDOLPPP.A",
+      "name": "GDP at purchasing power parities, Ivory Coast, Annual",
+      "units": "billion dollars at purchasing power parities",
+      "frequency": "A",
+      "start": "1988",
+      "end": "2025",
+      "last_updated": "2026-08-21T19:06:13-04:00"
+    },
+    {
+      "series_id": "INTL.4701-34-OECD-BDOLPPP.A",
+      "name": "GDP at purchasing power parities, OECD, Annual",
+      "units": "billion dollars at purchasing power parities",
+      "frequency": "A",
+      "start": "1980",
+      "end": "2025",
+      "last_updated": "2026-08-21T19:06:13-04:00"
+    },
+    {
+      "series_id": "INTL.4701-34-OEEU-BDOLPPP.A",
+      "name": "GDP at purchasing power parities, OECD - Europe, Annual",
+      "units": "billion dollars at purchasing power parities",
+      "frequency": "A",
+      "start": "1980",
+      "end": "2025",
+      "last_updated": "2026-08-21T19:06:13-04:00"
+    },
+    {
+      "series_id": "INTL.4701-34-QAT-BDOLPPP.A",
+      "name": "GDP at purchasing power parities, Qatar, Annual",
+      "units": "billion dollars at purchasing power parities",
+      "frequency": "A",
+      "start": "1988",
+      "end": "2025",
+      "last_updated": "2026-08-21T19:06:13-04:00"
+    },
+    {
+      "series_id": "INTL.4701-34-SDN-BDOLPPP.A",
+      "name": "GDP at purchasing power parities, Sudan, Annual",
+      "units": "billion dollars at purchasing power parities",
+      "frequency": "A",
+      "start": "1988",
+      "end": "2025",
+      "last_updated": "2026-08-21T19:06:13-04:00"
+    },
+    {
+      "series_id": "INTL.4701-34-OPEC-BDOLPPP.A",
+      "name": "GDP at purchasing power parities, OPEC, Annual",
+      "units": "billion dollars at purchasing power parities",
+      "frequency": "A",
+      "start": "1980",
+      "end": "2025",
+      "last_updated": "2026-08-21T19:06:13-04:00"
+    },
+    {
+      "series_id": "INTL.4701-34-OPNO-BDOLPPP.A",
+      "name": "GDP at purchasing power parities, Non-OPEC, Annual",
+      "units": "billion dollars at purchasing power parities",
+      "frequency": "A",
+      "start": "1980",
+      "end": "2025",
+      "last_updated": "2026-08-21T19:06:13-04:00"
+    },
+    {
+      "series_id": "INTL.4701-34-PERG-BDOLPPP.A",
+      "name": "GDP at purchasing power parities, Persian Gulf, Annual",
+      "units": "billion dollars at purchasing power parities",
+      "frequency": "A",
+      "start": "1980",
+      "end": "2025",
+      "last_updated": "2026-08-21T19:06:13-04:00"
+    },
+    {
+      "series_id": "INTL.4701-34-SVK-BDOLPPP.A",
+      "name": "GDP at purchasing power parities, Slovakia, Annual",
+      "units": "billion dollars at purchasing power parities",
+      "frequency": "A",
+      "start": "1980",
+      "end": "2025",
+      "last_updated": "2026-08-21T19:06:13-04:00"
+    },
+    {
+      "series_id": "INTL.47-34-ASOC-TBTUUSDPP.A",
+      "name": "Energy consumption per GDP, Asia & Oceania, Annual",
+      "units": "thousand Btu per USD at purchasing power parities",
+      "frequency": "A",
+      "start": "1980",
+      "end": "2024",
+      "last_updated": "2026-08-21T19:06:13-04:00"
+    },
+    {
+      "series_id": "INTL.783-3-OPSA-TBPD.M",
+      "name": "Germany petroleum and other liquids gross imports, OPEC - South America, Monthly",
+      "units": "thousand barrels per day",
+      "frequency": "M",
+      "start": "198401",
+      "end": "202605",
+      "last_updated": "2026-08-18T17:13:59-04:00"
+    },
+    {
+      "series_id": "INTL.783-3-PERG-TBPD.M",
+      "name": "Germany petroleum and other liquids gross imports, Persian Gulf, Monthly",
+      "units": "thousand barrels per day",
+      "frequency": "M",
+      "start": "198401",
+      "end": "202605",
+      "last_updated": "2026-08-18T17:13:59-04:00"
+    },
+    {
+      "series_id": "INTL.782-3-BHR-TBPD.M",
+      "name": "France petroleum and other liquids gross imports, Bahrain, Monthly",
+      "units": "thousand barrels per day",
+      "frequency": "M",
+      "start": "198404",
+      "end": "202605",
+      "last_updated": "2026-08-18T17:13:59-04:00"
+    },
+    {
+      "series_id": "INTL.782-3-LBY-TBPD.M",
+      "name": "France petroleum and other liquids gross imports, Libya, Monthly",
+      "units": "thousand barrels per day",
+      "frequency": "M",
+      "start": "198401",
+      "end": "202605",
+      "last_updated": "2026-08-18T17:13:59-04:00"
+    },
+    {
+      "series_id": "INTL.782-3-NGA-TBPD.M",
+      "name": "France petroleum and other liquids gross imports, Nigeria, Monthly",
+      "units": "thousand barrels per day",
+      "frequency": "M",
+      "start": "198401",
+      "end": "202605",
+      "last_updated": "2026-08-18T17:13:59-04:00"
+    },
+    {
+      "series_id": "INTL.782-3-OPAF-TBPD.M",
+      "name": "France petroleum and other liquids gross imports, OPEC - Africa, Monthly",
+      "units": "thousand barrels per day",
+      "frequency": "M",
+      "start": "198401",
+      "end": "202605",
+      "last_updated": "2026-08-18T17:13:59-04:00"
+    },
+    {
+      "series_id": "INTL.782-3-OPEC-TBPD.M",
+      "name": "France petroleum and other liquids gross imports, OPEC, Monthly",
+      "units": "thousand barrels per day",
+      "frequency": "M",
+      "start": "198401",
+      "end": "202605",
+      "last_updated": "2026-08-18T17:13:59-04:00"
+    },
+    {
+      "series_id": "INTL.782-3-SAU-TBPD.M",
+      "name": "France petroleum and other liquids gross imports, Saudi Arabia, Monthly",
+      "units": "thousand barrels per day",
+      "frequency": "M",
+      "start": "198401",
+      "end": "202605",
+      "last_updated": "2026-08-18T17:13:59-04:00"
+    },
+    {
+      "series_id": "INTL.783-3-DZA-TBPD.M",
+      "name": "Germany petroleum and other liquids gross imports, Algeria, Monthly",
+      "units": "thousand barrels per day",
+      "frequency": "M",
+      "start": "198401",
+      "end": "202605",
+      "last_updated": "2026-08-18T17:13:59-04:00"
+    },
+    {
+      "series_id": "INTL.783-3-GAB-TBPD.M",
+      "name": "Germany petroleum and other liquids gross imports, Gabon, Monthly",
+      "units": "thousand barrels per day",
+      "frequency": "M",
+      "start": "198401",
+      "end": "202605",
+      "last_updated": "2026-08-18T17:13:59-04:00"
+    },
+    {
+      "series_id": "INTL.783-3-SAU-TBPD.M",
+      "name": "Germany petroleum and other liquids gross imports, Saudi Arabia, Monthly",
+      "units": "thousand barrels per day",
+      "frequency": "M",
+      "start": "198401",
+      "end": "202605",
+      "last_updated": "2026-08-18T17:13:59-04:00"
+    },
+    {
+      "series_id": "INTL.783-3-VEN-TBPD.M",
+      "name": "Germany petroleum and other liquids gross imports, Venezuela, Monthly",
+      "units": "thousand barrels per day",
+      "frequency": "M",
+      "start": "198401",
+      "end": "202605",
+      "last_updated": "2026-08-18T17:13:59-04:00"
+    },
+    {
+      "series_id": "INTL.781-3-GNQ-TBPD.M",
+      "name": "OECD Europe petroleum and other liquids gross imports, Equatorial Guinea, Monthly",
+      "units": "thousand barrels per day",
+      "frequency": "M",
+      "start": "201202",
+      "end": "202605",
+      "last_updated": "2026-08-18T17:13:59-04:00"
+    },
+    {
+      "series_id": "INTL.781-3-IRQ-TBPD.M",
+      "name": "OECD Europe petroleum and other liquids gross imports, Iraq, Monthly",
+      "units": "thousand barrels per day",
+      "frequency": "M",
+      "start": "198401",
+      "end": "202605",
+      "last_updated": "2026-08-18T17:13:59-04:00"
+    },
+    {
+      "series_id": "INTL.781-3-KWT-TBPD.M",
+      "name": "OECD Europe petroleum and other liquids gross imports, Kuwait, Monthly",
+      "units": "thousand barrels per day",
+      "frequency": "M",
+      "start": "198401",
+      "end": "202605",
+      "last_updated": "2026-08-18T17:13:59-04:00"
+    },
+    {
+      "series_id": "INTL.781-3-LBY-TBPD.M",
+      "name": "OECD Europe petroleum and other liquids gross imports, Libya, Monthly",
+      "units": "thousand barrels per day",
+      "frequency": "M",
+      "start": "198401",
+      "end": "202605",
+      "last_updated": "2026-08-18T17:13:59-04:00"
+    },
+    {
+      "series_id": "INTL.781-3-NGA-TBPD.M",
+      "name": "OECD Europe petroleum and other liquids gross imports, Nigeria, Monthly",
+      "units": "thousand barrels per day",
+      "frequency": "M",
+      "start": "198401",
+      "end": "202605",
+      "last_updated": "2026-08-18T17:13:59-04:00"
+    },
+    {
+      "series_id": "INTL.781-3-OPAF-TBPD.M",
+      "name": "OECD Europe petroleum and other liquids gross imports, OPEC - Africa, Monthly",
+      "units": "thousand barrels per day",
+      "frequency": "M",
+      "start": "198401",
+      "end": "202605",
+      "last_updated": "2026-08-18T17:13:59-04:00"
+    },
+    {
+      "series_id": "INTL.781-3-OPEC-TBPD.M",
+      "name": "OECD Europe petroleum and other liquids gross imports, OPEC, Monthly",
+      "units": "thousand barrels per day",
+      "frequency": "M",
+      "start": "198401",
+      "end": "202605",
+      "last_updated": "2026-08-18T17:13:59-04:00"
+    },
+    {
+      "series_id": "INTL.781-3-OPSA-TBPD.M",
+      "name": "OECD Europe petroleum and other liquids gross imports, OPEC - South America, Monthly",
+      "units": "thousand barrels per day",
+      "frequency": "M",
+      "start": "198401",
+      "end": "202605",
+      "last_updated": "2026-08-18T17:13:59-04:00"
+    },
+    {
+      "series_id": "INTL.781-3-PERG-TBPD.M",
+      "name": "OECD Europe petroleum and other liquids gross imports, Persian Gulf, Monthly",
+      "units": "thousand barrels per day",
+      "frequency": "M",
+      "start": "198401",
+      "end": "202605",
+      "last_updated": "2026-08-18T17:13:59-04:00"
+    },
+    {
+      "series_id": "INTL.781-3-QAT-TBPD.M",
+      "name": "OECD Europe petroleum and other liquids gross imports, Qatar, Monthly",
+      "units": "thousand barrels per day",
+      "frequency": "M",
+      "start": "198401",
+      "end": "202605",
+      "last_updated": "2026-08-18T17:13:59-04:00"
+    },
+    {
+      "series_id": "INTL.781-3-SAU-TBPD.M",
+      "name": "OECD Europe petroleum and other liquids gross imports, Saudi Arabia, Monthly",
+      "units": "thousand barrels per day",
+      "frequency": "M",
+      "start": "198401",
+      "end": "202605",
+      "last_updated": "2026-08-18T17:13:59-04:00"
+    },
+    {
+      "series_id": "INTL.781-3-VEN-TBPD.M",
+      "name": "OECD Europe petroleum and other liquids gross imports, Venezuela, Monthly",
+      "units": "thousand barrels per day",
+      "frequency": "M",
+      "start": "198401",
+      "end": "202605",
+      "last_updated": "2026-08-18T17:13:59-04:00"
+    },
+    {
+      "series_id": "INTL.782-3-ARE-TBPD.M",
+      "name": "France petroleum and other liquids gross imports, United Arab Emirates, Monthly",
+      "units": "thousand barrels per day",
+      "frequency": "M",
+      "start": "198401",
+      "end": "202605",
+      "last_updated": "2026-08-18T17:13:59-04:00"
+    },
+    {
+      "series_id": "INTL.782-3-DZA-TBPD.M",
+      "name": "France petroleum and other liquids gross imports, Algeria, Monthly",
+      "units": "thousand barrels per day",
+      "frequency": "M",
+      "start": "198401",
+      "end": "202605",
+      "last_updated": "2026-08-18T17:13:59-04:00"
+    },
+    {
+      "series_id": "INTL.782-3-PERG-TBPD.M",
+      "name": "France petroleum and other liquids gross imports, Persian Gulf, Monthly",
+      "units": "thousand barrels per day",
+      "frequency": "M",
+      "start": "198401",
+      "end": "202605",
+      "last_updated": "2026-08-18T17:13:59-04:00"
+    },
+    {
+      "series_id": "INTL.783-3-IRQ-TBPD.M",
+      "name": "Germany petroleum and other liquids gross imports, Iraq, Monthly",
+      "units": "thousand barrels per day",
+      "frequency": "M",
+      "start": "198401",
+      "end": "202605",
+      "last_updated": "2026-08-18T17:13:59-04:00"
+    },
+    {
+      "series_id": "INTL.783-3-LBY-TBPD.M",
+      "name": "Germany petroleum and other liquids gross imports, Libya, Monthly",
+      "units": "thousand barrels per day",
+      "frequency": "M",
+      "start": "198401",
+      "end": "202605",
+      "last_updated": "2026-08-18T17:13:59-04:00"
+    },
+    {
+      "series_id": "INTL.783-3-NGA-TBPD.M",
+      "name": "Germany petroleum and other liquids gross imports, Nigeria, Monthly",
+      "units": "thousand barrels per day",
+      "frequency": "M",
+      "start": "198401",
+      "end": "202605",
+      "last_updated": "2026-08-18T17:13:59-04:00"
+    },
+    {
+      "series_id": "INTL.783-3-OPAF-TBPD.M",
+      "name": "Germany petroleum and other liquids gross imports, OPEC - Africa, Monthly",
+      "units": "thousand barrels per day",
+      "frequency": "M",
+      "start": "198401",
+      "end": "202605",
+      "last_updated": "2026-08-18T17:13:59-04:00"
+    }
+  ],
+  "required_next_step": "coverage matrix by selected variable and entity; verify actual non-null coverage before any inference"
+}

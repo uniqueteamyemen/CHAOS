@@ -1,0 +1,26 @@
+{
+  "plots": [
+    {
+      "file": "01_annual_variable_coverage_wdi_imf.png",
+      "source": "VARIABLE_LEVEL_COVERAGE_MATRIX_GAP_AUGMENTED.csv",
+      "claim": "selected WDI/IMF annual variable coverage"
+    },
+    {
+      "file": "02_candidate_matrix_comparison.png",
+      "source": "CANDIDATE_MATRIX_COMPARISON_GAP_AUGMENTED.json",
+      "claim": "four candidate matrices coverage and complete countries"
+    },
+    {
+      "file": "03_scope_and_gap_funnel.png",
+      "source": "ANNUAL_PANEL_READINESS_SUMMARY.json + gap augmentation outputs",
+      "claim": "scope counts for EIA/UCDP/GSOM"
+    },
+    {
+      "file": "04_gsom_prcp_station_coverage.png",
+      "source": "VARIABLE_LEVEL_COVERAGE_MATRIX_GAP_AUGMENTED.csv",
+      "claim": "native monthly PRCP coverage by station"
+    }
+  ],
+  "no_synthetic_data": true,
+  "no_experiment_or_model": true
+}

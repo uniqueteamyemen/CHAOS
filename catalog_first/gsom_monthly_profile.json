@@ -1,0 +1,180 @@
+{
+  "dataset_id": "noaa_gsom_monthly_selected_stations",
+  "source": "NOAA/NCEI GSOM v1",
+  "version": "GSOM monthly catalog product",
+  "stations": [
+    {
+      "station_id": "ASN00015590",
+      "path": "/home/ubuntu/market_intelligence_workspace/catalog_first/raw/noaa/gsom_monthly/stations/ASN00015590.csv",
+      "rows": 1017,
+      "columns": 50,
+      "size_bytes": 364909,
+      "true_start_date": "1941-11",
+      "true_end_date": "2026-07",
+      "frequency": "monthly",
+      "element_nonnull_counts": {
+        "PRCP": 1017,
+        "TAVG": 1016,
+        "TMAX": 1017,
+        "TMIN": 1016
+      },
+      "source": "NOAA/NCEI GSOM monthly",
+      "license_note": "NOAA/NCEI public data; cite GSOM DOI/documentation"
+    },
+    {
+      "station_id": "BRM00083208",
+      "path": "/home/ubuntu/market_intelligence_workspace/catalog_first/raw/noaa/gsom_monthly/stations/BRM00083208.csv",
+      "rows": 142,
+      "columns": 28,
+      "size_bytes": 25731,
+      "true_start_date": "1988-01",
+      "true_end_date": "2025-07",
+      "frequency": "monthly",
+      "element_nonnull_counts": {
+        "PRCP": 96,
+        "TMIN": 55
+      },
+      "source": "NOAA/NCEI GSOM monthly",
+      "license_note": "NOAA/NCEI public data; cite GSOM DOI/documentation"
+    },
+    {
+      "station_id": "CF000064459",
+      "path": "/home/ubuntu/market_intelligence_workspace/catalog_first/raw/noaa/gsom_monthly/stations/CF000064459.csv",
+      "rows": 99,
+      "columns": 46,
+      "size_bytes": 24607,
+      "true_start_date": "1976-11",
+      "true_end_date": "2024-07",
+      "frequency": "monthly",
+      "element_nonnull_counts": {
+        "PRCP": 14,
+        "TAVG": 19,
+        "TMAX": 62,
+        "TMIN": 50
+      },
+      "source": "NOAA/NCEI GSOM monthly",
+      "license_note": "NOAA/NCEI public data; cite GSOM DOI/documentation"
+    },
+    {
+      "station_id": "GME00123190",
+      "path": "/home/ubuntu/market_intelligence_workspace/catalog_first/raw/noaa/gsom_monthly/stations/GME00123190.csv",
+      "rows": 483,
+      "columns": 56,
+      "size_bytes": 188837,
+      "true_start_date": "1986-04",
+      "true_end_date": "2026-06",
+      "frequency": "monthly",
+      "element_nonnull_counts": {
+        "PRCP": 483,
+        "TAVG": 483,
+        "TMAX": 483,
+        "TMIN": 483
+      },
+      "source": "NOAA/NCEI GSOM monthly",
+      "license_note": "NOAA/NCEI public data; cite GSOM DOI/documentation"
+    },
+    {
+      "station_id": "IN012141800",
+      "path": "/home/ubuntu/market_intelligence_workspace/catalog_first/raw/noaa/gsom_monthly/stations/IN012141800.csv",
+      "rows": 707,
+      "columns": 50,
+      "size_bytes": 190312,
+      "true_start_date": "1943-01",
+      "true_end_date": "2025-07",
+      "frequency": "monthly",
+      "element_nonnull_counts": {
+        "PRCP": 517,
+        "TAVG": 135,
+        "TMAX": 340,
+        "TMIN": 194
+      },
+      "source": "NOAA/NCEI GSOM monthly",
+      "license_note": "NOAA/NCEI public data; cite GSOM DOI/documentation"
+    },
+    {
+      "station_id": "IZ000040665",
+      "path": "/home/ubuntu/market_intelligence_workspace/catalog_first/raw/noaa/gsom_monthly/stations/IZ000040665.csv",
+      "rows": 144,
+      "columns": 50,
+      "size_bytes": 44669,
+      "true_start_date": "1950-03",
+      "true_end_date": "2025-12",
+      "frequency": "monthly",
+      "element_nonnull_counts": {
+        "PRCP": 89,
+        "TAVG": 94,
+        "TMAX": 131,
+        "TMIN": 101
+      },
+      "source": "NOAA/NCEI GSOM monthly",
+      "license_note": "NOAA/NCEI public data; cite GSOM DOI/documentation"
+    },
+    {
+      "station_id": "JA000047770",
+      "path": "/home/ubuntu/market_intelligence_workspace/catalog_first/raw/noaa/gsom_monthly/stations/JA000047770.csv",
+      "rows": 867,
+      "columns": 50,
+      "size_bytes": 262472,
+      "true_start_date": "1951-01",
+      "true_end_date": "2026-07",
+      "frequency": "monthly",
+      "element_nonnull_counts": {
+        "PRCP": 700,
+        "TAVG": 486,
+        "TMAX": 858,
+        "TMIN": 486
+      },
+      "source": "NOAA/NCEI GSOM monthly",
+      "license_note": "NOAA/NCEI public data; cite GSOM DOI/documentation"
+    },
+    {
+      "station_id": "MY000048657",
+      "path": "/home/ubuntu/market_intelligence_workspace/catalog_first/raw/noaa/gsom_monthly/stations/MY000048657.csv",
+      "rows": 729,
+      "columns": 50,
+      "size_bytes": 212539,
+      "true_start_date": "1961-01",
+      "true_end_date": "2025-07",
+      "frequency": "monthly",
+      "element_nonnull_counts": {
+        "PRCP": 592,
+        "TAVG": 330,
+        "TMAX": 536,
+        "TMIN": 330
+      },
+      "source": "NOAA/NCEI GSOM monthly",
+      "license_note": "NOAA/NCEI public data; cite GSOM DOI/documentation"
+    },
+    {
+      "station_id": "USC00145852",
+      "path": "/home/ubuntu/market_intelligence_workspace/catalog_first/raw/noaa/gsom_monthly/stations/USC00145852.csv",
+      "rows": 745,
+      "columns": 72,
+      "size_bytes": 344448,
+      "true_start_date": "1962-08",
+      "true_end_date": "2026-07",
+      "frequency": "monthly",
+      "element_nonnull_counts": {
+        "PRCP": 676,
+        "TAVG": 683,
+        "TMAX": 689,
+        "TMIN": 690
+      },
+      "source": "NOAA/NCEI GSOM monthly",
+      "license_note": "NOAA/NCEI public data; cite GSOM DOI/documentation"
+    }
+  ],
+  "station_count": 9,
+  "total_rows": 4933,
+  "total_size_bytes": 1658524,
+  "scope": "Nine stations selected earlier by reproducible regional coverage rule; native monthly files; no daily-to-monthly conversion.",
+  "elements_in_scope": [
+    "PRCP",
+    "TAVG",
+    "TMAX",
+    "TMIN"
+  ],
+  "official_url": "https://www.ncei.noaa.gov/access/search/datasets/global-summary-of-the-month/",
+  "raw_directory": "/home/ubuntu/market_intelligence_workspace/catalog_first/raw/noaa/gsom_monthly/stations",
+  "checksum_manifest": "/home/ubuntu/market_intelligence_workspace/catalog_first/raw/noaa/gsom_monthly/stations/sha256sums.txt"
+}

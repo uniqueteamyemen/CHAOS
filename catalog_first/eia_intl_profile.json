@@ -1,0 +1,129 @@
+{
+  "path": "/home/ubuntu/market_intelligence_workspace/catalog_first/staged/eia/intl/INTL.txt",
+  "size_bytes": 128747528,
+  "jsonl_lines_nonempty": 105055,
+  "series_objects": 104407,
+  "category_objects": 232,
+  "invalid_json_lines": 0,
+  "frequency_codes": {
+    "A": 100459,
+    "M": 2159,
+    "Q": 1789
+  },
+  "series_year_range": [
+    1949,
+    2026
+  ],
+  "sample_series": [
+    {
+      "series_id": "INTL.4702-33-OECD-THP.A",
+      "name": "Population, OECD, Annual",
+      "units": "people in thousands",
+      "f": "A",
+      "description": null,
+      "source": "EIA, U.S. Energy Information Administration",
+      "start": "1980",
+      "end": "2025",
+      "last_updated": "2026-08-21T19:06:13-04:00"
+    },
+    {
+      "series_id": "INTL.47-34-WP15-TBTUUSDPP.A",
+      "name": "Energy consumption per GDP, China, Annual",
+      "units": "thousand Btu per USD at purchasing power parities",
+      "f": "A",
+      "description": null,
+      "source": "EIA, U.S. Energy Information Administration",
+      "start": "1980",
+      "end": "2024",
+      "last_updated": "2026-08-21T19:06:13-04:00"
+    },
+    {
+      "series_id": "INTL.47-34-IRN-TBTUUSDPP.A",
+      "name": "Energy consumption per GDP, Iran, Annual",
+      "units": "thousand Btu per USD at purchasing power parities",
+      "f": "A",
+      "description": null,
+      "source": "EIA, U.S. Energy Information Administration",
+      "start": "1980",
+      "end": "2024",
+      "last_updated": "2026-08-21T19:06:13-04:00"
+    },
+    {
+      "series_id": "INTL.47-34-BWA-TBTUUSDPP.A",
+      "name": "Energy consumption per GDP, Botswana, Annual",
+      "units": "thousand Btu per USD at purchasing power parities",
+      "f": "A",
+      "description": null,
+      "source": "EIA, U.S. Energy Information Administration",
+      "start": "1980",
+      "end": "2024",
+      "last_updated": "2026-08-21T19:06:13-04:00"
+    },
+    {
+      "series_id": "INTL.47-34-ROU-TBTUUSDPP.A",
+      "name": "Energy consumption per GDP, Romania, Annual",
+      "units": "thousand Btu per USD at purchasing power parities",
+      "f": "A",
+      "description": null,
+      "source": "EIA, U.S. Energy Information Administration",
+      "start": "1980",
+      "end": "2024",
+      "last_updated": "2026-08-21T19:06:13-04:00"
+    },
+    {
+      "series_id": "INTL.47-34-CHN-TBTUUSDPP.A",
+      "name": "Energy consumption per GDP, China, Annual",
+      "units": "thousand Btu per USD at purchasing power parities",
+      "f": "A",
+      "description": null,
+      "source": "EIA, U.S. Energy Information Administration",
+      "start": "1980",
+      "end": "2024",
+      "last_updated": "2026-08-21T19:06:13-04:00"
+    },
+    {
+      "series_id": "INTL.47-34-HUN-TBTUUSDPP.A",
+      "name": "Energy consumption per GDP, Hungary, Annual",
+      "units": "thousand Btu per USD at purchasing power parities",
+      "f": "A",
+      "description": null,
+      "source": "EIA, U.S. Energy Information Administration",
+      "start": "1980",
+      "end": "2024",
+      "last_updated": "2026-08-21T19:06:13-04:00"
+    },
+    {
+      "series_id": "INTL.47-34-DEU-TBTUUSDPP.A",
+      "name": "Energy consumption per GDP, Germany, Annual",
+      "units": "thousand Btu per USD at purchasing power parities",
+      "f": "A",
+      "description": null,
+      "source": "EIA, U.S. Energy Information Administration",
+      "start": "1980",
+      "end": "2024",
+      "last_updated": "2026-08-21T19:06:13-04:00"
+    },
+    {
+      "series_id": "INTL.4701-34-EURO-BDOLPPP.A",
+      "name": "GDP at purchasing power parities, Europe, Annual",
+      "units": "billion dollars at purchasing power parities",
+      "f": "A",
+      "description": null,
+      "source": "EIA, U.S. Energy Information Administration",
+      "start": "1980",
+      "end": "2025",
+      "last_updated": "2026-08-21T19:06:13-04:00"
+    },
+    {
+      "series_id": "INTL.4701-34-FRA-BDOLPPP.A",
+      "name": "GDP at purchasing power parities, France, Annual",
+      "units": "billion dollars at purchasing power parities",
+      "f": "A",
+      "description": null,
+      "source": "EIA, U.S. Energy Information Administration",
+      "start": "1980",
+      "end": "2025",
+      "last_updated": "2026-08-21T19:06:13-04:00"
+    }
+  ]
+}

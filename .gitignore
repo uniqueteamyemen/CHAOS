@@ -1,0 +1,25 @@
+# CHAOS repository policy
+# Keep source datasets and derived artifacts with external licensing/size constraints out of Git.
+/catalog_first/raw/
+/catalog_first/staged/
+/catalog_first/readiness_gate/VARIABLE_LEVEL_COVERAGE_MATRIX.csv
+/catalog_first/readiness_gate/VARIABLE_LEVEL_COVERAGE_MATRIX_GAP_AUGMENTED.csv
+/catalog_first/readiness_gate/macro_plus_eia_energy/MACRO_PLUS_EIA_ENERGY_RAW_2000_2024_LONG.csv
+/catalog_first/readiness_gate/macro_plus_eia_energy/MACRO_PLUS_EIA_ENERGY_COMPLETE_140_RAW_2000_2024_LONG.csv
+/structural_engine/node_modules/
+**/.pytest_cache/
+**/__pycache__/
+*.pyc
+.DS_Store
+.env
+.env.*
+*.sqlite
+*.db
+*.log
+
+# Large local exports; preserve their inventory in manifests.
+*.zip
+*.xlsx
+*.tar
+*.gz
+*.parquet

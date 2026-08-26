@@ -1,0 +1,1 @@
+https://api.worldbank.org/v2/country/WLD/indicator/NY.GDP.MKTP.KD?date=2000:2025&format=json&per_page=100

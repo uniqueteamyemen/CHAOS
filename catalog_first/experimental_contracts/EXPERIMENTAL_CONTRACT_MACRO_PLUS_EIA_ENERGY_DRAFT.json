@@ -1,0 +1,134 @@
+{
+  "contract_id": "macro_plus_eia_energy_forecast_baseline",
+  "version": "0.1-draft",
+  "status": "review_required_before_training",
+  "matrix_id": "macro_plus_eia_energy",
+  "purpose": "Pre-training contract only; no TFT training, no structure learning, no surrogate experiment, no architecture change.",
+  "data": {
+    "frequency": "annual",
+    "raw_period": {"start_year": 2000, "end_year": 2024, "year_count": 25},
+    "entity_key": "entity_code",
+    "entity_semantics": "WDI/IMF/EIA source entity/economy identifier; used for grouping and traceability, not as a numeric feature.",
+    "full_candidate_entity_count": 194,
+    "complete_entity_count": 140,
+    "complete_entity_rule": "All 11 selected variables present for every year 2000-2024 in the source-selected raw panel.",
+    "raw_complete_panel_rows": 3500,
+    "raw_complete_panel_expected_cells": 38500,
+    "raw_complete_panel_missing_cells": 0,
+    "raw_source_panel": "/home/ubuntu/market_intelligence_workspace/catalog_first/readiness_gate/macro_plus_eia_energy/MACRO_PLUS_EIA_ENERGY_COMPLETE_140_RAW_2000_2024_WIDE.csv",
+    "raw_full_candidate_panel": "/home/ubuntu/market_intelligence_workspace/catalog_first/readiness_gate/macro_plus_eia_energy/MACRO_PLUS_EIA_ENERGY_RAW_2000_2024_WIDE.csv"
+  },
+  "target": {
+    "variable_id": "wdi__NY.GDP.MKTP.KD.ZG",
+    "definition": "World Bank WDI GDP annual percentage growth; constant 2015 US$ basis.",
+    "unit": "percent",
+    "forecast_form": "one_step_ahead_raw_value",
+    "target_at_origin_t": "wdi__NY.GDP.MKTP.KD.ZG(entity, t+1)",
+    "no_target_derivation": true
+  },
+  "features": [
+    {"variable_id": "wdi__NY.GDP.MKTP.KD.ZG", "source": "WDI", "role": "lagged_target_history_only", "unit": "percent"},
+    {"variable_id": "wdi__NY.GDP.PCAP.KD", "source": "WDI", "role": "covariate", "unit": "constant 2015 US$"},
+    {"variable_id": "wdi__FP.CPI.TOTL.ZG", "source": "WDI", "role": "covariate", "unit": "percent"},
+    {"variable_id": "wdi__SP.POP.TOTL", "source": "WDI", "role": "covariate", "unit": "persons; midyear estimate"},
+    {"variable_id": "wdi__PA.NUS.PPP", "source": "WDI", "role": "covariate", "unit": "LCU per international dollar"},
+    {"variable_id": "imf__NGDP_RPCH", "source": "IMF WEO", "role": "covariate_or_source_comparator", "unit": "percent"},
+    {"variable_id": "imf__PCPI", "source": "IMF WEO", "role": "covariate_or_source_comparator", "unit": "percent"},
+    {"variable_id": "imf__PPPEX", "source": "IMF WEO", "role": "covariate_or_source_comparator", "unit": "source-defined PPP exchange rate"},
+    {"variable_id": "imf__BCA_NGDPD", "source": "IMF WEO", "role": "covariate", "unit": "percent of GDP"},
+    {"variable_id": "eia__energy_consumption_per_capita", "source": "EIA", "role": "energy_covariate", "unit": "million Btu per person"},
+    {"variable_id": "eia__energy_consumption_per_gdp", "source": "EIA", "role": "energy_intensity_covariate", "unit": "thousand Btu per USD at PPP"}
+  ],
+  "temporal_information_policy": {
+    "origin_year_uses_information_through": "origin_year_t_only",
+    "target_year": "t+1",
+    "release_date_reconstruction": false,
+    "vintage_status": "latest-vintage historical replay; not real-time information-set replay",
+    "future_known_covariates": [],
+    "entity_code_as_feature": false,
+    "leakage_rule": "No value from t+1 or later may enter an input window at origin t."
+  },
+  "missing_data_policy": {
+    "mode": "no_imputation",
+    "forward_fill": false,
+    "backward_fill": false,
+    "interpolation": false,
+    "mean_or_median_fill": false,
+    "zero_reclassification": false,
+    "drop_after_seeing_results": false,
+    "runtime_missing_behavior": "fail_closed_and_report; do not repair automatically"
+  },
+  "transformations": {
+    "log": false,
+    "log1p": false,
+    "differencing": false,
+    "returns_or_new_growth_derivation": false,
+    "normalization": false,
+    "zscore": false,
+    "winsorization": false,
+    "clipping": false,
+    "currency_conversion": false,
+    "source_reconciliation_or_averaging": false,
+    "target_scaling": "not approved in this draft; requires separate review and train-only fit if later approved"
+  },
+  "sequence": {
+    "encoder_length_years": 5,
+    "min_encoder_length_years": 5,
+    "prediction_length_years": 1,
+    "origin_years": "2005-2023 subject to split and target availability"
+  },
+  "chronological_split": {
+    "train_target_years": [2006, 2015],
+    "validation_target_years": [2016, 2019],
+    "test_target_years": [2020, 2024],
+    "train_origin_years": [2005, 2014],
+    "validation_origin_years": [2015, 2018],
+    "test_origin_years": [2019, 2023],
+    "shuffle": false,
+    "random_entity_split": false,
+    "test_used_for_selection": false
+  },
+  "metrics": {
+    "primary": ["MAE", "RMSE"],
+    "secondary": ["R2_out_of_sample", "directional_accuracy"],
+    "optional": ["sMAPE"],
+    "excluded_primary_metric": "MAPE because GDP growth may be zero or change sign",
+    "reporting": "pooled row-level plus per-entity distribution; no population/economic weighting in headline metric"
+  },
+  "baselines": [
+    {
+      "id": "persistence_one_step",
+      "definition": "prediction(entity,t+1) = raw target(entity,t)",
+      "fit_data": "none beyond the observed origin value",
+      "primary_comparator": true
+    },
+    {
+      "id": "entity_train_mean",
+      "definition": "mean target per entity fitted on train target years only",
+      "fit_data": "train only",
+      "primary_comparator": false
+    }
+  ],
+  "approval_gate": {
+    "required_before_training": [
+      "target",
+      "11-variable feature set",
+      "140 complete entities",
+      "five-year encoder",
+      "one-year horizon",
+      "chronological split",
+      "no-imputation policy",
+      "no-transformation policy",
+      "persistence baseline"
+    ],
+    "training_allowed_now": false,
+    "tft_allowed_now": false,
+    "architecture_change_allowed_now": false
+  },
+  "provenance": {
+    "matrix_summary": "/home/ubuntu/market_intelligence_workspace/catalog_first/readiness_gate/macro_plus_eia_energy/MACRO_PLUS_EIA_ENERGY_RAW_AND_GAP_SUMMARY.json",
+    "selected_variable_provenance": "/home/ubuntu/market_intelligence_workspace/catalog_first/readiness_gate/macro_plus_eia_energy/SELECTED_VARIABLE_PROVENANCE.csv",
+    "country_gap_profile": "/home/ubuntu/market_intelligence_workspace/catalog_first/readiness_gate/macro_plus_eia_energy/COUNTRY_GAP_PROFILE_ALL_194.csv",
+    "variable_gap_profile": "/home/ubuntu/market_intelligence_workspace/catalog_first/readiness_gate/macro_plus_eia_energy/VARIABLE_GAP_PROFILE_11_VARIABLES.csv"
+  }
+}

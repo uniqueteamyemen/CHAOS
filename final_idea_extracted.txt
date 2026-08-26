@@ -1,0 +1,519 @@
+لقد قمت بإعادة صياغة المستند بالكامل ودمج كافة التعديلات والمصححات الستة الهيكلية في صلب التصميم، وبنيت لك نسختين كاملتين ومستقلتين تماماً (واحدة باللغة العربية الواضحة والدقيقة، والأخرى باللغة الإنجليزية التقنية الصارمة)، وكلتاهما جاهزتان للنسخ الفوري كمرجع دائم للمشروع.
+النسخة الأولى: الوثيقة التنفيذية باللغة العربية (Arabic Version)
+وثيقة المواصفات التنفيذية ومخطط الإدراك السببي الهيكلي (إصدار 2.0 - معدّل)نواة النظام: التعلم الذاتي للبنية ومحرك الشلالات متباينة القطاعات
+بنية التكامل الأب: امتداد وظيفي لمشروع market-intelligence-engine ---## 1. الفلسفة البنيوية وإعادة ضبط مسار النظام تحدد هذه الوثيقة المخطط الهندسي الصارم لترقية محرك الاستخبارات السوقية من مجرد بيئة تشغيلية تعتمد على لقطات تحليلية وصفية، إلى منظومة مستقلة لاكتشاف الأنماط السببية والهيكلية.
+1.1 المبادئ الإستراتيجية الجوهرية* الاستدلال صفري المعرفة (Zero-Knowledge DAG): لا يفترض النظام أو يفرض أي علاقات أو مخططات موجهة مسبقاً بين القطاعات المختلفة. يتم إلغاء التحيزات البشرية تماماً، وتُكتشف العلاقات رياضياً عبر فحص السجلات الهيكلية الممتدة لـ 25 عاماً.
+الحفاظ على حدود النظام الأب: تظل بنية التايب سكريبت (TypeScript) الحالية هي الحارس الأساسي والمتحكم بالحوكمة وبيانات التشغيل. ويستمر في تتبع العرض والطلب المحوكم داخلياً، بينما يعمل محرك الاستدلال الهيكلي كخدمة مصغرة (Microservice) منفصلة تماماً، تكتشف الأنماط الخارجية وتضخها للنظام الأب كإشارات مستقرة (ExternalSignals).* خط الأساس الواقعي: تُستخدم مجموعات البيانات الأكاديمية المعيارية (FRED-MD, Monash, M4/M5) حصرياً كـ "حقل تجارب معزول ومغلق" لضبط واختبار كفاءة الأكواد البرمجية قبل إطلاقها على تدفقات البيانات الواقعية المليئة بالضوضاء. ---## 2. الخط التنفيذي الرقمي والإداري المعدّل (مسار الـ 8 أسابيع) المخطط الزمني المعدل لتنفيذ وتكامل المنظومة دون الانحراف نحو بناء نموذج تنبؤ كلي عشوائي:
+
+[الأسبوع 1-2: بناء المحولات والمواءمة] ◄── [الأسبوع 3-5: تعلم البنية الحرة] ◄── [الأسبوع 6-7: اختبار التعمية العكسي] ◄── [الأسبوع 8: التشغيل الذاتي] سحب وإدخال أحداث GDELT/NOAA تشغيل خوارزميات الاستدلال الحر خلط التواريخ عشوائياً (Permutation) تغذية الإشارات الهيكلية المعتمدة في جداول مستقلة دون تعديل خطي لبناء المخططات البيانية تلقائياً لسحق وتدمير الارتباطات الزائفة مباشرة في نواة المحرك الأب
+المرحلة 1: طبقة الاستيعاب وقنوات إعادة أخذ العينات (الأسابيع 1 - 2)
+الهدف: بناء أنابيب سحب البيانات لـ 25 سنة وتوحيد تواترها التحليلي مع الحفاظ على البيانات الخام.
+المخرجات والتعديلات الهيكلية:
+ربط قنوات السحب بالمصادر الأصلية الحية: GDELT (الأحداث الجيوسياسية)، ACLED (العنف السياسي)، FRED API (مؤشرات الاقتصاد الكلي)، World Bank API (المؤشرات الهيكلية)، و NOAA (المناخ والظواهر البيئية القصوى).
+قاعدة الحفاظ على البيانات: يُحظر تماماً استخدام عمليات الملء الأمامي (Forward-Fill) أو التعيين الخطي (Interpolation) بشكل أعمى على البيانات الخام والأحداث الفوضوية لتجنب خلق نقاط بيانات اصطناعية تفرغ السلاسل من حقيقتها الزمنية.
+التصميم ثنائي التواتر: يتم اعتماد التواتر الشهري كقناة تحليلية موحدة للمحاذاة، مع الحفاظ الكامل على التواتر الأصلي ونقاط الأحداث (Event Resolution) في جداول منفصلة لحماية الطوابع الزمنية الدقيقة.
+تتبع التغطية الفعلية للمتغيرات: يقوم النظام برصد وتوثيق نافذة التغطية التاريخية (تاريخ البدء والانتهاء، وفجوات البيانات) لكل متغير وسلسلة زمنية على حدة، بدلاً من افتراض تغطية شاملة وموحدة للمصدر بالكامل.
+المرحلة 2: تعلم البنية الحر والنافذة الزمنية العكسية (الأسابيع 3 - 5)
+الهدف: إطلاق الخوارزميات الرياضية لرسم شبكة العلاقات بين القطاعات تلقائياً دون تدخل بشري.
+المخرجات:
+تطبيق خوارزميات اكتشاف البنية السببية القائمة على القيود والمؤشرات (مثل PC Algorithm و Fast Causal Inference) لرسم المخططات البيانية (Graphs) بحرية تامة.
+فرض قيود الزمن الفيزيائية فقط: الأحداث في الماضي تسبب نتائج في المستقبل، ولا يمكن لمعطيات المستقبل تعديل الماضي.
+برمجة وحدة النافذة الزمنية العكسية. عند رصد قفزة غير طبيعية في مؤشرات الضغط أو العرض والطلب عند زمن $T$، يقتطع النظام تلقائياً السجل التاريخي من $T-30$ إلى $T-180$ يوماً لعزل المحفزات الهيكلية التي سبقت القفزة.
+المرحلة 3: التحقق العدائي والتحصين ضد الصدفة (الأسابيع 6 - 7)
+الهدف: إخضاع الأنماط المكتشفة لاختبارات صارمة لإثبات متانتها الإحصائية وتدمير العلاقات الوهمية.
+المخرجات والتعديلات الهيكلية:
+الفصل الإيبستيمولوجي (المعرفي): يتم فصل التحقق الإحصائي واختبارات التباديل (Permutation) تماماً عن ادعاءات السببية المطلقة في الواقع. النظام يعزل الأسبقية التنبؤية، التدفق المعلوماتي، والحصانة ضد التشويش دون الجزم بوجود سبب مادي نهائي.
+محرك التعمية العكسي (Time-Permutation): تأخذ الخوارزمية المسارات الهيكلية المكتشفة، وتقوم بخلط وتزييف تواريخ المتغير المستقل (المحفز) عشوائياً. إذا ظلت العلاقة الرياضية مستقرة بعد خلط التواريخ، يُصنف النمط فوراً كـ "ارتباط زائف والتقاء بالصدفة" ويُحذف من قاعدة الأنماط.
+اعتماد حد دلالة إحصائية صارم جداً ($\alpha < 0.01$) عبر عينات الاختبار لضمان ثبات النمط.
+المرحلة 4: التشغيل والوكلاء المستقلون (الأسبوع 8)
+الهدف: تحويل الأنماط الذهبية التاريخية المعتمدة إلى خوارزميات مراقبة عمياء تعمل في الوقت الفعلي.
+المخرجات:
+تشغيل وحدات إنصات خلفية تفحص البيانات الحية القادمة يومياً عبر الـ APIs للمصادر الأصلية.
+عندما تتطابق المعطيات الواقعية الحالية مع مقدمات ومؤشرات نمط تاريخي معتمد، يتم صياغة كود إشارة يحمل المسار، ونسبة المتانة، والفجوة الزمنية المتوقعة، ويُضخ مباشرة إلى جداول الإشارات بالمحرك الأوحد عبر الأدابتور الجديد.
+
+
+3. مصفوفة مواصفات المستودعات المفلترة وجداول البيانات الحية
+توضح هذه المصفوفة دور مجموعات البيانات المعيارية في ضبط النظام، والمصادر التشغيلية الحية التي تدعم اكتشاف الأنماط:
+
+اسم المصدر / المستودع
+فئة البيانات
+التواتر الزمني
+التغطية الحقيقية للمتغيرات
+دور المصدر في المنظومة
+إستراتيجية الحفاظ على الإشارات وإزالة الضوضاء
+FRED-MD / FRED-QD
+اقتصاد كلي
+شهري / ربعي
+متغير حسب السلسلة (يتم توثيقه لكل جدول)
+حقل تجارب معزول: لاختبار كفاءة أكواد الأسبقية التنبؤية في بيئة زمنية منتظمة ونظيفة.
+معالجة موحدة لضمان الاستقرار (Stationarity)؛ رصد وتوثيق فجوات المصفوفة بدقة.
+GDELT / ACLED
+جيوسياسي / صراعات
+أحداث حية ولحظية
+غير منتظم / طوابع زمنية دقيقة للحدث
+تدفق تشغيلي حي: لتتبع الاضطرابات القرارات السياسية والحروب في الواقع.
+الحفاظ الكامل على بنية الأحداث الخام. المؤشرات المشتقة (كثافة الأخبار، النبرة) هي ميزات إضافية وليست بديلاً عن الحدث.
+NOAA / USGS
+بيئي / كوارث
+ساعي وتدفق أحداث
+موثق حسب محطة الرصد والمستشعر
+تدفق تشغيلي حي: لرصد محفزات المناخ (الجفاف، الفيضانات، الانحرافات البيئية).
+الاحتفاظ بالسجلات الخام في الجداول الأساسية؛ حساب انحرافات المتغيرات كـ $Z$-scores مستقلة.
+
+
+4. الصيغة المنطقية الدقيقة للنماذج العملاقة فائقة الذكاء (Prompt Template)
+هذا النموذج مصمم ومحكم لتغذية نماذج الاستدلال الكبرى (Reasoning Models) لإجبارها على صياغة الأكواد الرياضية دون اختصارات أو افتراضات مسبقة:
+
+[SYSTEM INSTRUCTIONS: CAUSAL MATRIX DISCOVERY MODULE] You are an elite engineer specializing in Complex Systems, Non-Linear Econometrics, and Causal Discovery. Your task is to write a production-grade Python script designed to execute completely autonomous, unguided structure learning across cross-domain time-series datasets, specifically identifying how historical geopolitical, climatic, and economic metrics trigger future downstream market disruptions. CRITICAL ARCHITECTURAL CONSTRAINTS:
+
+ZERO-KNOWLEDGE INFERENCE: Do not accept pre-defined Directed Acyclic Graphs (DAGs) or programmatic rules stating which variable connects to another. The system must discover the structural dependencies entirely from the statistical data matrix.
+TEMPORAL BOUNDARY ENFORCEMENT: The only allowable constraint is the physical direction of time. A variable measured at timestamp T cannot be caused by a variable measured at T+N.
+SPURIOUS CORRELATION ELIMINATION: You must implement an Adversarial Permutation verification step. Once a causal edge is identified, shuffle the timeline of the independent variable randomly. If the significance remains unchanged, discard the relationship as a spurious correlation.
+
+MATHEMATICAL & ALGORITHMIC EXPECTATIONS:
+
+Implement a robust constraint-based discovery algorithm (e.g., PC Algorithm or Fast Causal Inference) optimized for non-linear structures using conditional independence tests.
+Integrate Non-Linear Transfer Entropy to measure directional information flow across domains, calculating the exact time delay (Lag L) that maximizes information transfer.
+Your output must identify the exact chains where an environmental or political trigger propagates through secondary economic indicators to ultimately impact a specific target market metric.
+
+DELIVERABLE FORMAT: Provide clean, production-ready Python code utilizing specialized libraries (such as 'causalgraphicalmodels', 'pgmpy', 'skccm', or 'tigramite'). The script must read a standardized input dataframe containing columns for 'timestamp', 'event_intensity', 'climate_anomaly', 'macro_index', and 'target_market_pressure', and output a validated JSON schema defining the confirmed causal paths, the calculated time delay, and the post-permutation reliability score. Do not provide high-level pseudo-code or placeholder blocks.
+
+
+5. مواصفات تصميم محول الإشارات الهيكلية CausalSignalAdapter
+يوضح هذا القسم آلية دمج مخرجات محرك التحليل الإحصائي المستقل وإدخالها برمجياً إلى داخل النواة التشغيلية لـ market-intelligence-engine.
+5.1 بنية واجهة الربط البرمجي (Decoupled TypeScript Interface)
+يتحكم الـ CausalSignalAdapter في استقبال البيانات مجهولة المصدر والتصنيف، ويفك ارتباط المحرك التحليلي عن أي مسميات صلبة خاصة بالمنتجات أو المواقع، معتمداً على واجهة برمجية مرنة:
+
+// src/connectors/CausalSignalAdapter.ts
+
+import { DirectObservationAdapter } from "market-intelligence-engine";
+
+export interface StructuralPayload {
+
+  patternId: string;
+
+  triggerEventClass: string;
+
+  sourceContext: string;
+
+  
+
+  // تصحيح هيكلي: توصيف عام للهدف يفصل المحرك عن مسميات العناصر أو المواقع المحددة مسبقاً
+
+  targetEntity: {
+
+    domainSpace: string;        // مثال: "geography_inventory", "financial_index", "asset_class"
+
+    primaryIdentifier: string;  // مثال: "in-zone-4", "ticker-xyz", "commodity-faci"
+
+    secondaryIdentifier?: string;
+
+  };
+
+  
+
+  calculatedTimeLagMonths: number;
+
+  
+
+  // تصحيح هيكلي: فصل المتانة الإحصائية والقدرة التنبؤية عن ادعاءات السببية المطلقة
+
+  statisticalRobustnessScore: number;  // درجة ثبات النمط خارج العينة التاريخية (0.00 - 1.00)
+
+  permutationSurvivalRate: number;     // نسبة نجاح صمود النمط ضد اختبار التعمية وخلط التواريخ
+
+  
+
+  estimatedImpactMagnitude: number;
+
+  
+
+  // تصحيح هيكلي: تصنيف ديناميكي مرن ونوعي للإشارة بدلاً من فرض نوع ثابت
+
+  signalClassification: "supply" | "demand" | "pressure_modifier" | "systemic_shock";
+
+  timestampDiscovered: string;
+
+}
+
+export class CausalSignalAdapter extends DirectObservationAdapter {
+
+  public readonly id = "structural_autonomous_inference_adapter";
+
+  /**
+
+   * يحول الأنماط الإحصائية المجردة المكتشفة خارجياً إلى لقطات وإشارات إحصائية محوكمة
+
+   * داخل مخزن البيانات المستقر للمحرك الأب.
+
+   */
+
+  public async ingestAutonomousPattern(
+
+    sourceId: string, 
+
+    payload: StructuralPayload, 
+
+    runtimeContext: any
+
+  ): Promise<void> {
+
+    
+
+    // 1. التحقق الصارم من متانة الإشارة بناءً على فلاتر التحصين ضد الصدفة
+
+    if (payload.permutationSurvivalRate < 0.99 || payload.statisticalRobustnessScore < 0.99) {
+
+      throw new Error(`Admission Denied: Signal payload failed to survive the adversarial shuffle verification threshold.`);
+
+    }
+
+    const compiledSummary = `[STRUCTURAL PATTERN ISOLATED] Precedence relationship verified from trigger [${payload.triggerEventClass}] to target space [${payload.targetEntity.domainSpace}::${payload.targetEntity.primaryIdentifier}]. Transmission interval: ${payload.calculatedTimeLagMonths} months nominal. Permutation Survival: ${(payload.permutationSurvivalRate * 100).toFixed(2)}%.`;
+
+    // 2. التوجيه الديناميكي للبيانات بناءً على نوع التصنيف الوارد في الـ Payload
+
+    const structuredSignal = {
+
+      externalReference: payload.patternId,
+
+      evidenceUrl: `system://inference-engine/patterns/${payload.patternId}`,
+
+      evidenceClass: "structured_api" as const,
+
+      
+
+      // تصحيح هيكلي: إلغاء فرض كلمة "demand" وتمرير التصنيف عبر دالة توجيه مرنة
+
+      signalType: this.routeSignalClassification(payload.signalClassification), 
+
+      
+
+      summary: compiledSummary,
+
+      metrics: {
+
+        impactDelta: payload.estimatedImpactMagnitude,
+
+        horizonMonths: payload.calculatedTimeLagMonths,
+
+        robustness: payload.statisticalRobustnessScore,
+
+        // دمج المعرفات العامة ديناميكياً لتتوافق مع مفاتيح قاعدة البيانات الأساسية للمحرك الأب
+
+        entityTargetKey: `${payload.targetEntity.domainSpace}_${payload.targetEntity.primaryIdentifier}`
+
+      }
+
+    };
+
+    // 3. ضخ الإشارة الجاهزة إلى جداول الحوكمة والتشغيل للمحرك الحالي
+
+    await this.submit(sourceId, structuredSignal);
+
+  }
+
+  private routeSignalClassification(classification: string): "supply" | "demand" {
+
+    // أنبوب توجيه لضمان المواءمة مع قيود بيئة التشغيل الأساسية للنظام الأب
+
+    if (classification === "supply") return "supply";
+
+    if (classification === "demand") return "demand";
+
+    
+
+    // الصدمات النظامية ومعدلات الضغط يتم توجيهها افتراضياً كأحمال ضغط على الطلب
+
+    return "demand";
+
+  }
+
+}
+
+
+النسخة الثانية: الوثيقة التنفيذية باللغة الإنجليزية (English Version)
+EXECUTIVE SPECIFICATION & CAUSAL INTELLIGENCE BLUEPRINT (v2.0 - REVISED)System Core: Autonomous Structural Learning & Cross-Domain Cascade Engine
+Parent Integration Architecture: Functional Extension for market-intelligence-engine ---## SECTION 1: ARCHITECTURAL PHILOSOPHY & SYSTEM REALIGNMENT This document establishes the rigorous engineering blueprint for upgrading the market intelligence framework from a descriptive snapshot runtime into an Autonomous Causal Pattern Discovery System.
+1.1 Core Strategic Axioms* Zero-Knowledge Inference (No Pre-Programmed DAGs): The system does not assume, suggest, or codify relations between domains. Human domain biases are strictly eliminated. Relations are mathematically discovered by scanning 25-year structural histories.
+Preservation of the Parent Boundary: The existing TypeScript architecture remains the immutable Data Governor and Runtime Gateway. It continues to track internal supply, demand, and localized geographic pressure. The Causal Engine runs as a decoupled analytical microservice that discovers external patterns and feeds them back into the runtime as validated, high-utility ExternalSignals.* The Reality Baseline: Academic datasets (FRED-MD, Monash, M4/M5) are used strictly as a sandboxed testing environment to baseline, tune, and test the code against known behaviors before launching it on real-world, noisy data streams. ---## SECTION 2: THE RE-ENGINEERED 8-WEEK EXECUTION TRACK The revised chronological roadmap required to build, validate, and launch the system without shifting focus into an unmanageable macro-economic forecasting project:
+
+[WEEK 1-2: Core Adaption] ──► [WEEK 3-5: Structure Learning] ──► [WEEK 6-7: Adversarial Testing] ──► [WEEK 8: Autopilot Runtime] Extract GDELT/NOAA Run Constraint-Based Algos Run Time-Permutation Shuffles Inject Validated Signals Into Native Event Layer To Discover Graphs Freely To Obliterate Spurious Corrs Directly To TS Core Engine
+Phase 1: Ingestion Layer & Cross-Domain Resampling Pipeline (Weeks 1 - 2)
+Objective: Build a data pipeline to pull 25 years of institutional/historical data and format it into regular, aligned temporal frequencies while protecting raw signal integrity.
+Deliverables & Architectural Corrections:
+Connect structural pipelines to raw external repositories: GDELT (Geopolitical events), ACLED (Political violence), FRED API (Macroeconomic indices), World Bank API (Structural metrics), and NOAA (Climate/Environmental extremes).
+Data Preservation Constraint: Blanket forward-filling or linear interpolation on raw/event datasets is strictly prohibited. Raw historical records must be maintained without artificial data inflation to avoid biasing temporal sequencing.
+Dual-Frequency Channeling: Monthly is established as the canonical analytical frequency for mathematical alignment. However, the native, event-level resolution is retained separately to safeguard exact timestamps and micro-historical execution limits.
+Variable-Level Coverage Tracking: The framework will dynamically log the exact historical coverage matrix (start date, end date, missing gaps) per individual variable instead of assuming a uniform timeline across an entire database source.
+Phase 2: Autonomous Structure Learning & Inverse Windowing (Weeks 3 - 5)
+Objective: Deploy mathematical algorithms to map the network of interactions across domains without human instruction.
+Deliverables:
+Implement constraint-based and score-based discovery models (e.g., PC Algorithm, Fast Causal Inference, and Greedy Equivalence Search) to map out structural graphs freely.
+Restrict variables using temporal constraints: historical events can cause future outcomes, but future data cannot affect past events.
+Program the Inverse Time-Window Module. When an abnormal spike in geographic pressure or supply/demand occurs at time $T$, the engine automatically slices open the history from $T-30$ to $T-180$ days to isolate the structural triggers that preceded the event.
+Phase 3: Adversarial Validation & Isolation Against Coincidence (Weeks 6 - 7)
+Objective: Test discovered patterns to verify their mathematical robustness and destroy random statistical correlations.
+Deliverables & Architectural Corrections:
+Epistemological Separation: Statistical validation values are strictly decoupled from absolute assertions of physical causality. The engine isolates predictive precedence and robust information flow without claiming to prove definitive real-world causation.
+Adversarial Time-Permutation Engine: Take discovered structural paths and run randomized time-shuffling operations on the history of the causal factor. If the mathematical relationship remains stable after shuffling timelines, flag it as a Spurious Correlation and delete it from the pattern database.
+Enforce a strict statistical significance threshold ($\alpha < 0.01$) across out-of-sample data ranges to confirm the pattern's validity.
+Phase 4: Production Deployment & Autopilot Agents (Week 8)
+Objective: Package validated historical patterns into active monitoring algorithms that look for early warning signs in live data streams.
+Deliverables:
+Deploy background listening modules that scan incoming daily data streams via live APIs.
+When real-world conditions mirror the early indicators of a validated historical pattern, generate a high-priority payload containing the path, confidence score, and expected timing.
+Inject this payload directly into the parent engine's operational database via the newly designed adapter.
+
+
+SECTION 3: NOISE-FILTERED MASTER DATASET SPECIFICATIONS MATRIX (REVISED)
+Dataset / Source Name
+Data Class
+Temporal Frequency
+True Variable-Level Coverage
+Target Use Case & System Role
+Signal & Feature Preservation Strategy
+FRED-MD / FRED-QD
+Macroeconomic
+Monthly / Quarterly
+Variable-specific (Logged per timeseries matrix)
+Calibration Sandbox: Validates predictive precedence code under uniform intervals.
+Standardized using structural transformations; tracks missing data matrix gaps explicitly.
+GDELT / ACLED
+Geopolitical / Conflict
+Native Event Resolution
+Irregular / Micro-timestamped
+Live Structural Feed: Tracks discrete disruptions and political shifts.
+Preserved raw event-level structures. Derived density or sentiment scores are appended as additional features, never as replacements.
+NOAA / USGS
+Environmental
+Sub-Hourly to Event-Driven
+Logged per sensor node/station
+Live Structural Feed: Tracks environmental anomalies ((Z)-scores).
+Native time records kept in primary tables; missing periods are logged as unobserved gaps.
+
+
+SECTION 4: DEEP PROMPT ENGINEERING TEMPLATE FOR ADVANCED LLMs
+[SYSTEM INSTRUCTIONS: CAUSAL MATRIX DISCOVERY MODULE] You are an elite engineer specializing in Complex Systems, Non-Linear Econometrics, and Causal Discovery. Your task is to write a production-grade Python script designed to execute completely autonomous, unguided structure learning across cross-domain time-series datasets, specifically identifying how historical geopolitical, climatic, and economic metrics trigger future downstream market disruptions. CRITICAL ARCHITECTURAL CONSTRAINTS:
+
+ZERO-KNOWLEDGE INFERENCE: Do not accept pre-defined Directed Acyclic Graphs (DAGs) or programmatic rules stating which variable connects to another. The system must discover the structural dependencies entirely from the statistical data matrix.
+TEMPORAL BOUNDARY ENFORCEMENT: The only allowable constraint is the physical direction of time. A variable measured at timestamp T cannot be caused by a variable measured at T+N.
+SPURIOUS CORRELATION ELIMINATION: You must implement an Adversarial Permutation verification step. Once a causal edge is identified, shuffle the timeline of the independent variable randomly. If the significance remains unchanged, discard the relationship as a spurious correlation.
+
+MATHEMATICAL & ALGORITHMIC EXPECTATIONS:
+
+Implement a robust constraint-based discovery algorithm (e.g., PC Algorithm or Fast Causal Inference) optimized for non-linear structures using conditional independence tests.
+Integrate Non-Linear Transfer Entropy to measure directional information flow across domains, calculating the exact time delay (Lag L) that maximizes information transfer.
+Your output must identify the exact chains where an environmental or political trigger propagates through secondary economic indicators to ultimately impact a specific target market metric.
+
+DELIVERABLE FORMAT: Provide clean, production-ready Python code utilizing specialized libraries (such as 'causalgraphicalmodels', 'pgmpy', 'skccm', or 'tigramite'). The script must read a standardized input dataframe containing columns for 'timestamp', 'event_intensity', 'climate_anomaly', 'macro_index', and 'target_market_pressure', and output a validated JSON schema defining the confirmed causal paths, the calculated time delay, and the post-permutation reliability score. Do not provide high-level pseudo-code or placeholder blocks.
+
+
+SECTION 5: CausalSignalAdapter DESIGN SPECIFICATION
+5.1 Technical Interface Architecture (Decoupled TypeScript Interface)
+The updated CausalSignalAdapter decouples the core analytical output from location/item semantics and replaces hardcoded classifications with open-ended, dynamic parameters.
+
+// src/connectors/CausalSignalAdapter.ts
+
+import { DirectObservationAdapter } from "market-intelligence-engine";
+
+export interface StructuralPayload {
+
+  patternId: string;
+
+  triggerEventClass: string;
+
+  sourceContext: string;
+
+  
+
+  // Correction: Generic target descriptor decoupling the engine from item/location specifics
+
+  targetEntity: {
+
+    domainSpace: string;        // e.g., "geography_inventory", "financial_index", "asset_class"
+
+    primaryIdentifier: string;  // e.g., "in-zone-4", "ticker-xyz", "commodity-faci"
+
+    secondaryIdentifier?: string;
+
+  };
+
+  
+
+  calculatedTimeLagMonths: number;
+
+  
+
+  // Correction: Separating mathematical significance from causality claims
+
+  statisticalRobustnessScore: number;  // Out-of-sample persistence (0.00 - 1.00)
+
+  permutationSurvivalRate: number;     // Pass rate against adversarial time shuffling
+
+  
+
+  estimatedImpactMagnitude: number;
+
+  
+
+  // Correction: Dynamic routing mapping rather than a hardcoded signal type
+
+  signalClassification: "supply" | "demand" | "pressure_modifier" | "systemic_shock";
+
+  timestampDiscovered: string;
+
+}
+
+export class CausalSignalAdapter extends DirectObservationAdapter {
+
+  public readonly id = "structural_autonomous_inference_adapter";
+
+  /**
+
+   * Transforms an abstract statistical pattern into a dynamically routed
+
+   * observation record within the core storage framework.
+
+   */
+
+  public async ingestAutonomousPattern(
+
+    sourceId: string, 
+
+    payload: StructuralPayload, 
+
+    runtimeContext: any
+
+  ): Promise<void> {
+
+    
+
+    // 1. Strict validation using the decoupled robustness thresholds
+
+    if (payload.permutationSurvivalRate < 0.99 || payload.statisticalRobustnessScore < 0.99) {
+
+      throw new Error(`Admission Denied: Signal payload failed to survive the adversarial shuffle verification threshold.`);
+
+    }
+
+    const compiledSummary = `[STRUCTURAL PATTERN ISOLATED] Precedence relationship verified from trigger [${payload.triggerEventClass}] to target space [${payload.targetEntity.domainSpace}::${payload.targetEntity.primaryIdentifier}]. Transmission interval: ${payload.calculatedTimeLagMonths} months nominal. Permutation Survival: ${(payload.permutationSurvivalRate * 100).toFixed(2)}%.`;
+
+    // 2. Dynamic routing configuration based on the payload's classification
+
+    const structuredSignal = {
+
+      externalReference: payload.patternId,
+
+      evidenceUrl: `system://inference-engine/patterns/${payload.patternId}`,
+
+      evidenceClass: "structured_api" as const,
+
+      
+
+      // Correction: Removed hardcoded "demand" type allocation
+
+      signalType: this.routeSignalClassification(payload.signalClassification), 
+
+      
+
+      summary: compiledSummary,
+
+      metrics: {
+
+        impactDelta: payload.estimatedImpactMagnitude,
+
+        horizonMonths: payload.calculatedTimeLagMonths,
+
+        robustness: payload.statisticalRobustnessScore,
+
+        // Map generic entity identifiers natively into store parameters
+
+        entityTargetKey: `${payload.targetEntity.domainSpace}_${payload.targetEntity.primaryIdentifier}`
+
+      }
+
+    };
+
+    await this.submit(sourceId, structuredSignal);
+
+  }
+
+  private routeSignalClassification(classification: string): "supply" | "demand" {
+
+    // Dynamic mapping pipeline ensuring compatibility with parent runtime constraints
+
+    if (classification === "supply") return "supply";
+
+    if (classification === "demand") return "demand";
+
+    
+
+    // Systemic shocks or pressure modifiers default to tracking systemic demand loads
+
+    return "demand";
+
+  }
+
+}
+
+
+
+
+
+
+
+ Blueprint بنسختيها العربية والإنجليزية مطابقة للتعديلات الستة ومحفوظة لديك:
+
+
+هل تود مناقشة هيكل قاعدة البيانات المتغير (Variable-Level Coverage Matrix) برمجياً لحساب فجوات التغطية؟
+أم تريد أن ننتقل مباشرة لصياغة كود بايثون التجريبي (Python Script) الخاص بالمرحلة الثانية لتعلم البنية الحرة واختبار التباديل العشوائي؟
+راجعت النسخة التنفيذية كاملة، وليس فقط التعديلات الستة. بما أنك ستعتبرها **Baseline تنفيذية لا نريد إعادة تفسيرها لاحقاً**، فهناك ملاحظة ختامية واحدة أرى أنها ضرورية، وتغطي النقاط التي قد يحدث فيها انحراف أثناء التنفيذ.
+وأنا أعتبر بعدها الوثيقة **نسخة تنفيذية v2.0**؛ لا نعيد مناقشة التصميم إلا إذا أظهر التنفيذ دليلاً فعلياً على وجود تناقض أو عجز في أحد هذه البنود. 
+راجعت النسخة التنفيذية كاملة، وليس فقط التعديلات الستة. بما أنك ستعتبرها Baseline تنفيذية لا نريد إعادة تفسيرها لاحقاً، فهناك ملاحظة ختامية واحدة أرى أنها ضرورية، وتغطي النقاط التي قد يحدث فيها انحراف أثناء التنفيذ.
+
+ضع في آخر المستند النص التالي كما هو:
+
+
+ملاحظة تنفيذية نهائية — Non-Negotiable Execution Constraints
+هذه الوثيقة هي المرجع التنفيذي المعتمد للإصدار v2.0. أثناء التنفيذ يجب الحفاظ على جميع المبادئ والحدود الواردة فيها، ولا يجوز تحويل أي قرار تنفيذي مؤقت إلى افتراض دلالي أو علمي غير مثبت.
+
+البيانات الخام هي السجل المرجعي غير القابل للاستبدال. لا يجوز حذفها أو استبدالها بقيم مستنتجة أو مُعاد تشكيلها. أي تحويل أو تطبيع أو تجميع يجب أن ينتج طبقة تحليلية مشتقة مع الاحتفاظ بالمصدر الأصلي.
+
+لا يجوز استخدام Forward-Fill أو Interpolation أو أي Imputation على نحو شامل. أي معالجة للفجوات يجب أن تكون خاصة بنوع المتغير، ومبررة رياضياً، ومسجلة صراحة باعتبارها قيمة مشتقة وليست مشاهدة أصلية. الأحداث المنفصلة لا يجوز تحويلها إلى حالات مستمرة بهذه الطرق.
+
+الشهرية هي التواتر التحليلي الأساسي، وليست قيداً على دقة البيانات. تحتفظ البيانات اليومية/الساعية/دقيقة الحدث بدقتها الأصلية عندما تكون ضرورية لفهم الحدث أو تحديد التأخر الزمني. لا يجوز فقدان الدقة الأصلية بسبب عملية المحاذاة الشهرية.
+
+يجب تسجيل التغطية على مستوى المتغير والسلسلة، وليس المصدر فقط. يجب حفظ start_date, end_date, frequency, missing_gaps, revision/version, وخصائص التغطية ذات الصلة لكل سلسلة مستخدمة.
+
+الأحداث السياسية والجيوسياسية والعسكرية والبيئية والكوارث والقرارات والاغتيالات والعقوبات والإضرابات والانقلابات وغيرها ليست مجرد أرقام مشتقة. يجب الاحتفاظ بالحدث الأصلي وسياقه وزمنه ومصدره، ويمكن اشتقاق density/intensity/sentiment وغيرها كميزات إضافية فقط.
+
+لا يجوز إدخال علاقات سببية أو DAGs مسبقة إلى محرك الاكتشاف. القيد المسموح مسبقاً هو اتجاه الزمن فقط. أي علاقة بين المتغيرات يجب أن تكون ناتجة عن عملية الاكتشاف والتحقق.
+
+يجب الفصل دائماً بين الارتباط، الأسبقية الزمنية، تدفق المعلومات، المتانة الإحصائية، واكتشاف السببية. اجتياز permutation test أو out-of-sample validation لا يساوي إثبات سببية في العالم الحقيقي. يجب أن تعكس أسماء الحقول والتقارير هذا الفصل.
+
+كل Pattern يجب أن يحمل provenance قابلاً لإعادة الإنتاج. يجب أن يكون بالإمكان معرفة البيانات والمدخلات والإصدارات والتحويلات والخوارزمية والـparameters وفترة التدريب/الاكتشاف وفترة الاختبار التي أدت إلى اكتشافه وقبوله.
+
+لا يجوز استخدام البيانات المستقبلية في اكتشاف أو تقييم نمط تاريخي. يجب منع look-ahead bias وdata leakage، ويجب أن يتم أي backtesting وفق حدود زمنية تحترم ما كان متاحاً فعلياً عند النقطة التاريخية محل الاختبار.
+
+المصادر المتعارضة لا تُسوّى قسراً. عندما تقدم مصادر موثوقة قياسات أو روايات مختلفة، تحفظ الاختلافات وتُنسب إلى مصادرها. لا يجوز اختيار قيمة واحدة لمجرد جعل البيانات متسقة دون قاعدة موثقة.
+
+الـacademic datasets مثل FRED-MD/FRED-QD وMonash وM4/M5 هي بيئة اختبار ومعايرة، وليست بديلاً عن البيانات الواقعية. نجاح الخوارزمية عليها لا يُعتبر دليلاً على نجاحها في البيانات العالمية الحقيقية.
+
+أي mapping مفروض بسبب توافق واجهة market-intelligence-engine يجب اعتباره Compatibility Mapping فقط. وبالأخص تحويل pressure_modifier أو systemic_shock إلى demand داخل الواجهة الحالية لا يعني أن معناها العلمي أو الدلالي هو demand. يجب عدم السماح لهذا القيد البرمجي بتغيير معنى البيانات أو الأنماط.
+
+لا يتم إدخال Pattern إلى التشغيل الآلي لمجرد اكتشافه. يجب أن يمر أولاً عبر مراحل الاكتشاف، التحقق، الاختبار خارج العينة، مقاومة التشويش، وتوثيق provenance قبل أن يصبح إشارة تشغيلية.
+
+لا يُسمح بإعادة تصميم المشروع أثناء التنفيذ لمجرد ظهور حل تقني أسهل. أي تغيير معماري جوهري يجب أن يستند إلى دليل تنفيذي أو اختبار يثبت عدم صلاحية التصميم الحالي، وليس إلى تفضيل شخصي أو تحسين شكلي.
+
+الهدف النهائي ليس إنتاج Forecast جميل، بل اكتشاف أنماط تاريخية قابلة لإعادة الإنتاج ثم تحويل الأنماط التي تثبت متانتها إلى آليات مراقبة وتشغيل استباقي. أي نموذج Forecasting أو Causal Discovery أو Information Flow يُستخدم كأداة داخل هذه المنظومة، وليس كبديل عن المنظومة نفسها.
+
+قاعدة الاعتماد النهائية:
+
+إذا تعارضت نتيجة تنفيذية مع هذه القيود، فلا تُعدّل القاعدة لتناسب النتيجة؛ تُراجع النتيجة والمنهج والبيانات أولاً.
+
+
+
+هذه الإضافة مهمة لأنها تغطي ليس فقط ما اتفقنا عليه الآن، بل نقاط الانحراف التي قد تظهر عندما يبدأ التنفيذ الفعلي: leakage، provenance، تعارض المصادر، معنى الأحداث، الخلط بين causal وpredictive، وتحويل قيود الـTypeScript إلى معانٍ علمية.
+
+وأنا أعتبر بعدها الوثيقة نسخة تنفيذية v2.0؛ لا نعيد مناقشة التصميم إلا إذا أظهر التنفيذ دليلاً فعلياً على وجود تناقض أو عجز في أحد هذه البنود.
+
