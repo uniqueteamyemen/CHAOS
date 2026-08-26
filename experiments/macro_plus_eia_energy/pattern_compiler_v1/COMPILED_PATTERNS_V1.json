@@ -4,7 +4,7 @@
     "registry": "experiments/macro_plus_eia_energy/CONTROLLED_PATTERN_REGISTRY_V1.jsonl",
     "registry_sha256": "832201fdf186fdc4a76577a0889c1f2703baad1e0bac9d6535d0438467d5560c",
     "evidence_graph": "experiments/macro_plus_eia_energy/evidence_graph_v1/EVIDENCE_GRAPH_V1.json",
-    "evidence_graph_sha256": "3d3d2c5271dda7acb09f169a1a17bdf865076c075b55e06af8a541af8a32b5d0"
+    "evidence_graph_sha256": "25e9d1a32952e9619e9e7796d6e435d91e96fa89599fb8b4219aa0c55210d61d"
   },
   "eligible_supported_predictive": [],
   "research_only_candidates": [

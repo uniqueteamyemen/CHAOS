@@ -1,0 +1,17 @@
+{
+  "index_id":"CHAOS_AGENT_OUTPUT_INDEX_V1",
+  "supervisor":"CHAOS_SUPERVISOR",
+  "campaign_baseline":"campaigns/CAMPAIGN_BASELINE_V1.json",
+  "agents":[
+    {"agent_id":"TRADE_AGENT_V1","domain":"trade","state_output":"campaigns/agents/trade_v1/TRADE_DOMAIN_STATES_ANNUAL_V1.jsonl","transition_output":"campaigns/agents/trade_v1/TRADE_TRANSITION_EVIDENCE_V1.jsonl","status":"not_testable","admitted_to_positive_composition":false},
+    {"agent_id":"INSTITUTIONS_POLICY_AGENT_V1","domain":"institutions_policy","state_output":"campaigns/agents/institutions_policy_v1/WGI_INSTITUTIONAL_DOMAIN_STATES_ANNUAL_SOURCE_YEARS_V1.jsonl","transition_output":"campaigns/agents/institutions_policy_v1/WGI_TRANSITION_EVIDENCE_V1.jsonl","status":"rejected_or_not_testable","admitted_to_positive_composition":false},
+    {"agent_id":"ENERGY_AGENT_V1","domain":"energy","state_output":"experiments/macro_plus_eia_energy/within_domain_edges_v1/WITHIN_DOMAIN_EDGE_METRICS.csv","transition_output":"experiments/macro_plus_eia_energy/transition_evidence_v1/TRANSITION_EVIDENCE_V1.jsonl","status":"no_new_positive_edge","admitted_to_positive_composition":false},
+    {"agent_id":"ENVIRONMENT_DISASTER_AGENT_V1","domain":"environmental","state_output":"experiments/multi_domain_native_adapters_v1/USGS_EARTHQUAKE_DOMAIN_STATES_EVENT_V1.jsonl","transition_output":"experiments/multi_domain_native_adapters_v1/TRANSITION_EVIDENCE_NATIVE_DOMAINS_V1.jsonl","status":"not_testable","admitted_to_positive_composition":false},
+    {"agent_id":"HEALTH_PANDEMIC_AGENT_V1","domain":"health_pandemic","state_output":"experiments/multi_domain_native_adapters_v1/WHO_COVID_DOMAIN_STATES_DAILY_V1.jsonl.gz","transition_output":"experiments/multi_domain_native_adapters_v1/TRANSITION_EVIDENCE_NATIVE_DOMAINS_V1.jsonl","status":"not_testable","admitted_to_positive_composition":false},
+    {"agent_id":"EVIDENCE_COMPOSITION_AGENT_V1","domain":"cross_domain","state_output":"experiments/macro_plus_eia_energy/evidence_graph_v1/EVIDENCE_GRAPH_V1.json","transition_output":"campaigns/CAMPAIGN_SHARED_GATE_V1/ADMITTED_SUPPORTED_TRANSITIONS_V1.jsonl","status":"supervisor_gated","admitted_to_positive_composition":true}
+  ],
+  "gate_summary":"campaigns/CAMPAIGN_SHARED_GATE_V1/SUPERVISOR_GATE_DECISION_V1.json",
+  "schema_validation":"campaigns/CAMPAIGN_SHARED_GATE_V1/DOMAIN_STATE_SCHEMA_VALIDATION_V1.json",
+  "transition_schema_validation":"campaigns/CAMPAIGN_SHARED_GATE_V1/TRANSITION_EVIDENCE_SCHEMA_VALIDATION_V1.json",
+  "rules":{"only_supported_predictive_admitted":true,"causal_claims_admitted":false,"rejected_unresolved_not_testable_positive_weight":false}
+}
