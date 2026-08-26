@@ -36,9 +36,12 @@ def artifact(path: Path) -> dict:
 
 def main() -> None:
     summary = json.loads((OUT / 'RUN_SUMMARY.json').read_text(encoding='utf-8'))
+    null_run = json.loads((OUT / 'NULL_CONTROL_RUN_SUMMARY.json').read_text(encoding='utf-8'))
     path = json.loads((OUT / 'FROZEN_SELECTED_PATH.json').read_text(encoding='utf-8'))
     rows = list(csv.DictReader((OUT / 'FROZEN_PATH_REPLAY_ORIGINS.csv').open(encoding='utf-8', newline='')))
     metrics = list(csv.DictReader((OUT / 'FROZEN_PATH_METRICS_BY_SPLIT.csv').open(encoding='utf-8', newline='')))
+    null_rows = list(csv.DictReader((OUT / 'NULL_CONTROL_REPLICATE_METRICS.csv').open(encoding='utf-8', newline='')))
+    null_summary_rows = list(csv.DictReader((OUT / 'NULL_CONTROL_SUMMARY.csv').open(encoding='utf-8', newline='')))
     replay_splits = sorted({r['split'] for r in rows})
     replay_years = [int(r['origin_year']) for r in rows]
     key_files = [
@@ -46,7 +49,9 @@ def main() -> None:
         OUT / 'FROZEN_PATH_METRICS_BY_SPLIT.csv', OUT / 'MULTINODE_PATH_METRICS_BY_SPLIT.csv',
         OUT / 'BASELINE_CLASSIFICATION_COMPARISON.csv', OUT / 'DISCOVERY_UNIVARIATE_SHORTLIST.csv',
         OUT / 'DISCOVERY_INNER_TOP_PATHS.csv', OUT / 'FROZEN_PATH_REPLAY_ORIGINS.csv',
-        OUT / 'run.log',
+        OUT / 'NULL_CONTROL_REPLICATE_METRICS.csv', OUT / 'NULL_CONTROL_SUMMARY.csv',
+        OUT / 'NULL_CONTROL_RUN_SUMMARY.json', OUT / 'null_controls_fast.log',
+        OUT / 'run.log', OUT / 'run_expanded.log',
     ]
     manifest = {
         'manifest_type': 'CHAOS_reverse_extraction_v1_draft_qa',
@@ -63,6 +68,14 @@ def main() -> None:
             'max_origin_year': max(replay_years),
             'contains_locked_test_split': 'locked_test_deferred' in replay_splits,
             'metrics_rows': len(metrics),
+        },
+        'null_controls': {
+            'run_id': null_run['run_id'],
+            'controls': null_run['controls'],
+            'replicates_per_control_per_split': null_run['replicates_per_control_per_split'],
+            'evaluated_splits': null_run['evaluated_splits'],
+            'replicate_metric_rows': len(null_rows),
+            'summary_rows': len(null_summary_rows),
         },
         'raw_integrity': {
             'panel_current_sha256': sha256(PANEL),
@@ -83,10 +96,16 @@ def main() -> None:
         'qa_pass_conditions': {
             'selected_path_status_is_not_validated': path['status'] != 'reconstructed_validation_only',
             'candidate_paths_positive': summary['candidate_paths_generated'] > 0,
+            'expanded_to_four_nodes': summary['candidate_paths_generated'] == 30712,
+            'null_controls_three': len(null_run['controls']) == 3,
+            'null_replicate_rows_30000': len(null_rows) == 30000,
+            'null_summary_rows_6': len(null_summary_rows) == 6,
+            'null_replicates_5000': null_run['replicates_per_control_per_split'] == 5000,
             'replay_has_fit_inner_validation_only': set(replay_splits) == {'discovery_fit', 'discovery_inner', 'validation'},
             'replay_max_origin_2019': max(replay_years) == 2019,
             'locked_test_false': summary['locked_test_executed'] is False and path['locked_test_run'] is False,
-            'null_false': summary['null_executed'] is False and path['null_run'] is False,
+            'candidate_path_null_flag_false': path['null_run'] is False,
+            'null_control_run_recorded': null_run['replicates_per_control_per_split'] == 5000,
             'raw_unchanged': summary['raw_data_modified'] is False,
             'no_imputation_or_normalization': summary['imputation'] is False and summary['normalization'] is False,
             'panel_matches_HEAD': sha256(PANEL) == git_blob_sha256(PANEL),
@@ -104,7 +123,7 @@ def main() -> None:
         'replay_splits': replay_splits,
         'max_origin_year': max(replay_years),
         'locked_test_executed': summary['locked_test_executed'],
-        'null_executed': summary['null_executed'],
+        'null_controls_executed': null_run['replicates_per_control_per_split'] == 5000,
         'qa_all_true': all(manifest['qa_pass_conditions'].values()),
     }, ensure_ascii=False, indent=2))
 

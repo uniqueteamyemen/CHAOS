@@ -149,7 +149,7 @@ def score_univariates(df: pd.DataFrame, thresholds: dict) -> pd.DataFrame:
     return result.reset_index(drop=True)
 
 
-def candidate_paths(shortlist: pd.DataFrame) -> list[tuple]:
+def candidate_paths(shortlist: pd.DataFrame, path_lengths: tuple[int, ...]) -> list[tuple]:
     by_id = {}
     for _, row in shortlist.iterrows():
         state = {'low_or_negative': 'low', 'middle': 'mid', 'high_or_nonnegative': 'high'}[row['state']]
@@ -157,7 +157,7 @@ def candidate_paths(shortlist: pd.DataFrame) -> list[tuple]:
         by_id[row['rule_id']] = clause
     primitives = [by_id[k] for k in shortlist['rule_id']]
     paths = []
-    for length in (1, 2, 3):
+    for length in path_lengths:
         for combo in itertools.combinations(primitives, length):
             # Avoid duplicate feature/lag clauses and retain chronological order in the id.
             if len({(c[0], c[1]) for c in combo}) != len(combo):
@@ -200,8 +200,10 @@ def main() -> None:
     origins = add_split(make_origin_frame(panel))
     thresholds = thresholds_from_fit(origins)
     univariate = score_univariates(origins, thresholds)
-    shortlist = univariate.head(int(contract['search_space']['candidate_univariate_shortlist_size'])).copy()
-    paths = candidate_paths(shortlist)
+    shortlist_size = int(contract['search_space']['candidate_univariate_shortlist_size'])
+    path_lengths = tuple(int(x) for x in contract['search_space']['path_lengths'])
+    shortlist = univariate.head(shortlist_size).copy()
+    paths = candidate_paths(shortlist, path_lengths)
     inner = evaluate_paths(origins, paths, thresholds, 'discovery_inner')
     if inner.empty:
         raise RuntimeError('no candidate path met the inner support minimum')

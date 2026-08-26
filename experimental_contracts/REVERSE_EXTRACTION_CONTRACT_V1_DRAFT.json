@@ -1,6 +1,6 @@
 {
   "contract_id": "reverse_extraction_macro_plus_eia_energy_v1_draft",
-  "status": "draft_for_discovery_and_validation_only",
+  "status": "draft_for_discovery_validation_and_null_controls_no_locked_test",
   "purpose": "Extract a compact temporal rule path from historical discovery data and replay it on later validation origins without using future outcomes during trigger generation.",
   "dataset": {
     "matrix_id": "macro_plus_eia_energy",
@@ -47,9 +47,9 @@
     "no_future_rows_in_threshold_estimation": true
   },
   "search_space": {
-    "path_lengths": [1, 2, 3],
-    "max_path_nodes": 3,
-    "candidate_univariate_shortlist_size": 24,
+    "path_lengths": [1, 2, 3, 4],
+    "max_path_nodes": 4,
+    "candidate_univariate_shortlist_size": 30,
     "relation": "conjunction_of_ordered_temporal_states",
     "minimum_fit_support": 20,
     "minimum_inner_support": 10,
@@ -68,9 +68,18 @@
     "test_execution": "deferred_until_independent_review"
   },
   "null_plan": {
-    "status": "not_run_in_draft",
-    "planned_controls": ["entity_label_permutation_within_fit", "temporal_block_permutation", "prevalence_matched_random_trigger"],
-    "promotion_requires_null_comparison": true
+    "status": "run_for_current_frozen_candidate_only",
+    "replicates": 5000,
+    "seed": 460,
+    "controls": [
+      "label_permutation_within_entity_and_split",
+      "support_matched_random_trigger_within_entity_and_split",
+      "temporal_cyclic_shift_placebo_within_entity_and_split"
+    ],
+    "primary_null_evaluation_split": "external_validation_target_years",
+    "inner_null_is_exploratory_because_candidate_was_selected_there": true,
+    "promotion_requires_null_comparison": true,
+    "p_value_rule": "(1 + count(null_stat >= observed_stat)) / (replicates + 1)"
   },
   "metrics": [
     "support",

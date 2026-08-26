@@ -3,9 +3,9 @@
   "contract": "experimental_contracts/REVERSE_EXTRACTION_CONTRACT_V1_DRAFT.json",
   "panel": "catalog_first/readiness_gate/macro_plus_eia_energy/MACRO_PLUS_EIA_ENERGY_COMPLETE_139_NUMERIC_RAW_2000_2024_WIDE.csv",
   "status": "rejected_or_null_like",
-  "candidate_paths_generated": 2324,
-  "univariate_shortlist_rows": 24,
-  "inner_supported_paths": 1989,
+  "candidate_paths_generated": 30712,
+  "univariate_shortlist_rows": 30,
+  "inner_supported_paths": 17062,
   "discovery_fit_years": [
     2006,
     2012

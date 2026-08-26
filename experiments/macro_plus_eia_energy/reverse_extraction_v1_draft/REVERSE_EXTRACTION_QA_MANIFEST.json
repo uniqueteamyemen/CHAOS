@@ -1,9 +1,9 @@
 {
   "artifacts": [
     {
-      "bytes": 3991,
+      "bytes": 3993,
       "path": "experiments/macro_plus_eia_energy/reverse_extraction_v1_draft/RUN_SUMMARY.json",
-      "sha256": "2942b9b570cc75b4c378360728a05df89884d6c5c2877720e4327544e1314a51"
+      "sha256": "b681d8beaeb9c91975aa8117e154f07fa581670004f61eb07444aeb69def0950"
     },
     {
       "bytes": 2863,
@@ -36,9 +36,9 @@
       "sha256": "435bfabc20af32d063e8378e5466a24e2cd991e0236aff41cedefe5ebf726b6c"
     },
     {
-      "bytes": 36479,
+      "bytes": 37373,
       "path": "experiments/macro_plus_eia_energy/reverse_extraction_v1_draft/DISCOVERY_INNER_TOP_PATHS.csv",
-      "sha256": "ed8830dc42c7da07b51c40405579545e0bc3e1d5b2e8907392bb577d6cc6714b"
+      "sha256": "160cf56d5c20dc34ac6e5a0e3db2ae89a825b92bafbca98e2e5c48be76c56284"
     },
     {
       "bytes": 201105,
@@ -46,12 +46,37 @@
       "sha256": "24c43cfe84d1f8e4db5f9f28019916ff9d5aae9712f08b9433aafb781197f0ab"
     },
     {
+      "bytes": 5859402,
+      "path": "experiments/macro_plus_eia_energy/reverse_extraction_v1_draft/NULL_CONTROL_REPLICATE_METRICS.csv",
+      "sha256": "1aaec191077da48e20147ec777120b32cfe90e4a2d7e83226ffc4be997d8e10f"
+    },
+    {
+      "bytes": 2337,
+      "path": "experiments/macro_plus_eia_energy/reverse_extraction_v1_draft/NULL_CONTROL_SUMMARY.csv",
+      "sha256": "7293174567058b7465469f0e2fd7b2735b8432cbd71139319ba14d1c4c0ea9e3"
+    },
+    {
+      "bytes": 897,
+      "path": "experiments/macro_plus_eia_energy/reverse_extraction_v1_draft/NULL_CONTROL_RUN_SUMMARY.json",
+      "sha256": "ea79742c991caffe27469293c94c280a65ce5d7451ee0ba8224be1b29f91f001"
+    },
+    {
+      "bytes": 514,
+      "path": "experiments/macro_plus_eia_energy/reverse_extraction_v1_draft/null_controls_fast.log",
+      "sha256": "44a54862fcd7033da64018da208d45e4b9deaf644d17b2834ef4cc1dee0ce093"
+    },
+    {
       "bytes": 432,
       "path": "experiments/macro_plus_eia_energy/reverse_extraction_v1_draft/run.log",
       "sha256": "ce9394d6c045cea0de90fffee2d84d0975a18629dd50c2df15371b2d87f420f4"
+    },
+    {
+      "bytes": 434,
+      "path": "experiments/macro_plus_eia_energy/reverse_extraction_v1_draft/run_expanded.log",
+      "sha256": "80f9b0839a425aa5b49a1e1cd49c754daeea33542ecc12def4f6ad8099084bf1"
     }
   ],
-  "candidate_paths_generated": 2324,
+  "candidate_paths_generated": 30712,
   "contract": "experimental_contracts/REVERSE_EXTRACTION_CONTRACT_V1_DRAFT.json",
   "execution_flags": {
     "causal_claim": false,
@@ -61,14 +86,35 @@
     "null_executed": false,
     "raw_data_modified": false
   },
-  "inner_supported_paths": 1989,
+  "inner_supported_paths": 17062,
   "manifest_type": "CHAOS_reverse_extraction_v1_draft_qa",
+  "null_controls": {
+    "controls": [
+      "label_permutation_within_entity_and_split",
+      "support_matched_random_trigger_within_entity_and_split",
+      "temporal_cyclic_shift_placebo_within_entity_and_split"
+    ],
+    "evaluated_splits": [
+      "discovery_inner",
+      "validation"
+    ],
+    "replicate_metric_rows": 30000,
+    "replicates_per_control_per_split": 5000,
+    "run_id": "reverse_extraction_null_controls_v1",
+    "summary_rows": 6
+  },
   "panel": "catalog_first/readiness_gate/macro_plus_eia_energy/MACRO_PLUS_EIA_ENERGY_COMPLETE_139_NUMERIC_RAW_2000_2024_WIDE.csv",
   "qa_pass_conditions": {
+    "candidate_path_null_flag_false": true,
     "candidate_paths_positive": true,
+    "expanded_to_four_nodes": true,
     "locked_test_false": true,
     "no_imputation_or_normalization": true,
-    "null_false": true,
+    "null_control_run_recorded": true,
+    "null_controls_three": true,
+    "null_replicate_rows_30000": true,
+    "null_replicates_5000": true,
+    "null_summary_rows_6": true,
     "panel_matches_HEAD": true,
     "raw_matches_HEAD": true,
     "raw_unchanged": true,
