@@ -35,3 +35,7 @@ CHAOS preserves raw observations and source conflicts. It does not force source 
 ## Status
 
 The repository is private and is being populated from the independent workspace. The initial commit will contain the documented project layer, contracts, code, reports, compact derived artifacts, and manifests. Large raw/staged datasets remain external to Git until their storage, licensing, and access policy are separately approved.
+
+## Terminology and relationship reference
+
+The shared terminology, relationship model, ambiguous-term examples, evidence statuses, and naming rules are maintained in [`CHAOS_TERMINOLOGY_AND_RELATIONSHIPS.md`](CHAOS_TERMINOLOGY_AND_RELATIONSHIPS.md). All agents, source/domain adapters, transition-evidence builders, graph tools, pattern compilers, registries, and research-runtime artifacts should use that document as the common semantic reference. It defines the distinction between `Domain → State → Edge/Transition → Path → Pattern → Research Runtime` without forcing a final mathematical model or treating a pattern as automatically successful, causal, or production-ready.
