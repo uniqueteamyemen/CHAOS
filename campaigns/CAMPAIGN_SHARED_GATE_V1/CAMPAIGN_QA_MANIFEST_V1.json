@@ -165,6 +165,11 @@
       "path": "campaigns/research_rounds/20260827_BROWSER_DEEP_RESEARCH/IMF_ITG_IMTS_LINK_ANALYSIS_V1.json",
       "bytes": 177,
       "sha256": "8434049920616c8e46ad1ca028ef9a35eb8ff0a5d514fe335f3ff1f99af1cab1"
+    },
+    {
+      "path": "campaigns/research_rounds/20260827_BROWSER_DEEP_RESEARCH/BROWSER_DEEP_RESEARCH_ROUND_REPORT_AR.md",
+      "bytes": 18122,
+      "sha256": "2e7e9127157186f0f69862117864786ab77f4ec383e03d3ab93e13942ae2c222"
     }
   ],
   "checks": {
