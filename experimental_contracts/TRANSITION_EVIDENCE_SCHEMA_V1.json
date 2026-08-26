@@ -1,0 +1,25 @@
+{
+  "schema_id": "CHAOS_TRANSITION_EVIDENCE_SCHEMA_V1",
+  "fields": {
+    "transition_id": "stable edge identifier",
+    "source_state": "source DomainState pattern_id",
+    "target_state": "target DomainState or outcome identifier",
+    "lag": "integer and native unit",
+    "split": "fit, inner, validation, confirmation, test",
+    "metric": "metric name and value",
+    "null_method": "null design and replicate count",
+    "p_value": "empirical or unavailable",
+    "entity_holdout": "whether entities were held out",
+    "source_refs": "source versions and artifact paths",
+    "edge_status": "candidate|supported_predictive|unresolved|rejected|not_testable",
+    "causal_claim": "always false unless separate causal contract exists",
+    "failure_cases": "coverage, definition, or stability failures"
+  },
+  "rules": [
+    "A transition is not a causal claim.",
+    "State extraction and transition evaluation are separate layers.",
+    "Edges unsupported by null or baseline remain rejected or unresolved.",
+    "Native frequency and lag units must be preserved.",
+    "All searched paths and outcomes must remain represented, including failures."
+  ]
+}

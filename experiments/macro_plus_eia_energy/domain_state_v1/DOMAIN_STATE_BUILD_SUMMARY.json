@@ -1,0 +1,21 @@
+{
+  "schema": "experimental_contracts/DOMAIN_STATE_SCHEMA_V1.json",
+  "records": 25192,
+  "economic_records": 10928,
+  "conflict_records": 14264,
+  "domains": [
+    "conflict",
+    "economic"
+  ],
+  "native_frequencies": [
+    "annual"
+  ],
+  "state_probabilities_are_rule_scores": true,
+  "future_outcome_used_in_state": false,
+  "imputation": false,
+  "normalization": false,
+  "source_averaging": false,
+  "raw_modified": false,
+  "ama_sha256": "d5d7048a2367ed9c0e0f5c4acae6cc3c3c101bc78126e0870dc77dbe031f8c63",
+  "ucdp_cy_zip_sha256": "66910888f5653af42776d2debc1d72fe527559e7f7fc82e69b7c8771467f2d34"
+}

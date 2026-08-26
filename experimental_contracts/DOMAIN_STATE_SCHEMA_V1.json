@@ -1,0 +1,39 @@
+{
+  "schema_id": "CHAOS_DOMAIN_STATE_SCHEMA_V1",
+  "purpose": "Neutral state representation for domain adapters before transition composition",
+  "domain_state_fields": {
+    "pattern_id": "stable identifier",
+    "domain": "economic|conflict|energy|trade|environmental|other",
+    "entity_name": "source-native entity label",
+    "entity_id": "source-native identifier",
+    "timestamp": "native observation date or year",
+    "native_frequency": "annual|monthly|daily|event",
+    "state_label": "current observed or rule-derived state at timestamp",
+    "state_probability": "descriptive score in [0,1], not causal confidence",
+    "source_observations": "source variable values used to emit the state",
+    "lead_profile": "lead/lag metadata; empty for a point-in-time state",
+    "uncertainty": "coverage, estimation, revision, and measurement caveats",
+    "failure_cases": "known missingness or unsupported conditions",
+    "edge_status": "not_testable for standalone state; transition layer may update it",
+    "evidence_refs": "source IDs, versions, raw/staged artifact paths"
+  },
+  "rules": [
+    "Do not use future outcome labels to emit a current state.",
+    "Keep native frequency and source definition unchanged.",
+    "No imputation, normalization, source averaging, or forced reconciliation.",
+    "A deterministic rule score is not a probability of causality.",
+    "TransitionEvidence is a separate object from DomainState."
+  ],
+  "adapters": {
+    "un_ama_2026": {
+      "domain": "economic",
+      "frequency": "annual",
+      "states": ["high_growth_gt_4pp", "non_high_growth"]
+    },
+    "ucdp_organized_violence_cy_26_1": {
+      "domain": "conflict",
+      "frequency": "annual",
+      "states": ["state_based_conflict_present", "state_based_high_fatality_25_plus"]
+    }
+  }
+}

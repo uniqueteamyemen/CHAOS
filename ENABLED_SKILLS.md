@@ -52,3 +52,7 @@ This workspace is a preparation area for market-intelligence-engine. It does not
 ## Status
 
 The packages import successfully in the current environment. The selected skills are prepared as research references; no skill has been allowed to modify market-intelligence-engine automatically.
+
+### CHAOS project-local skills added
+- `skills/economic-geopolitical-analysis/SKILL.md` — validated with `quick_validate.py`; defines evidence-led economic/geopolitical state and transition analysis.
+- `skills/chaos-system-architecture-review/SKILL.md` — validated with `quick_validate.py`; defines end-to-end raw-to-runtime architecture review and promotion gates.

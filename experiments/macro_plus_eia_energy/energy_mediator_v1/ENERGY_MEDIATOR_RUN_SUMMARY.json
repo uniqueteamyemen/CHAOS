@@ -1,0 +1,55 @@
+{
+  "run_id": "energy_mediator_paths_v1",
+  "source": "macro_plus_eia_energy v1.1",
+  "target": "wdi__NY.GDP.MKTP.KD.ZG",
+  "mediator": "eia__energy_consumption_per_gdp",
+  "outcome": "material_drop_2pp_at_t_plus_3",
+  "paths": 4,
+  "path_specs": [
+    {
+      "path_id": "energy_gdp_up_at_t_plus_1",
+      "lag_years": 1,
+      "direction": "up"
+    },
+    {
+      "path_id": "energy_gdp_down_at_t_plus_1",
+      "lag_years": 1,
+      "direction": "down"
+    },
+    {
+      "path_id": "energy_gdp_up_at_t_plus_2",
+      "lag_years": 2,
+      "direction": "up"
+    },
+    {
+      "path_id": "energy_gdp_down_at_t_plus_2",
+      "lag_years": 2,
+      "direction": "down"
+    }
+  ],
+  "splits": {
+    "fit": [
+      2006,
+      2009
+    ],
+    "inner": [
+      2010,
+      2012
+    ],
+    "validation": [
+      2013,
+      2016
+    ],
+    "confirmation": [
+      2017,
+      2019
+    ]
+  },
+  "null_replicates": 2000,
+  "used_locked_test": false,
+  "raw_modified": false,
+  "imputation": false,
+  "normalization": false,
+  "causal_claims_permitted": false,
+  "interpretation": "conditional mediator-path exploration; mediator is observed at t+lag and is not a t-origin early warning"
+}
