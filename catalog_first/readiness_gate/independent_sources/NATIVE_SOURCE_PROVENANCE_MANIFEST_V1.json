@@ -1,0 +1,12 @@
+{
+  "manifest_id":"CHAOS_NATIVE_SOURCE_PROVENANCE_V1",
+  "collected_at_utc":"2026-08-26T20:39:48Z",
+  "sources":[
+    {"source_id":"WHO_COVID_GLOBAL_DAILY_2026","publisher":"World Health Organization","download_url":"https://srhdpeuwpubsa.blob.core.windows.net/whdh/COVID/WHO-COVID-19-global-daily-data.csv","documentation_url":"https://data.who.int/dashboards/covid19/data","file":"readiness_gate/independent_sources/who_covid_2026/raw/WHO_COVID_GLOBAL_DAILY_RAW.csv","sha256":"6063fda90dba3439f551c0bfadce53bb437d9982056cd1a92aeee64963bf2038","native_frequency":"daily","observation_semantics":"date reported to WHO","coverage":"2020-01-04 through 2026-07-19 in downloaded release","rows":573360,"license":"WHO datasets generally CC BY 4.0 with additional terms unless otherwise indicated; verify third-party-attributed components","limitations":["reporting definitions and practices vary","retrospective revisions occur","blank values are not zero"]},
+    {"source_id":"USGS_EARTHQUAKE_M6_5_2000_2024","publisher":"U.S. Geological Survey Earthquake Hazards Program","download_url":"https://earthquake.usgs.gov/fdsnws/event/1/query?format=csv&starttime=2000-01-01&endtime=2024-12-31&minmagnitude=6.5&eventtype=earthquake&orderby=time-asc","documentation_url":"https://earthquake.usgs.gov/fdsnws/event/1/","file":"readiness_gate/independent_sources/usgs_earthquake_2026/raw/USGS_EARTHQUAKE_M6_5_2000_2024_RAW.csv","sha256":"bd17af21e62c440caa8777e4a1656e8ff2316d507ac5d387d1089ced2f626916","native_frequency":"event","observation_semantics":"origin time and catalog event record","coverage":"2000-01-08 through 2024-12-27 in scoped query","events":1141,"license":"USGS data policy applies; preserve attribution and query parameters","limitations":["magnitude-filtered extract, not complete seismic catalog","country attribution absent","no production shock inferred from earthquake record alone"]}
+  ],
+  "raw_immutable":true,
+  "annualization":false,
+  "country_matching_performed":false,
+  "causal_claims_permitted":false
+}

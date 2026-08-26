@@ -1,0 +1,13 @@
+{
+  "contract_id":"CHAOS_HEALTH_DISASTER_ADAPTERS_V1",
+  "sources":[
+    {"adapter_id":"WHO_COVID_DAILY_V1","source":"WHO COVID-19 global daily data","native_frequency":"daily","state_rule":"reported New_cases > 0 or reported New_deaths > 0 on Date_reported","entity_key":"Country_code","time_key":"Date_reported","future_data_required":false,"raw_immutable":true,"limitations":["reporting practices and definitions vary","retrospective updates occur","blank values are not zero","date is date reported, not symptom onset"]},
+    {"adapter_id":"USGS_EARTHQUAKE_EVENT_V1","source":"USGS FDSN Earthquake Catalog","native_frequency":"event","state_rule":"event record with magnitude >= 6.5 and type=earthquake","entity_key":"event id + coordinates","time_key":"time","future_data_required":false,"raw_immutable":true,"limitations":["this scoped extract is a magnitude-filtered catalog query","country attribution is not present in source output","no production shock inferred from event alone"]}
+  ],
+  "downstream_path":"Event -> observed shock candidate -> production shock -> recovery",
+  "current_scope":"build native DomainState only; no event-to-annual GDP edge",
+  "event_to_annual":"not_testable_without_alignment_contract_and_country_match",
+  "imputation":false,
+  "annualization":false,
+  "causal_claims_permitted":false
+}

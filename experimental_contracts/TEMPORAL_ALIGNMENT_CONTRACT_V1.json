@@ -1,0 +1,15 @@
+{
+  "contract_id":"CHAOS_TEMPORAL_ALIGNMENT_V1",
+  "purpose":"Explicitly align native-frequency states for edge testing without rewriting source observations",
+  "principles":["preserve_native_frequency","no_daily_to_annual_conversion_by_default","no_broadcasting_future_state_into_past","alignment_is_derived_artifact_not_raw_replacement"],
+  "annual_to_annual":{"allowed":true,"key":"entity_id + calendar_year","lag_unit":"years","missing_policy":"fail_closed"},
+  "event_to_annual":{"allowed":false,"default_status":"not_testable","requires":["event_window","shock_window","outcome_horizon","entity_match_rule","coverage_rule","null_design","alignment_version"]},
+  "daily_to_monthly":{"allowed":false,"requires":"separate aggregation contract preserving event counts and timing"},
+  "event_to_event":{"allowed":true,"key":"entity_id + timestamp/window","lag_unit":"days_or_native"},
+  "publication_time":"must be retained separately from observation_time when available",
+  "edge_lag_definition":"lag measured from source-state observation time to target-state observation time; no midpoint substitution",
+  "right_censoring":"recorded as unresolved or not_testable, never imputed",
+  "coverage_incomplete":"edge-specific complete-case only; retain excluded records and reason",
+  "validation":"emit alignment audit with counts, start/end, frequency, dropped records, and hashes",
+  "causal_claims_permitted":false
+}

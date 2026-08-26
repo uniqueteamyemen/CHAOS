@@ -1,0 +1,589 @@
+{
+  "graph_id": "CHAOS_EVIDENCE_GRAPH_V1",
+  "nodes": [
+    {
+      "node_id": "AMA_HIGH_GROWTH_STATE_V1"
+    },
+    {
+      "node_id": "AMA_MATERIAL_DROP_2PP_T_PLUS_3_V1"
+    },
+    {
+      "node_id": "UCDP_STATE_CONFLICT_T_PLUS_3_V1"
+    },
+    {
+      "node_id": "UCDP_HIGH_FATALITY_25_T_PLUS_3_V1"
+    },
+    {
+      "node_id": "AMA_POPULATION_BOUND_V1"
+    },
+    {
+      "node_id": "AMA_ENERGY_GDP_BOUND_V1"
+    },
+    {
+      "node_id": "HG_MATERIAL_DETERIORATION_3Y_V1",
+      "type": "pattern_record"
+    },
+    {
+      "node_id": "HG_STATE_BASED_CONFLICT_3Y_V1",
+      "type": "pattern_record"
+    },
+    {
+      "node_id": "HG_HIGH_FATALITY_3Y_V1",
+      "type": "pattern_record"
+    },
+    {
+      "node_id": "BOUNDED_SCALE_SECOND_NODE_V1",
+      "type": "pattern_record"
+    },
+    {
+      "node_id": "HG_ENERGY_INTENSITY_DOWN_T2_MEDIATOR_V1",
+      "type": "pattern_record"
+    },
+    {
+      "node_id": "PATH_COMPOSER_V1_1",
+      "type": "pattern_record"
+    },
+    {
+      "node_id": "HIGH_INFLATION_TO_MATERIAL_DETERIORATION_WITHIN_DOMAIN_V1",
+      "type": "pattern_record"
+    },
+    {
+      "node_id": "CURRENT_ACCOUNT_STRESS_TO_MATERIAL_DETERIORATION_WITHIN_DOMAIN_V1",
+      "type": "pattern_record"
+    },
+    {
+      "node_id": "ENERGY_INTENSITY_INCREASE_TO_MATERIAL_DETERIORATION_WITHIN_DOMAIN_V1",
+      "type": "pattern_record"
+    },
+    {
+      "node_id": "WHO_COVID_DAILY_TO_ANNUAL_MATERIAL_DETERIORATION_V1",
+      "type": "pattern_record"
+    },
+    {
+      "node_id": "USGS_EARTHQUAKE_EVENT_TO_ANNUAL_MATERIAL_DETERIORATION_V1",
+      "type": "pattern_record"
+    },
+    {
+      "node_id": "ECONOMIC_DETERIORATION_TO_UCDP_CONFLICT_V1",
+      "type": "pattern_record"
+    },
+    {
+      "node_id": "WHO_COVID_DAILY_REPORTED_ACTIVITY"
+    },
+    {
+      "node_id": "ANNUAL_MATERIAL_DETERIORATION"
+    },
+    {
+      "node_id": "USGS_EARTHQUAKE_MAGNITUDE_GE_6_5_EVENT"
+    },
+    {
+      "node_id": "ECONOMIC_DETERIORATION_AT_T"
+    },
+    {
+      "node_id": "UCDP_STATE_BASED_CONFLICT_AT_T_PLUS_H"
+    }
+  ],
+  "edges": [
+    {
+      "edge_id": "AMA_HG_TO_MATERIAL_DROP_V1_validation",
+      "source": "AMA_HIGH_GROWTH_STATE_V1",
+      "target": "AMA_MATERIAL_DROP_2PP_T_PLUS_3_V1",
+      "lag": {
+        "value": 3,
+        "unit": "years",
+        "direction": "forward"
+      },
+      "split": "validation",
+      "metric": {
+        "balanced_accuracy": 0.7325273192,
+        "f1": 0.6184615385
+      },
+      "p_value": 0.0005,
+      "null_method": "within-country label permutation; 2000 reps",
+      "status": "supported_predictive",
+      "causal_claim": false,
+      "source_refs": [
+        "UN_AMA_2026",
+        "UN_AMA_REPLICATION_NULL_SUMMARY.csv"
+      ],
+      "failure_cases": [
+        "not causal",
+        "confirmation remains lower than validation"
+      ]
+    },
+    {
+      "edge_id": "AMA_HG_TO_MATERIAL_DROP_V1_confirmation",
+      "source": "AMA_HIGH_GROWTH_STATE_V1",
+      "target": "AMA_MATERIAL_DROP_2PP_T_PLUS_3_V1",
+      "lag": {
+        "value": 3,
+        "unit": "years",
+        "direction": "forward"
+      },
+      "split": "confirmation",
+      "metric": {
+        "balanced_accuracy": 0.6820987654,
+        "f1": 0.5037783375
+      },
+      "p_value": 0.0005,
+      "null_method": "within-country label permutation; 2000 reps",
+      "status": "supported_predictive",
+      "causal_claim": false,
+      "source_refs": [
+        "UN_AMA_2026",
+        "UN_AMA_REPLICATION_NULL_SUMMARY.csv"
+      ],
+      "failure_cases": [
+        "not causal"
+      ]
+    },
+    {
+      "edge_id": "AMA_HG_TO_UCDP_STATE_CONFLICT_T_PLUS_3_V1_validation",
+      "source": "AMA_HIGH_GROWTH_STATE_V1",
+      "target": "UCDP_STATE_CONFLICT_T_PLUS_3_V1",
+      "lag": {
+        "value": 3,
+        "unit": "years",
+        "direction": "forward"
+      },
+      "split": "validation",
+      "metric": {
+        "balanced_accuracy": 0.5832587546,
+        "f1": 0.3684210526
+      },
+      "p_value": 0.7701149425,
+      "null_method": "within-country label permutation; 2000 reps",
+      "status": "rejected",
+      "causal_claim": false,
+      "source_refs": [
+        "UN_AMA_2026",
+        "UCDP_CY_26_1",
+        "AMA_UCDP_CROSS_DOMAIN_NULL_SUMMARY.csv"
+      ],
+      "failure_cases": [
+        "cross-domain edge did not pass current null gate"
+      ]
+    },
+    {
+      "edge_id": "AMA_HG_TO_UCDP_STATE_CONFLICT_T_PLUS_3_V1_confirmation",
+      "source": "AMA_HIGH_GROWTH_STATE_V1",
+      "target": "UCDP_STATE_CONFLICT_T_PLUS_3_V1",
+      "lag": {
+        "value": 3,
+        "unit": "years",
+        "direction": "forward"
+      },
+      "split": "confirmation",
+      "metric": {
+        "balanced_accuracy": 0.6141594978,
+        "f1": 0.4248366013
+      },
+      "p_value": 0.6006996502,
+      "null_method": "within-country label permutation; 2000 reps",
+      "status": "rejected",
+      "causal_claim": false,
+      "source_refs": [
+        "UN_AMA_2026",
+        "UCDP_CY_26_1",
+        "AMA_UCDP_CROSS_DOMAIN_NULL_SUMMARY.csv"
+      ],
+      "failure_cases": [
+        "cross-domain edge did not pass current null gate"
+      ]
+    },
+    {
+      "edge_id": "AMA_HG_TO_UCDP_HIGH_FATALITY_25_T_PLUS_3_V1_validation",
+      "source": "AMA_HIGH_GROWTH_STATE_V1",
+      "target": "UCDP_HIGH_FATALITY_25_T_PLUS_3_V1",
+      "lag": {
+        "value": 3,
+        "unit": "years",
+        "direction": "forward"
+      },
+      "split": "validation",
+      "metric": {
+        "balanced_accuracy": 0.5787528126,
+        "f1": 0.3018867925
+      },
+      "p_value": 0.6711644178,
+      "null_method": "within-country label permutation; 2000 reps",
+      "status": "rejected",
+      "causal_claim": false,
+      "source_refs": [
+        "UN_AMA_2026",
+        "UCDP_CY_26_1",
+        "AMA_UCDP_CROSS_DOMAIN_NULL_SUMMARY.csv"
+      ],
+      "failure_cases": [
+        "cross-domain edge did not pass current null gate"
+      ]
+    },
+    {
+      "edge_id": "AMA_HG_TO_UCDP_HIGH_FATALITY_25_T_PLUS_3_V1_confirmation",
+      "source": "AMA_HIGH_GROWTH_STATE_V1",
+      "target": "UCDP_HIGH_FATALITY_25_T_PLUS_3_V1",
+      "lag": {
+        "value": 3,
+        "unit": "years",
+        "direction": "forward"
+      },
+      "split": "confirmation",
+      "metric": {
+        "balanced_accuracy": 0.6489799738,
+        "f1": 0.3717472119
+      },
+      "p_value": 0.1509245377,
+      "null_method": "within-country label permutation; 2000 reps",
+      "status": "unresolved",
+      "causal_claim": false,
+      "source_refs": [
+        "UN_AMA_2026",
+        "UCDP_CY_26_1",
+        "AMA_UCDP_CROSS_DOMAIN_NULL_SUMMARY.csv"
+      ],
+      "failure_cases": [
+        "cross-domain edge did not pass current null gate"
+      ]
+    },
+    {
+      "edge_id": "POP_SECOND_NODE_TO_DROP_V1_locked_test",
+      "source": "AMA_POPULATION_BOUND_V1",
+      "target": "AMA_MATERIAL_DROP_2PP_T_PLUS_3_V1",
+      "lag": {
+        "value": 3,
+        "unit": "years",
+        "direction": "forward"
+      },
+      "split": "locked_test",
+      "metric": {
+        "balanced_accuracy": 0.671583,
+        "baseline_target_growth_only_balanced_accuracy": 0.690611
+      },
+      "p_value": null,
+      "null_method": "frozen locked test; no post-test selection",
+      "status": "rejected",
+      "causal_claim": false,
+      "source_refs": [
+        "macro_plus_eia_energy",
+        "REGIME_LOCKED_TEST_REPORT_AR.md"
+      ],
+      "failure_cases": [
+        "second-node proxy did not improve target-growth-only"
+      ]
+    },
+    {
+      "edge_id": "ENERGY_GDP_SECOND_NODE_TO_DROP_V1_locked_test",
+      "source": "AMA_ENERGY_GDP_BOUND_V1",
+      "target": "AMA_MATERIAL_DROP_2PP_T_PLUS_3_V1",
+      "lag": {
+        "value": 3,
+        "unit": "years",
+        "direction": "forward"
+      },
+      "split": "locked_test",
+      "metric": {
+        "balanced_accuracy": 0.68966,
+        "baseline_target_growth_only_balanced_accuracy": 0.690611
+      },
+      "p_value": null,
+      "null_method": "frozen locked test; no post-test selection",
+      "status": "rejected",
+      "causal_claim": false,
+      "source_refs": [
+        "macro_plus_eia_energy",
+        "REGIME_LOCKED_TEST_REPORT_AR.md"
+      ],
+      "failure_cases": [
+        "second-node proxy did not improve target-growth-only"
+      ]
+    },
+    {
+      "edge_id": "HG_MATERIAL_DETERIORATION_3Y_V1_registry",
+      "source": "HG_MATERIAL_DETERIORATION_3Y_V1",
+      "target": "material_drop_2pp",
+      "split": "registry",
+      "metric": null,
+      "p_value": null,
+      "null_method": "registry_summary",
+      "status": "provisionally_supported_descriptive",
+      "causal_claim": false,
+      "source_refs": null,
+      "failure_cases": [
+        ""
+      ]
+    },
+    {
+      "edge_id": "HG_STATE_BASED_CONFLICT_3Y_V1_registry",
+      "source": "HG_STATE_BASED_CONFLICT_3Y_V1",
+      "target": "UCDP_state_based_conflict",
+      "split": "registry",
+      "metric": null,
+      "p_value": null,
+      "null_method": "registry_summary",
+      "status": "not_supported_by_current_cross_domain_null",
+      "causal_claim": false,
+      "source_refs": null,
+      "failure_cases": [
+        "cross-domain association was not distinguishable from within-country label permutation"
+      ]
+    },
+    {
+      "edge_id": "HG_HIGH_FATALITY_3Y_V1_registry",
+      "source": "HG_HIGH_FATALITY_3Y_V1",
+      "target": "UCDP_state_based_high_fatality_25",
+      "split": "registry",
+      "metric": null,
+      "p_value": null,
+      "null_method": "registry_summary",
+      "status": "weak_or_unresolved_cross_domain_signal",
+      "causal_claim": false,
+      "source_refs": null,
+      "failure_cases": [
+        "confirmation is above null mean but does not pass the current predeclared significance threshold; retain as unresolved, not supported"
+      ]
+    },
+    {
+      "edge_id": "BOUNDED_SCALE_SECOND_NODE_V1_registry",
+      "source": "BOUNDED_SCALE_SECOND_NODE_V1",
+      "target": "bounded population or energy-per-GDP adds independent predictive value above high-growth-only",
+      "split": "registry",
+      "metric": null,
+      "p_value": null,
+      "null_method": "registry_summary",
+      "status": "rejected_as_additive_node",
+      "causal_claim": false,
+      "source_refs": null,
+      "failure_cases": [
+        "second-node proxy contribution not demonstrated"
+      ]
+    },
+    {
+      "edge_id": "HG_ENERGY_INTENSITY_DOWN_T2_MEDIATOR_V1_registry",
+      "source": "HG_ENERGY_INTENSITY_DOWN_T2_MEDIATOR_V1",
+      "target": "high growth plus energy consumption per GDP decline at t+2 adds predictive value for material GDP deterioration at t+3",
+      "split": "registry",
+      "metric": null,
+      "p_value": null,
+      "null_method": "registry_summary",
+      "status": "rejected_as_additive_mediator",
+      "causal_claim": false,
+      "source_refs": null,
+      "failure_cases": [
+        "mediator path can exceed its own four-path null yet remain inferior to the simpler high-growth baseline"
+      ]
+    },
+    {
+      "edge_id": "PATH_COMPOSER_V1_1_registry",
+      "source": "PATH_COMPOSER_V1_1",
+      "target": "probability composition of high-growth with energy-intensity mediator improves material-deterioration prediction",
+      "split": "registry",
+      "metric": null,
+      "p_value": null,
+      "null_method": "registry_summary",
+      "status": "rejected_for_out_of_sample_degradation",
+      "causal_claim": false,
+      "source_refs": null,
+      "failure_cases": [
+        "fit-only improvement did not survive inner, validation, or confirmation"
+      ]
+    },
+    {
+      "edge_id": "HIGH_INFLATION_TO_MATERIAL_DETERIORATION_WITHIN_DOMAIN_V1_registry",
+      "source": "HIGH_INFLATION_TO_MATERIAL_DETERIORATION_WITHIN_DOMAIN_V1",
+      "target": "WDI CPI inflation >10% at t predicts material GDP deterioration within 1-3 years",
+      "split": "registry",
+      "metric": null,
+      "p_value": 0.3013493253,
+      "null_method": "registry_summary",
+      "status": "rejected_by_current_maxstat_null",
+      "causal_claim": false,
+      "source_refs": "experiments/macro_plus_eia_energy/within_domain_edges_v1/WITHIN_DOMAIN_EDGE_METRICS.csv",
+      "failure_cases": [
+        "edge was not distinguishable from within-entity label permutation across the searched edge/horizon/split family"
+      ]
+    },
+    {
+      "edge_id": "CURRENT_ACCOUNT_STRESS_TO_MATERIAL_DETERIORATION_WITHIN_DOMAIN_V1_registry",
+      "source": "CURRENT_ACCOUNT_STRESS_TO_MATERIAL_DETERIORATION_WITHIN_DOMAIN_V1",
+      "target": "IMF current-account balance <=-5% of GDP at t predicts material GDP deterioration within 1-3 years",
+      "split": "registry",
+      "metric": null,
+      "p_value": 0.3013493253,
+      "null_method": "registry_summary",
+      "status": "rejected_by_current_maxstat_null",
+      "causal_claim": false,
+      "source_refs": "experiments/macro_plus_eia_energy/within_domain_edges_v1/WITHIN_DOMAIN_EDGE_METRICS.csv",
+      "failure_cases": [
+        "edge was not distinguishable from within-entity label permutation across the searched edge/horizon/split family"
+      ]
+    },
+    {
+      "edge_id": "ENERGY_INTENSITY_INCREASE_TO_MATERIAL_DETERIORATION_WITHIN_DOMAIN_V1_registry",
+      "source": "ENERGY_INTENSITY_INCREASE_TO_MATERIAL_DETERIORATION_WITHIN_DOMAIN_V1",
+      "target": "annual increase in EIA energy consumption per GDP at t predicts material GDP deterioration within 1-3 years",
+      "split": "registry",
+      "metric": null,
+      "p_value": 0.3013493253,
+      "null_method": "registry_summary",
+      "status": "rejected_as_additive_within_domain_edge",
+      "causal_claim": false,
+      "source_refs": "experiments/macro_plus_eia_energy/within_domain_edges_v1/WITHIN_DOMAIN_EDGE_METRICS.csv",
+      "failure_cases": [
+        "edge did not add evidence above the simpler high-growth baseline and was not separated from the family max-stat null"
+      ]
+    },
+    {
+      "edge_id": "WHO_COVID_DAILY_TO_ANNUAL_MATERIAL_DETERIORATION_V1_registry",
+      "source": "WHO_COVID_DAILY_TO_ANNUAL_MATERIAL_DETERIORATION_V1",
+      "target": "WHO reported daily pandemic activity to annual material GDP deterioration",
+      "split": "registry",
+      "metric": null,
+      "p_value": null,
+      "null_method": "registry_summary",
+      "status": "not_testable",
+      "causal_claim": false,
+      "source_refs": null,
+      "failure_cases": [
+        "not tested because daily-to-annual alignment, reporting-date semantics, and health-to-production shock contract are not yet specified"
+      ]
+    },
+    {
+      "edge_id": "USGS_EARTHQUAKE_EVENT_TO_ANNUAL_MATERIAL_DETERIORATION_V1_registry",
+      "source": "USGS_EARTHQUAKE_EVENT_TO_ANNUAL_MATERIAL_DETERIORATION_V1",
+      "target": "USGS magnitude>=6.5 earthquake event to annual material GDP deterioration",
+      "split": "registry",
+      "metric": null,
+      "p_value": null,
+      "null_method": "registry_summary",
+      "status": "not_testable",
+      "causal_claim": false,
+      "source_refs": null,
+      "failure_cases": [
+        "not tested because event-to-annual alignment, country attribution, production-shock measurement, and recovery contract are absent"
+      ]
+    },
+    {
+      "edge_id": "ECONOMIC_DETERIORATION_TO_UCDP_CONFLICT_V1_registry",
+      "source": "ECONOMIC_DETERIORATION_TO_UCDP_CONFLICT_V1",
+      "target": "economic deterioration at t predicts UCDP state-based conflict at t+1..t+3",
+      "split": "registry",
+      "metric": null,
+      "p_value": 0.4532733633,
+      "null_method": "registry_summary",
+      "status": "rejected_by_current_maxstat_null",
+      "causal_claim": false,
+      "source_refs": "experiments/multi_domain_native_edges_v1/ECONOMIC_DETERIORATION_TO_CONFLICT_MAXSTAT_NULL_SUMMARY.json",
+      "failure_cases": [
+        "new indirect edge did not separate from within-country max-stat null; direct high-growth-to-conflict rejection remains unchanged"
+      ]
+    },
+    {
+      "edge_id": "WHO_COVID_DAILY_TO_ANNUAL_GDP_V1",
+      "source": "WHO_COVID_DAILY_REPORTED_ACTIVITY",
+      "target": "ANNUAL_MATERIAL_DETERIORATION",
+      "lag": {
+        "value": null,
+        "unit": "not_defined",
+        "direction": "not_testable"
+      },
+      "split": "not_run",
+      "metric": null,
+      "p_value": null,
+      "null_method": null,
+      "status": "not_testable",
+      "causal_claim": false,
+      "source_refs": [
+        "WHO_COVID_GLOBAL_DAILY_RAW.csv",
+        "TEMPORAL_ALIGNMENT_CONTRACT_V1.json"
+      ],
+      "failure_cases": [
+        "daily-to-annual alignment contract not executed",
+        "date is reported date",
+        "no annualization or imputation",
+        "health shock to production mechanism not observed in this edge"
+      ]
+    },
+    {
+      "edge_id": "USGS_EARTHQUAKE_EVENT_TO_ANNUAL_GDP_V1",
+      "source": "USGS_EARTHQUAKE_MAGNITUDE_GE_6_5_EVENT",
+      "target": "ANNUAL_MATERIAL_DETERIORATION",
+      "lag": {
+        "value": null,
+        "unit": "not_defined",
+        "direction": "not_testable"
+      },
+      "split": "not_run",
+      "metric": null,
+      "p_value": null,
+      "null_method": null,
+      "status": "not_testable",
+      "causal_claim": false,
+      "source_refs": [
+        "USGS_EARTHQUAKE_M6_5_2000_2024_RAW.csv",
+        "TEMPORAL_ALIGNMENT_CONTRACT_V1.json"
+      ],
+      "failure_cases": [
+        "event-to-annual alignment contract not executed",
+        "country attribution absent",
+        "production shock and recovery not observed",
+        "no event aggregation or causal inference"
+      ]
+    },
+    {
+      "edge_id": "ECONOMIC_DETERIORATION_TO_UCDP_CONFLICT_V1",
+      "source": "ECONOMIC_DETERIORATION_AT_T",
+      "target": "UCDP_STATE_BASED_CONFLICT_AT_T_PLUS_H",
+      "lag": {
+        "values": [
+          1,
+          2,
+          3
+        ],
+        "unit": "years",
+        "direction": "forward"
+      },
+      "split": "fit_validation_confirmation",
+      "metric": {
+        "observed_max_balanced_accuracy": 0.5201013514,
+        "joined_rows": 1962,
+        "joined_entities": 56
+      },
+      "p_value": 0.4532733633,
+      "null_method": "within-country label permutation; 2000 reps; max statistic across horizons and splits",
+      "status": "rejected",
+      "causal_claim": false,
+      "source_refs": [
+        "ECONOMIC_DETERIORATION_TO_CONFLICT_MAXSTAT_NULL_SUMMARY.json",
+        "UN_AMA_INDEPENDENT_GDP_GROWTH_POPULATION_PANEL.csv",
+        "UCDP_ORGANIZED_VIOLENCE_CY_26_1_RAW.zip"
+      ],
+      "failure_cases": [
+        "did not separate from max-stat null",
+        "confirmation maximum BA=0.520101",
+        "coverage joined only 56 entities",
+        "no positive composer weight"
+      ]
+    }
+  ],
+  "rules": {
+    "positive_composer_input_statuses": [
+      "supported_predictive"
+    ],
+    "excluded_statuses": [
+      "rejected",
+      "rejected_by_current_maxstat_null",
+      "not_supported_by_current_cross_domain_null",
+      "weak_or_unresolved_cross_domain_signal",
+      "unresolved",
+      "not_testable"
+    ],
+    "causal_claims_permitted": false,
+    "native_frequency_preserved": true
+  },
+  "input_hashes": {
+    "transition_evidence": "7e758b1f3ab323ee9a5bd1bcae2dca498b619b6d15754163c4908c7f057d4abf",
+    "registry": "c29ae9cc89c59beaec50a1dec2b93d4330bff0537951572cf5ac372ccd2c5dcd",
+    "native_domain_transition_evidence": "21b2d619ff31cc71705613140fda5e9faa582fbe1ec39ff4e6d76354722c8f34",
+    "cross_domain_transition_evidence": "079f739ead4bdbe9e18c3641f7728962cc2c3196a2bc3bf728adcdaf40bb1620"
+  }
+}

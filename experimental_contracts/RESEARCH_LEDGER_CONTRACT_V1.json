@@ -1,0 +1,15 @@
+{
+  "contract_id":"CHAOS_RESEARCH_LEDGER_V1",
+  "purpose":"Append-only provenance ledger for observations, contracts, runs, edges, artifacts, and decisions",
+  "record_key":"ledger_id",
+  "required_fields":["ledger_id","record_type","created_at_utc","source_refs","contract_ref","input_hashes","output_refs","status","notes"],
+  "record_types":["source","contract","run","domain_state","transition_evidence","pattern_decision","runtime_alert","qa"],
+  "append_only":true,
+  "immutable_raw_refs":true,
+  "hash_algorithm":"sha256",
+  "no_future_outcome_in_current_state":true,
+  "no_causal_promotion_by_score":true,
+  "failure_records_required":true,
+  "duplicate_policy":"same ledger_id cannot be appended twice",
+  "storage":"JSONL"
+}

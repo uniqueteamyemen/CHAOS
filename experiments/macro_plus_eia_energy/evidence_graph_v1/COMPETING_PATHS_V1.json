@@ -1,0 +1,12 @@
+{
+  "path_set_id":"CHAOS_COMPETING_PATHS_V1",
+  "purpose":"Represent competing historical explanations without forcing a composed positive story",
+  "paths":[
+    {"path_id":"P_A_ECONOMIC_BASELINE","nodes":["AMA_HIGH_GROWTH_STATE_V1","AMA_MATERIAL_DROP_2PP_T_PLUS_3_V1"],"edges":["AMA_HG_TO_MATERIAL_DROP_V1"],"status":"research_supported_provisional","composition_allowed":false,"reason":"descriptive provisional edge; further replication/OOS review required"},
+    {"path_id":"P_B_ECONOMIC_TO_CONFLICT","nodes":["ECONOMIC_DETERIORATION_AT_T","UCDP_STATE_BASED_CONFLICT_AT_T_PLUS_H"],"edges":["ECONOMIC_DETERIORATION_TO_UCDP_CONFLICT_V1"],"status":"rejected","composition_allowed":false,"reason":"max-stat p=0.4532733633; no positive weight"},
+    {"path_id":"P_C_DIRECT_GROWTH_TO_CONFLICT","nodes":["AMA_HIGH_GROWTH_STATE_V1","UCDP_STATE_CONFLICT_T_PLUS_3_V1"],"edges":["AMA_HG_TO_UCDP_STATE_CONFLICT_T_PLUS_3_V1"],"status":"rejected","composition_allowed":false,"reason":"not distinguishable from current within-country null"},
+    {"path_id":"P_D_EVENT_SHOCK_RECOVERY","nodes":["EVENT_SHOCK","PRODUCTION_SHOCK","RECOVERY"],"edges":[],"status":"not_testable","composition_allowed":false,"reason":"WHO/USGS native states exist, but production shock, recovery, and alignment contract are not yet observed"}
+  ],
+  "composition_rule":"A path cannot receive positive composition weight unless every required edge is supported_predictive under its frozen contract.",
+  "causal_claims_permitted":false
+}

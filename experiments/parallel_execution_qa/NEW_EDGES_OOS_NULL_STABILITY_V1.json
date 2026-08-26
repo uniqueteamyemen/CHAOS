@@ -1,0 +1,52 @@
+{
+  "evaluation_id": "CHAOS_NEW_EDGES_OOS_NULL_STABILITY_V1",
+  "rows": [
+    {
+      "edge_id": "current_account_stress_to_deterioration",
+      "kind": "within_domain",
+      "max_ba_all_splits": 0.5440391034811636,
+      "validation_ba_min": 0.5008130537176181,
+      "confirmation_ba_min": 0.4718701591325165,
+      "oos_ba_all_ge_0_5": false,
+      "null_p": 0.30134932533733133,
+      "decision": "rejected_by_maxstat_null_and_no_baseline_addition"
+    },
+    {
+      "edge_id": "energy_intensity_increase_to_deterioration",
+      "kind": "within_domain",
+      "max_ba_all_splits": 0.5149499284692418,
+      "validation_ba_min": 0.4578053156891331,
+      "confirmation_ba_min": 0.4723586466694832,
+      "oos_ba_all_ge_0_5": false,
+      "null_p": 0.30134932533733133,
+      "decision": "rejected_by_maxstat_null_and_no_baseline_addition"
+    },
+    {
+      "edge_id": "high_inflation_to_deterioration",
+      "kind": "within_domain",
+      "max_ba_all_splits": 0.547155816892659,
+      "validation_ba_min": 0.4957796852646638,
+      "confirmation_ba_min": 0.461880368962118,
+      "oos_ba_all_ge_0_5": false,
+      "null_p": 0.30134932533733133,
+      "decision": "rejected_by_maxstat_null_and_no_baseline_addition"
+    },
+    {
+      "edge_id": "economic_deterioration_to_conflict",
+      "kind": "cross_domain",
+      "max_ba_all_splits": 0.5201013513513514,
+      "validation_ba_min": 0.4519607843137255,
+      "confirmation_ba_min": 0.4929054054054054,
+      "oos_ba_all_ge_0_5": false,
+      "null_p": 0.45327336331834084,
+      "decision": "rejected_by_maxstat_null"
+    }
+  ],
+  "rules": {
+    "null_gate_required": true,
+    "oos_stability_required": true,
+    "baseline_addition_required": true,
+    "causal_claims_permitted": false
+  },
+  "status": "research_evidence_only"
+}

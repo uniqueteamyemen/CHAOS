@@ -1,0 +1,61 @@
+{
+  "compiler_id": "CHAOS_PATTERN_COMPILER_V1",
+  "inputs": {
+    "registry": "experiments/macro_plus_eia_energy/CONTROLLED_PATTERN_REGISTRY_V1.jsonl",
+    "registry_sha256": "c29ae9cc89c59beaec50a1dec2b93d4330bff0537951572cf5ac372ccd2c5dcd",
+    "evidence_graph": "experiments/macro_plus_eia_energy/evidence_graph_v1/EVIDENCE_GRAPH_V1.json",
+    "evidence_graph_sha256": "6a0d9b85afaefaedd7a6c2d4dd94ae84e3997322567b13a213925bdb86c28efe"
+  },
+  "eligible_supported_predictive": [],
+  "research_only_candidates": [
+    {
+      "pattern_id": "HG_MATERIAL_DETERIORATION_3Y_V1",
+      "status": "compiled_research_only_candidate",
+      "source_status": "provisionally_supported_descriptive",
+      "statement": "high current GDP growth (>4.0%) is associated with material GDP deterioration (>=2 percentage-point drop) within 3 years",
+      "causal_claim": false,
+      "runtime_eligible": false,
+      "evidence": [
+        {
+          "dataset": "macro_plus_eia_energy_v1_1",
+          "validation_mean_balanced_accuracy": 0.7194294764,
+          "locked_test_target_growth_only_balanced_accuracy": 0.690611,
+          "locked_test_target_growth_only_f1": 0.603113,
+          "source_artifact": "experiments/macro_plus_eia_energy/high_growth_outcomes_v1/HIGH_GROWTH_OUTCOME_FAMILIES_REPORT_AR.md"
+        },
+        {
+          "dataset": "un_ama_2026",
+          "validation_balanced_accuracy": 0.7325273192,
+          "validation_f1": 0.618462,
+          "confirmation_balanced_accuracy": 0.6820987654,
+          "confirmation_f1": 0.503778,
+          "null_p_validation": 0.0005,
+          "null_p_confirmation": 0.0005,
+          "source_artifact": "experiments/macro_plus_eia_energy/un_ama_replication_v1/UN_AMA_INDEPENDENT_REPLICATION_REPORT_AR.md"
+        }
+      ],
+      "promotion_blocker": "descriptive provisional status requires further replication/OOS review"
+    }
+  ],
+  "excluded_from_positive_composition": [
+    "HG_STATE_BASED_CONFLICT_3Y_V1",
+    "HG_HIGH_FATALITY_3Y_V1",
+    "BOUNDED_SCALE_SECOND_NODE_V1",
+    "HG_ENERGY_INTENSITY_DOWN_T2_MEDIATOR_V1",
+    "PATH_COMPOSER_V1_1",
+    "HIGH_INFLATION_TO_MATERIAL_DETERIORATION_WITHIN_DOMAIN_V1",
+    "CURRENT_ACCOUNT_STRESS_TO_MATERIAL_DETERIORATION_WITHIN_DOMAIN_V1",
+    "ENERGY_INTENSITY_INCREASE_TO_MATERIAL_DETERIORATION_WITHIN_DOMAIN_V1",
+    "WHO_COVID_DAILY_TO_ANNUAL_MATERIAL_DETERIORATION_V1",
+    "USGS_EARTHQUAKE_EVENT_TO_ANNUAL_MATERIAL_DETERIORATION_V1",
+    "ECONOMIC_DETERIORATION_TO_UCDP_CONFLICT_V1"
+  ],
+  "rules": {
+    "causal_claims_permitted": false,
+    "runtime_eligible_default": false,
+    "rejected_or_unresolved_positive_weight": false,
+    "future_outcomes_in_detector": false,
+    "retraining": false
+  },
+  "status": "research_only"
+}

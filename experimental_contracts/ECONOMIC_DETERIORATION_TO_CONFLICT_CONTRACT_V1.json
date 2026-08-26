@@ -1,0 +1,16 @@
+{
+  "contract_id":"CHAOS_ECONOMIC_DETERIORATION_TO_UCDP_CONFLICT_V1",
+  "purpose":"Test an indirect cross-domain edge without reusing the rejected high-growth direct edge",
+  "source_panel":"experiments/macro_plus_eia_energy/ama_ucdp_cross_domain_v1/AMA_UCDP_CROSS_DOMAIN_REPLAY_ROWS.csv",
+  "native_frequency":"annual for AMA and UCDP Country-Year",
+  "source_state":{"id":"economic_deterioration_at_t","definition":"AMA GDP growth at t <= AMA GDP growth at t-1 - 2 percentage points","future_data_required":false},
+  "target_state":{"id":"UCDP_state_based_conflict_at_t_plus_h","definition":"UCDP Country-Year state_based_conflict present","horizons":[1,2,3]},
+  "splits":{"fit":[2006,2015],"validation":[2016,2019],"confirmation":[2020,2024]},
+  "null":{"method":"within_country_label_permutation","replicates":2000,"statistic":"max_balanced_accuracy_across_horizons_and_splits"},
+  "missing_data":"complete-case; no imputation",
+  "entity_matching":"existing audited AMA/UCDP country match only",
+  "transformations":false,
+  "annualization":false,
+  "causal_claims_permitted":false,
+  "promotion_requires":"null separation, OOS stability, entity holdout, and independent replication"
+}

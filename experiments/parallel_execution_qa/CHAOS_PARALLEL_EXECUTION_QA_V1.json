@@ -1,0 +1,158 @@
+{
+  "manifest_id": "CHAOS_PARALLEL_EXECUTION_QA_V1",
+  "raw_immutable": true,
+  "native_frequency_preserved": true,
+  "daily_to_annual_conversion": false,
+  "event_to_annual_conversion": false,
+  "imputation": false,
+  "normalization": false,
+  "causal_claims": 0,
+  "runtime_eligible_patterns": 0,
+  "positive_composer_statuses": [
+    "supported_predictive"
+  ],
+  "rejected_or_unresolved_positive_weight": false,
+  "source_failures_recorded": true,
+  "files": [
+    {
+      "path": "catalog_first/readiness_gate/independent_sources/NATIVE_SOURCE_PROVENANCE_MANIFEST_V1.json",
+      "bytes": 2027,
+      "sha256": "531a9ba7edcebbb41736f81649e1c148c81ceeb2540501392bd9872b70773aec"
+    },
+    {
+      "path": "catalog_first/readiness_gate/independent_sources/who_covid_2026/raw/WHO_COVID_GLOBAL_DAILY_RAW.csv",
+      "bytes": 26097232,
+      "sha256": "6063fda90dba3439f551c0bfadce53bb437d9982056cd1a92aeee64963bf2038"
+    },
+    {
+      "path": "catalog_first/readiness_gate/independent_sources/usgs_earthquake_2026/raw/USGS_EARTHQUAKE_M6_5_2000_2024_RAW.csv",
+      "bytes": 198937,
+      "sha256": "bd17af21e62c440caa8777e4a1656e8ff2316d507ac5d387d1089ced2f626916"
+    },
+    {
+      "path": "experimental_contracts/RESEARCH_LEDGER_CONTRACT_V1.json",
+      "bytes": 735,
+      "sha256": "b6e3fab40684789f990b6173df796c646352baad34513f04bcbb6855638a5003"
+    },
+    {
+      "path": "experimental_contracts/TEMPORAL_ALIGNMENT_CONTRACT_V1.json",
+      "bytes": 1421,
+      "sha256": "d97b7f1595b1783dac5b0b0b580b5f3bb9b6817ccdac5a50081e2855480f7604"
+    },
+    {
+      "path": "experimental_contracts/HEALTH_DISASTER_ADAPTER_CONTRACT_V1.json",
+      "bytes": 1331,
+      "sha256": "03c282fc4f1a26f7b9fc174b468be8c2eec420f4b5760f77ce662907ea095d43"
+    },
+    {
+      "path": "experimental_contracts/WITHIN_DOMAIN_EDGE_CONTRACT_V1.json",
+      "bytes": 1729,
+      "sha256": "979b1bf511c5c2ce7abcb8a7747a4790564cc8fc0a057ba8d4b910e13f65c9db"
+    },
+    {
+      "path": "experimental_contracts/ECONOMIC_DETERIORATION_TO_CONFLICT_CONTRACT_V1.json",
+      "bytes": 1191,
+      "sha256": "8122b05191809aa29587271a66a82e230afe82129106f8e3595b3d78d08cab17"
+    },
+    {
+      "path": "experiments/multi_domain_native_adapters_v1/NATIVE_ADAPTERS_RUN_SUMMARY.json",
+      "bytes": 1018,
+      "sha256": "b1e7e71fbd467754cc36e2598f5f39d18641036d85c85fef1681cff9190ee35b"
+    },
+    {
+      "path": "experiments/multi_domain_native_adapters_v1/WHO_COVID_DOMAIN_STATES_DAILY_V1.jsonl.gz",
+      "bytes": 4447021,
+      "sha256": "09d962bc8e5adf5f0bec2a37d354f60ed961af763afe272bf3380a82f7741277"
+    },
+    {
+      "path": "experiments/multi_domain_native_adapters_v1/USGS_EARTHQUAKE_DOMAIN_STATES_EVENT_V1.jsonl",
+      "bytes": 814897,
+      "sha256": "9cfc7433a5771cb717ecb39a143aa14cad386afb35c38425925c245bea0bcdc0"
+    },
+    {
+      "path": "experiments/multi_domain_native_adapters_v1/TRANSITION_EVIDENCE_NATIVE_DOMAINS_V1.jsonl",
+      "bytes": 1286,
+      "sha256": "21b2d619ff31cc71705613140fda5e9faa582fbe1ec39ff4e6d76354722c8f34"
+    },
+    {
+      "path": "experiments/multi_domain_native_edges_v1/ECONOMIC_DETERIORATION_TO_CONFLICT_MAXSTAT_NULL_SUMMARY.json",
+      "bytes": 979,
+      "sha256": "04766ecc4c5fc3cb522c8eb395e9fc677c45fb20a69f65231a086b10e00a91ae"
+    },
+    {
+      "path": "experiments/multi_domain_native_edges_v1/ECONOMIC_DETERIORATION_TO_CONFLICT_METRICS.csv",
+      "bytes": 1011,
+      "sha256": "17227c2cbcbb843adaf50f49d8979eb8a7fd3b64930b3512e79f1dab3626a3fc"
+    },
+    {
+      "path": "experiments/multi_domain_native_edges_v1/TRANSITION_EVIDENCE_ECONOMIC_TO_CONFLICT_V1.jsonl",
+      "bytes": 884,
+      "sha256": "079f739ead4bdbe9e18c3641f7728962cc2c3196a2bc3bf728adcdaf40bb1620"
+    },
+    {
+      "path": "experiments/multi_domain_native_edges_v1/ECONOMIC_DETERIORATION_TO_CONFLICT_MAXSTAT_NULL_REPLICATES.csv",
+      "bytes": 46477,
+      "sha256": "9c3417fb524260fcdd22c71cafab971b32aacc6aac1abad758f9890765940ffa"
+    },
+    {
+      "path": "experiments/macro_plus_eia_energy/evidence_graph_v1/COMPETING_PATHS_V1.json",
+      "bytes": 1501,
+      "sha256": "6621c9bf5bac4838dafdd94c6dbaa7a67d2fcd7e3587974138de6bd60f648598"
+    },
+    {
+      "path": "experiments/parallel_execution_qa/NEW_EDGES_OOS_NULL_STABILITY_V1.json",
+      "bytes": 1794,
+      "sha256": "e3c2e2a3b2304cbf653d5ac9bfd647ef2eaa58f1c038bc48d4b0b8cecfab6d8c"
+    },
+    {
+      "path": "experiments/macro_plus_eia_energy/within_domain_edges_v1/WITHIN_DOMAIN_EDGE_MAXSTAT_NULL_SUMMARY.json",
+      "bytes": 1034,
+      "sha256": "e170ca16ba28c14a4ac3228ddb883909b5b4b35408c3177a23edc41f51d7b1d1"
+    },
+    {
+      "path": "experiments/macro_plus_eia_energy/within_domain_edges_v1/WITHIN_DOMAIN_EDGE_METRICS.csv",
+      "bytes": 6825,
+      "sha256": "f505c98c2779ac45c1c3894303d4f15397afa60ab09c7e5a20103f94fe35d1bd"
+    },
+    {
+      "path": "experiments/macro_plus_eia_energy/evidence_graph_v1/EVIDENCE_GRAPH_SUMMARY.json",
+      "bytes": 628,
+      "sha256": "adf8883837905abf9241b842398583676635533308716d2801e6bc08bb0bb3b3"
+    },
+    {
+      "path": "experiments/macro_plus_eia_energy/pattern_compiler_v1/PATTERN_COMPILER_SUMMARY.json",
+      "bytes": 186,
+      "sha256": "d22f3ff3a8736156a22e6a04aaf41c7695683103980e4f2c22e8f023224e3ed7"
+    },
+    {
+      "path": "experiments/macro_plus_eia_energy/CONTROLLED_PATTERN_REGISTRY_V1.jsonl",
+      "bytes": 9034,
+      "sha256": "c29ae9cc89c59beaec50a1dec2b93d4330bff0537951572cf5ac372ccd2c5dcd"
+    },
+    {
+      "path": "research_ledger/RESEARCH_LEDGER_V1.jsonl",
+      "bytes": 8870,
+      "sha256": "c2e876441c5476251024868289ac9a3abbc6de6e32ea5cfb1e10c8dc0a25f7b9"
+    },
+    {
+      "path": "tooling/run_deterioration_to_conflict_v1.py",
+      "bytes": 4041,
+      "sha256": "9f680a5eaa31c2c97ca822a632163c1290fa1547773023b01ba187b97b9b68a0"
+    },
+    {
+      "path": "tooling/build_health_disaster_domain_states_v1.py",
+      "bytes": 3566,
+      "sha256": "93f6eaa5727b76b551f9bb2eddb76dd31eaae1487a1a91dd755b301bdc4892ab"
+    },
+    {
+      "path": "tooling/build_evidence_graph_v1.py",
+      "bytes": 4390,
+      "sha256": "85f206e9f5976226e43989f4953d1638054247eb35cb53f01b3c6ff90a57286d"
+    },
+    {
+      "path": "tooling/compile_patterns_v1.py",
+      "bytes": 2494,
+      "sha256": "67556ac764acf580258d5a0b7278bb62f6c18950be01aa4f9823aad93bcb593a"
+    }
+  ]
+}
