@@ -1,0 +1,30 @@
+{
+  "matrix": "macro_plus_eia_energy",
+  "target": "wdi__NY.GDP.MKTP.KD.ZG",
+  "encoder_length": 5,
+  "train_years": [
+    2006,
+    2015
+  ],
+  "validation_years": [
+    2016,
+    2019
+  ],
+  "test_years": [
+    2020,
+    2024
+  ],
+  "baselines": [
+    "persistence_one_step",
+    "entity_train_mean",
+    "global_train_mean",
+    "linear_ar5_entity_train"
+  ],
+  "primary_metrics": [
+    "MAE",
+    "RMSE"
+  ],
+  "no_transformations_or_imputation": true,
+  "tft_run": false,
+  "note": "Optional raw multivariate linear baseline not run because 10 training sequences per entity and 11 selected columns would be underdetermined without a separately approved regularization/transform contract."
+}

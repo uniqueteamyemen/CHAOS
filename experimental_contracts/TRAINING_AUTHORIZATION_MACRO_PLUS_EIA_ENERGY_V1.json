@@ -1,0 +1,14 @@
+{
+  "authorization_id": "macro_plus_eia_energy_tft_baseline_training_v1",
+  "authorized_by_user": true,
+  "authorization_scope": "Run baseline suite and the primary TFT baseline only after preflight integrity/leakage audit passes.",
+  "authorized_actions": ["baseline_suite", "tft_train", "validation", "locked_test_evaluation", "metrics_and_residual_reports"],
+  "not_authorized_actions": ["stability_grid", "ablation_campaign", "reverse_extraction", "surrogate_validation", "production_injection", "market-intelligence-engine_modification", "raw_data_modification", "production_architecture_change"],
+  "contract_ref": "DATASET_CONFIGURATION_MACRO_PLUS_EIA_ENERGY_REVIEW_V1.json",
+  "architecture_ref": "TFT_INITIAL_ARCHITECTURE_SPEC_V1.json",
+  "preflight_gate_required": true,
+  "failure_policy": "If any integrity or leakage check fails, fix the issue without modifying raw data, rerun the audit, and do not train until all checks pass.",
+  "test_lock": "Test remains locked for configuration selection; evaluate once after train/validation configuration is frozen.",
+  "raw_data_unchanged": true,
+  "source_repo_unchanged": true
+}

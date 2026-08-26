@@ -1,0 +1,21 @@
+{
+  "experiment_id": "macro_plus_eia_energy_tft_baseline_v1_1",
+  "checkpoint": "experiments/macro_plus_eia_energy/checkpoints/tft-baseline-epoch=09-val_loss=1.6014.ckpt",
+  "dataset_entities": 139,
+  "test_windows": 695,
+  "metrics": {
+    "split": "test",
+    "n": 695,
+    "MAE": 3.936037302017212,
+    "RMSE": 6.6332173347473145,
+    "R2": 0.03238607731291121,
+    "directional_accuracy": 0.7741007194244605
+  },
+  "checkpoint_selected_by": "validation val_loss",
+  "test_evaluation_locked": true,
+  "extraction_completed_at_utc": "2026-08-26T00:59:00.528204+00:00",
+  "training_completed": true,
+  "stability_grid_run": false,
+  "ablations_run": false,
+  "reverse_extraction_run": false
+}

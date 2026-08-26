@@ -1,0 +1,81 @@
+{
+  "rows": 12,
+  "by_variable": {
+    "eia__energy_consumption_per_capita": 6,
+    "eia__energy_consumption_per_gdp": 6
+  },
+  "sample": [
+    {
+      "variable": "eia__energy_consumption_per_capita",
+      "entity_code": "SRB",
+      "year": 2000,
+      "raw_value": "--"
+    },
+    {
+      "variable": "eia__energy_consumption_per_capita",
+      "entity_code": "SRB",
+      "year": 2001,
+      "raw_value": "--"
+    },
+    {
+      "variable": "eia__energy_consumption_per_capita",
+      "entity_code": "SRB",
+      "year": 2002,
+      "raw_value": "--"
+    },
+    {
+      "variable": "eia__energy_consumption_per_capita",
+      "entity_code": "SRB",
+      "year": 2003,
+      "raw_value": "--"
+    },
+    {
+      "variable": "eia__energy_consumption_per_capita",
+      "entity_code": "SRB",
+      "year": 2004,
+      "raw_value": "--"
+    },
+    {
+      "variable": "eia__energy_consumption_per_capita",
+      "entity_code": "SRB",
+      "year": 2005,
+      "raw_value": "--"
+    },
+    {
+      "variable": "eia__energy_consumption_per_gdp",
+      "entity_code": "SRB",
+      "year": 2000,
+      "raw_value": "--"
+    },
+    {
+      "variable": "eia__energy_consumption_per_gdp",
+      "entity_code": "SRB",
+      "year": 2001,
+      "raw_value": "--"
+    },
+    {
+      "variable": "eia__energy_consumption_per_gdp",
+      "entity_code": "SRB",
+      "year": 2002,
+      "raw_value": "--"
+    },
+    {
+      "variable": "eia__energy_consumption_per_gdp",
+      "entity_code": "SRB",
+      "year": 2003,
+      "raw_value": "--"
+    },
+    {
+      "variable": "eia__energy_consumption_per_gdp",
+      "entity_code": "SRB",
+      "year": 2004,
+      "raw_value": "--"
+    },
+    {
+      "variable": "eia__energy_consumption_per_gdp",
+      "entity_code": "SRB",
+      "year": 2005,
+      "raw_value": "--"
+    }
+  ]
+}
