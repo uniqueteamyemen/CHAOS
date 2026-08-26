@@ -108,8 +108,8 @@
     },
     {
       "path": "research_ledger/RESEARCH_LEDGER_V1.jsonl",
-      "bytes": 17917,
-      "sha256": "6ca3b4e1345e5782feaf7cfb72871666f41156a041d2e5727bba8391df6620da"
+      "bytes": 18943,
+      "sha256": "ebfc955480f74a567db253106ff6445bf75c09e8368dafd549bb9b24ca3ed2d1"
     }
   ],
   "checks": {
