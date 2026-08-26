@@ -1,0 +1,36 @@
+{
+  "run_id": "un_ama_high_growth_replication_v1",
+  "source": "UN AMA January 2026",
+  "target": "ama_gdp_growth_pct",
+  "rule": "ama_gdp_growth_pct[t] > 4.0",
+  "outcome": "ama_gdp_growth_pct[t+3] <= ama_gdp_growth_pct[t] - 2pp",
+  "splits": {
+    "discovery_fit": [
+      2003,
+      2009
+    ],
+    "discovery_inner": [
+      2010,
+      2012
+    ],
+    "validation": [
+      2013,
+      2016
+    ],
+    "confirmation": [
+      2017,
+      2019
+    ]
+  },
+  "rows_total": 12100,
+  "countries_total": 220,
+  "eligible_origins": 3592,
+  "used_future_2020_2024": false,
+  "prior_locked_test_reopened": false,
+  "threshold_changed_after_metrics": false,
+  "raw_modified": false,
+  "imputation": false,
+  "normalization": false,
+  "causal_claims_permitted": false,
+  "decision": "independent-source replication only; no operational promotion"
+}

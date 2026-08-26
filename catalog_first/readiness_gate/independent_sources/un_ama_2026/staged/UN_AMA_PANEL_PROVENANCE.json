@@ -1,0 +1,34 @@
+{
+  "source": "UN Statistics Division National Accounts Main Aggregates",
+  "upload_date": "January 2026",
+  "growth_file": "catalog_first/readiness_gate/independent_sources/un_ama_2026/raw/AMA_GDP_GROWTH_ALL_COUNTRIES_RAW.xlsx",
+  "population_file": "catalog_first/readiness_gate/independent_sources/un_ama_2026/raw/AMA_EXCHANGE_RATES_POPULATION_ALL_COUNTRIES_RAW.xlsx",
+  "growth_file_sha256": "b707760b18cc63bc97d546ed3d67f40ca0f49e0607493380ee590bec0f053e78",
+  "population_file_sha256": "e15fcbcf64e74016b3be63d6a0a1d837fe570287867e2a3d9ac0bec89c91bc6e",
+  "growth_indicator": "Gross domestic product",
+  "population_indicator": "Population",
+  "native_frequency": "annual",
+  "years": {
+    "growth": [
+      1970,
+      2024
+    ],
+    "panel": [
+      1970,
+      2024
+    ]
+  },
+  "rows": 12100,
+  "countries": 220,
+  "columns": [
+    "CountryID",
+    "Country",
+    "IndicatorName",
+    "year",
+    "ama_gdp_growth_pct",
+    "PopulationIndicator",
+    "ama_population"
+  ],
+  "selection": "exact indicator rows; no imputation, normalization, reconciliation, or source averaging",
+  "staging_is_derived": true
+}

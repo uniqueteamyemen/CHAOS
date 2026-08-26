@@ -1,0 +1,38 @@
+{
+  "contract_id": "UN_AMA_HIGH_GROWTH_REPLICATION_CONTRACT_V1",
+  "status": "frozen_before_replication",
+  "source": "UN Statistics Division National Accounts Main Aggregates",
+  "dataset_id": "un_ama_2026_gdp_growth_population",
+  "source_files": [
+    "catalog_first/readiness_gate/independent_sources/un_ama_2026/raw/AMA_GDP_GROWTH_ALL_COUNTRIES_RAW.xlsx",
+    "catalog_first/readiness_gate/independent_sources/un_ama_2026/raw/AMA_EXCHANGE_RATES_POPULATION_ALL_COUNTRIES_RAW.xlsx"
+  ],
+  "target": "ama_gdp_growth_pct",
+  "target_definition": "UN AMA Growth Rate of GDP/breakdown at constant 2020 prices in percent, exact indicator Gross Domestic Product (GDP)",
+  "frozen_rule": "ama_gdp_growth_pct[t] > 4.0",
+  "outcome_family": "material_drop_2pp",
+  "outcome_definition": "ama_gdp_growth_pct[t+3] <= ama_gdp_growth_pct[t] - 2.0 percentage points",
+  "lead_horizon_years": 3,
+  "origin_target_year_splits": {
+    "discovery_fit": [2003, 2009],
+    "discovery_inner": [2010, 2012],
+    "validation": [2013, 2016],
+    "confirmation": [2017, 2019],
+    "excluded_future": [2020, 2024]
+  },
+  "eligible_data_policy": "Use only rows with observed numeric target at t and t+3 and observed population at t-2; no imputation or source averaging.",
+  "metrics": ["balanced_accuracy", "f1", "precision", "recall", "support", "positive_outcomes", "false_alarm_rate", "entity_coverage", "year_coverage"],
+  "baselines": ["always_negative", "always_positive"],
+  "selection_policy": "The rule and outcome were frozen from the prior CHAOS result before reading UN AMA replication metrics. No threshold, source subset, or year window may be changed after replication metrics are inspected.",
+  "test_use": "independent_source_replication; no operational promotion",
+  "locked_test_previous_contract_reopened": false,
+  "causal_claims_permitted": false,
+  "raw_data_modified": false,
+  "imputation": false,
+  "normalization": false,
+  "provenance": {
+    "prior_rule_source": "experiments/macro_plus_eia_energy/high_growth_outcomes_v1/HIGH_GROWTH_OUTCOME_FAMILIES_REPORT_AR.md",
+    "source_screening": "experiments/macro_plus_eia_energy/independent_source_screening/INDEPENDENT_SOURCE_SCREENING_AR.md",
+    "ama_upload": "January 2026"
+  }
+}

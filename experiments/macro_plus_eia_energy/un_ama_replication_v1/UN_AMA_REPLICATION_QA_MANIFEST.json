@@ -1,0 +1,117 @@
+{
+  "manifest_type": "CHAOS_un_ama_independent_replication_qa",
+  "run_id": "un_ama_high_growth_replication_v1",
+  "source": "UN AMA January 2026",
+  "counts": {
+    "raw_growth_bytes": 3085338,
+    "raw_population_bytes": 466053,
+    "panel_rows": 12100,
+    "panel_countries": 220,
+    "eligible_origins": 3592,
+    "metric_rows": 12,
+    "null_summary_rows": 2,
+    "replay_rows": 3592
+  },
+  "results": {
+    "validation": [
+      {
+        "split": "validation",
+        "model": "high_growth_rule",
+        "n_origins": 848,
+        "support": 397,
+        "positive_outcomes": 253,
+        "precision": 0.5062972292191436,
+        "recall": 0.7944664031620553,
+        "f1": 0.6184615384615385,
+        "balanced_accuracy": 0.7325273192280864,
+        "false_alarm_rate": 0.3294117647058823,
+        "entity_coverage": 151,
+        "year_coverage": 4
+      }
+    ],
+    "confirmation": [
+      {
+        "split": "confirmation",
+        "model": "high_growth_rule",
+        "n_origins": 636,
+        "support": 247,
+        "positive_outcomes": 150,
+        "precision": 0.4048582995951417,
+        "recall": 0.6666666666666666,
+        "f1": 0.5037783375314862,
+        "balanced_accuracy": 0.6820987654320987,
+        "false_alarm_rate": 0.3024691358024691,
+        "entity_coverage": 127,
+        "year_coverage": 3
+      }
+    ],
+    "null": [
+      {
+        "split": "confirmation",
+        "replicates": 2000,
+        "observed_ba": 0.6820987654320987,
+        "observed_f1": 0.5037783375314862,
+        "null_ba_mean": 0.6014275308641974,
+        "null_ba_q975": 0.6297530864197531,
+        "null_f1_mean": 0.4106120906801008,
+        "null_f1_q975": 0.4433249370277078,
+        "p_ba": 0.0004997501249375,
+        "p_f1": 0.0004997501249375
+      },
+      {
+        "split": "validation",
+        "replicates": 2000,
+        "observed_ba": 0.7325273192280864,
+        "observed_f1": 0.6184615384615385,
+        "null_ba_mean": 0.6076172318729864,
+        "null_ba_q975": 0.6311289733284619,
+        "null_f1_mean": 0.4820076923076923,
+        "null_f1_q975": 0.5076923076923077,
+        "p_ba": 0.0004997501249375,
+        "p_f1": 0.0004997501249375
+      }
+    ]
+  },
+  "hashes": {
+    "raw_growth_sha256": "b707760b18cc63bc97d546ed3d67f40ca0f49e0607493380ee590bec0f053e78",
+    "raw_population_sha256": "e15fcbcf64e74016b3be63d6a0a1d837fe570287867e2a3d9ac0bec89c91bc6e",
+    "staged_panel_sha256": "d5d7048a2367ed9c0e0f5c4acae6cc3c3c101bc78126e0870dc77dbe031f8c63"
+  },
+  "flags": {
+    "used_future_2020_2024": false,
+    "prior_locked_test_reopened": false,
+    "threshold_changed_after_metrics": false,
+    "raw_modified": false,
+    "imputation": false,
+    "normalization": false,
+    "causal_claims_permitted": false
+  },
+  "qa_pass_conditions": {
+    "four_split_metrics": true,
+    "two_null_splits": true,
+    "two_thousand_null_each": true,
+    "no_future_2020_2024": true,
+    "previous_test_closed": true,
+    "no_post_metric_change": true,
+    "raw_unchanged": true,
+    "no_transformations": true,
+    "no_causal_claim": true
+  },
+  "artifacts": [
+    "catalog_first/readiness_gate/independent_sources/un_ama_2026/raw/AMA_EXCHANGE_RATES_POPULATION_ALL_COUNTRIES_RAW.xlsx",
+    "catalog_first/readiness_gate/independent_sources/un_ama_2026/raw/AMA_GDP_GROWTH_ALL_COUNTRIES_RAW.xlsx",
+    "catalog_first/readiness_gate/independent_sources/un_ama_2026/staged/AMA_GROWTH_INDICATOR_CATALOG.csv",
+    "catalog_first/readiness_gate/independent_sources/un_ama_2026/staged/UN_AMA_INDEPENDENT_GDP_GROWTH_POPULATION_PANEL.csv",
+    "catalog_first/readiness_gate/independent_sources/un_ama_2026/staged/UN_AMA_PANEL_PROVENANCE.json",
+    "experiments/macro_plus_eia_energy/un_ama_replication_v1/UN_AMA_INDEPENDENT_REPLICATION_REPORT_AR.md",
+    "experiments/macro_plus_eia_energy/un_ama_replication_v1/UN_AMA_REPLICATION_METRICS.csv",
+    "experiments/macro_plus_eia_energy/un_ama_replication_v1/UN_AMA_REPLICATION_METRICS_BY_COUNTRY.csv",
+    "experiments/macro_plus_eia_energy/un_ama_replication_v1/UN_AMA_REPLICATION_NULL_REPLICATES.csv",
+    "experiments/macro_plus_eia_energy/un_ama_replication_v1/UN_AMA_REPLICATION_NULL_SUMMARY.csv",
+    "experiments/macro_plus_eia_energy/un_ama_replication_v1/UN_AMA_REPLICATION_OBSERVED.csv",
+    "experiments/macro_plus_eia_energy/un_ama_replication_v1/UN_AMA_REPLICATION_REPLAY_ROWS.csv",
+    "experiments/macro_plus_eia_energy/un_ama_replication_v1/UN_AMA_REPLICATION_SUMMARY.json",
+    "experiments/macro_plus_eia_energy/un_ama_replication_v1/un_ama_null.log",
+    "experiments/macro_plus_eia_energy/un_ama_replication_v1/un_ama_replication.log"
+  ]
+}
