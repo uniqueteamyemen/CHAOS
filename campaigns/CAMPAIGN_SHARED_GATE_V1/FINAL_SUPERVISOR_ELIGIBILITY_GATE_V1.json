@@ -1,0 +1,28 @@
+{
+  "final_gate_id": "CHAOS_CAMPAIGN_SUPERVISOR_FINAL_GATE_V1",
+  "checks": {
+    "domain_state_schema_pass": true,
+    "transition_evidence_schema_pass": true,
+    "supervisor_gate_pass": true,
+    "causal_claims_zero": true,
+    "runtime_eligible_zero": true,
+    "positive_status_restricted": true,
+    "rejected_quarantine_rule": true
+  },
+  "admitted_supported_predictive_records": 2,
+  "quarantined_records": 22,
+  "graph_nodes": 41,
+  "graph_edges": 46,
+  "compiled_runtime_eligible": 0,
+  "causal_claims": 0,
+  "decision": "admit_only_supported_predictive_to_shared_composition",
+  "market_intelligence_engine_modified": false,
+  "status": "pass",
+  "input_hashes": {
+    "campaigns/CAMPAIGN_SHARED_GATE_V1/DOMAIN_STATE_SCHEMA_VALIDATION_V1.json": "25c30c520ef2052c47ef37893212375ae7b0d8d3f2b17ecdab0870bc25865a4a",
+    "campaigns/CAMPAIGN_SHARED_GATE_V1/TRANSITION_EVIDENCE_SCHEMA_VALIDATION_V1.json": "2b753d53c4bdd574631186355b1d747270941678bf7b75fb708dcc9b98c37b52",
+    "campaigns/CAMPAIGN_SHARED_GATE_V1/SUPERVISOR_GATE_DECISION_V1.json": "5d7f0ff5f238eae9c10ebfe95c8f72be1a355321d062923d71ba3d8e48cad6f1",
+    "experiments/macro_plus_eia_energy/evidence_graph_v1/EVIDENCE_GRAPH_SUMMARY.json": "aaacd88e5b15e3c171ed0a73536f0355e9f7913a9247534b5074b639d00cce58",
+    "experiments/macro_plus_eia_energy/pattern_compiler_v1/PATTERN_COMPILER_SUMMARY.json": "bb026c889952fe5793dfd36e79c7173e24e13046982aae21f05fcf99aa8bc33c"
+  }
+}

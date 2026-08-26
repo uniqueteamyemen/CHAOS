@@ -1,0 +1,10 @@
+edge_id,horizon_years,split,balanced_accuracy,f1,prevalence,n
+wdi_trade_squeeze_to_material_gdp_deterioration,1,fit,0.47076978597878616,0.05869074492099323,0.2650508209538702,1279
+wdi_trade_squeeze_to_material_gdp_deterioration,1,validation,0.5331746031746032,0.16822429906542055,0.1346153846153846,520
+wdi_trade_squeeze_to_material_gdp_deterioration,1,confirmation,0.42004016064257027,0.03067484662576687,0.38366718027734975,649
+wdi_trade_squeeze_to_material_gdp_deterioration,2,fit,0.48522284660898524,0.08583690987124463,0.28928850664581707,1279
+wdi_trade_squeeze_to_material_gdp_deterioration,2,validation,0.5057615784237869,0.125,0.1599229287090559,519
+wdi_trade_squeeze_to_material_gdp_deterioration,2,confirmation,0.45852630123729865,0.045307443365695796,0.3984615384615385,650
+wdi_trade_squeeze_to_material_gdp_deterioration,3,fit,0.48478306878306876,0.08433734939759036,0.31640625,1280
+wdi_trade_squeeze_to_material_gdp_deterioration,3,validation,0.5348039215686274,0.19402985074626866,0.1644100580270793,517
+wdi_trade_squeeze_to_material_gdp_deterioration,3,confirmation,0.46459107903479446,0.05054151624548736,0.34923076923076923,650

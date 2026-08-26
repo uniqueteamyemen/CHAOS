@@ -1,0 +1,17 @@
+{
+  "composition_decision_id":"CHAOS_COMPOSITE_PATH_ADMISSION_V1",
+  "supervisor":"CHAOS_SUPERVISOR",
+  "required_precondition":"Every required edge in a path must be supported_predictive; at least two independently supported cross-domain edges are required before expanded Composer evaluation.",
+  "candidate_paths":[
+    {"path_id":"TRADE_TO_ECONOMIC_DETERIORATION","edges":["WDI_TRADE_SQUEEZE_TO_MATERIAL_GDP_DETERIORATION_V1"],"status":"rejected","admitted":false},
+    {"path_id":"ECONOMIC_DETERIORATION_TO_CONFLICT","edges":["ECONOMIC_DETERIORATION_TO_UCDP_CONFLICT_V1"],"status":"rejected","admitted":false},
+    {"path_id":"INSTITUTIONAL_CONTINUITY_OR_DECLINE","edges":["WGI_INSTITUTIONAL_MEASUREMENT_edges"],"status":"rejected_or_not_testable","admitted":false},
+    {"path_id":"EVENT_PRODUCTION_SHOCK_RECOVERY","edges":["WHO_or_USGS_to_production_shock_to_recovery"],"status":"not_testable","admitted":false}
+  ],
+  "admitted_cross_domain_edges":0,
+  "expanded_composer_run":false,
+  "reason":"No new edge passed null, OOS, coverage, and supervisor eligibility gates; the prior Composer remains rejected for out-of-sample degradation.",
+  "runtime_eligible":false,
+  "causal_claims_permitted":false,
+  "status":"pass_as_negative_gate"
+}

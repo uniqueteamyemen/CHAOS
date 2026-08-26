@@ -1,0 +1,11 @@
+#!/usr/bin/env python3
+from pathlib import Path
+import json
+ROOT=Path('/home/ubuntu/CHAOS'); OUT=ROOT/'campaigns/agents/trade_v1'; REG=ROOT/'experiments/macro_plus_eia_energy/CONTROLLED_PATTERN_REGISTRY_V1.jsonl'
+def main():
+ s=json.loads((OUT/'WDI_TRADE_EDGE_MAXSTAT_NULL_SUMMARY.json').read_text()); m=json.loads((OUT/'WDI_TRADE_EDGE_METRICS.csv').read_text()) if False else None
+ r={'transition_id':'WDI_TRADE_OPENNESS_SQUEEZE_PERSISTENCE_V1','source_state':'wdi_trade_openness_squeeze_at_t','target_state':'wdi_trade_openness_squeeze_at_t_plus_h','lag':{'values':[1,2],'unit':'years','direction':'forward'},'split':'fit_validation_confirmation','metric':{'observed_max_balanced_accuracy':s['observed_max_balanced_accuracy'],'lead_1_validation_ba':0.6943799948440319,'lead_1_confirmation_ba':0.499365502114993,'lead_2_validation_ba':0.5963738368910783,'lead_2_confirmation_ba':0.46935826180760754},'null_method':'within-entity label permutation; 2000 reps; max-stat across leads and splits','p_value':s['maxstat_p_value'],'entity_holdout':False,'source_refs':['WDI_TRADE_EDGE_METRICS.csv','WDI_TRADE_EDGE_MAXSTAT_NULL_SUMMARY.json','WDI_TRADE_EDGE_CONTRACT_V1.json'],'edge_status':'rejected','causal_claim':False,'failure_cases':['max-stat p-value above threshold','confirmation does not reproduce validation advantage','aggregate trade openness only','no partner/commodity network or disruption observation']}
+ (OUT/'WDI_TRADE_TRANSITION_EVIDENCE_V1.jsonl').write_text(json.dumps(r,ensure_ascii=False)+'\n'); old=[json.loads(x) for x in REG.read_text().splitlines() if x.strip()]; pid='WDI_TRADE_OPENNESS_SQUEEZE_PERSISTENCE_V1';
+ if not any(x.get('pattern_id')==pid for x in old): REG.open('a',encoding='utf8').write(json.dumps({'pattern_id':pid,'status':'rejected_by_current_maxstat_null','statement':'WDI trade openness squeeze persistence at lead 1 or 2 source years','evidence':{'artifact':'campaigns/agents/trade_v1/WDI_TRADE_EDGE_MAXSTAT_NULL_SUMMARY.json','maxstat_p_value':s['maxstat_p_value'],'observed_max_balanced_accuracy':s['observed_max_balanced_accuracy']},'causal_claim':False,'operational_promotion':False,'interpretation':'validation advantage was not reproduced in confirmation and did not separate from max-stat null'},ensure_ascii=False)+'\n')
+ print(json.dumps(r,ensure_ascii=False,indent=2))
+if __name__=='__main__':main()

@@ -108,6 +108,14 @@
       "type": "pattern_record"
     },
     {
+      "node_id": "WDI_TRADE_OPENNESS_SQUEEZE_PERSISTENCE_V1",
+      "type": "pattern_record"
+    },
+    {
+      "node_id": "WDI_TRADE_SQUEEZE_TO_MATERIAL_GDP_DETERIORATION_V1",
+      "type": "pattern_record"
+    },
+    {
       "node_id": "WHO_COVID_DAILY_REPORTED_ACTIVITY"
     },
     {
@@ -726,6 +734,36 @@
       ]
     },
     {
+      "edge_id": "WDI_TRADE_OPENNESS_SQUEEZE_PERSISTENCE_V1_registry",
+      "source": "WDI_TRADE_OPENNESS_SQUEEZE_PERSISTENCE_V1",
+      "target": "WDI trade openness squeeze persistence at lead 1 or 2 source years",
+      "split": "registry",
+      "metric": null,
+      "p_value": 0.4547726136931534,
+      "null_method": "registry_summary",
+      "status": "rejected_by_current_maxstat_null",
+      "causal_claim": false,
+      "source_refs": "campaigns/agents/trade_v1/WDI_TRADE_EDGE_MAXSTAT_NULL_SUMMARY.json",
+      "failure_cases": [
+        "validation advantage was not reproduced in confirmation and did not separate from max-stat null"
+      ]
+    },
+    {
+      "edge_id": "WDI_TRADE_SQUEEZE_TO_MATERIAL_GDP_DETERIORATION_V1_registry",
+      "source": "WDI_TRADE_SQUEEZE_TO_MATERIAL_GDP_DETERIORATION_V1",
+      "target": "WDI trade openness squeeze at t to material GDP deterioration at t+1..t+3",
+      "split": "registry",
+      "metric": null,
+      "p_value": 0.5897051474262869,
+      "null_method": "registry_summary",
+      "status": "rejected_by_current_maxstat_null",
+      "causal_claim": false,
+      "source_refs": "campaigns/agents/trade_v1/WDI_TRADE_TO_ECONOMIC_DETERIORATION_MAXSTAT_NULL_SUMMARY.json",
+      "failure_cases": [
+        "cross-domain trade-to-economy edge did not separate from max-stat null and failed confirmation"
+      ]
+    },
+    {
       "edge_id": "WHO_COVID_DAILY_TO_ANNUAL_GDP_V1",
       "source": "WHO_COVID_DAILY_REPORTED_ACTIVITY",
       "target": "ANNUAL_MATERIAL_DETERIORATION",
@@ -1175,7 +1213,7 @@
   },
   "input_hashes": {
     "transition_evidence": "7e758b1f3ab323ee9a5bd1bcae2dca498b619b6d15754163c4908c7f057d4abf",
-    "registry": "832201fdf186fdc4a76577a0889c1f2703baad1e0bac9d6535d0438467d5560c",
+    "registry": "7f884a918f816c7c6c6c718b4f3bedfb0bec756d1c21d14940836fb3701f5a6a",
     "native_domain_transition_evidence": "21b2d619ff31cc71705613140fda5e9faa582fbe1ec39ff4e6d76354722c8f34",
     "cross_domain_transition_evidence": "079f739ead4bdbe9e18c3641f7728962cc2c3196a2bc3bf728adcdaf40bb1620",
     "trade_transition_evidence": "f2b97903d37dd349587fe63d88c77812040a0be7fde76b1962ce25b4156c19ca",

@@ -1,0 +1,17 @@
+{
+  "contract_id":"CHAOS_WDI_TRADE_EDGES_V1",
+  "purpose":"Test persistence of a source-defined trade openness squeeze within the trade domain",
+  "source":"World Bank WDI bulk extract",
+  "variable":"NE.TRD.GNFS.ZS",
+  "definition":"Trade in goods and services (% of GDP)",
+  "native_frequency":"annual",
+  "source_rule":"value[t] <= value[t-1] - 10 percentage points with exact consecutive source years",
+  "target_rule":"value[t+h] <= value[t] - 10 percentage points with exact consecutive source years",
+  "lead_years":[1,2],
+  "splits":{"fit":[2006,2015],"validation":[2016,2019],"confirmation":[2020,2024],"chronological":true},
+  "null":{"method":"within_entity_label_permutation","replicates":2000,"statistic":"max_balanced_accuracy_across_leads_and_splits"},
+  "missing_data":"complete-case with exact consecutive years; no imputation",
+  "not_inferred":["partner network disruption","commodity-specific shock","production shock","recovery"],
+  "causal_claims_permitted":false,
+  "promotion_requires":"baseline comparison, null separation, OOS stability, coverage sufficiency, supervisor admission"
+}

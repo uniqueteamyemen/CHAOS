@@ -1,0 +1,12 @@
+{
+  "campaign_id":"CHAOS_OPEN_MULTI_DOMAIN_CAMPAIGN_V1",
+  "run_id":"CHAOS_CAMPAIGN_RUN_2026_08_27_02",
+  "parent_run":"campaigns/CAMPAIGN_RUN_MANIFEST_V1.json",
+  "supervisor":"CHAOS_SUPERVISOR",
+  "new_inputs":{"wdi_trade_bulk":"external existing WDI_CSV.zip; raw not copied into CHAOS","wdi_trade_indicators":["NE.TRD.GNFS.ZS","NE.EXP.GNFS.ZS","NE.IMP.GNFS.ZS","TX.VAL.MRCH.CD.WT","TM.VAL.MRCH.CD.WT"]},
+  "new_outputs":{"wdi_trade_observed_rows":29004,"wdi_trade_entities":259,"wdi_trade_years":[2000,2024],"trade_internal_edge":"rejected_by_current_maxstat_null","trade_to_economic_edge":"rejected_by_current_maxstat_null"},
+  "agent_status":{"trade":"expanded_WDI_panel_no_positive_edge","institutions_policy":"WGI_edges_rejected_or_not_testable","energy":"no_new_positive_edge","environment_disaster":"native_states_edge_blocked","health_pandemic":"native_states_edge_blocked","evidence_composition":"final_supervisor_gate_pass_no_new_composite_pattern"},
+  "supervisor_gate":{"admitted_supported_predictive_records":2,"quarantined_records":22,"graph_nodes":41,"graph_edges":46,"runtime_eligible_patterns":0,"causal_claims":0},
+  "quality":{"domain_state_schema":"pass","transition_evidence_schema":"pass","final_supervisor_gate":"pass","raw_immutable":true,"native_frequency_preserved":true,"market_intelligence_engine_modified":false},
+  "status":"in_progress_open_campaign"
+}

@@ -2,9 +2,9 @@
   "compiler_id": "CHAOS_PATTERN_COMPILER_V1",
   "inputs": {
     "registry": "experiments/macro_plus_eia_energy/CONTROLLED_PATTERN_REGISTRY_V1.jsonl",
-    "registry_sha256": "832201fdf186fdc4a76577a0889c1f2703baad1e0bac9d6535d0438467d5560c",
+    "registry_sha256": "7f884a918f816c7c6c6c718b4f3bedfb0bec756d1c21d14940836fb3701f5a6a",
     "evidence_graph": "experiments/macro_plus_eia_energy/evidence_graph_v1/EVIDENCE_GRAPH_V1.json",
-    "evidence_graph_sha256": "25e9d1a32952e9619e9e7796d6e435d91e96fa89599fb8b4219aa0c55210d61d"
+    "evidence_graph_sha256": "9691775dec9e2fff09a86aaa838a9700ed71e20fdb887d3a1f054197ee32d6a0"
   },
   "eligible_supported_predictive": [],
   "research_only_candidates": [
@@ -58,7 +58,9 @@
     "WGI_GOV_WGI_RQ.EST_institutional_continuity_persistence_V1",
     "WGI_GOV_WGI_RQ.EST_institutional_decline_persistence_V1",
     "WGI_GOV_WGI_VA.EST_institutional_continuity_persistence_V1",
-    "WGI_GOV_WGI_VA.EST_institutional_decline_persistence_V1"
+    "WGI_GOV_WGI_VA.EST_institutional_decline_persistence_V1",
+    "WDI_TRADE_OPENNESS_SQUEEZE_PERSISTENCE_V1",
+    "WDI_TRADE_SQUEEZE_TO_MATERIAL_GDP_DETERIORATION_V1"
   ],
   "rules": {
     "causal_claims_permitted": false,

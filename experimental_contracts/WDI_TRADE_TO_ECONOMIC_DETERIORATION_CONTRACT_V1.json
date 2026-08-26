@@ -1,0 +1,15 @@
+{
+  "contract_id":"CHAOS_WDI_TRADE_TO_ECONOMIC_DETERIORATION_V1",
+  "purpose":"Test whether an observed annual WDI trade openness squeeze precedes material GDP deterioration without using the rejected high-growth-to-conflict edge",
+  "source_state":"WDI NE.TRD.GNFS.ZS trade openness squeeze at t: value[t] <= value[t-1] - 10pp with exact consecutive source years",
+  "target_state":"WDI/AMA macro material deterioration: GDP growth[t+h] <= GDP growth[t] - 2pp",
+  "horizons_years":[1,2,3],
+  "native_frequency":"annual",
+  "entity_alignment":"ISO3/source-native WDI Country Code to macro entity_code; inner join only; unmatched retained in coverage report",
+  "splits":{"fit":[2006,2015],"validation":[2016,2019],"confirmation":[2020,2024],"chronological":true},
+  "missing_data":"complete-case per horizon; exact source years; no imputation",
+  "null":{"method":"within-entity target-label permutation","replicates":2000,"statistic":"max_balanced_accuracy_across_horizons_and_splits"},
+  "baselines":["target prevalence","always negative","high_growth_gt_4_existing_baseline"],
+  "causal_claims_permitted":false,
+  "promotion_requires":"null separation, baseline addition, validation/confirmation consistency, entity coverage, supervisor admission"
+}

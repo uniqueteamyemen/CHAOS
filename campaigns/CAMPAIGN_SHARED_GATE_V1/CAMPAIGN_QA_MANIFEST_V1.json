@@ -1,0 +1,114 @@
+{
+  "manifest_id": "CHAOS_CAMPAIGN_QA_MANIFEST_V1",
+  "files": [
+    {
+      "path": "campaigns/CAMPAIGN_BASELINE_V1.json",
+      "bytes": 1604,
+      "sha256": "58d83fdd45164f78adc867d50973108aca77247b80a0d6dfae6c05ed01f42c4c"
+    },
+    {
+      "path": "campaigns/AGENT_ORCHESTRATION_REGISTRY_V1.json",
+      "bytes": 3936,
+      "sha256": "67ef7dd2ccbf515f0b3b1e1a718906b5bc767795c689f98fbd1a64685a70bd6a"
+    },
+    {
+      "path": "campaigns/CAMPAIGN_RUN_MANIFEST_V2.json",
+      "bytes": 1386,
+      "sha256": "f14736f3097fc43445996c3bb123dc9039d9dfd6a64bef923e36d81844f26fe0"
+    },
+    {
+      "path": "campaigns/CAMPAIGN_STATUS_ROUND2_AR.md",
+      "bytes": 4881,
+      "sha256": "ed2d27946c2000604404e4b4614ffaf3a4fc649fc0d992f47b539fb855a70429"
+    },
+    {
+      "path": "campaigns/CAMPAIGN_SHARED_GATE_V1/DOMAIN_STATE_SCHEMA_VALIDATION_V1.json",
+      "bytes": 1256,
+      "sha256": "25c30c520ef2052c47ef37893212375ae7b0d8d3f2b17ecdab0870bc25865a4a"
+    },
+    {
+      "path": "campaigns/CAMPAIGN_SHARED_GATE_V1/TRANSITION_EVIDENCE_SCHEMA_VALIDATION_V1.json",
+      "bytes": 1062,
+      "sha256": "2b753d53c4bdd574631186355b1d747270941678bf7b75fb708dcc9b98c37b52"
+    },
+    {
+      "path": "campaigns/CAMPAIGN_SHARED_GATE_V1/SUPERVISOR_GATE_DECISION_V1.json",
+      "bytes": 1643,
+      "sha256": "5d7f0ff5f238eae9c10ebfe95c8f72be1a355321d062923d71ba3d8e48cad6f1"
+    },
+    {
+      "path": "campaigns/CAMPAIGN_SHARED_GATE_V1/FINAL_SUPERVISOR_ELIGIBILITY_GATE_V1.json",
+      "bytes": 1440,
+      "sha256": "ce3a98e2cf455be672650dc38bed831385106b702307fe0cf5df8533a78f5396"
+    },
+    {
+      "path": "campaigns/CAMPAIGN_SHARED_GATE_V1/COMPOSITE_PATH_ADMISSION_DECISION_V1.json",
+      "bytes": 1247,
+      "sha256": "2d1ebdfb4552644933a6c844dd1930b296e18c120563de9ae5ec86222406e319"
+    },
+    {
+      "path": "campaigns/agents/trade_v1/WDI_TRADE_EXTRACT_SUMMARY.json",
+      "bytes": 970,
+      "sha256": "60222a6da0b6e10c9dd056853dd3c9127ea3e35ad32f917ddb032a49b057dfe7"
+    },
+    {
+      "path": "campaigns/agents/trade_v1/WDI_TRADE_DOMAIN_ADAPTER_SUMMARY.json",
+      "bytes": 743,
+      "sha256": "8c509a750f7400258e996505ebc47e0252dd7abb54eaaaa06a87ad4aec1008bc"
+    },
+    {
+      "path": "campaigns/agents/trade_v1/WDI_TRADE_EDGE_MAXSTAT_NULL_SUMMARY.json",
+      "bytes": 662,
+      "sha256": "322df72b9b7465a371e7f7d1e91421441cf2475e26eff432e4d57e6520cfcb64"
+    },
+    {
+      "path": "campaigns/agents/trade_v1/WDI_TRADE_TO_ECONOMIC_DETERIORATION_MAXSTAT_NULL_SUMMARY.json",
+      "bytes": 918,
+      "sha256": "b77190aad8d42d208271a08abdd48a3697ea54c176ac0862d328428d4abefd5f"
+    },
+    {
+      "path": "campaigns/agents/institutions_policy_v1/WGI_ADAPTER_RUN_SUMMARY.json",
+      "bytes": 853,
+      "sha256": "d99d46a6713661042a311b5d999b78e3a22fb9c3ad8a95ac174310d0b7202f07"
+    },
+    {
+      "path": "campaigns/agents/institutions_policy_v1/WGI_INSTITUTIONAL_EDGE_MAXSTAT_NULL_SUMMARY.json",
+      "bytes": 859,
+      "sha256": "a1b07ab80fd7acfaec28d795e5fd5fe098fe76ae4c603af9421924935af6005a"
+    },
+    {
+      "path": "campaigns/agents/institutions_policy_v1/WGI_INSTITUTIONAL_EDGE_DECISION_V1.json",
+      "bytes": 3762,
+      "sha256": "81670905d6a85673b5027856bb3d11096e951303ba1cefad498a982a69de7eac"
+    },
+    {
+      "path": "experiments/macro_plus_eia_energy/evidence_graph_v1/EVIDENCE_GRAPH_SUMMARY.json",
+      "bytes": 630,
+      "sha256": "aaacd88e5b15e3c171ed0a73536f0355e9f7913a9247534b5074b639d00cce58"
+    },
+    {
+      "path": "experiments/macro_plus_eia_energy/pattern_compiler_v1/PATTERN_COMPILER_SUMMARY.json",
+      "bytes": 186,
+      "sha256": "bb026c889952fe5793dfd36e79c7173e24e13046982aae21f05fcf99aa8bc33c"
+    },
+    {
+      "path": "research_ledger/RESEARCH_LEDGER_V1.jsonl",
+      "bytes": 15004,
+      "sha256": "0c4f6f5484f2d81e6ea4cd9fa68413a5f829217f0c49496adbf34599b439b288"
+    }
+  ],
+  "checks": {
+    "raw_immutable": true,
+    "native_frequency_preserved": true,
+    "imputation": false,
+    "normalization": false,
+    "source_averaging": false,
+    "daily_or_event_to_annual_conversion": false,
+    "causal_claims": 0,
+    "admitted_cross_domain_edges": 0,
+    "runtime_eligible_patterns": 0,
+    "rejected_unresolved_not_testable_positive_weight": false,
+    "market_intelligence_engine_modified": false
+  },
+  "status": "pass"
+}
