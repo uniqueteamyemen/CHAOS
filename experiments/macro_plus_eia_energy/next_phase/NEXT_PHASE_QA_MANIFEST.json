@@ -1,0 +1,182 @@
+{
+  "artifact_counts": {
+    "checkpoints": 17,
+    "figures": 4,
+    "metrics_csv_data_rows": 17,
+    "registry_jsonl_records": 18,
+    "run_directories": 17
+  },
+  "campaign": {
+    "all_imputation_false": true,
+    "all_raw_data_modified_false": true,
+    "all_test_used_for_selection_false": true,
+    "all_transformations_false": true,
+    "campaign_failure_count": 0,
+    "campaign_result_count": 17,
+    "family_counts": {
+      "ablation": 6,
+      "stability": 9,
+      "target_history_ablation": 2
+    },
+    "status_values": [
+      "completed"
+    ]
+  },
+  "checkpoints": [
+    {
+      "bytes": 407041,
+      "path": "experiments/macro_plus_eia_energy/next_phase/ablation_eia_only_seed17_enc5/checkpoints/tft-epoch=13-val_loss=1.6038.ckpt",
+      "sha256": "5c6e0918b197b1a87303bde6bae148ff8c5c46fac6a128b15a039b1c0e391797"
+    },
+    {
+      "bytes": 503905,
+      "path": "experiments/macro_plus_eia_energy/next_phase/ablation_imf_eia_seed17_enc5/checkpoints/tft-epoch=20-val_loss=1.5619.ckpt",
+      "sha256": "48bccf4d83e2a1d28f3fed513696fd8aa0e1b6fa3a3f0cc3e75dc30bb382df84"
+    },
+    {
+      "bytes": 453617,
+      "path": "experiments/macro_plus_eia_energy/next_phase/ablation_imf_only_seed17_enc5/checkpoints/tft-epoch=19-val_loss=1.5910.ckpt",
+      "sha256": "b89c4fe63a07a1297f3a1923e043de2244179ca2ac5e68c3f0e38118bdfd59b3"
+    },
+    {
+      "bytes": 504545,
+      "path": "experiments/macro_plus_eia_energy/next_phase/ablation_wdi_eia_seed17_enc5/checkpoints/tft-epoch=11-val_loss=1.5581.ckpt",
+      "sha256": "3c70ec4db6cea4266d1e038b8d15bb738dd365c8f8498758a95841ce688c8a48"
+    },
+    {
+      "bytes": 553297,
+      "path": "experiments/macro_plus_eia_energy/next_phase/ablation_wdi_imf_seed17_enc5/checkpoints/tft-epoch=16-val_loss=1.5588.ckpt",
+      "sha256": "ab5a448eac76214332ab53013a09af7d91dd96921b3b8f8a244bd265b9f0277d"
+    },
+    {
+      "bytes": 454321,
+      "path": "experiments/macro_plus_eia_energy/next_phase/ablation_wdi_only_seed17_enc5/checkpoints/tft-epoch=16-val_loss=1.5502.ckpt",
+      "sha256": "348fc943b00076b8031702c068bc0b259475c4f8d8a58c87c781be40a8f56acb"
+    },
+    {
+      "bytes": 605441,
+      "path": "experiments/macro_plus_eia_energy/next_phase/stability_seed101_enc3/checkpoints/tft-epoch=11-val_loss=1.7687.ckpt",
+      "sha256": "f042ec743fbefac3bdc85a179e3c2139a443d1df3d6550650369f31529abee1c"
+    },
+    {
+      "bytes": 605441,
+      "path": "experiments/macro_plus_eia_energy/next_phase/stability_seed101_enc5/checkpoints/tft-epoch=12-val_loss=1.7406.ckpt",
+      "sha256": "f1bbbab0cd07f02e30b4dc62fd365bd3fb6bc812d95d31254dddec27144a547a"
+    },
+    {
+      "bytes": 605441,
+      "path": "experiments/macro_plus_eia_energy/next_phase/stability_seed101_enc7/checkpoints/tft-epoch=10-val_loss=1.7555.ckpt",
+      "sha256": "36d892b994ef6540367b4e42ab2a457b75e2283c3621404408d277d46c14d1ad"
+    },
+    {
+      "bytes": 605441,
+      "path": "experiments/macro_plus_eia_energy/next_phase/stability_seed17_enc3/checkpoints/tft-epoch=09-val_loss=1.7208.ckpt",
+      "sha256": "60d5df039301f0cc885eb2b302f47721a58a36675241543d900a26716043e688"
+    },
+    {
+      "bytes": 605441,
+      "path": "experiments/macro_plus_eia_energy/next_phase/stability_seed17_enc5/checkpoints/tft-epoch=06-val_loss=1.7445.ckpt",
+      "sha256": "f5dc8e45c8756c0e6234b7f6c33fd889ed91d51438b5097de82130736645d0b0"
+    },
+    {
+      "bytes": 605505,
+      "path": "experiments/macro_plus_eia_energy/next_phase/stability_seed17_enc7/checkpoints/tft-epoch=19-val_loss=1.7024.ckpt",
+      "sha256": "6fd14c52c27d506ad761282068f902daf68d8be4001fc69c19c33fe72ec3a2b3"
+    },
+    {
+      "bytes": 605505,
+      "path": "experiments/macro_plus_eia_energy/next_phase/stability_seed43_enc3/checkpoints/tft-epoch=15-val_loss=1.8188.ckpt",
+      "sha256": "de00e27fbf263d5f8aec991a8a3e0adc9f5809bba73099a00c320da5b95e3d99"
+    },
+    {
+      "bytes": 605441,
+      "path": "experiments/macro_plus_eia_energy/next_phase/stability_seed43_enc5/checkpoints/tft-epoch=09-val_loss=1.8506.ckpt",
+      "sha256": "2543058c68187592e3d6507537a4e4e28f4add4992f7388fa130686c0e745563"
+    },
+    {
+      "bytes": 605441,
+      "path": "experiments/macro_plus_eia_energy/next_phase/stability_seed43_enc7/checkpoints/tft-epoch=11-val_loss=1.8496.ckpt",
+      "sha256": "d62432d01fb8f176e97a34cf0695052ee7652b569f77ff6ecf7b83931cb257bd"
+    },
+    {
+      "bytes": 579689,
+      "path": "experiments/macro_plus_eia_energy/next_phase/target_history_exogenous_only_seed17_enc5/checkpoints/tft-epoch=15-val_loss=1.5928.ckpt",
+      "sha256": "883e8a8fc4ff3e0393b086c1eb10c5d7a23021a9f0855637b9596439443e1836"
+    },
+    {
+      "bytes": 328545,
+      "path": "experiments/macro_plus_eia_energy/next_phase/target_history_target_history_only_seed17_enc5/checkpoints/tft-epoch=13-val_loss=1.5743.ckpt",
+      "sha256": "f7c03697db1eb9e8f4d45eaebb3ab884f59ad9a4b488b2d76680b9335a800013"
+    }
+  ],
+  "figures": [
+    {
+      "bytes": 86981,
+      "path": "experiments/macro_plus_eia_energy/next_phase/report/figures/01_stability_validation_mae.png",
+      "sha256": "6fc5fde6e803281b0f189ce54c71cdf9d29b8ddd40c043d4138cb01be5f19570"
+    },
+    {
+      "bytes": 61855,
+      "path": "experiments/macro_plus_eia_energy/next_phase/report/figures/02_ablation_test_mae.png",
+      "sha256": "bd690cadeecdc189b0699c1ada8cde69461a076d1ffe27d56abf5160ef7bffb5"
+    },
+    {
+      "bytes": 74391,
+      "path": "experiments/macro_plus_eia_energy/next_phase/report/figures/03_variable_selection_importance.png",
+      "sha256": "08b739609ac0fbf12c9279225310f0d69a648f85640b63b7de64294e404af3d9"
+    },
+    {
+      "bytes": 56639,
+      "path": "experiments/macro_plus_eia_energy/next_phase/report/figures/04_temporal_attention.png",
+      "sha256": "2c31040ab571281c99cd2e1e08c012ae0864bed09493566999527e45e04cc65c"
+    }
+  ],
+  "generated_from": {
+    "campaign": "experiments/macro_plus_eia_energy/next_phase/CAMPAIGN_RUN_RESULTS.json",
+    "report_summary": "experiments/macro_plus_eia_energy/next_phase/report/NEXT_PHASE_REPORT_SUMMARY.json"
+  },
+  "large_files_over_90MB": [],
+  "manifest_type": "CHAOS_next_phase_qa",
+  "qa_pass_conditions": {
+    "expected_campaign_failures_0": true,
+    "expected_campaign_runs_17": true,
+    "expected_checkpoints_17": true,
+    "expected_figures_4": true,
+    "expected_registry_records_18_including_reference": true,
+    "expected_run_directories_17": true,
+    "no_files_over_90MB": true,
+    "raw_data_modified_false": true,
+    "reverse_extraction_not_run": true,
+    "surrogate_not_run": true
+  },
+  "raw_integrity": [
+    {
+      "current_sha256": "89a17937187a340947cb000fba1892fbe5c4c99fffd51edc3d4d1124dbea19e8",
+      "exists": true,
+      "head_sha256": "89a17937187a340947cb000fba1892fbe5c4c99fffd51edc3d4d1124dbea19e8",
+      "matches_HEAD": true,
+      "path": "catalog_first/readiness_gate/macro_plus_eia_energy/MACRO_PLUS_EIA_ENERGY_RAW_2000_2024_WIDE.csv"
+    },
+    {
+      "current_sha256": "015736245ac4010aa1c97055930c69ca3c7da5fdd5970f5da34456b67a3172ad",
+      "exists": true,
+      "head_sha256": "015736245ac4010aa1c97055930c69ca3c7da5fdd5970f5da34456b67a3172ad",
+      "matches_HEAD": true,
+      "path": "catalog_first/readiness_gate/macro_plus_eia_energy/MACRO_PLUS_EIA_ENERGY_COMPLETE_139_NUMERIC_RAW_2000_2024_WIDE.csv"
+    }
+  ],
+  "report_summary": {
+    "ablation_runs_new": 6,
+    "best_validation_run": "stability_seed17_enc7",
+    "candidate_pattern_count": 3,
+    "full_reference_not_retrained": true,
+    "importance_runs": 9,
+    "raw_data_modified": false,
+    "reverse_extraction_run": false,
+    "stability_runs": 9,
+    "stable_lag_candidate_count": 0,
+    "surrogate_run": false,
+    "target_history_runs": 2,
+    "test_used_for_selection": false
+  }
+}

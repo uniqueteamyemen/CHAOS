@@ -1,20 +1,16 @@
-# GitHub Push Blocker — 2026-08-26
+# GitHub Push History — CHAOS
 
-The local CHAOS repository contains the complete TFT baseline campaign commit:
+هذه الملاحظة تحفظ تاريخ عائق المصادقة السابق ولا تمثل عائقاً نشطاً حالياً.
+
+في 2026-08-26 فشلت محاولة HTTPS الأولى لأن token GitHub المهيأ رُفض، كما لم يتوفر مفتاح SSH صالح. لم تُفقد أي مخرجات، وبقيت ملفات CHAOS محلياً في `/home/ubuntu/CHAOS/`.
+
+تمت استعادة المصادقة لاحقاً بنجاح، وتحقق دفع baseline إلى المستودع الخاص:
 
 ```text
-6d6369a Run macro plus EIA TFT baseline campaign v1.1
+https://github.com/uniqueteamyemen/CHAOS
+remote baseline SHA: fea380cd449bd702c0544cca84ed363baa3ab3ef
 ```
 
-The commit was created successfully and the working tree was clean before the push attempt. The HTTPS push failed because the configured GitHub token was rejected as invalid. `gh auth setup-git` did not resolve it. SSH was also tested and no usable public key was available.
+قبل دفع المرحلة التالية يجب تنفيذ push جديد والتحقق من SHA البعيد بعد اكتمال commit المحلي. لا توجد حالياً مطالبة بأن baseline عالق أو أن authentication blocker ما زال قائماً.
 
-No experiment files were lost. The complete commit remains locally at `/home/ubuntu/CHAOS/` and can be pushed after GitHub authentication is restored. The remote repository already exists at `https://github.com/uniqueteamyemen/CHAOS` and the prior commits are present there; only this latest campaign commit is pending remote synchronization.
-
-Required recovery action: re-authenticate GitHub CLI or provide a valid GitHub session/token, then run:
-
-```bash
-cd /home/ubuntu/CHAOS
-git push origin main
-```
-
-This blocker does not affect the training results, raw-data immutability, or the local reproducibility artifacts.
+هذا السجل لا يغيّر نتائج التدريب، ولا سياسة raw-data immutability، ولا artifacts الخاصة بإعادة الإنتاج.

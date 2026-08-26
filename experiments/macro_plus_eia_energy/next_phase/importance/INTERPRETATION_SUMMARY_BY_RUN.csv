@@ -1,0 +1,10 @@
+run_id,seed,encoder,field,shape,mean,std,error
+stability_seed17_enc3,17,3,INTERPRETATION_ERROR,[],,,IndexError('too many indices for tensor of dimension 2')
+stability_seed17_enc5,17,5,INTERPRETATION_ERROR,[],,,IndexError('too many indices for tensor of dimension 2')
+stability_seed17_enc7,17,7,INTERPRETATION_ERROR,[],,,IndexError('too many indices for tensor of dimension 2')
+stability_seed43_enc3,43,3,INTERPRETATION_ERROR,[],,,IndexError('too many indices for tensor of dimension 2')
+stability_seed43_enc5,43,5,INTERPRETATION_ERROR,[],,,IndexError('too many indices for tensor of dimension 2')
+stability_seed43_enc7,43,7,INTERPRETATION_ERROR,[],,,IndexError('too many indices for tensor of dimension 2')
+stability_seed101_enc3,101,3,INTERPRETATION_ERROR,[],,,IndexError('too many indices for tensor of dimension 2')
+stability_seed101_enc5,101,5,INTERPRETATION_ERROR,[],,,IndexError('too many indices for tensor of dimension 2')
+stability_seed101_enc7,101,7,INTERPRETATION_ERROR,[],,,IndexError('too many indices for tensor of dimension 2')
