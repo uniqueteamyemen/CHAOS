@@ -1,0 +1,50 @@
+{
+  "manifest_type": "CHAOS_threshold_grid_stability_qa",
+  "run_id": "threshold_grid_stability_v1",
+  "counts": {
+    "metric_rows": 648,
+    "aggregate_cells": 36,
+    "null_replicates": 2000,
+    "folds": 3,
+    "grid_cells": 36
+  },
+  "best_cell": {
+    "threshold_target": 4.0,
+    "threshold_population": 75000000.0,
+    "observed_mean_ba": 0.7276399174497001
+  },
+  "raw_integrity": {
+    "panel_sha256": "015736245ac4010aa1c97055930c69ca3c7da5fdd5970f5da34456b67a3172ad",
+    "panel_head_sha256": "015736245ac4010aa1c97055930c69ca3c7da5fdd5970f5da34456b67a3172ad",
+    "raw_sha256": "89a17937187a340947cb000fba1892fbe5c4c99fffd51edc3d4d1124dbea19e8",
+    "raw_head_sha256": "89a17937187a340947cb000fba1892fbe5c4c99fffd51edc3d4d1124dbea19e8",
+    "panel_matches_head": true,
+    "raw_matches_head": true
+  },
+  "flags": {
+    "locked_test_executed": false,
+    "raw_data_modified": false,
+    "imputation": false,
+    "normalization": false
+  },
+  "qa_pass_conditions": {
+    "grid_36_cells": true,
+    "three_folds": true,
+    "null_2000": true,
+    "locked_test_closed": true,
+    "raw_unchanged": true,
+    "panel_matches_head": true,
+    "raw_matches_head": true,
+    "no_imputation_or_normalization": true
+  },
+  "artifacts": [
+    "experiments/macro_plus_eia_energy/threshold_grid_v1/THRESHOLD_GRID_AGGREGATE.csv",
+    "experiments/macro_plus_eia_energy/threshold_grid_v1/THRESHOLD_GRID_MAXSTAT_NULL_REPLICATES.csv",
+    "experiments/macro_plus_eia_energy/threshold_grid_v1/THRESHOLD_GRID_MAXSTAT_NULL_SUMMARY.json",
+    "experiments/macro_plus_eia_energy/threshold_grid_v1/THRESHOLD_GRID_METRICS.csv",
+    "experiments/macro_plus_eia_energy/threshold_grid_v1/THRESHOLD_GRID_RUN_SUMMARY.json",
+    "experiments/macro_plus_eia_energy/threshold_grid_v1/THRESHOLD_GRID_STABILITY_REPORT_AR.md",
+    "experiments/macro_plus_eia_energy/threshold_grid_v1/threshold_grid.log",
+    "experiments/macro_plus_eia_energy/threshold_grid_v1/threshold_grid_null.log"
+  ]
+}
