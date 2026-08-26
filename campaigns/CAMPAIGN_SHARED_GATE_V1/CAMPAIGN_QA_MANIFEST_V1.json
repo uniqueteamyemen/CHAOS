@@ -22,6 +22,11 @@
       "sha256": "ed2d27946c2000604404e4b4614ffaf3a4fc649fc0d992f47b539fb855a70429"
     },
     {
+      "path": "campaigns/CAMPAIGN_SHARED_GATE_V1/AGENT_OUTPUT_INDEX_V1.json",
+      "bytes": 2629,
+      "sha256": "1ba47502cc54fd2ce369ca35adbd67795b928c0fb4ffaece34a57c4ed1d0a59c"
+    },
+    {
       "path": "campaigns/CAMPAIGN_SHARED_GATE_V1/DOMAIN_STATE_SCHEMA_VALIDATION_V1.json",
       "bytes": 1256,
       "sha256": "25c30c520ef2052c47ef37893212375ae7b0d8d3f2b17ecdab0870bc25865a4a"
@@ -45,6 +50,16 @@
       "path": "campaigns/CAMPAIGN_SHARED_GATE_V1/COMPOSITE_PATH_ADMISSION_DECISION_V1.json",
       "bytes": 1247,
       "sha256": "2d1ebdfb4552644933a6c844dd1930b296e18c120563de9ae5ec86222406e319"
+    },
+    {
+      "path": "experimental_contracts/WDI_TRADE_EDGE_CONTRACT_V1.json",
+      "bytes": 1110,
+      "sha256": "9d689e8e59635f1c70ea826907911088c45ec76c003b58d50b7885dfd62246f2"
+    },
+    {
+      "path": "experimental_contracts/WDI_TRADE_TO_ECONOMIC_DETERIORATION_CONTRACT_V1.json",
+      "bytes": 1253,
+      "sha256": "ad7d4fe51339f10ce6f495f83fdcaf8c7e064db77efc0b631703d8b7e105956f"
     },
     {
       "path": "campaigns/agents/trade_v1/WDI_TRADE_EXTRACT_SUMMARY.json",
@@ -93,8 +108,8 @@
     },
     {
       "path": "research_ledger/RESEARCH_LEDGER_V1.jsonl",
-      "bytes": 15004,
-      "sha256": "0c4f6f5484f2d81e6ea4cd9fa68413a5f829217f0c49496adbf34599b439b288"
+      "bytes": 17917,
+      "sha256": "6ca3b4e1345e5782feaf7cfb72871666f41156a041d2e5727bba8391df6620da"
     }
   ],
   "checks": {
