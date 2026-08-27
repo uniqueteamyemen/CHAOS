@@ -2,7 +2,7 @@
   "compiler_id": "CHAOS_PATTERN_COMPILER_V1",
   "supported_predictive_compiled": 0,
   "provisional_research_only": 1,
-  "excluded": 28,
+  "excluded": 29,
   "runtime_eligible": 0,
   "causal_claims": 0
 }

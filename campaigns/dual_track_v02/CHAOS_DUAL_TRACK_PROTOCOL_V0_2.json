@@ -1,0 +1,81 @@
+{
+  "protocol_id": "CHAOS_DUAL_TRACK_PROTOCOL_V0_2",
+  "version": "0.2",
+  "status": "frozen",
+  "purpose": "Discover reproducible multi-domain state transitions and selectively validate mechanisms without promoting exploratory associations to causal or runtime evidence.",
+  "scope": "CHAOS research-only; no modification of market-intelligence-engine, frozen baselines, raw data, or existing contracts.",
+  "governance": {
+    "supervisor_is_single_admission_authority": true,
+    "raw_immutable": true,
+    "provenance_required": true,
+    "replay_required": true,
+    "future_information_forbidden": true,
+    "frequency_mixing_forbidden": true,
+    "imputation_forbidden_unless_new_contract": true,
+    "source_averaging_forbidden": true,
+    "daily_or_event_to_annual_conversion_forbidden_unless_new_contract": true,
+    "causal_claims_require_explicit_causal_contract": true,
+    "positive_composer_weight_only_after_current_supervisor_gate": true
+  },
+  "status_model": {
+    "predictive_evidence_status": ["candidate", "supported_predictive", "rejected", "unresolved", "not_testable"],
+    "causal_validation_status": ["not_run", "inconclusive", "rejected", "validated_under_explicit_causal_contract"],
+    "runtime_status": ["not_eligible", "eligible_only_after_current_gate"],
+    "rule": "causal_validation_status is orthogonal to predictive_evidence_status; causal validation never bypasses the supervisor gate."
+  },
+  "roles": {
+    "supervisor": "Validates schemas, provenance, frequency, leakage controls, null design, and admission status.",
+    "domain_adapter": "Maps one authorized source into source-native observations and DomainStates without changing raw values.",
+    "discovery_evaluator": "Runs pre-registered state-transition searches and null controls, recording all tested variants and failures.",
+    "causal_validator": "Runs only explicitly activated causal contracts with pre-specified estimand, treatment, controls, timing, and robustness tests.",
+    "path_composer": "Tests only qualified nodes/edges and applies path-level null controls; it cannot infer causality from composition."
+  },
+  "discovery_track": {
+    "name": "ET",
+    "output_is_candidate_only": true,
+    "required_inputs": ["source-native observations", "source and vintage metadata", "frequency and unit", "entity coverage", "pre-registered search space"],
+    "candidate_requirements": ["source_state_definition", "target_state_definition", "unit_of_analysis", "lead_or_lag_definition", "input_hashes", "tested_variant_count", "null_method_and_invariants", "coverage_and_exclusions", "effect_size_and_denominator"],
+    "confidence_score": "not permitted as an agent-assigned admission criterion; any ranking score must be deterministic and separately defined.",
+    "screening_policy": {
+      "p_values_are_not_sufficient": true,
+      "effect_size_required": true,
+      "coverage_required": true,
+      "stability_required": true,
+      "out_of_sample_or_locked_confirmation_required_for_support": true,
+      "multiple_testing_correction": "FDR or family-level correction for declared screening families; locked confirmation remains untouched and pre-registered.",
+      "nulls": "Preserve the dependence structure relevant to the question: block/per-reporter permutation, identity-preserving permutation, restricted placebo timing, or clustered resampling as appropriate.",
+      "negative_controls": "Must be selected and justified before results are viewed; a failed negative control is a diagnostic failure, not proof of causality."
+    }
+  },
+  "causal_validation_queue": {
+    "name": "CVT_QUEUE",
+    "activation": "A candidate may enter the queue only after supervisor-approved discovery evidence and a new frozen causal contract.",
+    "not_automatic": true,
+    "required_contract_fields": ["estimand", "treatment_definition", "control_definition", "shock_or_assignment", "pre_period", "post_period", "outcome", "clustering", "spillovers", "anticipation", "pre_trends", "placebo", "negative_control", "sensitivity_grid", "influential_unit_policy", "replication_plan"],
+    "shock_rule": "Historical shocks are candidate quasi-experimental variation, not assumed random assignment.",
+    "minimum_diagnostics": ["pre-trends/event-study", "anticipation", "spillovers", "placebo timing", "outcome negative control", "influential-unit exclusion", "threshold sensitivity", "independent source or historical replication when feasible"],
+    "classification": "Record causal validation separately; never overwrite the discovery status."
+  },
+  "composite_paths": {
+    "assembly_order": ["qualified_domain_state", "qualified_single_edge", "pre-registered_two_node_motif", "path_level_test"],
+    "requirements": ["explicit node order", "explicit intermediate timing", "complete provenance for every node", "node ablation", "path-level null", "cross-entity or time holdout where applicable"],
+    "forbidden": ["composing rejected/unresolved/not_testable nodes with positive weight", "claiming causal path because individual edges are associated", "searching arbitrary paths and reporting only the best p-value"]
+  },
+  "stop_rules": [
+    "Do not rerun a closed question by tuning thresholds after observing results.",
+    "Stop a family when its pre-registered search space is exhausted or when no new testable structure is opened.",
+    "Open a new contract/version when the source, outcome family, unit, frequency, or mechanism changes materially.",
+    "Do not start CVT when discovery evidence fails coverage, null validity, leakage, or stability gates."
+  ],
+  "first_application_policy": {
+    "do_not_rerun": ["IMF_IMTS_PARTNER_DEPENDENCE_V2", "OECD_PMR_WITHIN_DOMAIN_V1"],
+    "priority_questions": [
+      {"rank": 1, "domain": "Trade", "question": "Partner substitution or persistence after a major partner-share disruption; not contraction-to-GDP."},
+      {"rank": 2, "domain": "Energy", "question": "Differential response to an energy shock by pre-shock exposure, with predictive discovery before causal validation."},
+      {"rank": 3, "domain": "Conflict_Economy", "question": "Event -> production shock -> recovery, keeping event and country-year representations distinct."}
+    ],
+    "initial_scope": "One new question per contract; no five-agent p-value competition."
+  },
+  "required_artifacts": ["frozen protocol", "frozen experiment contract", "source adapter manifest", "discovery candidate records", "null summaries", "coverage/exclusion register", "run manifest", "transition evidence", "supervisor decision", "ledger record", "replay instructions"],
+  "decision": "Approved as the governing protocol for a new research campaign; this approval does not assert that any candidate edge exists or is causal."
+}

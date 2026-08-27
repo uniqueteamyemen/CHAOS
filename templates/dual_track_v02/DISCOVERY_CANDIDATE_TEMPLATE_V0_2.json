@@ -1,0 +1,83 @@
+{
+  "candidate_id": "REPLACE_WITH_UNIQUE_ID",
+  "protocol_id": "CHAOS_DUAL_TRACK_PROTOCOL_V0_2",
+  "contract_ref": "REPLACE_WITH_FROZEN_DISCOVERY_CONTRACT",
+  "domain": "REPLACE_WITH_DOMAIN",
+  "source_state": {
+    "id": "REPLACE_WITH_STATE_ID",
+    "definition": "",
+    "source_variables": [],
+    "thresholds_or_binning": "pre-registered; no post-result tuning",
+    "native_frequency": "",
+    "unit": ""
+  },
+  "target_state": {
+    "id": "REPLACE_WITH_STATE_ID",
+    "definition": "",
+    "source_variables": [],
+    "thresholds_or_binning": "pre-registered; no post-result tuning",
+    "native_frequency": "",
+    "unit": ""
+  },
+  "unit_of_analysis": "",
+  "direction": "forward",
+  "lead_or_lag": {"value": 0, "unit": "years", "semantics": "define before execution"},
+  "search_family": "",
+  "search_space": {"windows": [], "horizons": [], "thresholds": [], "variants": []},
+  "data_scope": {
+    "sources": [],
+    "vintages": [],
+    "coverage_start": "",
+    "coverage_end": "",
+    "entities_requested": 0,
+    "entities_tested": 0,
+    "exclusions": [],
+    "missing_policy": "preserve missing; no imputation or missing-as-zero unless contract explicitly states otherwise"
+  },
+  "effect": {
+    "name": "",
+    "value": null,
+    "unit": "",
+    "denominator": "",
+    "direction_expected": "",
+    "estimator": ""
+  },
+  "null_controls": [
+    {
+      "id": "",
+      "method": "",
+      "invariants_preserved": [],
+      "permuted_element": "",
+      "replicates": 0,
+      "p_value": null,
+      "null_mean": null,
+      "null_sd": null,
+      "degeneracy_check": "",
+      "status": ""
+    }
+  ],
+  "validation": {
+    "fit_result": null,
+    "validation_result": null,
+    "locked_confirmation_result": null,
+    "oos_result": null,
+    "stability_result": null,
+    "fdr_family": "",
+    "fdr_adjusted_value": null
+  },
+  "provenance": {
+    "input_refs": [],
+    "input_sha256": {},
+    "code_ref": "",
+    "code_sha256": "",
+    "seed": null,
+    "run_manifest_ref": ""
+  },
+  "classification": {
+    "predictive_evidence_status": "candidate",
+    "causal_validation_status": "not_run",
+    "runtime_status": "not_eligible",
+    "reason": ""
+  },
+  "notes": []
+}

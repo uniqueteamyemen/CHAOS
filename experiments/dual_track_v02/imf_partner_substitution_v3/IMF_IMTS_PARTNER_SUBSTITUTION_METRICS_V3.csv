@@ -1,0 +1,13 @@
+split,variant,horizon,reporters_with_events,events,successes,persistence_rate
+fit,primary_top1_displacement,1,40,200,171,0.855
+fit,primary_top1_displacement,2,40,200,155,0.775
+fit,primary_top1_displacement,3,40,200,143,0.715
+confirmation,primary_top1_displacement,1,49,310,267,0.8612903225806452
+confirmation,primary_top1_displacement,2,49,271,209,0.7712177121771218
+confirmation,primary_top1_displacement,3,49,235,164,0.6978723404255319
+fit,diagnostic_top1_displacement,1,33,136,115,0.8455882352941176
+fit,diagnostic_top1_displacement,2,33,136,102,0.75
+fit,diagnostic_top1_displacement,3,33,136,92,0.6764705882352942
+confirmation,diagnostic_top1_displacement,1,44,245,212,0.8653061224489796
+confirmation,diagnostic_top1_displacement,2,44,212,162,0.7641509433962265
+confirmation,diagnostic_top1_displacement,3,43,184,125,0.6793478260869565

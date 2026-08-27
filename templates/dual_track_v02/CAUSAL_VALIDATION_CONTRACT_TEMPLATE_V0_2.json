@@ -1,0 +1,29 @@
+{
+  "contract_id": "REPLACE_WITH_UNIQUE_CAUSAL_CONTRACT_ID",
+  "protocol_id": "CHAOS_DUAL_TRACK_PROTOCOL_V0_2",
+  "status": "draft_for_freeze",
+  "research_only": true,
+  "candidate_ref": "REPLACE_WITH_SUPERVISOR_APPROVED_CANDIDATE",
+  "estimand": {"name": "", "formula": "", "unit": "", "expected_direction": ""},
+  "unit_of_analysis": "",
+  "treatment": {"definition": "", "assignment_time": "", "pre_shock_measurement_window": "", "threshold": null, "fixed_before_outcome": true},
+  "control": {"definition": "", "eligibility": "", "exclusions": []},
+  "shock": {"id": "", "date_or_window": "", "source_refs": [], "assignment_is_assumed_random": false, "quasi_experimental_argument": "", "anticipation_risk": "", "spillover_risk": ""},
+  "outcome": {"variable_id": "", "definition": "", "native_frequency": "", "unit": "", "measurement_window": "", "missing_policy": "preserve_missing"},
+  "design": {"method": "Difference_in_Differences_or_Event_Study", "pre_period": [], "post_period": [], "event_time_range": [], "clustering": "", "fixed_effects": [], "covariates": [], "no_post_treatment_covariates": true},
+  "diagnostics": {
+    "pre_trends": {"criterion": "", "test": "", "pass_rule": ""},
+    "anticipation": {"test": "", "pass_rule": ""},
+    "spillovers": {"test": "", "pass_rule": ""},
+    "placebo_timing": {"dates": [], "pass_rule": ""},
+    "outcome_negative_control": {"variable_id": "", "pre_registered_reason": "", "pass_rule": ""},
+    "influential_units": {"exclusion_rule": "", "pass_rule": ""},
+    "threshold_sensitivity": {"grid": [], "pass_rule": ""},
+    "independent_replication": {"shock_or_period": "", "alternate_source": "", "pass_rule": ""}
+  },
+  "multiple_testing": {"family_id": "", "number_of_declared_models": 0, "correction": "", "locked_specification": true},
+  "data_governance": {"raw_immutable": true, "frequency_mixing": false, "imputation": false, "source_averaging": false, "future_information_forbidden": true},
+  "acceptance": {"core_tests": [], "all_core_tests_required": true, "causal_status_if_pass": "validated_under_explicit_causal_contract", "causal_status_if_fail": "rejected_or_inconclusive", "predictive_status_unchanged": true},
+  "provenance": {"input_refs": [], "input_sha256": {}, "code_ref": "", "code_sha256": {}, "seed": null, "run_manifest_ref": ""},
+  "notes": []
+}

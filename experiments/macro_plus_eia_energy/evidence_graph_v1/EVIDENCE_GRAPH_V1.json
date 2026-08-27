@@ -136,6 +136,10 @@
       "type": "pattern_record"
     },
     {
+      "node_id": "IMF_IMTS_PARTNER_SUBSTITUTION_V3",
+      "type": "pattern_record"
+    },
+    {
       "node_id": "WHO_COVID_DAILY_REPORTED_ACTIVITY"
     },
     {
@@ -200,6 +204,12 @@
     },
     {
       "node_id": "fixed_candidate_pool_partner_dependence_plus_active_bilateral_export_contraction"
+    },
+    {
+      "node_id": "baseline_top1_displaced"
+    },
+    {
+      "node_id": "replacement_top1_persists"
     }
   ],
   "edges": [
@@ -889,6 +899,21 @@
       "source_refs": "experiments/multi_domain_native_edges_v2/imf_partner_dependence_v2/IMF_IMTS_PARTNER_DEPENDENCE_SUMMARY_V2.json",
       "failure_cases": [
         "rejected: coverage is adequate and partner-identity null is nondegenerate, but confirmation risk differences are negative and identity, outcome, and time-placebo null controls fail; reporter stability also fails. This record cannot receive positive Composer or runtime weight."
+      ]
+    },
+    {
+      "edge_id": "IMF_IMTS_PARTNER_SUBSTITUTION_V3_registry",
+      "source": "IMF_IMTS_PARTNER_SUBSTITUTION_V3",
+      "target": "IMF baseline top-1 partner displacement is followed by persistence of a replacement top-1 identity over 1-3 annual horizons",
+      "split": "registry",
+      "metric": null,
+      "p_value": null,
+      "null_method": "registry_summary",
+      "status": "unresolved",
+      "causal_claim": false,
+      "source_refs": "experiments/dual_track_v02/imf_partner_substitution_v3/IMF_IMTS_PARTNER_SUBSTITUTION_SUMMARY_V3.json",
+      "failure_cases": [
+        "promising descriptive/predictive candidate but unresolved; no positive Composer or runtime weight. Requires a new frozen admission erratum/contract with explicit alpha/FDR/pass rules and stronger temporal-dependence null before support admission or causal validation."
       ]
     },
     {
@@ -1588,6 +1613,64 @@
         "coverage and region holdout passed, but passing coverage does not imply predictive support",
         "135 reporters have complete ten-partner pools; prior 15-reporter V1 baseline remains unchanged"
       ]
+    },
+    {
+      "edge_id": "IMF_IMTS_PARTNER_SUBSTITUTION_V3",
+      "source": "baseline_top1_displaced",
+      "target": "replacement_top1_persists",
+      "lag": {
+        "direction": "forward",
+        "unit": "years",
+        "value": "1_to_3"
+      },
+      "split": "locked_confirmation_2015_2024",
+      "metric": {
+        "confirmation_identity_null_non_degenerate": true,
+        "horizon_values": {
+          "h1": {
+            "events": 310,
+            "identity_null_p": 9.999000099990002e-05,
+            "observed_rate": 0.8612903225806452,
+            "reporters": 49,
+            "time_placebo_p": 0.0001999600079984003
+          },
+          "h2": {
+            "events": 271,
+            "identity_null_p": 9.999000099990002e-05,
+            "observed_rate": 0.7712177121771218,
+            "reporters": 49,
+            "time_placebo_p": 0.0001999600079984003
+          },
+          "h3": {
+            "events": 235,
+            "identity_null_p": 9.999000099990002e-05,
+            "observed_rate": 0.6978723404255319,
+            "reporters": 49,
+            "time_placebo_p": 0.0001999600079984003
+          }
+        },
+        "name": "conditional_replacement_persistence_rate",
+        "stability_runs": 5
+      },
+      "p_value": 9.999000099990002e-05,
+      "null_method": "within-reporter identity-sequence permutation preserving eligible-year count and identity-frequency multiset (10000); circular sequence shift diagnostic preserving sequence length and identity frequencies (5000); reporter-cluster bootstrap (5000)",
+      "status": "unresolved",
+      "causal_claim": false,
+      "source_refs": [
+        "experimental_contracts/dual_track_v02/IMF_IMTS_PARTNER_SUBSTITUTION_CONTRACT_V3.json",
+        "campaigns/dual_track_v02/CHAOS_DUAL_TRACK_PROTOCOL_V0_2.json",
+        "experiments/dual_track_v02/imf_partner_substitution_v3/IMF_IMTS_PARTNER_SUBSTITUTION_SUMMARY_V3.json",
+        "experiments/dual_track_v02/imf_partner_substitution_v3/IMF_IMTS_PARTNER_SUBSTITUTION_METRICS_V3.csv",
+        "experiments/dual_track_v02/imf_partner_substitution_v3/IMF_IMTS_PARTNER_SUBSTITUTION_STABILITY_SUMMARY_V3.json",
+        "experiments/dual_track_v02/imf_partner_substitution_v3/IMF_IMTS_PARTNER_SUBSTITUTION_ELIGIBILITY_AUDIT_V3.json"
+      ],
+      "failure_cases": [
+        "Candidate is descriptive/predictive exploratory evidence only; no causal validation was run.",
+        "Frozen V3 contract did not specify explicit alpha/FDR/pass rules for admission; do not retroactively infer them.",
+        "Identity permutation is structure-preserving for identity frequencies but does not establish a causal mechanism or fully model all temporal dependence.",
+        "Current evidence is candidate_promising_but_not_admitted; no positive Composer/runtime weight.",
+        "A new frozen contract/erratum is required before support admission or CVT activation."
+      ]
     }
   ],
   "rules": {
@@ -1607,7 +1690,7 @@
   },
   "input_hashes": {
     "transition_evidence": "7e758b1f3ab323ee9a5bd1bcae2dca498b619b6d15754163c4908c7f057d4abf",
-    "registry": "ea7cf7f88906c8af3a99d6ebf22da7f1ab0ee96f7320bd40cf6197e22f761092",
+    "registry": "fd6d820d06efcce0b158c95b0b2dce7a005264716dc0ff4c4a8d085d588fb9ab",
     "native_domain_transition_evidence": "21b2d619ff31cc71705613140fda5e9faa582fbe1ec39ff4e6d76354722c8f34",
     "cross_domain_transition_evidence": "079f739ead4bdbe9e18c3641f7728962cc2c3196a2bc3bf728adcdaf40bb1620",
     "trade_transition_evidence": "f2b97903d37dd349587fe63d88c77812040a0be7fde76b1962ce25b4156c19ca",
@@ -1618,6 +1701,7 @@
     "pmr_sensitivity_transition_evidence": "7c28f75aa683e4654f617e878cf1a1b46abce681d1356fc684107017c8dd3329",
     "imf_imts_export_to_gdp_transition_evidence": "bf11dcb2f89dfab736e42329b77e25c5c5f1e989012637c7849bdab6f28c212e",
     "imf_partner_dependence_transition_evidence": "56d1c7844ce005701e5eea5fa2097c1292c21432ae41394aaac0a5b660004bf2",
-    "imf_partner_dependence_v2_transition_evidence": "17dc127e0e6d6dc942d45999ab4aa3d410e85e3a712323b599f2df6f749195e3"
+    "imf_partner_dependence_v2_transition_evidence": "17dc127e0e6d6dc942d45999ab4aa3d410e85e3a712323b599f2df6f749195e3",
+    "imf_partner_substitution_v3_transition_evidence": "5c29ba97a079b02f0ad9839cd85575079f1589cf9ae7dacf2acac3ece9f12a6e"
   }
 }

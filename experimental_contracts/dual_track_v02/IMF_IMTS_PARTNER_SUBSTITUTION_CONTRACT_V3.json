@@ -1,0 +1,101 @@
+{
+  "contract_id": "IMF_IMTS_PARTNER_SUBSTITUTION_V3",
+  "protocol_id": "CHAOS_DUAL_TRACK_PROTOCOL_V0_2",
+  "status": "frozen",
+  "research_only": true,
+  "question": "After a reporter's baseline top partner is displaced, does a replacement partner identity persist over subsequent annual observations more often than a structure-preserving identity null?",
+  "non_equivalence_to_closed_tests": "This is not IMF_IMTS_PARTNER_DEPENDENCE_V2, not total export contraction to GDP, and not a threshold retuning of V2. The target is partner-identity substitution/persistence, not economic deterioration.",
+  "source": {
+    "dataset": "IMF.STA:IMTS",
+    "indicator": "XG_FOB_USD",
+    "flow": "XG",
+    "valuation": "FOB",
+    "unit": "USD",
+    "frequency": "A",
+    "raw_period": [2000, 2024],
+    "raw_observation_fields": ["reporter", "counterpart", "time_period", "obs_value_raw"],
+    "raw_immutable": true,
+    "source_refs": ["https://data.imf.org/en/datasets/IMF.STA:IMTS"]
+  },
+  "universe": {
+    "reporters": "All reporters with a complete ten-partner baseline candidate pool in the existing V2 selection register; no GDP outcome selection.",
+    "baseline_selection_window": [2000, 2004],
+    "candidate_pool_size": 10,
+    "selection_rule": "Top ten counterpart identities by accumulated raw XG value within 2000-2004, using only observed bilateral records; preserve existing V2 selection register and do not reselect after results.",
+    "active_identity": "Baseline top-1 counterpart within the ten-candidate pool.",
+    "annual_eligibility": "A reporter-year is eligible only when all ten baseline candidate identities have observed numeric annual records; absent records are missing and never interpreted as zero.",
+    "expected_reporter_count": 135
+  },
+  "states": {
+    "source_state": {
+      "id": "baseline_top1_displaced",
+      "definition": "For an eligible reporter-year t after the baseline window, the annual top-1 identity among the fixed ten baseline candidates differs from the baseline top-1 identity.",
+      "measurement": "rank observed raw annual XG_FOB_USD values among the fixed ten candidates; ties use lexical counterpart code ordering.",
+      "derived_measurement_permitted": "Within-candidate annual ranking only; no unit normalization, imputation, log, differencing, smoothing, or source averaging.",
+      "frequency": "annual"
+    },
+    "target_state": {
+      "id": "replacement_top1_persists",
+      "definition": "The displaced-year top-1 replacement identity remains the top-1 identity in each of the next h annual eligible years, where h is 1, 2, or 3.",
+      "horizons": [1, 2, 3],
+      "frequency": "annual"
+    },
+    "diagnostic_state": {
+      "id": "baseline_top3_identity_changed",
+      "definition": "The set of annual top-3 identities differs from the baseline top-3 set; this is diagnostic only and not promotable without a separate contract.",
+      "horizons": [1, 2, 3]
+    }
+  },
+  "splits": {
+    "fit_or_discovery": [2005, 2014],
+    "locked_confirmation": [2015, 2024],
+    "selection_is_locked_before_confirmation": true,
+    "no_test_usage_for_selection": true
+  },
+  "search_space": {
+    "primary_variant": "baseline_top1_displaced_to_replacement_top1_persists",
+    "diagnostic_variant": "baseline_top3_identity_changed_to_replacement_top1_persists",
+    "horizons": [1, 2, 3],
+    "alternative_threshold_grid": "none; identity ranking question is threshold-free",
+    "variants_declared": ["primary_top1", "diagnostic_top3"]
+  },
+  "metrics": {
+    "primary": "conditional persistence rate among eligible displaced events, with reporter-cluster bootstrap interval",
+    "contrast": "observed persistence rate minus structure-preserving identity-null persistence rate",
+    "secondary": ["event count", "reporter count", "eligible-year coverage", "replacement identity concentration", "repeat-event handling"],
+    "minimum_coverage": {"fit_events": 30, "confirmation_events": 20, "fit_reporters": 15, "confirmation_reporters": 15}
+  },
+  "null_controls": [
+    {
+      "id": "identity_sequence_null",
+      "method": "Within-reporter permutation of observed annual top-1 identity sequence over eligible post-baseline years, preserving each reporter's eligible-year count and identity-frequency multiset; baseline top-1 displacement event count is recomputed from the permuted sequence.",
+      "replicates": 10000,
+      "invariants": ["reporter", "eligible-year count", "identity-frequency multiset", "baseline candidate pool", "horizon definition"],
+      "primary_p_value": "right-tail probability of null contrast at least as large as observed"
+    },
+    {
+      "id": "time_placebo_null",
+      "method": "Circularly shift each reporter's post-baseline identity sequence by a non-zero reporter-specific offset, preserving sequence length and identity frequencies.",
+      "replicates": 5000,
+      "invariants": ["reporter", "sequence length", "identity frequencies", "candidate pool"]
+    },
+    {
+      "id": "reporter_cluster_bootstrap",
+      "method": "Resample reporters with replacement and recompute the conditional persistence contrast.",
+      "replicates": 5000,
+      "invariants": ["reporter cluster"]
+    }
+  ],
+  "exclusions": [
+    "Reporters without a complete ten-candidate baseline pool",
+    "Reporter-years with any missing candidate identity record",
+    "Years inside the 2000-2004 selection window",
+    "Transitions whose required future horizon exceeds 2024",
+    "Rows with non-numeric or non-positive raw value for ranking",
+    "Partner identities outside the locked baseline candidate pool"
+  ],
+  "failure_policy": "If coverage, null validity, stability, or locked confirmation fails, classify predictive evidence as rejected, unresolved, or not_testable; never retune the identity rule after results.",
+  "classification": {"initial": "candidate", "support_requires": ["positive locked confirmation contrast", "identity null pass", "time placebo pass", "reporter stability pass", "coverage pass"], "causal_validation_status": "not_run", "runtime_status": "not_eligible"},
+  "provenance_requirements": ["raw response hashes", "selection register hash", "contract hash", "code hash", "seed list", "run manifest", "all variant metrics", "all exclusions"],
+  "approval": {"approved_for_exploratory_run": true, "approved_by": "user authorization to execute the Dual-Track v0.2 plan", "approval_date": "2026-08-27"}
+}

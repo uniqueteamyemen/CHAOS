@@ -33,18 +33,18 @@
     },
     {
       "path": "campaigns/CAMPAIGN_SHARED_GATE_V1/TRANSITION_EVIDENCE_SCHEMA_VALIDATION_V1.json",
-      "bytes": 1880,
-      "sha256": "9f2e03830938c60524ee965e77ab91f59185a90179b3375060687eada58e9e8c"
+      "bytes": 2043,
+      "sha256": "08b64ca6d49e84411fc9556ad8c7cdba189f505bda41535acce3fbdd39c207b4"
     },
     {
       "path": "campaigns/CAMPAIGN_SHARED_GATE_V1/SUPERVISOR_GATE_DECISION_V1.json",
-      "bytes": 2592,
-      "sha256": "0d57d77430778bec0ded9dec1bff63aaa3ae225031943c590aef6b2eee740dc9"
+      "bytes": 2781,
+      "sha256": "e28cc2fa11a4a945017c079b998a74ed649ede313d5b8c7fd6ad0736a4bea670"
     },
     {
       "path": "campaigns/CAMPAIGN_SHARED_GATE_V1/FINAL_SUPERVISOR_ELIGIBILITY_GATE_V1.json",
       "bytes": 1440,
-      "sha256": "27e36ac4c6f1c9c6765a4c05690beeca1983fe4ff62babf6da43d1baf61d2bce"
+      "sha256": "08f8b23440b33f261a161999d49969790fb1990e260de6131a8c608d175b8b4e"
     },
     {
       "path": "campaigns/CAMPAIGN_SHARED_GATE_V1/COMPOSITE_PATH_ADMISSION_DECISION_V1.json",
@@ -109,12 +109,12 @@
     {
       "path": "experiments/macro_plus_eia_energy/evidence_graph_v1/EVIDENCE_GRAPH_SUMMARY.json",
       "bytes": 630,
-      "sha256": "0573ef872723269c5fc2f3d8504cc6c3aa27a030eadb61fcd43d8a34d8b549bf"
+      "sha256": "3dcdc63886c93ab5c668618f5718c3dad14c44f073c87e7ee49cab7e23b8821e"
     },
     {
       "path": "experiments/macro_plus_eia_energy/pattern_compiler_v1/PATTERN_COMPILER_SUMMARY.json",
       "bytes": 186,
-      "sha256": "895df3bdd4837e3773bc96aa34b456d7e985af05b76ce860d52420e5b4575aed"
+      "sha256": "81f5c2ce82ab758603ae7e493adbbe0a04ee728d08fd9b664b819e3bc6328ea1"
     },
     {
       "path": "campaigns/research_rounds/20260827_BROWSER_DEEP_RESEARCH/BROWSER_DEEP_RESEARCH_ROUND_CONTRACT_V1.json",
@@ -585,6 +585,141 @@
       "path": "tooling/build_imf_partner_dependence_v2_execution_deviation.py",
       "bytes": 1877,
       "sha256": "df201b3f9fd479a0ffb1d5bd2a716d1a9e5483969681fc119a1bad936f7f4b91"
+    },
+    {
+      "path": "campaigns/dual_track_v02/CHAOS_DUAL_TRACK_PROTOCOL_V0_2.json",
+      "bytes": 6750,
+      "sha256": "f2eb1e89f1539362b8166603b24271105251eb401455c1a0868f5bd183a2e053"
+    },
+    {
+      "path": "experimental_contracts/dual_track_v02/IMF_IMTS_PARTNER_SUBSTITUTION_CONTRACT_V3.json",
+      "bytes": 6426,
+      "sha256": "ed77ba6aea5d5c6a22dfc02bbdce9407365e3ded7451bad8295574cdf77969b7"
+    },
+    {
+      "path": "templates/dual_track_v02/DISCOVERY_CANDIDATE_TEMPLATE_V0_2.json",
+      "bytes": 2188,
+      "sha256": "1a33c692f87c0b6e13ce261ad15131bd815197123ecf7ff21d975fcabf329ca1"
+    },
+    {
+      "path": "templates/dual_track_v02/CAUSAL_VALIDATION_CONTRACT_TEMPLATE_V0_2.json",
+      "bytes": 2333,
+      "sha256": "728fbe388b72b0cc4ade7100ceb5ef17da66ad23b1db4c24e1cb84c36a701532"
+    },
+    {
+      "path": "templates/dual_track_v02/COMPOSITE_PATH_CONTRACT_TEMPLATE_V0_2.json",
+      "bytes": 1934,
+      "sha256": "8e58b1941d2bc7b2f61499418af9d3986837984e9186e042748af28f3d6394ee"
+    },
+    {
+      "path": "tooling/run_imf_partner_substitution_v3.py",
+      "bytes": 10296,
+      "sha256": "645d0e24f8a99423f631d85ea66a1eb4933f3c8a4fa0d4e4fc734942685e4fce"
+    },
+    {
+      "path": "tooling/summarize_imf_partner_substitution_v3_stability.py",
+      "bytes": 2068,
+      "sha256": "36aecd8fa407c255353993de489933966e1a2c7cca78d83b30fe0c87b16f2201"
+    },
+    {
+      "path": "tooling/audit_imf_partner_substitution_v3.py",
+      "bytes": 3014,
+      "sha256": "3ea62e1dc9aeafca175e334cdc8bf495587ad35f87d0387e36586afe1a425dfa"
+    },
+    {
+      "path": "tooling/build_imf_partner_substitution_transition_evidence_v3.py",
+      "bytes": 3819,
+      "sha256": "7833c0ffd62dd65c36d55078772da920ff48fcf9806e47b1efd1edf4dca1dadc"
+    },
+    {
+      "path": "tooling/register_imf_partner_substitution_v3.py",
+      "bytes": 1880,
+      "sha256": "069565a9d7cab88aed3374f080fb619fda98502e9ec9def1d5aa73a56a11bbe3"
+    },
+    {
+      "path": "experiments/dual_track_v02/imf_partner_substitution_v3/IMF_IMTS_PARTNER_SUBSTITUTION_SUMMARY_V3.json",
+      "bytes": 7436,
+      "sha256": "40323f687db6e904c16377d91361eb98a873f76cf38da39ec0c6fe2b6f2f419b"
+    },
+    {
+      "path": "experiments/dual_track_v02/imf_partner_substitution_v3/IMF_IMTS_PARTNER_SUBSTITUTION_METRICS_V3.csv",
+      "bytes": 840,
+      "sha256": "123d140d54c86ec76f1921f2e3a48cb9a6510a776d5e5ffe2811e397fa34c44c"
+    },
+    {
+      "path": "experiments/dual_track_v02/imf_partner_substitution_v3/IMF_IMTS_PARTNER_SUBSTITUTION_EVENTS_V3.csv",
+      "bytes": 92808,
+      "sha256": "1bc0f38300a2f6c539a092b6a89644dbda0d11cd14a91234044437fe2253d7b3"
+    },
+    {
+      "path": "experiments/dual_track_v02/imf_partner_substitution_v3/IMF_IMTS_PARTNER_SUBSTITUTION_STABILITY_V3.csv",
+      "bytes": 7177,
+      "sha256": "3acb4a818a0d330a8dbc028d030155af4d02e0b8e7f07e60a2ad453fb50cb547"
+    },
+    {
+      "path": "experiments/dual_track_v02/imf_partner_substitution_v3/IMF_IMTS_PARTNER_SUBSTITUTION_STABILITY_SUMMARY_V3.json",
+      "bytes": 5870,
+      "sha256": "23a3888d39f1c8ad25e15924edd2c37162e15456b25565a0a3f7dd4ec36fed5f"
+    },
+    {
+      "path": "experiments/dual_track_v02/imf_partner_substitution_v3/stability_runs/SUMMARY_SEED_271108.json",
+      "bytes": 7436,
+      "sha256": "40323f687db6e904c16377d91361eb98a873f76cf38da39ec0c6fe2b6f2f419b"
+    },
+    {
+      "path": "experiments/dual_track_v02/imf_partner_substitution_v3/stability_runs/SUMMARY_SEED_271109.json",
+      "bytes": 7419,
+      "sha256": "b501300f96ec93438cde85cd6dfe42ecf898170a96764773d4cc2c0c16ef0ffa"
+    },
+    {
+      "path": "experiments/dual_track_v02/imf_partner_substitution_v3/stability_runs/SUMMARY_SEED_271110.json",
+      "bytes": 7441,
+      "sha256": "64c4d71b275b5ee297239f25fbfaf4536c3c61ade57a40708358870cd4d9cdab"
+    },
+    {
+      "path": "experiments/dual_track_v02/imf_partner_substitution_v3/stability_runs/SUMMARY_SEED_271111.json",
+      "bytes": 7442,
+      "sha256": "4f14ea70a90e1825f7d820dcf39c19c2f9bc5174ff1aad9664c5366c233ed5ab"
+    },
+    {
+      "path": "experiments/dual_track_v02/imf_partner_substitution_v3/stability_runs/SUMMARY_SEED_271112.json",
+      "bytes": 7417,
+      "sha256": "719e5e6704cf8a28e8ce93ccb890f9cea90df6898950cc4a911a263394b5def3"
+    },
+    {
+      "path": "experiments/dual_track_v02/imf_partner_substitution_v3/IMF_IMTS_PARTNER_SUBSTITUTION_ELIGIBILITY_AUDIT_V3.json",
+      "bytes": 3236,
+      "sha256": "36dc3968060182a4091ef9a8754a6b16e0ee34695514c1f051ce5f3f2ba572c2"
+    },
+    {
+      "path": "experiments/dual_track_v02/imf_partner_substitution_v3/IMF_IMTS_PARTNER_SUBSTITUTION_TRANSITION_EVIDENCE_V3.jsonl",
+      "bytes": 3589,
+      "sha256": "5c29ba97a079b02f0ad9839cd85575079f1589cf9ae7dacf2acac3ece9f12a6e"
+    },
+    {
+      "path": "experiments/dual_track_v02/imf_partner_substitution_v3/IMF_IMTS_PARTNER_SUBSTITUTION_V3_RUN_CORRECTION_NOTE_V1.json",
+      "bytes": 1274,
+      "sha256": "ce704235496dd31b66d225be116a2f716ef73d13a418755bf1ab9dff83322e13"
+    },
+    {
+      "path": "experiments/dual_track_v02/imf_partner_substitution_v3/IMF_IMTS_PARTNER_SUBSTITUTION_V3_REPORT_AR.md",
+      "bytes": 5637,
+      "sha256": "edb3c1b3553cce0c771019e0e1baf7d19f1dd0f5aec9a8d9115f36f7ee5e56c1"
+    },
+    {
+      "path": "experiments/dual_track_v02/imf_partner_substitution_v3/IMF_IMTS_PARTNER_SUBSTITUTION_RUN_MANIFEST_V3.json",
+      "bytes": 3433,
+      "sha256": "043e3bd93c10ecaaf804d5ab8f06aba97f203cd77edbd83e8088f44fc9bf163b"
+    },
+    {
+      "path": "tooling/finalize_imf_partner_substitution_v3_manifest.py",
+      "bytes": 2175,
+      "sha256": "9c5e64b5170a8d1f7251b9bb94507075a01f8b69a1a5c4e26115b88c468b3423"
+    },
+    {
+      "path": "tooling/append_dual_track_v02_ledger.py",
+      "bytes": 2692,
+      "sha256": "c556b09b5ab49b7689fa98c4e515f9ee37e195f7683ef439174a1cc570f0ee8b"
     }
   ],
   "checks": {

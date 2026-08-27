@@ -1,0 +1,25 @@
+{
+  "contract_id": "REPLACE_WITH_UNIQUE_PATH_CONTRACT_ID",
+  "protocol_id": "CHAOS_DUAL_TRACK_PROTOCOL_V0_2",
+  "status": "draft_for_freeze",
+  "research_only": true,
+  "path_id": "REPLACE_WITH_UNIQUE_PATH_ID",
+  "path_expression": "State_A -> Edge_AB -> State_B -> Edge_BC -> State_C",
+  "nodes": [
+    {"node_id": "", "node_type": "DomainState", "definition": "", "frequency": "", "unit": "", "evidence_ref": "", "predictive_status_required": "supported_predictive"}
+  ],
+  "edges": [
+    {"edge_id": "", "source_node": "", "target_node": "", "lead_or_lag": {"value": 0, "unit": "years"}, "evidence_ref": "", "predictive_status_required": "supported_predictive"}
+  ],
+  "unit_of_analysis": "",
+  "timing": {"node_order_fixed": true, "allowed_windows": [], "intermediate_state_window": "", "no_future_information": true},
+  "path_outcome": {"definition": "", "estimator": "", "effect": null, "denominator": "", "expected_direction": ""},
+  "path_level_null": {"method": "", "invariants_preserved": [], "permuted_element": "", "replicates": 0, "p_value": null, "degeneracy_check": "", "status": ""},
+  "ablations": {"drop_each_node": true, "drop_each_edge": true, "drop_intermediate_state": true, "required_comparison": "pre-registered"},
+  "holdouts": {"entity": "", "time": "", "region": "", "required": true},
+  "data_governance": {"raw_immutable": true, "frequency_mixing": false, "imputation": false, "source_averaging": false, "event_to_annual_conversion": false},
+  "acceptance": {"all_nodes_admitted": true, "all_edges_admitted": true, "path_null_pass": false, "ablation_stability_required": true, "positive_composer_weight": false, "causal_claim": false},
+  "provenance": {"input_refs": [], "input_sha256": {}, "code_ref": "", "code_sha256": {}, "run_manifest_ref": ""},
+  "classification": {"predictive_evidence_status": "candidate", "causal_validation_status": "not_run", "runtime_status": "not_eligible"},
+  "notes": []
+}
