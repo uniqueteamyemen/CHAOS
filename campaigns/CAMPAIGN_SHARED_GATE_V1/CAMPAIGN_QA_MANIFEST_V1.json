@@ -33,18 +33,18 @@
     },
     {
       "path": "campaigns/CAMPAIGN_SHARED_GATE_V1/TRANSITION_EVIDENCE_SCHEMA_VALIDATION_V1.json",
-      "bytes": 2382,
-      "sha256": "7d8273b8799b9f3f49bc9bcfe71e626a316fc2f7100ffeda9d26520ab3202487"
+      "bytes": 2548,
+      "sha256": "60ef2acd9cfcb17f1ce18aaa6272a694a842d6170a265f3989938828228ec777"
     },
     {
       "path": "campaigns/CAMPAIGN_SHARED_GATE_V1/SUPERVISOR_GATE_DECISION_V1.json",
-      "bytes": 3172,
-      "sha256": "c092fe9f9b6f36f9c8bc79b8f1c5c375df132e1d683fd0c12778d8f98d3d5f68"
+      "bytes": 3364,
+      "sha256": "ebf58c92e58db9705bb9875c315506f7c534a26dd281e875df24ba13ef96a47b"
     },
     {
       "path": "campaigns/CAMPAIGN_SHARED_GATE_V1/FINAL_SUPERVISOR_ELIGIBILITY_GATE_V1.json",
       "bytes": 1440,
-      "sha256": "0388dc512f0d753528c69d48b9fad918956aa1174e1180085f347910d1be0a69"
+      "sha256": "ed21d39fdff458e1207757279dd5113cd9bb8a08d66f041624fcd323b0e6efa6"
     },
     {
       "path": "campaigns/CAMPAIGN_SHARED_GATE_V1/COMPOSITE_PATH_ADMISSION_DECISION_V1.json",
@@ -109,12 +109,12 @@
     {
       "path": "experiments/macro_plus_eia_energy/evidence_graph_v1/EVIDENCE_GRAPH_SUMMARY.json",
       "bytes": 630,
-      "sha256": "17f2d04b188e3ef0e204a33361e38151bb51b366ea83d19175a6c62c227b98a6"
+      "sha256": "31f95064a44beb938504cbdacf05eed07266f2b7c2a15cc4eae8199229208c78"
     },
     {
       "path": "experiments/macro_plus_eia_energy/pattern_compiler_v1/PATTERN_COMPILER_SUMMARY.json",
       "bytes": 186,
-      "sha256": "0c726ed7323d8640f8bb151e63923bfa8eeea17b9a2c2ef01e112f268372efb5"
+      "sha256": "6e9c7ca48a4d001f87dca9c43b596de6b96bf6e7cada61d8887bb3b529e63efd"
     },
     {
       "path": "campaigns/research_rounds/20260827_BROWSER_DEEP_RESEARCH/BROWSER_DEEP_RESEARCH_ROUND_CONTRACT_V1.json",
@@ -818,8 +818,8 @@
     },
     {
       "path": "experiments/macro_plus_eia_energy/CONTROLLED_PATTERN_REGISTRY_V1.jsonl",
-      "bytes": 25614,
-      "sha256": "c110fb6d879d94969b85acd5888a783ec2c31af68146f7a84616af4b2a671492"
+      "bytes": 26367,
+      "sha256": "ae7584718cff57b78d17a5f081a3c99ac20a7fa27922997f0416e6120115426e"
     },
     {
       "path": "tooling/append_imf_partner_substitution_v3_1_final_ledger.py",
@@ -930,6 +930,131 @@
       "path": "experiments/dual_track_v02/trade_network_adaptation_path_v1_1/TRADE_NETWORK_ADAPTATION_PATH_RUN_MANIFEST_V1_1.json",
       "bytes": 2774,
       "sha256": "b7442110e07263661f32f36c25444e039ea0ba81a23ac6b8a1b9134584d47217"
+    },
+    {
+      "path": "experimental_contracts/dual_track_v02/TRADE_REGIME_TRANSITION_DISCOVERY_CONTRACT_V1.json",
+      "bytes": 7100,
+      "sha256": "3d64c727feffc9bd46df4c9790fb79698898c341a5347fd81060b41f1618f0d5"
+    },
+    {
+      "path": "tooling/run_trade_regime_transition_discovery_v1.py",
+      "bytes": 15378,
+      "sha256": "46c0db71b183d693f12ffe762438c789620093d19f000151aace16a518a365d9"
+    },
+    {
+      "path": "tooling/build_trade_regime_transition_transition_evidence_v1.py",
+      "bytes": 2901,
+      "sha256": "16d39dd6c8167016613892b289b3e1c8358c780926d5c01cb5967a16632f50af"
+    },
+    {
+      "path": "tooling/register_trade_regime_transition_v1.py",
+      "bytes": 1430,
+      "sha256": "21dfb73771b183643dd7c441b5e655d89e8b484b369119ac44056d5798f51d54"
+    },
+    {
+      "path": "chaos_governance_kernel/__init__.py",
+      "bytes": 105,
+      "sha256": "cc364f6368e25b4aa0ee48ddb26f51c79ad6edce033a502a2d180aabb713159e"
+    },
+    {
+      "path": "chaos_governance_kernel/core.py",
+      "bytes": 5762,
+      "sha256": "43c5a81fb9459e0deccb2dd6eb86010c4f6a4f8de86b4c877714bc38a778b9cd"
+    },
+    {
+      "path": "chaos_governance_kernel/checks.py",
+      "bytes": 2611,
+      "sha256": "e3e4553f270fdd7ef29f37b616afa32ca76117b9511ee0bfb8082e197e5f54bc"
+    },
+    {
+      "path": "chaos_governance_kernel/cli.py",
+      "bytes": 2645,
+      "sha256": "2919f37eb53e13e36a178cd1b813d680ced60a81825a9b9a7b7f6b465a827a01"
+    },
+    {
+      "path": "tooling/build_chaos_governance_trade_bundle_v1.py",
+      "bytes": 2881,
+      "sha256": "71e026edbc5e364360841c030d32a3241337bf2394e008993924ab8499d98647"
+    },
+    {
+      "path": "tooling/test_chaos_governance_kernel_v1.py",
+      "bytes": 2900,
+      "sha256": "185e2cdbc90c0eff21312dd0515eef356383001cfeb5f24220295a8c0783ee05"
+    },
+    {
+      "path": "experiments/dual_track_v02/trade_regime_transition_discovery_v1/TRADE_REGIME_TRANSITION_SUMMARY_V1.json",
+      "bytes": 9407,
+      "sha256": "5f251595432fe260e8ba2fcdfa0f3e20301f2bbe2c03468392165b35c637c996"
+    },
+    {
+      "path": "experiments/dual_track_v02/trade_regime_transition_discovery_v1/TRADE_REGIME_TRANSITION_STATE_PANEL_V1.csv",
+      "bytes": 423964,
+      "sha256": "c35cd7232fb3c64071d19164c73fd5987d63fbf7ab9db3a86e19bd072953e588"
+    },
+    {
+      "path": "experiments/dual_track_v02/trade_regime_transition_discovery_v1/TRADE_REGIME_TRANSITION_EVENTS_V1.csv",
+      "bytes": 16667,
+      "sha256": "db7c93780370138779f7772c3965c5a1d1c3e85ea793aae4ab1f6bed7b305a22"
+    },
+    {
+      "path": "experiments/dual_track_v02/trade_regime_transition_discovery_v1/TRADE_REGIME_TRANSITION_ROLLING_METRICS_V1.csv",
+      "bytes": 1481,
+      "sha256": "7f1e657554298bdd2d8412e83b5ab9197c42a3765b3c0160f7be0446d3749fe3"
+    },
+    {
+      "path": "experiments/dual_track_v02/trade_regime_transition_discovery_v1/TRADE_REGIME_TRANSITION_SUBWINDOWS_V1.csv",
+      "bytes": 530,
+      "sha256": "0f1a9fc602142d0f886329473f40f58d1bc74164cbdb72b00c63000c4e828459"
+    },
+    {
+      "path": "experiments/dual_track_v02/trade_regime_transition_discovery_v1/TRADE_REGIME_TRANSITION_NULL_SUMMARIES_V1.json",
+      "bytes": 910,
+      "sha256": "080b19bce5d2e5bdf6d98ea985d157d682fe236831a5a676493c71b354473099"
+    },
+    {
+      "path": "experiments/dual_track_v02/trade_regime_transition_discovery_v1/TRADE_REGIME_TRANSITION_TRANSITION_EVIDENCE_V1.jsonl",
+      "bytes": 3999,
+      "sha256": "c1850ac59b0f53c9d76c8cd642bfb7902924352239dbbaa4481054fbb6ec6ad9"
+    },
+    {
+      "path": "experiments/dual_track_v02/trade_regime_transition_discovery_v1/TRADE_REGIME_TRANSITION_RUN_MANIFEST_V1.json",
+      "bytes": 897,
+      "sha256": "c5f3298e6fccb993daa4e6d002b01ea0059ca857c94ccc433371f7b067f6df62"
+    },
+    {
+      "path": "experiments/governance_mvp_v1/CHAOS_GOVERNANCE_MVP_V1_REPORT_AR.md",
+      "bytes": 4950,
+      "sha256": "9e60dc62e47cf7a78bdaadc03a6fdaf666a0ac19bbd412e593e108d956295c10"
+    },
+    {
+      "path": "experiments/governance_mvp_v1/trade_regime_transition_audit/GOVERNANCE_BUNDLE_MANIFEST_V1.json",
+      "bytes": 3498,
+      "sha256": "010dad2c16d6bb8b736a72747f3c5ce5bfc408e6c541936fc286465edba5aadc"
+    },
+    {
+      "path": "experiments/governance_mvp_v1/trade_regime_transition_audit/GOVERNANCE_BUNDLE_MANIFEST_V1_EVIDENCE_GRAPH.json",
+      "bytes": 5823,
+      "sha256": "e95ca3d78a5a6b6a443583fe50ba3df89f3edf6594b3cb303895032d5488693a"
+    },
+    {
+      "path": "experiments/governance_mvp_v1/trade_regime_transition_audit/PROVENANCE_LEDGER.jsonl",
+      "bytes": 1917,
+      "sha256": "021c5434d395268c505caa8d41c49096dd3816b76e4ddd4ca57933b9f4a92e36"
+    },
+    {
+      "path": "experiments/governance_mvp_v1/trade_regime_transition_audit/STATE_PANEL_DATA_AUDIT.json",
+      "bytes": 610,
+      "sha256": "ee7aede31046415d607a05d7efa922f78847b35188ba71b56915f66a222dafe7"
+    },
+    {
+      "path": "experiments/governance_mvp_v1/trade_regime_transition_audit/EVENTS_DATA_AUDIT.json",
+      "bytes": 572,
+      "sha256": "eb2cbaaa0c70d42a3c75afabd0f532e1741dbe69441fdfef24e3d0a8130c7370"
+    },
+    {
+      "path": "experiments/governance_mvp_v1/trade_regime_transition_audit/GOVERNANCE_KERNEL_MVP_TEST_REPORT_V1.json",
+      "bytes": 10666,
+      "sha256": "8c2371dcda103c5eda0e3f80fedd6fd2b541f9c2215d1026545371ee327089bd"
     }
   ],
   "checks": {

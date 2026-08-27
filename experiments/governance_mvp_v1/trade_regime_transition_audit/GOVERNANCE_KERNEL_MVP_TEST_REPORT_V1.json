@@ -1,0 +1,315 @@
+{
+  "assertions": {
+    "duplicate_rejected": true,
+    "events_pass": true,
+    "graph_built": true,
+    "leakage_rejected": true,
+    "manifest_pass": true,
+    "mutated_hash_rejected": true,
+    "replay_pass": true,
+    "state_pass": true
+  },
+  "duplicate_key_rejected": {
+    "columns": [
+      "reporter_id",
+      "event_year",
+      "subtype",
+      "regime_t2",
+      "regime_t1",
+      "regime_t",
+      "pre_top1_share",
+      "outcome_h1",
+      "outcome_h2",
+      "outcome_h3"
+    ],
+    "expected_frequency": "annual",
+    "failures": [
+      {
+        "key": [
+          "AGO",
+          "2009"
+        ],
+        "reason": "duplicate_key"
+      }
+    ],
+    "null_counts": {
+      "outcome_h1": 18,
+      "outcome_h2": 21,
+      "outcome_h3": 26
+    },
+    "path": "/tmp/chaos-governance-test-em840b51/duplicate_events.csv",
+    "required_columns_present": true,
+    "row_count": 181,
+    "status": "fail",
+    "year_max": 2024,
+    "year_min": 2005
+  },
+  "events_audit": {
+    "columns": [
+      "reporter_id",
+      "event_year",
+      "subtype",
+      "regime_t2",
+      "regime_t1",
+      "regime_t",
+      "pre_top1_share",
+      "outcome_h1",
+      "outcome_h2",
+      "outcome_h3"
+    ],
+    "expected_frequency": "annual",
+    "failures": [],
+    "null_counts": {
+      "outcome_h1": 18,
+      "outcome_h2": 21,
+      "outcome_h3": 26
+    },
+    "path": "/home/ubuntu/CHAOS/experiments/dual_track_v02/trade_regime_transition_discovery_v1/TRADE_REGIME_TRANSITION_EVENTS_V1.csv",
+    "required_columns_present": true,
+    "row_count": 180,
+    "status": "pass",
+    "year_max": 2024,
+    "year_min": 2005
+  },
+  "graph": {
+    "edge_count": 12,
+    "edges": [
+      {
+        "relation": "is_registered_in",
+        "source": "artifact:experimental_contracts/dual_track_v02/TRADE_REGIME_TRANSITION_DISCOVERY_CONTRACT_V1.json",
+        "target": "CHAOS_GOVERNANCE_TRADE_REGIME_TRANSITION_V1"
+      },
+      {
+        "relation": "is_registered_in",
+        "source": "artifact:campaigns/dual_track_v02/CHAOS_DUAL_TRACK_PROTOCOL_V0_2.json",
+        "target": "CHAOS_GOVERNANCE_TRADE_REGIME_TRANSITION_V1"
+      },
+      {
+        "relation": "is_registered_in",
+        "source": "artifact:experiments/dual_track_v02/trade_regime_transition_discovery_v1/TRADE_REGIME_TRANSITION_STATE_PANEL_V1.csv",
+        "target": "CHAOS_GOVERNANCE_TRADE_REGIME_TRANSITION_V1"
+      },
+      {
+        "relation": "is_registered_in",
+        "source": "artifact:experiments/dual_track_v02/trade_regime_transition_discovery_v1/TRADE_REGIME_TRANSITION_EVENTS_V1.csv",
+        "target": "CHAOS_GOVERNANCE_TRADE_REGIME_TRANSITION_V1"
+      },
+      {
+        "relation": "is_registered_in",
+        "source": "artifact:experiments/dual_track_v02/trade_regime_transition_discovery_v1/TRADE_REGIME_TRANSITION_ROLLING_METRICS_V1.csv",
+        "target": "CHAOS_GOVERNANCE_TRADE_REGIME_TRANSITION_V1"
+      },
+      {
+        "relation": "is_registered_in",
+        "source": "artifact:experiments/dual_track_v02/trade_regime_transition_discovery_v1/TRADE_REGIME_TRANSITION_SUBWINDOWS_V1.csv",
+        "target": "CHAOS_GOVERNANCE_TRADE_REGIME_TRANSITION_V1"
+      },
+      {
+        "relation": "is_registered_in",
+        "source": "artifact:experiments/dual_track_v02/trade_regime_transition_discovery_v1/TRADE_REGIME_TRANSITION_NULL_SUMMARIES_V1.json",
+        "target": "CHAOS_GOVERNANCE_TRADE_REGIME_TRANSITION_V1"
+      },
+      {
+        "relation": "is_registered_in",
+        "source": "artifact:experiments/dual_track_v02/trade_regime_transition_discovery_v1/TRADE_REGIME_TRANSITION_SUMMARY_V1.json",
+        "target": "CHAOS_GOVERNANCE_TRADE_REGIME_TRANSITION_V1"
+      },
+      {
+        "relation": "is_registered_in",
+        "source": "artifact:experiments/dual_track_v02/trade_regime_transition_discovery_v1/TRADE_REGIME_TRANSITION_TRANSITION_EVIDENCE_V1.jsonl",
+        "target": "CHAOS_GOVERNANCE_TRADE_REGIME_TRANSITION_V1"
+      },
+      {
+        "relation": "has_replay",
+        "source": "CHAOS_GOVERNANCE_TRADE_REGIME_TRANSITION_V1",
+        "target": "replay:CHAOS_GOVERNANCE_TRADE_REGIME_TRANSITION_V1"
+      },
+      {
+        "relation": "produces",
+        "source": "replay:CHAOS_GOVERNANCE_TRADE_REGIME_TRANSITION_V1",
+        "target": "artifact:experiments/dual_track_v02/trade_regime_transition_discovery_v1/TRADE_REGIME_TRANSITION_TRANSITION_EVIDENCE_V1.jsonl"
+      },
+      {
+        "relation": "supports_decision",
+        "source": "CHAOS_GOVERNANCE_TRADE_REGIME_TRANSITION_V1",
+        "target": "decision:CHAOS_GOVERNANCE_TRADE_REGIME_TRANSITION_V1"
+      }
+    ],
+    "generated_at": "2026-08-27T07:24:57Z",
+    "graph_id": "graph:CHAOS_GOVERNANCE_TRADE_REGIME_TRANSITION_V1",
+    "node_count": 12,
+    "nodes": [
+      {
+        "id": "CHAOS_GOVERNANCE_TRADE_REGIME_TRANSITION_V1",
+        "status": "rejected",
+        "type": "governance_bundle"
+      },
+      {
+        "bytes": 7100,
+        "id": "artifact:experimental_contracts/dual_track_v02/TRADE_REGIME_TRANSITION_DISCOVERY_CONTRACT_V1.json",
+        "sha256": "3d64c727feffc9bd46df4c9790fb79698898c341a5347fd81060b41f1618f0d5",
+        "type": "contract"
+      },
+      {
+        "bytes": 6750,
+        "id": "artifact:campaigns/dual_track_v02/CHAOS_DUAL_TRACK_PROTOCOL_V0_2.json",
+        "sha256": "f2eb1e89f1539362b8166603b24271105251eb401455c1a0868f5bd183a2e053",
+        "type": "protocol"
+      },
+      {
+        "bytes": 423964,
+        "id": "artifact:experiments/dual_track_v02/trade_regime_transition_discovery_v1/TRADE_REGIME_TRANSITION_STATE_PANEL_V1.csv",
+        "sha256": "c35cd7232fb3c64071d19164c73fd5987d63fbf7ab9db3a86e19bd072953e588",
+        "type": "state_panel"
+      },
+      {
+        "bytes": 16667,
+        "id": "artifact:experiments/dual_track_v02/trade_regime_transition_discovery_v1/TRADE_REGIME_TRANSITION_EVENTS_V1.csv",
+        "sha256": "db7c93780370138779f7772c3965c5a1d1c3e85ea793aae4ab1f6bed7b305a22",
+        "type": "events"
+      },
+      {
+        "bytes": 1481,
+        "id": "artifact:experiments/dual_track_v02/trade_regime_transition_discovery_v1/TRADE_REGIME_TRANSITION_ROLLING_METRICS_V1.csv",
+        "sha256": "7f1e657554298bdd2d8412e83b5ab9197c42a3765b3c0160f7be0446d3749fe3",
+        "type": "rolling_metrics"
+      },
+      {
+        "bytes": 530,
+        "id": "artifact:experiments/dual_track_v02/trade_regime_transition_discovery_v1/TRADE_REGIME_TRANSITION_SUBWINDOWS_V1.csv",
+        "sha256": "0f1a9fc602142d0f886329473f40f58d1bc74164cbdb72b00c63000c4e828459",
+        "type": "subwindows"
+      },
+      {
+        "bytes": 910,
+        "id": "artifact:experiments/dual_track_v02/trade_regime_transition_discovery_v1/TRADE_REGIME_TRANSITION_NULL_SUMMARIES_V1.json",
+        "sha256": "080b19bce5d2e5bdf6d98ea985d157d682fe236831a5a676493c71b354473099",
+        "type": "null_summaries"
+      },
+      {
+        "bytes": 9407,
+        "id": "artifact:experiments/dual_track_v02/trade_regime_transition_discovery_v1/TRADE_REGIME_TRANSITION_SUMMARY_V1.json",
+        "sha256": "5f251595432fe260e8ba2fcdfa0f3e20301f2bbe2c03468392165b35c637c996",
+        "type": "summary"
+      },
+      {
+        "bytes": 3999,
+        "id": "artifact:experiments/dual_track_v02/trade_regime_transition_discovery_v1/TRADE_REGIME_TRANSITION_TRANSITION_EVIDENCE_V1.jsonl",
+        "sha256": "c1850ac59b0f53c9d76c8cd642bfb7902924352239dbbaa4481054fbb6ec6ad9",
+        "type": "transition_evidence"
+      },
+      {
+        "id": "replay:CHAOS_GOVERNANCE_TRADE_REGIME_TRANSITION_V1",
+        "status": "declared",
+        "type": "replay_run"
+      },
+      {
+        "id": "decision:CHAOS_GOVERNANCE_TRADE_REGIME_TRANSITION_V1",
+        "status": "rejected",
+        "type": "decision"
+      }
+    ]
+  },
+  "manifest_validate": {
+    "artifact_count": 9,
+    "checked_at": "2026-08-27T07:24:57Z",
+    "checked_count": 9,
+    "failures": [],
+    "manifest": "/home/ubuntu/CHAOS/experiments/governance_mvp_v1/trade_regime_transition_audit/GOVERNANCE_BUNDLE_MANIFEST_V1.json",
+    "status": "pass"
+  },
+  "mutated_hash_rejected": {
+    "artifact_count": 9,
+    "checked_at": "2026-08-27T07:24:57Z",
+    "checked_count": 9,
+    "failures": [
+      {
+        "path": "experimental_contracts/dual_track_v02/TRADE_REGIME_TRANSITION_DISCOVERY_CONTRACT_V1.json",
+        "reason": "hash_or_size_mismatch"
+      }
+    ],
+    "manifest": "/tmp/chaos-governance-test-em840b51/bad_manifest.json",
+    "status": "fail"
+  },
+  "replay": {
+    "command": [
+      "python3",
+      "tooling/build_trade_regime_transition_transition_evidence_v1.py"
+    ],
+    "outputs": [
+      {
+        "actual_sha256": "c1850ac59b0f53c9d76c8cd642bfb7902924352239dbbaa4481054fbb6ec6ad9",
+        "expected_sha256": "c1850ac59b0f53c9d76c8cd642bfb7902924352239dbbaa4481054fbb6ec6ad9",
+        "ok": true,
+        "path": "experiments/dual_track_v02/trade_regime_transition_discovery_v1/TRADE_REGIME_TRANSITION_TRANSITION_EVIDENCE_V1.jsonl"
+      }
+    ],
+    "returncode": 0,
+    "status": "pass",
+    "stderr": "",
+    "stdout": "{\n  \"transition_id\": \"TRADE_REGIME_TRANSITION_DISCOVERY_V1\",\n  \"edge_status\": \"rejected\"\n}\n"
+  },
+  "state_audit": {
+    "columns": [
+      "reporter_id",
+      "year",
+      "valid",
+      "observed_count",
+      "total",
+      "top",
+      "top1_share",
+      "top3_share",
+      "high_concentration",
+      "flow_stress",
+      "concentration_stress",
+      "top1_exit",
+      "partner_turnover",
+      "share_dispersion",
+      "regime"
+    ],
+    "expected_frequency": "annual",
+    "failures": [],
+    "null_counts": {},
+    "path": "/home/ubuntu/CHAOS/experiments/dual_track_v02/trade_regime_transition_discovery_v1/TRADE_REGIME_TRANSITION_STATE_PANEL_V1.csv",
+    "required_columns_present": true,
+    "row_count": 3375,
+    "status": "pass",
+    "year_max": 2024,
+    "year_min": 2000
+  },
+  "status": "pass",
+  "target_leakage_rejected": {
+    "columns": [
+      "reporter_id",
+      "event_year",
+      "subtype",
+      "regime_t2",
+      "regime_t1",
+      "regime_t",
+      "pre_top1_share",
+      "outcome_h1",
+      "outcome_h2",
+      "outcome_h3"
+    ],
+    "expected_frequency": "annual",
+    "failures": [
+      {
+        "columns": [
+          "outcome_h2"
+        ],
+        "reason": "target_leakage_in_predictors"
+      }
+    ],
+    "null_counts": {
+      "outcome_h1": 18,
+      "outcome_h2": 21,
+      "outcome_h3": 26
+    },
+    "path": "/home/ubuntu/CHAOS/experiments/dual_track_v02/trade_regime_transition_discovery_v1/TRADE_REGIME_TRANSITION_EVENTS_V1.csv",
+    "required_columns_present": true,
+    "row_count": 180,
+    "status": "fail",
+    "year_max": 2024,
+    "year_min": 2005
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "columns": [
+    "reporter_id",
+    "year",
+    "valid",
+    "observed_count",
+    "total",
+    "top",
+    "top1_share",
+    "top3_share",
+    "high_concentration",
+    "flow_stress",
+    "concentration_stress",
+    "top1_exit",
+    "partner_turnover",
+    "share_dispersion",
+    "regime"
+  ],
+  "expected_frequency": "annual",
+  "failures": [],
+  "null_counts": {},
+  "path": "experiments/dual_track_v02/trade_regime_transition_discovery_v1/TRADE_REGIME_TRANSITION_STATE_PANEL_V1.csv",
+  "required_columns_present": true,
+  "row_count": 3375,
+  "status": "pass",
+  "year_max": 2024,
+  "year_min": 2000
+}

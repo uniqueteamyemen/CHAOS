@@ -1,0 +1,93 @@
+{
+  "contract_id": "TRADE_REGIME_TRANSITION_DISCOVERY_V1",
+  "protocol_id": "CHAOS_DUAL_TRACK_PROTOCOL_V0_2",
+  "status": "frozen",
+  "execution_status": "not_run",
+  "research_only": true,
+  "duration_limit_days": 42,
+  "question": "Can a small, fit-only learned regime-transition model predict the next trade-network adaptation family out of sample better than simple state-persistence, previous-state, and target-history baselines?",
+  "hypothesis": "A sparse multi-dimensional reporter-year regime representation and regularized transition model may capture recurring adaptation paths that a hand-written single-edge rule cannot capture.",
+  "stop_rule": "This is the final predictive attempt on the current IMTS trade observations. If the admission criteria fail, predictive search on these trade data is closed and no further model or threshold tuning is permitted on the same question/data.",
+  "source": {
+    "dataset": "IMF.STA:IMTS",
+    "indicator": "XG_FOB_USD",
+    "flow": "XG",
+    "unit": "USD",
+    "native_frequency": "A",
+    "raw_period": [2000, 2024],
+    "raw_immutable": true,
+    "source_ref": "https://data.imf.org/en/datasets/IMF.STA:IMTS"
+  },
+  "universe": {
+    "reporters": "135 reporters with fixed ten-partner pools from the V2 selection register",
+    "candidate_pool": "fixed ten partners per reporter; selected only in 2000-2004 and never reselected",
+    "state_period": [2000, 2024],
+    "fit_period": [2005, 2014],
+    "confirmation_period": [2015, 2024],
+    "minimum_observed_candidates_per_state": 5,
+    "missing_data_policy": "No imputation, no missing-as-zero, no smoothing, no normalization, no forced reconciliation. A state is valid only when at least five candidate partners have positive observed values; outcomes requiring unavailable future states are unclassifiable and excluded only from that horizon.",
+    "partial_coverage": "Retain observed_count and coverage mask; do not treat partner rows as independent outcomes."
+  },
+  "state_representation": {
+    "unit": "reporter-year",
+    "raw_features": ["observed_count", "observed_total_raw_usd", "top1_share", "top3_share", "high_concentration", "top1_exit", "flow_stress", "concentration_stress", "partner_turnover", "share_dispersion"],
+    "derived_features": "Only deterministic state labels defined before fitting; no log, difference, return, normalization, imputation, or frequency conversion.",
+    "regime_count": "At most 8 predeclared regimes derived from observed state features; no more than 10 discovered motifs."
+  },
+  "event_path": {
+    "unit": "reporter-event",
+    "event_definition": "A valid transition opportunity where t-2, t-1, and t are valid and at least one predeclared stress/adaptation flag is active: prior high concentration, current flow stress, current concentration stress, top1 exit, partner turnover, or share dispersion change.",
+    "overlap_policy": "First qualifying event per reporter, then suppress another event within two years.",
+    "path_length": 3,
+    "path_information": "Only t-2,t-1,t states may be used as predictors; outcomes begin at t+1.",
+    "outcome_families": ["stable_replacement", "diversification", "fragmentation", "failure_to_adapt"],
+    "outcome_definition": "Family labels are computed from post-event states at h=1,2,3 using fixed rules in the run manifest; they are targets, not predictor labels."
+  },
+  "discovery": {
+    "motif_method": "Fit-only clustering of discrete state sequences or equivalent deterministic sequence grouping",
+    "max_motifs": 10,
+    "motif_selection": "Predeclared complexity penalty and minimum support; no selection on confirmation outcomes",
+    "models": ["regularized multinomial logistic transition model", "first-order Markov transition baseline"],
+    "regularization": "Fixed alpha grid declared before fitting; choose only within fit by chronological inner split; no confirmation access.",
+    "complexity_penalty": "AIC-like descriptive penalty plus explicit penalty for number of regimes, motifs, and path nodes; never used to rescue a failed confirmation result."
+  },
+  "evaluation": {
+    "rolling_origins": [2009, 2011, 2013, 2015],
+    "rolling_training": "event_year <= origin",
+    "rolling_evaluation": "origin+1 through origin+2 with h-specific future states available",
+    "locked_confirmation": [2015, 2024],
+    "primary_horizon": 2,
+    "primary_metric": "multiclass Brier score and improvement over the best baseline",
+    "secondary_metrics": ["macro-F1", "balanced accuracy", "log loss", "per-family recall", "reporter-cluster bootstrap interval", "motif support", "path complexity"],
+    "baselines": ["target-history prevalence", "state-persistence conditional model", "previous-state Markov transition"],
+    "no_test_selection": "No configuration, motif, feature, or alpha may be selected using confirmation metrics."
+  },
+  "null_controls": [
+    {"id": "block_permutation_within_reporter", "replicates": 2000, "preserve": ["reporter", "year mask", "block lengths", "state multiset"], "change": "temporal placement of paths", "purpose": "test whether the learned path beats generic temporal continuity"},
+    {"id": "rank_preserving_volume_null", "replicates": 2000, "preserve": ["reporter-year", "annual total", "observed count", "value multiset", "validity mask"], "change": "identity-to-value assignment", "purpose": "test whether partner-network identity adds information beyond volumes"},
+    {"id": "restricted_time_placebo", "replicates": 2000, "preserve": ["reporter", "event count", "eligible years", "future validity"], "change": "event timing", "purpose": "test whether observed event timing matters"}
+  ],
+  "multiple_testing": {"primary_tests": "candidate versus each baseline at h=2 across rolling origins and locked confirmation", "correction": "Holm-Bonferroni alpha=0.025", "exploratory": "BH-FDR q=0.025 for motif discovery only; exploratory findings cannot be admitted."},
+  "admission": {
+    "minimum_confirmation_events_per_group": 30,
+    "minimum_event_concentration": "No single reporter >10% of confirmation events",
+    "effect": "Brier improvement >=0.05 over the best baseline OR AUC >=0.65 where the binary family test has a prespecified denominator",
+    "stability": "Effect direction and threshold success in at least 3 independent confirmation subwindows",
+    "rolling": "Non-negative improvement at every rolling origin and >=0.02 at at least 3 origins",
+    "nulls": "All primary nulls non-degenerate and corrected primary comparison significant",
+    "influential_units": "Direction survives exclusion of top three reporters by event count",
+    "if_all_pass": "supported_predictive",
+    "if_core_effect_or_baseline_fail": "rejected",
+    "if_coverage_or_null_validity_fail": "not_testable",
+    "causal_validation": "not_run",
+    "runtime": "not_eligible"
+  },
+  "governance": {
+    "contract_hash_required_before_run": true,
+    "positive_statuses": ["supported_predictive"],
+    "causal_claim": false,
+    "market_intelligence_engine_modified": false,
+    "raw_modified": false,
+    "final_trade_search": true
+  }
+}

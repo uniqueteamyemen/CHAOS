@@ -1,0 +1,28 @@
+{
+  "status": "rejected",
+  "reporters": 135,
+  "states": 3375,
+  "events": 180,
+  "final_h2": {
+    "train_events": 78,
+    "eval_events": 81,
+    "reporters": 56,
+    "candidate_brier": 0.0969183128265247,
+    "candidate_accuracy": 0.6666666666666666,
+    "alpha": 0.1,
+    "target_history_brier": 0.11610599751625392,
+    "state_persistence_brier": 0.09789026581717192,
+    "previous_state_brier": 0.10177736520589692
+  },
+  "checks": {
+    "event_rows": 180,
+    "final_h2_events": 81,
+    "coverage": true,
+    "candidate_gain_vs_best_h2": false,
+    "rolling_origins": 12,
+    "rolling_effect_direction": false,
+    "three_subwindows": false,
+    "nulls_non_degenerate": true,
+    "influential_exclusion_not_implemented": false
+  }
+}

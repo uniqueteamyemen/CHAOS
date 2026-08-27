@@ -1,0 +1,35 @@
+[
+  {
+    "variant": "block",
+    "horizon": 2,
+    "replicates": 2000,
+    "null_mean": 0.007289749747915707,
+    "null_sd": 0.007307885897821135,
+    "observed_advantage": -0.0009719529906472152,
+    "p_lower_tail": 0.127936031984008,
+    "unique_statistics": 2000,
+    "status": "non_degenerate"
+  },
+  {
+    "variant": "rank",
+    "horizon": 2,
+    "replicates": 2000,
+    "null_mean": 0.003397581528127879,
+    "null_sd": 0.003097743695607761,
+    "observed_advantage": -0.0009719529906472152,
+    "p_lower_tail": 0.06096951524237881,
+    "unique_statistics": 2000,
+    "status": "non_degenerate"
+  },
+  {
+    "variant": "time",
+    "horizon": 2,
+    "replicates": 2000,
+    "null_mean": 0.01813487908994751,
+    "null_sd": 0.034903281211718054,
+    "observed_advantage": -0.0009719529906472152,
+    "p_lower_tail": 0.11344327836081959,
+    "unique_statistics": 2000,
+    "status": "non_degenerate"
+  }
+]

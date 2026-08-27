@@ -1,0 +1,85 @@
+{
+  "artifacts": [
+    {
+      "bytes": 7100,
+      "path": "experimental_contracts/dual_track_v02/TRADE_REGIME_TRANSITION_DISCOVERY_CONTRACT_V1.json",
+      "role": "contract",
+      "sha256": "3d64c727feffc9bd46df4c9790fb79698898c341a5347fd81060b41f1618f0d5"
+    },
+    {
+      "bytes": 6750,
+      "path": "campaigns/dual_track_v02/CHAOS_DUAL_TRACK_PROTOCOL_V0_2.json",
+      "role": "protocol",
+      "sha256": "f2eb1e89f1539362b8166603b24271105251eb401455c1a0868f5bd183a2e053"
+    },
+    {
+      "bytes": 423964,
+      "path": "experiments/dual_track_v02/trade_regime_transition_discovery_v1/TRADE_REGIME_TRANSITION_STATE_PANEL_V1.csv",
+      "role": "state_panel",
+      "sha256": "c35cd7232fb3c64071d19164c73fd5987d63fbf7ab9db3a86e19bd072953e588"
+    },
+    {
+      "bytes": 16667,
+      "path": "experiments/dual_track_v02/trade_regime_transition_discovery_v1/TRADE_REGIME_TRANSITION_EVENTS_V1.csv",
+      "role": "events",
+      "sha256": "db7c93780370138779f7772c3965c5a1d1c3e85ea793aae4ab1f6bed7b305a22"
+    },
+    {
+      "bytes": 1481,
+      "path": "experiments/dual_track_v02/trade_regime_transition_discovery_v1/TRADE_REGIME_TRANSITION_ROLLING_METRICS_V1.csv",
+      "role": "rolling_metrics",
+      "sha256": "7f1e657554298bdd2d8412e83b5ab9197c42a3765b3c0160f7be0446d3749fe3"
+    },
+    {
+      "bytes": 530,
+      "path": "experiments/dual_track_v02/trade_regime_transition_discovery_v1/TRADE_REGIME_TRANSITION_SUBWINDOWS_V1.csv",
+      "role": "subwindows",
+      "sha256": "0f1a9fc602142d0f886329473f40f58d1bc74164cbdb72b00c63000c4e828459"
+    },
+    {
+      "bytes": 910,
+      "path": "experiments/dual_track_v02/trade_regime_transition_discovery_v1/TRADE_REGIME_TRANSITION_NULL_SUMMARIES_V1.json",
+      "role": "null_summaries",
+      "sha256": "080b19bce5d2e5bdf6d98ea985d157d682fe236831a5a676493c71b354473099"
+    },
+    {
+      "bytes": 9407,
+      "path": "experiments/dual_track_v02/trade_regime_transition_discovery_v1/TRADE_REGIME_TRANSITION_SUMMARY_V1.json",
+      "role": "summary",
+      "sha256": "5f251595432fe260e8ba2fcdfa0f3e20301f2bbe2c03468392165b35c637c996"
+    },
+    {
+      "bytes": 3999,
+      "path": "experiments/dual_track_v02/trade_regime_transition_discovery_v1/TRADE_REGIME_TRANSITION_TRANSITION_EVIDENCE_V1.jsonl",
+      "role": "transition_evidence",
+      "sha256": "c1850ac59b0f53c9d76c8cd642bfb7902924352239dbbaa4481054fbb6ec6ad9"
+    }
+  ],
+  "bundle_id": "CHAOS_GOVERNANCE_TRADE_REGIME_TRANSITION_V1",
+  "created_at": "2026-08-27T00:00:00Z",
+  "decision": {
+    "causal_claim": false,
+    "positive_composer_weight": 0,
+    "reason": "Final predictive trade-regime attempt failed contractual admission criteria; preserved as auditable negative evidence.",
+    "runtime_eligible": false,
+    "status": "rejected"
+  },
+  "decision_status": "rejected",
+  "purpose": "MVP governance validation over a real CHAOS research run; no raw data copied or modified.",
+  "replay": {
+    "command": [
+      "python3",
+      "tooling/build_trade_regime_transition_transition_evidence_v1.py"
+    ],
+    "cwd": ".",
+    "mode": "deterministic_rebuild",
+    "outputs": [
+      {
+        "path": "experiments/dual_track_v02/trade_regime_transition_discovery_v1/TRADE_REGIME_TRANSITION_TRANSITION_EVIDENCE_V1.jsonl",
+        "sha256": "c1850ac59b0f53c9d76c8cd642bfb7902924352239dbbaa4481054fbb6ec6ad9"
+      }
+    ],
+    "raw_external": "IMTS raw remains outside Git and is not copied into governance bundle."
+  },
+  "schema_version": "governance_bundle_v1"
+}

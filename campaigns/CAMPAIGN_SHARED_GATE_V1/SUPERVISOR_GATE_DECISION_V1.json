@@ -1,8 +1,8 @@
 {
   "gate_id": "CHAOS_SUPERVISOR_ADMISSION_GATE_V1",
-  "input_files": 15,
+  "input_files": 16,
   "admitted_supported_predictive_records": 2,
-  "quarantined_records": 30,
+  "quarantined_records": 31,
   "positive_composition_statuses": [
     "supported_predictive"
   ],
@@ -23,7 +23,8 @@
     "experiments/multi_domain_native_edges_v2/imf_partner_dependence_v2/IMF_IMTS_PARTNER_DEPENDENCE_TRANSITION_EVIDENCE_V2.jsonl": "17dc127e0e6d6dc942d45999ab4aa3d410e85e3a712323b599f2df6f749195e3",
     "experiments/dual_track_v02/imf_partner_substitution_v3/IMF_IMTS_PARTNER_SUBSTITUTION_TRANSITION_EVIDENCE_V3.jsonl": "5c29ba97a079b02f0ad9839cd85575079f1589cf9ae7dacf2acac3ece9f12a6e",
     "experiments/dual_track_v02/imf_partner_substitution_v3_1/IMF_IMTS_PARTNER_SUBSTITUTION_V3_1_TRANSITION_EVIDENCE.jsonl": "638d17aafb672f0397f6dcb9d74144184db936aaf06b7485986cdb9f07639e38",
-    "experiments/dual_track_v02/trade_network_adaptation_path_v1_1/TRADE_NETWORK_ADAPTATION_PATH_TRANSITION_EVIDENCE_V1_1.jsonl": "652c40187ea08a950abf40478100f33babd54630292752909c8ab72ce0b110b8"
+    "experiments/dual_track_v02/trade_network_adaptation_path_v1_1/TRADE_NETWORK_ADAPTATION_PATH_TRANSITION_EVIDENCE_V1_1.jsonl": "652c40187ea08a950abf40478100f33babd54630292752909c8ab72ce0b110b8",
+    "experiments/dual_track_v02/trade_regime_transition_discovery_v1/TRADE_REGIME_TRANSITION_TRANSITION_EVIDENCE_V1.jsonl": "c1850ac59b0f53c9d76c8cd642bfb7902924352239dbbaa4481054fbb6ec6ad9"
   },
   "rules": {
     "rejected_positive_weight": false,
