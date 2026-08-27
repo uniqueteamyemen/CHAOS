@@ -1,0 +1,2 @@
+reporter_id,event_year,subtype,event_top1,event_top1_share,pre_top1_share,flow_stress,concentration_stress,top1_exit,outcome_h1,outcome_h2,outcome_h3
+GMB,2024,diversification,G200,0.3049729322698299,0.9244768714284936,False,True,False,,,

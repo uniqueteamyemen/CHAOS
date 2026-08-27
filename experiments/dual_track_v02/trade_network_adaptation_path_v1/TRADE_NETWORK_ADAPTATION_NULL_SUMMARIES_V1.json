@@ -1,0 +1,29 @@
+[
+  {
+    "variant": "block",
+    "horizon": 2,
+    "replicates": 2000,
+    "null_mean": null,
+    "null_sd": null,
+    "unique_statistics": 0,
+    "status": "degenerate"
+  },
+  {
+    "variant": "rank",
+    "horizon": 2,
+    "replicates": 2000,
+    "null_mean": null,
+    "null_sd": null,
+    "unique_statistics": 0,
+    "status": "degenerate"
+  },
+  {
+    "variant": "time",
+    "horizon": 2,
+    "replicates": 2000,
+    "null_mean": null,
+    "null_sd": null,
+    "unique_statistics": 0,
+    "status": "degenerate"
+  }
+]

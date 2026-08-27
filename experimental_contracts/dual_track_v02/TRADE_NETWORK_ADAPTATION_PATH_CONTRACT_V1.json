@@ -1,0 +1,137 @@
+{
+  "contract_id": "TRADE_NETWORK_ADAPTATION_PATH_V1",
+  "protocol_id": "CHAOS_DUAL_TRACK_PROTOCOL_V0_2",
+  "status": "frozen",
+  "research_only": true,
+  "execution_status": "not_run",
+  "question": "Can a pre-outcome trade-network path state identify which adaptation outcome family follows a concentration-and-flow stress event, out of sample, better than persistence and target-history baselines?",
+  "hypothesis": "Trade stress is followed by distinguishable path families—stable replacement, diversification, fragmentation, or failure-to-adapt—and the path-state rule improves out-of-sample multiclass prediction without requiring a single partner identity or a causal claim.",
+  "causal_scope": "No causal claim. The event is an observed endogenous network transition; causal validation is out of scope for this contract.",
+  "source": {
+    "dataset": "IMF.STA:IMTS",
+    "indicator": "XG_FOB_USD",
+    "flow": "XG",
+    "valuation": "FOB",
+    "unit": "USD",
+    "frequency": "A",
+    "raw_period": [2000, 2024],
+    "raw_immutable": true,
+    "source_ref": "https://data.imf.org/en/datasets/IMF.STA:IMTS",
+    "input_policy": "Use existing official XG observation aggregate or tracked shards only; no new acquisition, imputation, missing-as-zero, source averaging, or frequency conversion."
+  },
+  "universe": {
+    "reporters": "The 135 reporters with fixed ten-partner pools inherited from IMF IMTS V2 selection register.",
+    "candidate_pool": "The fixed ten counterpart identities per reporter; partial annual observation is allowed and its observed_count is recorded.",
+    "selection_window": [2000, 2004],
+    "analysis_window": [2005, 2024],
+    "minimum_observed_candidates_per_state": 5,
+    "minimum_pre_event_state_years": 2,
+    "partial_coverage_policy": "A state is valid only when at least five of ten candidates have positive numeric observed values. Missing candidates remain missing and do not enter observed_total or shares."
+  },
+  "state_schema": {
+    "unit": "reporter-year",
+    "dimensions": ["observed_count", "observed_total_raw_usd", "top1_identity", "top1_value_raw_usd", "top1_share_of_observed_pool", "top3_share_of_observed_pool", "top1_rank_change", "flow_stress_flag", "concentration_stress_flag"],
+    "derived_share_policy": "Shares are descriptive ratios computed from observed raw values within the fixed candidate pool; they are not replacements for raw values and are not used to alter raw data.",
+    "high_concentration": "top1_share_of_observed_pool >= 0.70",
+    "flow_stress": "observed_total_raw_usd at t <= 0.70 times the lower of observed_total_raw_usd at t-1 and t-2",
+    "concentration_stress": "top1_share at t <= top1_share at t-1 minus 0.10",
+    "top1_exit": "top1_identity at t differs from top1_identity at t-1",
+    "state_frequency": "annual"
+  },
+  "event_definition": {
+    "event_id": "high_concentration_trade_stress",
+    "event_year": "t",
+    "definition": "A valid event occurs when t-1 is high concentration, t-2 and t-1 are valid states, t is valid, and at least one of flow_stress, concentration_stress, or top1_exit is true.",
+    "information_set": "Only states through t are used to classify the event; outcomes begin at t+1.",
+    "overlap_policy": "Use the first qualifying event per reporter in each rolling-origin training/evaluation window; do not use overlapping outcome windows within a reporter.",
+    "external_shock": false
+  },
+  "path_candidate": {
+    "id": "concentration_stress_to_adaptation_family",
+    "prediction_time": "end of event year t",
+    "rule": "If top1_exit and the new top1 share at t >= 0.40, predict stable_replacement; else if concentration_stress, predict diversification; else if flow_stress, predict failure_to_adapt; otherwise predict fragmentation.",
+    "probability_policy": "Fit-only multiclass probabilities are estimated by outcome frequency conditional on the candidate path subtype; if a subtype has no fit support, use fit-wide family prevalence and record fallback.",
+    "no_future_information": true,
+    "complexity": "Four deterministic branches, no post-confirmation threshold search."
+  },
+  "outcome_families": {
+    "horizons": [1, 2, 3],
+    "classification_time": "At t+h using valid states from t+1 through t+h.",
+    "precedence": ["stable_replacement", "diversification", "fragmentation", "failure_to_adapt"],
+    "stable_replacement": "The top1 identity at t differs from t-1 and remains the same top1 identity at every valid year t+1 through t+h.",
+    "diversification": "At t+h, top1 share is at least 0.10 below t-1 top1 share and top1 share is >0.50.",
+    "fragmentation": "At t+h, top1 share <=0.50 and stable_replacement is false.",
+    "failure_to_adapt": "None of the preceding families applies while all required future states are valid.",
+    "unclassifiable": "Any missing required future state; excluded from that horizon, never imputed."
+  },
+  "evaluation": {
+    "rolling_origins": [2013, 2015, 2017, 2019],
+    "training_rule": "For origin o, use events whose event year <= o; evaluate events in (o, o+2] with required future horizon available. No later event enters training.",
+    "final_locked_block": [2021, 2024],
+    "primary_metric": "Multiclass Brier score at h=2 on the locked final block, candidate minus each baseline; lower is better.",
+    "secondary_metrics": ["macro-F1", "exact family accuracy", "balanced accuracy", "log loss", "coverage", "false-alarm rate", "reporter-cluster bootstrap interval"],
+    "baselines": {
+      "state_persistence": "Fit-only most frequent outcome family conditional on event subtype flags (high concentration, flow stress, concentration stress, top1 exit).",
+      "target_history": "Fit-only overall outcome-family prevalence by horizon.",
+      "previous_state": "Fit-only one-step state-transition baseline: most frequent outcome family conditional on pre-event concentration bucket and top1-exit flag."
+    },
+    "minimum_coverage": {"final_block_events": 30, "each_rolling_origin_events": 20, "each_outcome_family_events_for_family_score": 10}
+  },
+  "null_controls": [
+    {
+      "id": "block_permutation_within_reporter",
+      "replicates": 2000,
+      "method": "Permute contiguous blocks of annual state records within reporter, with fixed block lengths 2 or 3; recompute events, candidate predictions, and outcomes.",
+      "preserve": ["reporter", "valid-year mask", "block-length family", "state-record multiset within reporter"],
+      "change": "Temporal placement of blocks.",
+      "purpose": "Tests whether path performance exceeds local temporal continuity alone."
+    },
+    {
+      "id": "restricted_time_placebo",
+      "replicates": 2000,
+      "method": "Assign placebo event years from valid non-event years within reporter while preserving event count, pre-event gap, and future-horizon eligibility; recompute path outcomes.",
+      "preserve": ["reporter", "event count", "eligible-year mask", "pre/post gap", "rolling-origin membership"],
+      "change": "Event timing only.",
+      "purpose": "Tests whether the path works at actual stress timing rather than arbitrary valid years."
+    },
+    {
+      "id": "rank_preserving_volume_null",
+      "replicates": 2000,
+      "method": "Within reporter-year, randomly reassign the observed candidate identities to the observed raw values; preserve observed_count, observed_total_raw_usd, rank multiset, and valid-year mask; recompute all states and outcomes.",
+      "preserve": ["reporter", "year", "observed_count", "annual observed total", "rank multiset", "valid-year mask"],
+      "change": "Partner identity-to-value assignment.",
+      "purpose": "Tests whether adaptation-family prediction depends on observed partner identity structure rather than aggregate volume and rank shape."
+    }
+  ],
+  "multiple_testing": {
+    "primary_family": "Candidate versus three baselines at h=2 on the final locked block.",
+    "correction": "Holm-Bonferroni alpha=0.025 for the three primary baseline comparisons.",
+    "secondary_family": "Other horizons, rolling origins, and family-level metrics reported with Benjamini-Hochberg q=0.025; no secondary result can promote the candidate alone.",
+    "family_locked_before_run": true
+  },
+  "admission": {
+    "all_required": true,
+    "primary_brier": "Candidate Brier at h=2 is at least 0.05 lower than every baseline after the primary family correction.",
+    "accuracy": "Candidate macro-F1 and exact family accuracy are not lower than every baseline and improve over the best baseline by at least 0.05 in the final block.",
+    "rolling_stability": "Candidate Brier improvement versus the best baseline is non-negative at all four rolling origins and at least 0.02 at three of four origins.",
+    "family_coverage": "At least 30 final-block events and at least 10 events per scored outcome family; otherwise not_testable.",
+    "nulls": "All three nulls are non-degenerate and the primary candidate advantage passes Holm-adjusted alpha.",
+    "concentration": "No reporter contributes >5% of final-block events; influential top-three fit reporters are excluded and primary direction remains positive.",
+    "classification_if_all_pass": "supported_predictive",
+    "classification_if_core_fail": "rejected",
+    "classification_if_coverage_or_null_inadequate": "not_testable",
+    "causal_validation_status": "not_run",
+    "runtime_status": "not_eligible_until_supervisor_gate"
+  },
+  "provenance": {
+    "required": ["contract hash", "selection register hash", "observation aggregate/shards hash", "code hash", "seed list", "rolling-origin manifest", "state panel", "event register", "null summaries", "exclusions", "TransitionEvidence", "supervisor decision"],
+    "seed_list": [271108, 271109, 271110, 271111, 271112]
+  },
+  "governance": {
+    "contract_hash_required_before_run": true,
+    "positive_composer_statuses": ["supported_predictive"],
+    "causal_claim": false,
+    "market_intelligence_engine_modified": false,
+    "raw_modified": false
+  }
+}

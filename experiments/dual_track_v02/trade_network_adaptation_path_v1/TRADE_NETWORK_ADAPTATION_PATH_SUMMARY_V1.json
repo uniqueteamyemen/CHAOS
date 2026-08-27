@@ -1,0 +1,238 @@
+{
+  "contract_id": "TRADE_NETWORK_ADAPTATION_PATH_V1",
+  "contract_sha256": "9f58d578662e5b4ba1c6bd4f9be5af11a6787ca1a6c1e7cab620d41c5db50581",
+  "selection_sha256": "936dcf922c3470e0966efe2f1bfc56cc10c7fb42396bf09562f7a92808ab9a1e",
+  "observation_sha256": "a5fdda798b44806eb7a97c461888d516b44b54bc7de763a4f9b6a5b6cebd6906",
+  "seed": 271108,
+  "reporters": 135,
+  "duplicate_input_keys": 0,
+  "state_rows": 3375,
+  "event_rows": 1,
+  "rolling_metrics": [
+    {
+      "train_events": 0,
+      "eval_events": 0,
+      "reporters": 0,
+      "candidate_brier": null,
+      "target_history_brier": null,
+      "state_persistence_brier": null,
+      "previous_state_brier": null,
+      "candidate_accuracy": null,
+      "origin": 2013,
+      "horizon": 1
+    },
+    {
+      "train_events": 0,
+      "eval_events": 0,
+      "reporters": 0,
+      "candidate_brier": null,
+      "target_history_brier": null,
+      "state_persistence_brier": null,
+      "previous_state_brier": null,
+      "candidate_accuracy": null,
+      "origin": 2013,
+      "horizon": 2
+    },
+    {
+      "train_events": 0,
+      "eval_events": 0,
+      "reporters": 0,
+      "candidate_brier": null,
+      "target_history_brier": null,
+      "state_persistence_brier": null,
+      "previous_state_brier": null,
+      "candidate_accuracy": null,
+      "origin": 2013,
+      "horizon": 3
+    },
+    {
+      "train_events": 0,
+      "eval_events": 0,
+      "reporters": 0,
+      "candidate_brier": null,
+      "target_history_brier": null,
+      "state_persistence_brier": null,
+      "previous_state_brier": null,
+      "candidate_accuracy": null,
+      "origin": 2015,
+      "horizon": 1
+    },
+    {
+      "train_events": 0,
+      "eval_events": 0,
+      "reporters": 0,
+      "candidate_brier": null,
+      "target_history_brier": null,
+      "state_persistence_brier": null,
+      "previous_state_brier": null,
+      "candidate_accuracy": null,
+      "origin": 2015,
+      "horizon": 2
+    },
+    {
+      "train_events": 0,
+      "eval_events": 0,
+      "reporters": 0,
+      "candidate_brier": null,
+      "target_history_brier": null,
+      "state_persistence_brier": null,
+      "previous_state_brier": null,
+      "candidate_accuracy": null,
+      "origin": 2015,
+      "horizon": 3
+    },
+    {
+      "train_events": 0,
+      "eval_events": 0,
+      "reporters": 0,
+      "candidate_brier": null,
+      "target_history_brier": null,
+      "state_persistence_brier": null,
+      "previous_state_brier": null,
+      "candidate_accuracy": null,
+      "origin": 2017,
+      "horizon": 1
+    },
+    {
+      "train_events": 0,
+      "eval_events": 0,
+      "reporters": 0,
+      "candidate_brier": null,
+      "target_history_brier": null,
+      "state_persistence_brier": null,
+      "previous_state_brier": null,
+      "candidate_accuracy": null,
+      "origin": 2017,
+      "horizon": 2
+    },
+    {
+      "train_events": 0,
+      "eval_events": 0,
+      "reporters": 0,
+      "candidate_brier": null,
+      "target_history_brier": null,
+      "state_persistence_brier": null,
+      "previous_state_brier": null,
+      "candidate_accuracy": null,
+      "origin": 2017,
+      "horizon": 3
+    },
+    {
+      "train_events": 0,
+      "eval_events": 0,
+      "reporters": 0,
+      "candidate_brier": null,
+      "target_history_brier": null,
+      "state_persistence_brier": null,
+      "previous_state_brier": null,
+      "candidate_accuracy": null,
+      "origin": 2019,
+      "horizon": 1
+    },
+    {
+      "train_events": 0,
+      "eval_events": 0,
+      "reporters": 0,
+      "candidate_brier": null,
+      "target_history_brier": null,
+      "state_persistence_brier": null,
+      "previous_state_brier": null,
+      "candidate_accuracy": null,
+      "origin": 2019,
+      "horizon": 2
+    },
+    {
+      "train_events": 0,
+      "eval_events": 0,
+      "reporters": 0,
+      "candidate_brier": null,
+      "target_history_brier": null,
+      "state_persistence_brier": null,
+      "previous_state_brier": null,
+      "candidate_accuracy": null,
+      "origin": 2019,
+      "horizon": 3
+    }
+  ],
+  "final_locked_block": {
+    "1": {
+      "train_events": 0,
+      "eval_events": 0,
+      "reporters": 0,
+      "candidate_brier": null,
+      "target_history_brier": null,
+      "state_persistence_brier": null,
+      "previous_state_brier": null,
+      "candidate_accuracy": null,
+      "rows": []
+    },
+    "2": {
+      "train_events": 0,
+      "eval_events": 0,
+      "reporters": 0,
+      "candidate_brier": null,
+      "target_history_brier": null,
+      "state_persistence_brier": null,
+      "previous_state_brier": null,
+      "candidate_accuracy": null,
+      "rows": []
+    },
+    "3": {
+      "train_events": 0,
+      "eval_events": 0,
+      "reporters": 0,
+      "candidate_brier": null,
+      "target_history_brier": null,
+      "state_persistence_brier": null,
+      "previous_state_brier": null,
+      "candidate_accuracy": null,
+      "rows": []
+    }
+  },
+  "nulls": [
+    {
+      "variant": "block",
+      "horizon": 2,
+      "replicates": 2000,
+      "null_mean": null,
+      "null_sd": null,
+      "unique_statistics": 0,
+      "status": "degenerate"
+    },
+    {
+      "variant": "rank",
+      "horizon": 2,
+      "replicates": 2000,
+      "null_mean": null,
+      "null_sd": null,
+      "unique_statistics": 0,
+      "status": "degenerate"
+    },
+    {
+      "variant": "time",
+      "horizon": 2,
+      "replicates": 2000,
+      "null_mean": null,
+      "null_sd": null,
+      "unique_statistics": 0,
+      "status": "degenerate"
+    }
+  ],
+  "admission_checks": {
+    "final_events_h2": 0,
+    "coverage": false,
+    "candidate_beats_rank_h2": false,
+    "final_block_available": false,
+    "nulls_non_degenerate": false,
+    "rolling_rows": 12
+  },
+  "predictive_evidence_status": "not_testable",
+  "causal_validation_status": "not_run",
+  "runtime_status": "not_eligible",
+  "causal_claim": false,
+  "notes": [
+    "No raw modification or missing-as-zero.",
+    "Partner rows are not treated as independent outcomes.",
+    "The current implementation records null controls and baseline comparisons; any non-conforming null implementation remains a reason not to promote."
+  ]
+}

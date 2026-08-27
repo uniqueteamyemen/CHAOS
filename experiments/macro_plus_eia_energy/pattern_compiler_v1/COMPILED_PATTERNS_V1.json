@@ -2,9 +2,9 @@
   "compiler_id": "CHAOS_PATTERN_COMPILER_V1",
   "inputs": {
     "registry": "experiments/macro_plus_eia_energy/CONTROLLED_PATTERN_REGISTRY_V1.jsonl",
-    "registry_sha256": "f038655520a850570b3efeb0a5f2fbb6ad7495ff0106c250370319d141400a44",
+    "registry_sha256": "c110fb6d879d94969b85acd5888a783ec2c31af68146f7a84616af4b2a671492",
     "evidence_graph": "experiments/macro_plus_eia_energy/evidence_graph_v1/EVIDENCE_GRAPH_V1.json",
-    "evidence_graph_sha256": "95e6d32598cf4e6530ec022aa041612b93f78ee1ba5f05f2dedd371cb92b7041"
+    "evidence_graph_sha256": "69605008ea12aad3ef37d418df616097751171b6e977cc9e4f59afdd712fb2bb"
   },
   "eligible_supported_predictive": [],
   "research_only_candidates": [
@@ -67,7 +67,8 @@
     "IMF_IMTS_DOMINANT_PARTNER_DEPENDENCE_V1",
     "IMF_IMTS_PARTNER_DEPENDENCE_V2",
     "IMF_IMTS_PARTNER_SUBSTITUTION_V3",
-    "IMF_IMTS_PARTNER_SUBSTITUTION_V3_1"
+    "IMF_IMTS_PARTNER_SUBSTITUTION_V3_1",
+    "TRADE_NETWORK_ADAPTATION_PATH_V1_1"
   ],
   "rules": {
     "causal_claims_permitted": false,

@@ -33,18 +33,18 @@
     },
     {
       "path": "campaigns/CAMPAIGN_SHARED_GATE_V1/TRANSITION_EVIDENCE_SCHEMA_VALIDATION_V1.json",
-      "bytes": 2210,
-      "sha256": "65c1136e8d665353d36938c1cd70bd7ab16c983f9b6a67bc739489d8674bc618"
+      "bytes": 2382,
+      "sha256": "7d8273b8799b9f3f49bc9bcfe71e626a316fc2f7100ffeda9d26520ab3202487"
     },
     {
       "path": "campaigns/CAMPAIGN_SHARED_GATE_V1/SUPERVISOR_GATE_DECISION_V1.json",
-      "bytes": 2974,
-      "sha256": "de58fd07464a4fa82235722fdbc9d6ab9934f54c18cf7ef73b4b4c66698443ab"
+      "bytes": 3172,
+      "sha256": "c092fe9f9b6f36f9c8bc79b8f1c5c375df132e1d683fd0c12778d8f98d3d5f68"
     },
     {
       "path": "campaigns/CAMPAIGN_SHARED_GATE_V1/FINAL_SUPERVISOR_ELIGIBILITY_GATE_V1.json",
       "bytes": 1440,
-      "sha256": "0bf1febb4490b0ffce63d441cb26e28fdcaaed788b3f5b1067b58a0825615d1d"
+      "sha256": "0388dc512f0d753528c69d48b9fad918956aa1174e1180085f347910d1be0a69"
     },
     {
       "path": "campaigns/CAMPAIGN_SHARED_GATE_V1/COMPOSITE_PATH_ADMISSION_DECISION_V1.json",
@@ -109,12 +109,12 @@
     {
       "path": "experiments/macro_plus_eia_energy/evidence_graph_v1/EVIDENCE_GRAPH_SUMMARY.json",
       "bytes": 630,
-      "sha256": "6098c6b6d9164c36bee737823172c6f1317ba034d8ec4f66afb1aeec2e0ceafa"
+      "sha256": "17f2d04b188e3ef0e204a33361e38151bb51b366ea83d19175a6c62c227b98a6"
     },
     {
       "path": "experiments/macro_plus_eia_energy/pattern_compiler_v1/PATTERN_COMPILER_SUMMARY.json",
       "bytes": 186,
-      "sha256": "f9289938ac982687267fa0c21b62fa40c13e0660d130373b92e58918da4f18b1"
+      "sha256": "0c726ed7323d8640f8bb151e63923bfa8eeea17b9a2c2ef01e112f268372efb5"
     },
     {
       "path": "campaigns/research_rounds/20260827_BROWSER_DEEP_RESEARCH/BROWSER_DEEP_RESEARCH_ROUND_CONTRACT_V1.json",
@@ -818,8 +818,8 @@
     },
     {
       "path": "experiments/macro_plus_eia_energy/CONTROLLED_PATTERN_REGISTRY_V1.jsonl",
-      "bytes": 23926,
-      "sha256": "f038655520a850570b3efeb0a5f2fbb6ad7495ff0106c250370319d141400a44"
+      "bytes": 25614,
+      "sha256": "c110fb6d879d94969b85acd5888a783ec2c31af68146f7a84616af4b2a671492"
     },
     {
       "path": "tooling/append_imf_partner_substitution_v3_1_final_ledger.py",
@@ -827,9 +827,109 @@
       "sha256": "7f1d7b7bd1dd3e7e93c8750ae25f9f36937f5d6c210ab07fd85068c155f48c85"
     },
     {
+      "path": "experimental_contracts/dual_track_v02/TRADE_NETWORK_ADAPTATION_PATH_CONTRACT_V1.json",
+      "bytes": 10003,
+      "sha256": "9f58d578662e5b4ba1c6bd4f9be5af11a6787ca1a6c1e7cab620d41c5db50581"
+    },
+    {
+      "path": "experimental_contracts/dual_track_v02/TRADE_NETWORK_ADAPTATION_PATH_CONTRACT_V1_1.json",
+      "bytes": 5214,
+      "sha256": "b4178c38a20179c1a6122a49770cc3b3e20815dca59f1acfaa49b9d34249f05e"
+    },
+    {
+      "path": "tooling/run_trade_network_adaptation_path_v1.py",
+      "bytes": 17966,
+      "sha256": "a00811832d3388d8bfeb34bb696f36942798ab5a9faf3df29e064d0b853ed13c"
+    },
+    {
+      "path": "tooling/run_trade_network_adaptation_path_v1_1.py",
+      "bytes": 18527,
+      "sha256": "057d52c2d9f3ad9237f55c9d19a299cd3b4952c250b4e6859b9b28ef18b183c6"
+    },
+    {
+      "path": "tooling/build_trade_network_adaptation_transition_evidence_v1_1.py",
+      "bytes": 3153,
+      "sha256": "e25a3e51e2e4970acfa95b2042bcc59e8d5ff6b233da75d889fb684f7eaa82d4"
+    },
+    {
+      "path": "experiments/dual_track_v02/trade_network_adaptation_path_v1_1/TRADE_NETWORK_ADAPTATION_STATE_PANEL_V1.csv",
+      "bytes": 376884,
+      "sha256": "60c8032fa65205b5c6939b12b6b8bf9647459fde2dda5920ffc6e3793e58e072"
+    },
+    {
+      "path": "experiments/dual_track_v02/trade_network_adaptation_path_v1_1/TRADE_NETWORK_ADAPTATION_EVENTS_V1.csv",
+      "bytes": 21761,
+      "sha256": "30b8ee265f87804df293818bf5e4f49a18dff3cd81cf26c20a8d9c9db9384165"
+    },
+    {
+      "path": "experiments/dual_track_v02/trade_network_adaptation_path_v1_1/TRADE_NETWORK_ADAPTATION_ROLLING_METRICS_V1.csv",
+      "bytes": 1426,
+      "sha256": "4cb283d678ddd3e1023aecaecd36f0914b77062035010487bd5550532d2e61c2"
+    },
+    {
+      "path": "experiments/dual_track_v02/trade_network_adaptation_path_v1_1/TRADE_NETWORK_ADAPTATION_NULL_SUMMARIES_V1.json",
+      "bytes": 869,
+      "sha256": "0c1025bc73f2281aef5db03a3df524e945de542ee38293d3ad465ee4d64001bd"
+    },
+    {
+      "path": "experiments/dual_track_v02/trade_network_adaptation_path_v1_1/TRADE_NETWORK_ADAPTATION_PATH_SUMMARY_V1.json",
+      "bytes": 68160,
+      "sha256": "1d7d99db804115800677c49f35744164067b1635e57bab71e0455b4d98e2a865"
+    },
+    {
+      "path": "experiments/dual_track_v02/trade_network_adaptation_path_v1_1/TRADE_NETWORK_ADAPTATION_PATH_TRANSITION_EVIDENCE_V1_1.jsonl",
+      "bytes": 3581,
+      "sha256": "652c40187ea08a950abf40478100f33babd54630292752909c8ab72ce0b110b8"
+    },
+    {
+      "path": "experiments/dual_track_v02/trade_network_adaptation_path_v1_1/TRADE_NETWORK_ADAPTATION_PATH_V1_1_REPORT_AR.md",
+      "bytes": 5378,
+      "sha256": "415dd92caf9117873bab8e804546711db11e0f285a2be1a71ec55f69b064452e"
+    },
+    {
+      "path": "experiments/dual_track_v02/trade_network_adaptation_path_v1_1/TRADE_NETWORK_ADAPTATION_PATH_RUN_MANIFEST_V1_1.json",
+      "bytes": 2774,
+      "sha256": "b7442110e07263661f32f36c25444e039ea0ba81a23ac6b8a1b9134584d47217"
+    },
+    {
       "path": "tooling/finalize_imf_partner_substitution_v3_1_manifest.py",
       "bytes": 1974,
       "sha256": "c26196cc193f525d37f86f980fbaeed1b9b8bcca222f2b790b0ec1179f2b0dc9"
+    },
+    {
+      "path": "tooling/register_trade_network_adaptation_path_v1_1.py",
+      "bytes": 1840,
+      "sha256": "bff129b7949b5ec5fe8aebaa6eaaff32ae100d6a7ebc0ed9135a6facb155b126"
+    },
+    {
+      "path": "tooling/finalize_trade_network_adaptation_path_v1_1_manifest.py",
+      "bytes": 1832,
+      "sha256": "cb9ad000cf14a99811e2a3b87fe44e41470e6a417f11733ac979dc694d60fdc3"
+    },
+    {
+      "path": "tooling/append_trade_network_adaptation_path_v1_1_ledger.py",
+      "bytes": 2556,
+      "sha256": "b629863fa21a2c13347b254a13a83269944084b8f7c3988938eb19261266714a"
+    },
+    {
+      "path": "tooling/register_trade_network_adaptation_path_v1_1.py",
+      "bytes": 1840,
+      "sha256": "bff129b7949b5ec5fe8aebaa6eaaff32ae100d6a7ebc0ed9135a6facb155b126"
+    },
+    {
+      "path": "tooling/finalize_trade_network_adaptation_path_v1_1_manifest.py",
+      "bytes": 1832,
+      "sha256": "cb9ad000cf14a99811e2a3b87fe44e41470e6a417f11733ac979dc694d60fdc3"
+    },
+    {
+      "path": "tooling/append_trade_network_adaptation_path_v1_1_governance_closure.py",
+      "bytes": 2143,
+      "sha256": "ebf90f7466370b114b2425866cd3ba2e7aa342ad339d0f8eb1b2722fdf0cf1c8"
+    },
+    {
+      "path": "experiments/dual_track_v02/trade_network_adaptation_path_v1_1/TRADE_NETWORK_ADAPTATION_PATH_RUN_MANIFEST_V1_1.json",
+      "bytes": 2774,
+      "sha256": "b7442110e07263661f32f36c25444e039ea0ba81a23ac6b8a1b9134584d47217"
     }
   ],
   "checks": {

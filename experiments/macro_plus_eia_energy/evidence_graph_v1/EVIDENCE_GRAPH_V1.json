@@ -144,6 +144,10 @@
       "type": "pattern_record"
     },
     {
+      "node_id": "TRADE_NETWORK_ADAPTATION_PATH_V1_1",
+      "type": "pattern_record"
+    },
+    {
       "node_id": "WHO_COVID_DAILY_REPORTED_ACTIVITY"
     },
     {
@@ -217,6 +221,12 @@
     },
     {
       "node_id": "baseline_top1_exit_and_readiness_candidate"
+    },
+    {
+      "node_id": "pre_event_trade_network_stress_state"
+    },
+    {
+      "node_id": "post_event_adaptation_outcome_family"
     }
   ],
   "edges": [
@@ -936,6 +946,21 @@
       "source_refs": "experiments/dual_track_v02/imf_partner_substitution_v3_1/IMF_IMTS_PARTNER_SUBSTITUTION_V3_1_SUMMARY.json",
       "failure_cases": [
         "not_testable: candidate fails the locked rank-autocorrelation comparison and 0.05 effect threshold; confirmation subwindows have fewer than 30 events each; corrected null admission fails. No CVT, Composer positive weight, or runtime eligibility."
+      ]
+    },
+    {
+      "edge_id": "TRADE_NETWORK_ADAPTATION_PATH_V1_1_registry",
+      "source": "TRADE_NETWORK_ADAPTATION_PATH_V1_1",
+      "target": "A multi-dimensional trade-network stress state predicts the subsequent adaptation outcome family out of sample.",
+      "split": "registry",
+      "metric": null,
+      "p_value": null,
+      "null_method": "registry_summary",
+      "status": "rejected",
+      "causal_claim": false,
+      "source_refs": "experiments/dual_track_v02/trade_network_adaptation_path_v1_1/TRADE_NETWORK_ADAPTATION_PATH_SUMMARY_V1.json",
+      "failure_cases": [
+        "rejected: candidate deterministic family rule is materially worse than all fit-only baselines on the locked final block; rolling-origin coverage is insufficient at every origin; rank and time nulls do not support advantage. No CVT, Composer positive weight, or runtime eligibility."
       ]
     },
     {
@@ -1739,6 +1764,57 @@
         "The previous-partner baseline is structurally degenerate on this exit-conditioned event definition; it is reported but cannot rescue the candidate.",
         "No causal validation or runtime promotion."
       ]
+    },
+    {
+      "edge_id": "TRADE_NETWORK_ADAPTATION_PATH_V1_1",
+      "source": "pre_event_trade_network_stress_state",
+      "target": "post_event_adaptation_outcome_family",
+      "lag": {
+        "direction": "forward",
+        "unit": "years",
+        "values": [
+          1,
+          2,
+          3
+        ]
+      },
+      "split": "rolling_origins_2011_2017_and_locked_final_2019_2021",
+      "metric": {
+        "event_rows": 170,
+        "h2": {
+          "candidate_accuracy": 0.34375,
+          "candidate_brier": 0.328125,
+          "previous_state_brier": 0.08804559130002673,
+          "state_persistence_brier": 0.08928763508076432,
+          "target_history_brier": 0.11381935586734694
+        },
+        "name": "multiclass_brier_and_family_accuracy",
+        "state_rows": 3375
+      },
+      "p_value": {
+        "block": 0.0009995002498750624,
+        "rank": 1.0,
+        "time": 1.0
+      },
+      "null_method": "block permutation, restricted time placebo, and rank-preserving volume null; 2000 replicates each at primary h2",
+      "status": "rejected",
+      "causal_claim": false,
+      "source_refs": [
+        "experimental_contracts/dual_track_v02/TRADE_NETWORK_ADAPTATION_PATH_CONTRACT_V1_1.json",
+        "campaigns/dual_track_v02/CHAOS_DUAL_TRACK_PROTOCOL_V0_2.json",
+        "experiments/dual_track_v02/trade_network_adaptation_path_v1_1/TRADE_NETWORK_ADAPTATION_STATE_PANEL_V1.csv",
+        "experiments/dual_track_v02/trade_network_adaptation_path_v1_1/TRADE_NETWORK_ADAPTATION_EVENTS_V1.csv",
+        "experiments/dual_track_v02/trade_network_adaptation_path_v1_1/TRADE_NETWORK_ADAPTATION_ROLLING_METRICS_V1.csv",
+        "experiments/dual_track_v02/trade_network_adaptation_path_v1_1/TRADE_NETWORK_ADAPTATION_NULL_SUMMARIES_V1.json",
+        "experiments/dual_track_v02/trade_network_adaptation_path_v1_1/TRADE_NETWORK_ADAPTATION_PATH_SUMMARY_V1.json"
+      ],
+      "failure_cases": [
+        "Candidate multiclass Brier h2=0.328125 is worse than target-history=0.1138194, state-persistence=0.0892876, and previous-state=0.0880456.",
+        "Candidate family accuracy h2=0.34375 does not meet the contractual +0.05 improvement condition.",
+        "Rolling origins include only 14–24 evaluation events and do not satisfy the contractual >=20 condition at every origin.",
+        "Block null is non-degenerate but observed advantage is not better than the null family under the lower-tail metric; rank-preserving and time-placebo p_lower_tail are both 1.0.",
+        "No causal validation; no runtime promotion; no positive Composer weight."
+      ]
     }
   ],
   "rules": {
@@ -1758,7 +1834,7 @@
   },
   "input_hashes": {
     "transition_evidence": "7e758b1f3ab323ee9a5bd1bcae2dca498b619b6d15754163c4908c7f057d4abf",
-    "registry": "f038655520a850570b3efeb0a5f2fbb6ad7495ff0106c250370319d141400a44",
+    "registry": "c110fb6d879d94969b85acd5888a783ec2c31af68146f7a84616af4b2a671492",
     "native_domain_transition_evidence": "21b2d619ff31cc71705613140fda5e9faa582fbe1ec39ff4e6d76354722c8f34",
     "cross_domain_transition_evidence": "079f739ead4bdbe9e18c3641f7728962cc2c3196a2bc3bf728adcdaf40bb1620",
     "trade_transition_evidence": "f2b97903d37dd349587fe63d88c77812040a0be7fde76b1962ce25b4156c19ca",
@@ -1771,6 +1847,7 @@
     "imf_partner_dependence_transition_evidence": "56d1c7844ce005701e5eea5fa2097c1292c21432ae41394aaac0a5b660004bf2",
     "imf_partner_dependence_v2_transition_evidence": "17dc127e0e6d6dc942d45999ab4aa3d410e85e3a712323b599f2df6f749195e3",
     "imf_partner_substitution_v3_transition_evidence": "5c29ba97a079b02f0ad9839cd85575079f1589cf9ae7dacf2acac3ece9f12a6e",
-    "imf_partner_substitution_v3_1_transition_evidence": "638d17aafb672f0397f6dcb9d74144184db936aaf06b7485986cdb9f07639e38"
+    "imf_partner_substitution_v3_1_transition_evidence": "638d17aafb672f0397f6dcb9d74144184db936aaf06b7485986cdb9f07639e38",
+    "trade_network_adaptation_path_v1_1_transition_evidence": "652c40187ea08a950abf40478100f33babd54630292752909c8ab72ce0b110b8"
   }
 }
