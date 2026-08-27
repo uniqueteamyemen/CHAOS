@@ -1,0 +1,4 @@
+#!/usr/bin/env python3
+from pathlib import Path
+import pandas as pd,json
+ROOT=Path('/home/ubuntu/CHAOS'); OUT=ROOT/'experiments/multi_domain_native_edges_v1/imf_partner_dependence_v1'; p=pd.read_csv(OUT/'IMF_IMTS_PARTNER_DEPENDENCE_REPORTER_YEAR_PANEL_V1.csv'); q=p[p.interaction_state==True][['reporter_id','origin_year','selected_partner_ids','baseline_dominant_partner_ids','shocked_partner_ids','shocked_selected_partner_ids_all','dominant_partner_count','shocked_partner_count','shocked_selected_partner_count_all']]; res={'exposure_rows':q.to_dict('records'),'dominant_counts':q.dominant_partner_count.value_counts().sort_index().to_dict(),'shock_counts_all':q.shocked_selected_partner_count_all.value_counts().sort_index().to_dict()}; (OUT/'IMF_IMTS_PARTNER_EXPOSURE_INSPECTION_V1.json').write_text(json.dumps(res,ensure_ascii=False,indent=2)+'\n'); print(json.dumps(res,ensure_ascii=False,indent=2))

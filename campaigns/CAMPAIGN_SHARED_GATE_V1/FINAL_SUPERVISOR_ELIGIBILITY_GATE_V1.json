@@ -10,9 +10,9 @@
     "rejected_quarantine_rule": true
   },
   "admitted_supported_predictive_records": 2,
-  "quarantined_records": 25,
-  "graph_nodes": 53,
-  "graph_edges": 54,
+  "quarantined_records": 26,
+  "graph_nodes": 55,
+  "graph_edges": 56,
   "compiled_runtime_eligible": 0,
   "causal_claims": 0,
   "decision": "admit_only_supported_predictive_to_shared_composition",
@@ -20,9 +20,9 @@
   "status": "pass",
   "input_hashes": {
     "campaigns/CAMPAIGN_SHARED_GATE_V1/DOMAIN_STATE_SCHEMA_VALIDATION_V1.json": "ef27e618c974df27e52c3c093cfd9eb8d2917b883b87f207cf2622a1ff4b503e",
-    "campaigns/CAMPAIGN_SHARED_GATE_V1/TRANSITION_EVIDENCE_SCHEMA_VALIDATION_V1.json": "1afbfe82c567b6b252a2bb1a324b4b1952af951f2d98836d3f77dcd669eb1ed6",
-    "campaigns/CAMPAIGN_SHARED_GATE_V1/SUPERVISOR_GATE_DECISION_V1.json": "996792f6af9837932b0cf81a00f3c3732ae59567ee040be71140718d7ab02241",
-    "experiments/macro_plus_eia_energy/evidence_graph_v1/EVIDENCE_GRAPH_SUMMARY.json": "1129ec8c70dfb4712de60b8138bfafd004e460b5cf80cec7238983b2b77c1b75",
-    "experiments/macro_plus_eia_energy/pattern_compiler_v1/PATTERN_COMPILER_SUMMARY.json": "057aec9c40cc5a58ca61cf7eb9e6504d591755ca8a402c3cd60dbd90c4685119"
+    "campaigns/CAMPAIGN_SHARED_GATE_V1/TRANSITION_EVIDENCE_SCHEMA_VALIDATION_V1.json": "bd9c4074e3d0096f1cbde121de6619494fea58e5edefaec87a0810999257d863",
+    "campaigns/CAMPAIGN_SHARED_GATE_V1/SUPERVISOR_GATE_DECISION_V1.json": "0dc63b41a80658b9b798fb9e1056e109aed61a2bd4846f4b2be16163a7323ffb",
+    "experiments/macro_plus_eia_energy/evidence_graph_v1/EVIDENCE_GRAPH_SUMMARY.json": "cb0f20bb93d1faae23be9b43f098dee61b1e93733b2b48fb58886e80210e08ee",
+    "experiments/macro_plus_eia_energy/pattern_compiler_v1/PATTERN_COMPILER_SUMMARY.json": "cad7e6471816208df2c72a45f119433bc431b289d87a943f80ef47d66c2146cd"
   }
 }

@@ -1,0 +1,13 @@
+{
+  "replicates": 10000,
+  "seed": 20260827,
+  "p_value": 1.0,
+  "null_mean": 0.3625704545454546,
+  "null_sd": 0.44455495980387916,
+  "null_q95": 0.7045454545454546,
+  "test_id": "IMF_IMTS_DOMINANT_PARTNER_DEPENDENCE_V1",
+  "contract_sha256": "754d462d4fab1c9d4b1174334af075986350923d8b463c6b5d940171495907a1",
+  "source": "IMF_IMTS_PARTNER_DEPENDENCE_SUMMARY_V1.json",
+  "statistic": "max_horizon_risk_difference",
+  "status": "diagnostic_complete"
+}

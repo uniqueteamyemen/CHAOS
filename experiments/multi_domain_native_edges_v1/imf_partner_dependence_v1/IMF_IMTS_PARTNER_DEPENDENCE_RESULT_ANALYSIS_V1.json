@@ -1,0 +1,297 @@
+{
+  "selection_by_reporter": [
+    {
+      "reporter_id": "BRA",
+      "selected_partners": 5,
+      "dominant_partners": 5,
+      "max_share": 0.5834257982890301,
+      "min_share": 0.2326282004114128,
+      "mean_share": 0.35307947385902166
+    },
+    {
+      "reporter_id": "CAN",
+      "selected_partners": 5,
+      "dominant_partners": 2,
+      "max_share": 0.9560451216081122,
+      "min_share": 0.0305084489256777,
+      "mean_share": 0.3869294435857157
+    },
+    {
+      "reporter_id": "CHN",
+      "selected_partners": 5,
+      "dominant_partners": 2,
+      "max_share": 0.8242244548722919,
+      "min_share": 0.1294483029102103,
+      "mean_share": 0.29718669166016387
+    },
+    {
+      "reporter_id": "DEU",
+      "selected_partners": 5,
+      "dominant_partners": 2,
+      "max_share": 0.8118671737525174,
+      "min_share": 0.1068398033792505,
+      "mean_share": 0.34173971219517874
+    },
+    {
+      "reporter_id": "FRA",
+      "selected_partners": 5,
+      "dominant_partners": 2,
+      "max_share": 0.8150328700364934,
+      "min_share": 0.1330874701749989,
+      "mean_share": 0.3604008559532725
+    },
+    {
+      "reporter_id": "GBR",
+      "selected_partners": 5,
+      "dominant_partners": 2,
+      "max_share": 0.8391431991938244,
+      "min_share": 0.1120719365602339,
+      "mean_share": 0.35423864347233935
+    },
+    {
+      "reporter_id": "IND",
+      "selected_partners": 5,
+      "dominant_partners": 3,
+      "max_share": 0.5995774016388425,
+      "min_share": 0.1705158318609461,
+      "mean_share": 0.3143902548794294
+    },
+    {
+      "reporter_id": "ITA",
+      "selected_partners": 5,
+      "dominant_partners": 3,
+      "max_share": 0.7843621467293576,
+      "min_share": 0.1435099881903526,
+      "mean_share": 0.35780422195177514
+    },
+    {
+      "reporter_id": "JPN",
+      "selected_partners": 5,
+      "dominant_partners": 5,
+      "max_share": 0.7122912005291191,
+      "min_share": 0.2042828448030716,
+      "mean_share": 0.34690806252593437
+    },
+    {
+      "reporter_id": "KOR",
+      "selected_partners": 5,
+      "dominant_partners": 4,
+      "max_share": 0.6070611869552717,
+      "min_share": 0.1956284080357774,
+      "mean_share": 0.35772902181925975
+    },
+    {
+      "reporter_id": "MEX",
+      "selected_partners": 5,
+      "dominant_partners": 2,
+      "max_share": 0.9485785856206724,
+      "min_share": 0.0393869790671267,
+      "mean_share": 0.3918858986603831
+    },
+    {
+      "reporter_id": "SAU",
+      "selected_partners": 5,
+      "dominant_partners": 4,
+      "max_share": 0.5011625610546601,
+      "min_share": 0.1452026465228066,
+      "mean_share": 0.36786764418125617
+    },
+    {
+      "reporter_id": "TUR",
+      "selected_partners": 5,
+      "dominant_partners": 3,
+      "max_share": 0.6818089571378684,
+      "min_share": 0.1477270776094329,
+      "mean_share": 0.33848229520461953
+    },
+    {
+      "reporter_id": "USA",
+      "selected_partners": 5,
+      "dominant_partners": 5,
+      "max_share": 0.6638982630579704,
+      "min_share": 0.2131702674327523,
+      "mean_share": 0.34889419916310216
+    },
+    {
+      "reporter_id": "ZAF",
+      "selected_partners": 5,
+      "dominant_partners": 4,
+      "max_share": 0.6104755688924696,
+      "min_share": 0.1446805691114749,
+      "mean_share": 0.2856296028889468
+    }
+  ],
+  "dominant_count_distribution": {
+    "2": 6,
+    "3": 3,
+    "4": 3,
+    "5": 3
+  },
+  "selection_share_summary": {
+    "min_baseline_mean_share": 0.0305084489256777,
+    "max_baseline_mean_share": 0.9560451216081122,
+    "median_baseline_mean_share": 0.2413498957288323
+  },
+  "exposure_by_split": {
+    "fit": {
+      "rows": 135,
+      "exposures": 5,
+      "defined": 135,
+      "reporters_exposed": 5,
+      "years_exposed": [
+        2009
+      ]
+    },
+    "validation": {
+      "rows": 75,
+      "exposures": 1,
+      "defined": 75,
+      "reporters_exposed": 1,
+      "years_exposed": [
+        2015
+      ]
+    },
+    "confirmation": {
+      "rows": 45,
+      "exposures": 1,
+      "defined": 45,
+      "reporters_exposed": 1,
+      "years_exposed": [
+        2020
+      ]
+    }
+  },
+  "exposed_rows": 7,
+  "exposed_reporters": 5,
+  "exposure_years": [
+    2009,
+    2015,
+    2020
+  ],
+  "metrics": [
+    {
+      "split": "fit",
+      "horizon": 1,
+      "rows": 135,
+      "reporters": 15,
+      "positive_exposures": 5,
+      "positive_outcomes": 40,
+      "exposed_outcomes": 0,
+      "unexposed_outcomes": 40,
+      "event_rate_exposed": 0.0,
+      "event_rate_unexposed": 0.3076923076923077,
+      "risk_difference": -0.3076923076923077
+    },
+    {
+      "split": "fit",
+      "horizon": 2,
+      "rows": 135,
+      "reporters": 15,
+      "positive_exposures": 5,
+      "positive_outcomes": 44,
+      "exposed_outcomes": 0,
+      "unexposed_outcomes": 44,
+      "event_rate_exposed": 0.0,
+      "event_rate_unexposed": 0.3384615384615385,
+      "risk_difference": -0.3384615384615385
+    },
+    {
+      "split": "fit",
+      "horizon": 3,
+      "rows": 135,
+      "reporters": 15,
+      "positive_exposures": 5,
+      "positive_outcomes": 40,
+      "exposed_outcomes": 0,
+      "unexposed_outcomes": 40,
+      "event_rate_exposed": 0.0,
+      "event_rate_unexposed": 0.3076923076923077,
+      "risk_difference": -0.3076923076923077
+    },
+    {
+      "split": "validation",
+      "horizon": 1,
+      "rows": 75,
+      "reporters": 15,
+      "positive_exposures": 1,
+      "positive_outcomes": 8,
+      "exposed_outcomes": 1,
+      "unexposed_outcomes": 7,
+      "event_rate_exposed": 1.0,
+      "event_rate_unexposed": 0.0945945945945946,
+      "risk_difference": 0.9054054054054054
+    },
+    {
+      "split": "validation",
+      "horizon": 2,
+      "rows": 75,
+      "reporters": 15,
+      "positive_exposures": 1,
+      "positive_outcomes": 20,
+      "exposed_outcomes": 1,
+      "unexposed_outcomes": 19,
+      "event_rate_exposed": 1.0,
+      "event_rate_unexposed": 0.2567567567567567,
+      "risk_difference": 0.7432432432432432
+    },
+    {
+      "split": "validation",
+      "horizon": 3,
+      "rows": 75,
+      "reporters": 15,
+      "positive_exposures": 1,
+      "positive_outcomes": 20,
+      "exposed_outcomes": 0,
+      "unexposed_outcomes": 20,
+      "event_rate_exposed": 0.0,
+      "event_rate_unexposed": 0.2702702702702703,
+      "risk_difference": -0.2702702702702703
+    },
+    {
+      "split": "confirmation",
+      "horizon": 1,
+      "rows": 45,
+      "reporters": 15,
+      "positive_exposures": 1,
+      "positive_outcomes": 25,
+      "exposed_outcomes": 0,
+      "unexposed_outcomes": 25,
+      "event_rate_exposed": 0.0,
+      "event_rate_unexposed": 0.5681818181818182,
+      "risk_difference": -0.5681818181818182
+    },
+    {
+      "split": "confirmation",
+      "horizon": 2,
+      "rows": 45,
+      "reporters": 15,
+      "positive_exposures": 1,
+      "positive_outcomes": 14,
+      "exposed_outcomes": 0,
+      "unexposed_outcomes": 14,
+      "event_rate_exposed": 0.0,
+      "event_rate_unexposed": 0.3181818181818182,
+      "risk_difference": -0.3181818181818182
+    },
+    {
+      "split": "confirmation",
+      "horizon": 3,
+      "rows": 45,
+      "reporters": 15,
+      "positive_exposures": 1,
+      "positive_outcomes": 15,
+      "exposed_outcomes": 0,
+      "unexposed_outcomes": 15,
+      "event_rate_exposed": 0.0,
+      "event_rate_unexposed": 0.3409090909090909,
+      "risk_difference": -0.3409090909090909
+    }
+  ],
+  "summary_status": "not_testable",
+  "interpretation": {
+    "coverage_failure": "Confirmation has only one positive interaction exposure, below contract minimum five; therefore not_testable.",
+    "identity_null_degeneracy": "The confirmation has one exposed reporter-year (SAU, 2020) with two shocked partners among five selected partners and four dominant slots; any reassignment of four of five slots necessarily captures at least one of the two shocks, so the identity-null statistic is constant (p=1.0, sd=0) and is non-informative about partner identity in this sample.",
+    "confirmation_direction": "All three confirmation risk differences are negative; exposed confirmation row has no positive GDP deterioration outcome.",
+    "concentration": "One reporter contributes 3 of 7 exposed rows (42.86%), exceeding the 40% cap; concentration gate fails."
+  }
+}

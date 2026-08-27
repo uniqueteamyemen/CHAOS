@@ -1,0 +1,225 @@
+{
+  "test_id": "IMF_IMTS_DOMINANT_PARTNER_DEPENDENCE_V1",
+  "contract_status_at_run": "draft_for_review",
+  "contract_sha256": "754d462d4fab1c9d4b1174334af075986350923d8b463c6b5d940171495907a1",
+  "input_sha256": {
+    "trade_observation_artifact": "c6281e2009ac0ad464ccb9361b1245b1790a9e042b6755121b2f6446ded80421",
+    "macro_target_artifact": "015736245ac4010aa1c97055930c69ca3c7da5fdd5970f5da34456b67a3172ad",
+    "codelists": "ab24701aeec304dd5d379457596c9f1d453cfc724c2a95411c7b2f25120a8619"
+  },
+  "reporters": [
+    "USA",
+    "CHN",
+    "DEU",
+    "JPN",
+    "IND",
+    "GBR",
+    "FRA",
+    "ITA",
+    "CAN",
+    "KOR",
+    "BRA",
+    "MEX",
+    "SAU",
+    "TUR",
+    "ZAF"
+  ],
+  "selection_window": [
+    2000,
+    2004
+  ],
+  "origin_period": [
+    2005,
+    2021
+  ],
+  "splits": {
+    "fit": [
+      2005,
+      2013
+    ],
+    "validation": [
+      2014,
+      2018
+    ],
+    "confirmation": [
+      2019,
+      2021
+    ]
+  },
+  "selected_partner_count": 5,
+  "eligible_selected_rows": 75,
+  "reporters_with_five_selected_partners": 15,
+  "reporters_with_dominant_partner": 15,
+  "total_panel_rows": 255,
+  "panel_rows_with_defined_interaction": 255,
+  "metrics": [
+    {
+      "split": "fit",
+      "horizon": 1,
+      "rows": 135,
+      "reporters": 15,
+      "positive_exposures": 5,
+      "positive_outcomes": 40,
+      "exposed_outcomes": 0,
+      "unexposed_outcomes": 40,
+      "event_rate_exposed": 0.0,
+      "event_rate_unexposed": 0.3076923076923077,
+      "risk_difference": -0.3076923076923077
+    },
+    {
+      "split": "fit",
+      "horizon": 2,
+      "rows": 135,
+      "reporters": 15,
+      "positive_exposures": 5,
+      "positive_outcomes": 44,
+      "exposed_outcomes": 0,
+      "unexposed_outcomes": 44,
+      "event_rate_exposed": 0.0,
+      "event_rate_unexposed": 0.3384615384615385,
+      "risk_difference": -0.3384615384615385
+    },
+    {
+      "split": "fit",
+      "horizon": 3,
+      "rows": 135,
+      "reporters": 15,
+      "positive_exposures": 5,
+      "positive_outcomes": 40,
+      "exposed_outcomes": 0,
+      "unexposed_outcomes": 40,
+      "event_rate_exposed": 0.0,
+      "event_rate_unexposed": 0.3076923076923077,
+      "risk_difference": -0.3076923076923077
+    },
+    {
+      "split": "validation",
+      "horizon": 1,
+      "rows": 75,
+      "reporters": 15,
+      "positive_exposures": 1,
+      "positive_outcomes": 8,
+      "exposed_outcomes": 1,
+      "unexposed_outcomes": 7,
+      "event_rate_exposed": 1.0,
+      "event_rate_unexposed": 0.0945945945945946,
+      "risk_difference": 0.9054054054054054
+    },
+    {
+      "split": "validation",
+      "horizon": 2,
+      "rows": 75,
+      "reporters": 15,
+      "positive_exposures": 1,
+      "positive_outcomes": 20,
+      "exposed_outcomes": 1,
+      "unexposed_outcomes": 19,
+      "event_rate_exposed": 1.0,
+      "event_rate_unexposed": 0.25675675675675674,
+      "risk_difference": 0.7432432432432432
+    },
+    {
+      "split": "validation",
+      "horizon": 3,
+      "rows": 75,
+      "reporters": 15,
+      "positive_exposures": 1,
+      "positive_outcomes": 20,
+      "exposed_outcomes": 0,
+      "unexposed_outcomes": 20,
+      "event_rate_exposed": 0.0,
+      "event_rate_unexposed": 0.2702702702702703,
+      "risk_difference": -0.2702702702702703
+    },
+    {
+      "split": "confirmation",
+      "horizon": 1,
+      "rows": 45,
+      "reporters": 15,
+      "positive_exposures": 1,
+      "positive_outcomes": 25,
+      "exposed_outcomes": 0,
+      "unexposed_outcomes": 25,
+      "event_rate_exposed": 0.0,
+      "event_rate_unexposed": 0.5681818181818182,
+      "risk_difference": -0.5681818181818182
+    },
+    {
+      "split": "confirmation",
+      "horizon": 2,
+      "rows": 45,
+      "reporters": 15,
+      "positive_exposures": 1,
+      "positive_outcomes": 14,
+      "exposed_outcomes": 0,
+      "unexposed_outcomes": 14,
+      "event_rate_exposed": 0.0,
+      "event_rate_unexposed": 0.3181818181818182,
+      "risk_difference": -0.3181818181818182
+    },
+    {
+      "split": "confirmation",
+      "horizon": 3,
+      "rows": 45,
+      "reporters": 15,
+      "positive_exposures": 1,
+      "positive_outcomes": 15,
+      "exposed_outcomes": 0,
+      "unexposed_outcomes": 15,
+      "event_rate_exposed": 0.0,
+      "event_rate_unexposed": 0.3409090909090909,
+      "risk_difference": -0.3409090909090909
+    }
+  ],
+  "observed_confirmation_max_risk_difference": -0.3181818181818182,
+  "selected_horizon": 2,
+  "identity_null": {
+    "replicates": 10000,
+    "seed": 20260827,
+    "p_value": 1.0,
+    "null_mean": -0.3181818181818182,
+    "null_sd": 0.0,
+    "null_q95": -0.3181818181818182
+  },
+  "outcome_null": {
+    "replicates": 10000,
+    "seed": 20260827,
+    "p_value": 1.0,
+    "null_mean": 0.3625704545454546,
+    "null_sd": 0.44455495980387916,
+    "null_q95": 0.7045454545454546
+  },
+  "cluster_bootstrap": {
+    "replicates": 5000,
+    "seed": 20260827,
+    "mean": -0.3227721236937947,
+    "q025": -0.35714285714285715,
+    "q975": -0.2727272727272727
+  },
+  "concentration": {
+    "max_reporter_share": 0.42857142857142855,
+    "max_partner_event_share": 0.3333333333333333,
+    "max_reporter": "SAU",
+    "max_partner": "G110"
+  },
+  "coverage_pass": false,
+  "reporter_stability_pass": false,
+  "promotion_checks": {
+    "positive_confirmation_stat": false,
+    "identity_null_pass": false,
+    "outcome_null_pass": false,
+    "coverage_pass": false,
+    "stability_pass": false,
+    "concentration_pass": false
+  },
+  "status": "not_testable",
+  "causal_claim": false,
+  "runtime_eligible": false,
+  "notes": [
+    "No partner selection used GDP outcomes or confirmation data.",
+    "G001 World used only as denominator, not as named partner.",
+    "Partner-level rows are not pooled as independent GDP outcomes.",
+    "Missing bilateral observations were not converted to zero.",
+    "This is a new source-separated edge test; previous IMF total-export contraction edge was not rerun."
+  ]
+}

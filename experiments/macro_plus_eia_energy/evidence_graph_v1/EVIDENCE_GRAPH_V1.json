@@ -128,6 +128,10 @@
       "type": "pattern_record"
     },
     {
+      "node_id": "IMF_IMTS_DOMINANT_PARTNER_DEPENDENCE_V1",
+      "type": "pattern_record"
+    },
+    {
       "node_id": "WHO_COVID_DAILY_REPORTED_ACTIVITY"
     },
     {
@@ -186,6 +190,9 @@
     },
     {
       "node_id": "wdi_material_gdp_deterioration"
+    },
+    {
+      "node_id": "dominant_partner_flow_contraction_candidate"
     }
   ],
   "edges": [
@@ -848,6 +855,21 @@
       ]
     },
     {
+      "edge_id": "IMF_IMTS_DOMINANT_PARTNER_DEPENDENCE_V1_registry",
+      "source": "IMF_IMTS_DOMINANT_PARTNER_DEPENDENCE_V1",
+      "target": "IMF IMTS dominant partner dependence combined with partner-specific bilateral export contraction precedes material GDP deterioration",
+      "split": "registry",
+      "metric": null,
+      "p_value": null,
+      "null_method": "registry_summary",
+      "status": "not_testable",
+      "causal_claim": false,
+      "source_refs": "experiments/multi_domain_native_edges_v1/imf_partner_dependence_v1/IMF_IMTS_PARTNER_DEPENDENCE_SUMMARY_V1.json",
+      "failure_cases": [
+        "not_testable because confirmation has one positive interaction exposure and concentration/stability gates fail; identity null is constant and non-informative in this confirmation sample"
+      ]
+    },
+    {
       "edge_id": "WHO_COVID_DAILY_TO_ANNUAL_GDP_V1",
       "source": "WHO_COVID_DAILY_REPORTED_ACTIVITY",
       "target": "ANNUAL_MATERIAL_DETERIORATION",
@@ -1454,6 +1476,44 @@
         "bounded 15-reporter extract",
         "no source reconciliation"
       ]
+    },
+    {
+      "edge_id": "IMF_IMTS_DOMINANT_PARTNER_DEPENDENCE_V1",
+      "source": "dominant_partner_flow_contraction_candidate",
+      "target": "wdi_material_gdp_deterioration",
+      "lag": {
+        "direction": "forward",
+        "unit": "years",
+        "value": 2
+      },
+      "split": "confirmation_2019_2021",
+      "metric": {
+        "horizon": 2,
+        "identity_null_p_value": 1.0,
+        "name": "max_horizon_risk_difference",
+        "outcome_null_p_value": 1.0,
+        "value": -0.3181818181818182
+      },
+      "p_value": null,
+      "null_method": "fixed within-reporter dominant-slot permutation plus within-reporter outcome-label permutation; 10000 replicates each",
+      "status": "not_testable",
+      "causal_claim": false,
+      "source_refs": [
+        "experimental_contracts/IMF_IMTS_DOMINANT_PARTNER_DEPENDENCE_CONTRACT_V1.json",
+        "experiments/multi_domain_native_edges_v1/imf_partner_dependence_v1/IMF_IMTS_PARTNER_DEPENDENCE_SUMMARY_V1.json",
+        "experiments/multi_domain_native_edges_v1/imf_partner_dependence_v1/IMF_IMTS_PARTNER_DEPENDENCE_METRICS_V1.csv",
+        "experiments/multi_domain_native_edges_v1/imf_partner_dependence_v1/IMF_IMTS_PARTNER_DEPENDENCE_REPORTER_YEAR_PANEL_V1.csv",
+        "experiments/multi_domain_native_edges_v1/imf_partner_dependence_v1/IMF_IMTS_PARTNER_IDENTITY_NULL_SUMMARY_V1.json",
+        "experiments/multi_domain_native_edges_v1/imf_partner_dependence_v1/IMF_IMTS_OUTCOME_NULL_SUMMARY_V1.json"
+      ],
+      "failure_cases": [
+        "confirmation has one positive interaction exposure, below minimum five",
+        "all confirmation risk differences are negative",
+        "one reporter contributes 3 of 7 total exposure rows, exceeding 0.40 concentration cap",
+        "partner-identity null is constant in confirmation because four dominant slots overlap any two shocked selected partners",
+        "no entity holdout",
+        "bounded 15-reporter extract"
+      ]
     }
   ],
   "rules": {
@@ -1473,7 +1533,7 @@
   },
   "input_hashes": {
     "transition_evidence": "7e758b1f3ab323ee9a5bd1bcae2dca498b619b6d15754163c4908c7f057d4abf",
-    "registry": "3adf45ef125813dd99549b348ee896195c1c8aaeedd3182efe46b66efcf0efea",
+    "registry": "f77342012e14883eff67837f77b3c998221c3720e0d1d0c2d077415e853a34d3",
     "native_domain_transition_evidence": "21b2d619ff31cc71705613140fda5e9faa582fbe1ec39ff4e6d76354722c8f34",
     "cross_domain_transition_evidence": "079f739ead4bdbe9e18c3641f7728962cc2c3196a2bc3bf728adcdaf40bb1620",
     "trade_transition_evidence": "f2b97903d37dd349587fe63d88c77812040a0be7fde76b1962ce25b4156c19ca",
@@ -1482,6 +1542,7 @@
     "trade_to_economic_transition_evidence": "25299da644f7dc9a201e5c5d61de29fee28f89d115f812fbd46e8ea0726557fd",
     "pmr_transition_evidence": "6de52d41f8196baa2bd5a5428d4a4eda5e3763c713c28cb3f54b35293a34cd75",
     "pmr_sensitivity_transition_evidence": "7c28f75aa683e4654f617e878cf1a1b46abce681d1356fc684107017c8dd3329",
-    "imf_imts_export_to_gdp_transition_evidence": "bf11dcb2f89dfab736e42329b77e25c5c5f1e989012637c7849bdab6f28c212e"
+    "imf_imts_export_to_gdp_transition_evidence": "bf11dcb2f89dfab736e42329b77e25c5c5f1e989012637c7849bdab6f28c212e",
+    "imf_partner_dependence_transition_evidence": "56d1c7844ce005701e5eea5fa2097c1292c21432ae41394aaac0a5b660004bf2"
   }
 }
