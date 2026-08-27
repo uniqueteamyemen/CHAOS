@@ -148,6 +148,10 @@
       "type": "pattern_record"
     },
     {
+      "node_id": "TRADE_REGIME_TRANSITION_DISCOVERY_V1",
+      "type": "pattern_record"
+    },
+    {
       "node_id": "WHO_COVID_DAILY_REPORTED_ACTIVITY"
     },
     {
@@ -227,6 +231,12 @@
     },
     {
       "node_id": "post_event_adaptation_outcome_family"
+    },
+    {
+      "node_id": "learned_trade_network_regime_sequence"
+    },
+    {
+      "node_id": "post_sequence_adaptation_family"
     }
   ],
   "edges": [
@@ -961,6 +971,21 @@
       "source_refs": "experiments/dual_track_v02/trade_network_adaptation_path_v1_1/TRADE_NETWORK_ADAPTATION_PATH_SUMMARY_V1.json",
       "failure_cases": [
         "rejected: candidate deterministic family rule is materially worse than all fit-only baselines on the locked final block; rolling-origin coverage is insufficient at every origin; rank and time nulls do not support advantage. No CVT, Composer positive weight, or runtime eligibility."
+      ]
+    },
+    {
+      "edge_id": "TRADE_REGIME_TRANSITION_DISCOVERY_V1_registry",
+      "source": "TRADE_REGIME_TRANSITION_DISCOVERY_V1",
+      "target": "trade_regime_transition",
+      "split": "registry",
+      "metric": null,
+      "p_value": null,
+      "null_method": "registry_summary",
+      "status": "rejected",
+      "causal_claim": false,
+      "source_refs": "experiments/dual_track_v02/trade_regime_transition_discovery_v1/TRADE_REGIME_TRANSITION_TRANSITION_EVIDENCE_V1.jsonl",
+      "failure_cases": [
+        "Final predictive attempt on current IMTS trade observations closed. No further predictive tuning on the same trade data/question."
       ]
     },
     {
@@ -1815,6 +1840,64 @@
         "Block null is non-degenerate but observed advantage is not better than the null family under the lower-tail metric; rank-preserving and time-placebo p_lower_tail are both 1.0.",
         "No causal validation; no runtime promotion; no positive Composer weight."
       ]
+    },
+    {
+      "edge_id": "TRADE_REGIME_TRANSITION_DISCOVERY_V1",
+      "source": "learned_trade_network_regime_sequence",
+      "target": "post_sequence_adaptation_family",
+      "lag": {
+        "direction": "forward",
+        "unit": "years",
+        "values": [
+          1,
+          2,
+          3
+        ]
+      },
+      "split": "fit_2005_2014_rolling_origins_2009_2015_locked_confirmation_2015_2024",
+      "metric": {
+        "event_rows": 180,
+        "h2": {
+          "alpha": 0.1,
+          "candidate_accuracy": 0.6666666666666666,
+          "candidate_brier": 0.0969183128265247,
+          "eval_events": 81,
+          "previous_state_brier": 0.10177736520589692,
+          "reporters": 56,
+          "state_persistence_brier": 0.09789026581717192,
+          "target_history_brier": 0.11610599751625392,
+          "train_events": 78
+        },
+        "name": "multiclass_brier",
+        "regimes": 8,
+        "state_rows": 3375
+      },
+      "p_value": {
+        "block": 0.127936031984008,
+        "rank": 0.06096951524237881,
+        "time": 0.11344327836081959
+      },
+      "null_method": "block permutation, rank-preserving volume null, restricted time placebo; 2000 replicates each at h2",
+      "status": "rejected",
+      "causal_claim": false,
+      "source_refs": [
+        "experimental_contracts/dual_track_v02/TRADE_REGIME_TRANSITION_DISCOVERY_CONTRACT_V1.json",
+        "campaigns/dual_track_v02/CHAOS_DUAL_TRACK_PROTOCOL_V0_2.json",
+        "experiments/dual_track_v02/trade_regime_transition_discovery_v1/TRADE_REGIME_TRANSITION_STATE_PANEL_V1.csv",
+        "experiments/dual_track_v02/trade_regime_transition_discovery_v1/TRADE_REGIME_TRANSITION_EVENTS_V1.csv",
+        "experiments/dual_track_v02/trade_regime_transition_discovery_v1/TRADE_REGIME_TRANSITION_ROLLING_METRICS_V1.csv",
+        "experiments/dual_track_v02/trade_regime_transition_discovery_v1/TRADE_REGIME_TRANSITION_SUBWINDOWS_V1.csv",
+        "experiments/dual_track_v02/trade_regime_transition_discovery_v1/TRADE_REGIME_TRANSITION_NULL_SUMMARIES_V1.json",
+        "experiments/dual_track_v02/trade_regime_transition_discovery_v1/TRADE_REGIME_TRANSITION_SUMMARY_V1.json"
+      ],
+      "failure_cases": [
+        "Candidate h2 Brier 0.0969183 is only 0.000972 better than the best baseline 0.0978903, below the contractual 0.05 gain.",
+        "Rolling h2 improvement direction fails at at least one origin.",
+        "The third confirmation subwindow has only 14 events, below the contractual 30-event group threshold; three-window success is false.",
+        "Block, rank, and time null lower-tail p-values are 0.12794, 0.06097, and 0.11344; none passes Holm alpha=0.025.",
+        "Influential-unit exclusion was not used to rescue the candidate; by stop rule no further tuning is allowed.",
+        "No causal validation, no runtime eligibility, and no positive Composer weight."
+      ]
     }
   ],
   "rules": {
@@ -1834,7 +1917,7 @@
   },
   "input_hashes": {
     "transition_evidence": "7e758b1f3ab323ee9a5bd1bcae2dca498b619b6d15754163c4908c7f057d4abf",
-    "registry": "c110fb6d879d94969b85acd5888a783ec2c31af68146f7a84616af4b2a671492",
+    "registry": "ae7584718cff57b78d17a5f081a3c99ac20a7fa27922997f0416e6120115426e",
     "native_domain_transition_evidence": "21b2d619ff31cc71705613140fda5e9faa582fbe1ec39ff4e6d76354722c8f34",
     "cross_domain_transition_evidence": "079f739ead4bdbe9e18c3641f7728962cc2c3196a2bc3bf728adcdaf40bb1620",
     "trade_transition_evidence": "f2b97903d37dd349587fe63d88c77812040a0be7fde76b1962ce25b4156c19ca",
@@ -1848,6 +1931,7 @@
     "imf_partner_dependence_v2_transition_evidence": "17dc127e0e6d6dc942d45999ab4aa3d410e85e3a712323b599f2df6f749195e3",
     "imf_partner_substitution_v3_transition_evidence": "5c29ba97a079b02f0ad9839cd85575079f1589cf9ae7dacf2acac3ece9f12a6e",
     "imf_partner_substitution_v3_1_transition_evidence": "638d17aafb672f0397f6dcb9d74144184db936aaf06b7485986cdb9f07639e38",
-    "trade_network_adaptation_path_v1_1_transition_evidence": "652c40187ea08a950abf40478100f33babd54630292752909c8ab72ce0b110b8"
+    "trade_network_adaptation_path_v1_1_transition_evidence": "652c40187ea08a950abf40478100f33babd54630292752909c8ab72ce0b110b8",
+    "trade_regime_transition_discovery_v1_transition_evidence": "c1850ac59b0f53c9d76c8cd642bfb7902924352239dbbaa4481054fbb6ec6ad9"
   }
 }
