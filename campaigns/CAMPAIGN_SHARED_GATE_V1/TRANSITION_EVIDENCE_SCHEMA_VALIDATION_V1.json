@@ -1,6 +1,6 @@
 {
   "validator_id": "CHAOS_TRANSITION_EVIDENCE_SCHEMA_VALIDATOR_V1",
-  "record_count": 28,
+  "record_count": 29,
   "files": [
     {
       "path": "experiments/macro_plus_eia_energy/transition_evidence_v1/TRANSITION_EVIDENCE_V1.jsonl",
@@ -44,6 +44,10 @@
     },
     {
       "path": "experiments/multi_domain_native_edges_v1/imf_partner_dependence_v1/IMF_IMTS_PARTNER_DEPENDENCE_TRANSITION_EVIDENCE_V1.jsonl",
+      "records": 1
+    },
+    {
+      "path": "experiments/multi_domain_native_edges_v2/imf_partner_dependence_v2/IMF_IMTS_PARTNER_DEPENDENCE_TRANSITION_EVIDENCE_V2.jsonl",
       "records": 1
     }
   ],

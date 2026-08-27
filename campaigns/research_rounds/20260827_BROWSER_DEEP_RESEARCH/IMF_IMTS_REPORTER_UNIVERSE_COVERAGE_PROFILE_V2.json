@@ -1,0 +1,3786 @@
+{
+  "source": "IMF IMTS official codelist",
+  "codelist_id": "CL_IMTS_COUNTRY",
+  "codelist_version": "1.0.0",
+  "total_codes": 359,
+  "request_candidates": 340,
+  "excluded_codes": 19,
+  "wdi_target_ready_20y": 139,
+  "wdi_target_ready_ids": [
+    "ALB",
+    "DZA",
+    "AGO",
+    "ARM",
+    "AUS",
+    "AUT",
+    "AZE",
+    "BHS",
+    "BHR",
+    "BGD",
+    "BLR",
+    "BEL",
+    "BLZ",
+    "BEN",
+    "BTN",
+    "BOL",
+    "BWA",
+    "BRA",
+    "BRN",
+    "BGR",
+    "BFA",
+    "BDI",
+    "CPV",
+    "KHM",
+    "CMR",
+    "CAN",
+    "CAF",
+    "TCD",
+    "CHL",
+    "CHN",
+    "COL",
+    "COG",
+    "CRI",
+    "HRV",
+    "CYP",
+    "CZE",
+    "CIV",
+    "DNK",
+    "DMA",
+    "DOM",
+    "ECU",
+    "EGY",
+    "SLV",
+    "EST",
+    "ETH",
+    "FJI",
+    "FIN",
+    "FRA",
+    "GAB",
+    "GMB",
+    "GEO",
+    "DEU",
+    "GHA",
+    "GRC",
+    "GTM",
+    "GNB",
+    "GUY",
+    "HTI",
+    "HND",
+    "HKG",
+    "HUN",
+    "IND",
+    "IDN",
+    "IRN",
+    "IRL",
+    "ISR",
+    "ITA",
+    "JAM",
+    "JPN",
+    "JOR",
+    "KAZ",
+    "KEN",
+    "KOR",
+    "KGZ",
+    "LAO",
+    "LVA",
+    "LSO",
+    "LBY",
+    "LTU",
+    "LUX",
+    "MDG",
+    "MWI",
+    "MYS",
+    "MDV",
+    "MLI",
+    "MRT",
+    "MUS",
+    "MEX",
+    "MDA",
+    "MNG",
+    "MAR",
+    "NPL",
+    "NLD",
+    "NZL",
+    "NIC",
+    "NER",
+    "NGA",
+    "MKD",
+    "NOR",
+    "PAK",
+    "PAN",
+    "PNG",
+    "PRY",
+    "PER",
+    "PHL",
+    "POL",
+    "PRT",
+    "QAT",
+    "ROU",
+    "RUS",
+    "RWA",
+    "WSM",
+    "SAU",
+    "SEN",
+    "SYC",
+    "SGP",
+    "SVK",
+    "SVN",
+    "SLB",
+    "ZAF",
+    "ESP",
+    "LKA",
+    "LCA",
+    "SWE",
+    "CHE",
+    "STP",
+    "TZA",
+    "THA",
+    "TGO",
+    "TON",
+    "TUN",
+    "TUR",
+    "UGA",
+    "UKR",
+    "GBR",
+    "USA",
+    "VUT",
+    "VNM",
+    "ZMB"
+  ],
+  "rows": [
+    {
+      "reporter_id": "TX799",
+      "reporter_name": "Africa not specified",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": true,
+      "exclusion_reasons": [
+        "aggregate_or_unspecified_name"
+      ],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "TX598",
+      "reporter_name": "Asia not specified",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": true,
+      "exclusion_reasons": [
+        "aggregate_or_unspecified_name"
+      ],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "TX126",
+      "reporter_name": "Belgium-Luxembourg",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "TX898",
+      "reporter_name": "Countries & Areas not specified",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": true,
+      "exclusion_reasons": [
+        "aggregate_or_unspecified_name"
+      ],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "TX884",
+      "reporter_name": "Europe not specified",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": true,
+      "exclusion_reasons": [
+        "aggregate_or_unspecified_name"
+      ],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "TX554",
+      "reporter_name": "Malaysia, West",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "TX489",
+      "reporter_name": "Middle East and Central Asia not specified",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": true,
+      "exclusion_reasons": [
+        "aggregate_or_unspecified_name"
+      ],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "TX198",
+      "reporter_name": "South African Common Customs Area (SACCA)",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "TX899",
+      "reporter_name": "Special Categories",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": true,
+      "exclusion_reasons": [
+        "aggregate_or_unspecified_name"
+      ],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "TX399",
+      "reporter_name": "Western Hemisphere not specified",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": true,
+      "exclusion_reasons": [
+        "aggregate_or_unspecified_name"
+      ],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "GX605",
+      "reporter_name": "Africa",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "GX901",
+      "reporter_name": "CIS",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "GX170",
+      "reporter_name": "Europe",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "GX405",
+      "reporter_name": "Middle East",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "GX440",
+      "reporter_name": "Middle East, North Africa, Afghanistan, and Pakistan",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "TX910",
+      "reporter_name": "Other Countries n.i.e.",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": true,
+      "exclusion_reasons": [
+        "aggregate_or_unspecified_name"
+      ],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "AFG",
+      "reporter_name": "Afghanistan, Islamic Republic of",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "ALB",
+      "reporter_name": "Albania",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 25,
+      "wdi_gdp_nonmissing_2000_2024": 25,
+      "wdi_target_ready_20y": true
+    },
+    {
+      "reporter_id": "DZA",
+      "reporter_name": "Algeria",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 25,
+      "wdi_gdp_nonmissing_2000_2024": 25,
+      "wdi_target_ready_20y": true
+    },
+    {
+      "reporter_id": "ASM",
+      "reporter_name": "American Samoa",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "AND",
+      "reporter_name": "Andorra, Principality of",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "AGO",
+      "reporter_name": "Angola",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 25,
+      "wdi_gdp_nonmissing_2000_2024": 25,
+      "wdi_target_ready_20y": true
+    },
+    {
+      "reporter_id": "AIA",
+      "reporter_name": "Anguilla, United Kingdom-British Overseas Territory",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "ATG",
+      "reporter_name": "Antigua and Barbuda",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "ARG",
+      "reporter_name": "Argentina",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "ARM",
+      "reporter_name": "Armenia, Republic of",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 25,
+      "wdi_gdp_nonmissing_2000_2024": 25,
+      "wdi_target_ready_20y": true
+    },
+    {
+      "reporter_id": "ABW",
+      "reporter_name": "Aruba, Kingdom of the Netherlands",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "AUS",
+      "reporter_name": "Australia",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 25,
+      "wdi_gdp_nonmissing_2000_2024": 25,
+      "wdi_target_ready_20y": true
+    },
+    {
+      "reporter_id": "AUT",
+      "reporter_name": "Austria",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 25,
+      "wdi_gdp_nonmissing_2000_2024": 25,
+      "wdi_target_ready_20y": true
+    },
+    {
+      "reporter_id": "AZE",
+      "reporter_name": "Azerbaijan, Republic of",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 25,
+      "wdi_gdp_nonmissing_2000_2024": 25,
+      "wdi_target_ready_20y": true
+    },
+    {
+      "reporter_id": "BHS",
+      "reporter_name": "Bahamas, The",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 25,
+      "wdi_gdp_nonmissing_2000_2024": 25,
+      "wdi_target_ready_20y": true
+    },
+    {
+      "reporter_id": "BHR",
+      "reporter_name": "Bahrain, Kingdom of",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 25,
+      "wdi_gdp_nonmissing_2000_2024": 25,
+      "wdi_target_ready_20y": true
+    },
+    {
+      "reporter_id": "BGD",
+      "reporter_name": "Bangladesh",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 25,
+      "wdi_gdp_nonmissing_2000_2024": 25,
+      "wdi_target_ready_20y": true
+    },
+    {
+      "reporter_id": "BRB",
+      "reporter_name": "Barbados",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "BLR",
+      "reporter_name": "Belarus, Republic of",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 25,
+      "wdi_gdp_nonmissing_2000_2024": 25,
+      "wdi_target_ready_20y": true
+    },
+    {
+      "reporter_id": "BEL",
+      "reporter_name": "Belgium",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 25,
+      "wdi_gdp_nonmissing_2000_2024": 25,
+      "wdi_target_ready_20y": true
+    },
+    {
+      "reporter_id": "BLZ",
+      "reporter_name": "Belize",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 25,
+      "wdi_gdp_nonmissing_2000_2024": 25,
+      "wdi_target_ready_20y": true
+    },
+    {
+      "reporter_id": "BEN",
+      "reporter_name": "Benin",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 25,
+      "wdi_gdp_nonmissing_2000_2024": 25,
+      "wdi_target_ready_20y": true
+    },
+    {
+      "reporter_id": "BMU",
+      "reporter_name": "Bermuda",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "BTN",
+      "reporter_name": "Bhutan",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 25,
+      "wdi_gdp_nonmissing_2000_2024": 25,
+      "wdi_target_ready_20y": true
+    },
+    {
+      "reporter_id": "BOL",
+      "reporter_name": "Bolivia",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 25,
+      "wdi_gdp_nonmissing_2000_2024": 25,
+      "wdi_target_ready_20y": true
+    },
+    {
+      "reporter_id": "BIH",
+      "reporter_name": "Bosnia and Herzegovina",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "BWA",
+      "reporter_name": "Botswana",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 25,
+      "wdi_gdp_nonmissing_2000_2024": 25,
+      "wdi_target_ready_20y": true
+    },
+    {
+      "reporter_id": "BRA",
+      "reporter_name": "Brazil",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 25,
+      "wdi_gdp_nonmissing_2000_2024": 25,
+      "wdi_target_ready_20y": true
+    },
+    {
+      "reporter_id": "VGB",
+      "reporter_name": "British Virgin Islands",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "BRN",
+      "reporter_name": "Brunei Darussalam",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 25,
+      "wdi_gdp_nonmissing_2000_2024": 25,
+      "wdi_target_ready_20y": true
+    },
+    {
+      "reporter_id": "BGR",
+      "reporter_name": "Bulgaria",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 25,
+      "wdi_gdp_nonmissing_2000_2024": 25,
+      "wdi_target_ready_20y": true
+    },
+    {
+      "reporter_id": "BFA",
+      "reporter_name": "Burkina Faso",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 25,
+      "wdi_gdp_nonmissing_2000_2024": 25,
+      "wdi_target_ready_20y": true
+    },
+    {
+      "reporter_id": "BDI",
+      "reporter_name": "Burundi",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 25,
+      "wdi_gdp_nonmissing_2000_2024": 25,
+      "wdi_target_ready_20y": true
+    },
+    {
+      "reporter_id": "CPV",
+      "reporter_name": "Cabo Verde",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 25,
+      "wdi_gdp_nonmissing_2000_2024": 25,
+      "wdi_target_ready_20y": true
+    },
+    {
+      "reporter_id": "KHM",
+      "reporter_name": "Cambodia",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 25,
+      "wdi_gdp_nonmissing_2000_2024": 25,
+      "wdi_target_ready_20y": true
+    },
+    {
+      "reporter_id": "CMR",
+      "reporter_name": "Cameroon",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 25,
+      "wdi_gdp_nonmissing_2000_2024": 25,
+      "wdi_target_ready_20y": true
+    },
+    {
+      "reporter_id": "CAN",
+      "reporter_name": "Canada",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 25,
+      "wdi_gdp_nonmissing_2000_2024": 25,
+      "wdi_target_ready_20y": true
+    },
+    {
+      "reporter_id": "CYM",
+      "reporter_name": "Cayman Islands",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "CAF",
+      "reporter_name": "Central African Republic",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 25,
+      "wdi_gdp_nonmissing_2000_2024": 25,
+      "wdi_target_ready_20y": true
+    },
+    {
+      "reporter_id": "TCD",
+      "reporter_name": "Chad",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 25,
+      "wdi_gdp_nonmissing_2000_2024": 25,
+      "wdi_target_ready_20y": true
+    },
+    {
+      "reporter_id": "CHL",
+      "reporter_name": "Chile",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 25,
+      "wdi_gdp_nonmissing_2000_2024": 25,
+      "wdi_target_ready_20y": true
+    },
+    {
+      "reporter_id": "CHN",
+      "reporter_name": "China, People's Republic of",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 25,
+      "wdi_gdp_nonmissing_2000_2024": 25,
+      "wdi_target_ready_20y": true
+    },
+    {
+      "reporter_id": "COL",
+      "reporter_name": "Colombia",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 25,
+      "wdi_gdp_nonmissing_2000_2024": 25,
+      "wdi_target_ready_20y": true
+    },
+    {
+      "reporter_id": "COM",
+      "reporter_name": "Comoros, Union of the",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": true,
+      "exclusion_reasons": [
+        "aggregate_or_unspecified_name"
+      ],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "COD",
+      "reporter_name": "Congo, Democratic Republic of the",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "COG",
+      "reporter_name": "Congo, Republic of",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 25,
+      "wdi_gdp_nonmissing_2000_2024": 25,
+      "wdi_target_ready_20y": true
+    },
+    {
+      "reporter_id": "COK",
+      "reporter_name": "Cook Islands",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "CRI",
+      "reporter_name": "Costa Rica",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 25,
+      "wdi_gdp_nonmissing_2000_2024": 25,
+      "wdi_target_ready_20y": true
+    },
+    {
+      "reporter_id": "HRV",
+      "reporter_name": "Croatia, Republic of",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 25,
+      "wdi_gdp_nonmissing_2000_2024": 25,
+      "wdi_target_ready_20y": true
+    },
+    {
+      "reporter_id": "CUB",
+      "reporter_name": "Cuba",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "CUW",
+      "reporter_name": "Curaçao, Kingdom of the Netherlands",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "CYP",
+      "reporter_name": "Cyprus",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 25,
+      "wdi_gdp_nonmissing_2000_2024": 25,
+      "wdi_target_ready_20y": true
+    },
+    {
+      "reporter_id": "CZE",
+      "reporter_name": "Czech Republic",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 25,
+      "wdi_gdp_nonmissing_2000_2024": 25,
+      "wdi_target_ready_20y": true
+    },
+    {
+      "reporter_id": "CIV",
+      "reporter_name": "Côte d'Ivoire",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 25,
+      "wdi_gdp_nonmissing_2000_2024": 25,
+      "wdi_target_ready_20y": true
+    },
+    {
+      "reporter_id": "DNK",
+      "reporter_name": "Denmark",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 25,
+      "wdi_gdp_nonmissing_2000_2024": 25,
+      "wdi_target_ready_20y": true
+    },
+    {
+      "reporter_id": "DJI",
+      "reporter_name": "Djibouti",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "DMA",
+      "reporter_name": "Dominica",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 25,
+      "wdi_gdp_nonmissing_2000_2024": 25,
+      "wdi_target_ready_20y": true
+    },
+    {
+      "reporter_id": "DOM",
+      "reporter_name": "Dominican Republic",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 25,
+      "wdi_gdp_nonmissing_2000_2024": 25,
+      "wdi_target_ready_20y": true
+    },
+    {
+      "reporter_id": "ECU",
+      "reporter_name": "Ecuador",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 25,
+      "wdi_gdp_nonmissing_2000_2024": 25,
+      "wdi_target_ready_20y": true
+    },
+    {
+      "reporter_id": "EGY",
+      "reporter_name": "Egypt, Arab Republic of",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 25,
+      "wdi_gdp_nonmissing_2000_2024": 25,
+      "wdi_target_ready_20y": true
+    },
+    {
+      "reporter_id": "SLV",
+      "reporter_name": "El Salvador",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 25,
+      "wdi_gdp_nonmissing_2000_2024": 25,
+      "wdi_target_ready_20y": true
+    },
+    {
+      "reporter_id": "GNQ",
+      "reporter_name": "Equatorial Guinea, Republic of",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "ERI",
+      "reporter_name": "Eritrea, The State of",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "EST",
+      "reporter_name": "Estonia, Republic of",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 25,
+      "wdi_gdp_nonmissing_2000_2024": 25,
+      "wdi_target_ready_20y": true
+    },
+    {
+      "reporter_id": "SWZ",
+      "reporter_name": "Eswatini, Kingdom of",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "ETH",
+      "reporter_name": "Ethiopia, The Federal Democratic Republic of",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 25,
+      "wdi_gdp_nonmissing_2000_2024": 25,
+      "wdi_target_ready_20y": true
+    },
+    {
+      "reporter_id": "FLK",
+      "reporter_name": "Falkland Islands (Malvinas)",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "FRO",
+      "reporter_name": "Faroe Islands",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "FJI",
+      "reporter_name": "Fiji, Republic of",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 25,
+      "wdi_gdp_nonmissing_2000_2024": 25,
+      "wdi_target_ready_20y": true
+    },
+    {
+      "reporter_id": "FIN",
+      "reporter_name": "Finland",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 25,
+      "wdi_gdp_nonmissing_2000_2024": 25,
+      "wdi_target_ready_20y": true
+    },
+    {
+      "reporter_id": "FRA",
+      "reporter_name": "France",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 25,
+      "wdi_gdp_nonmissing_2000_2024": 25,
+      "wdi_target_ready_20y": true
+    },
+    {
+      "reporter_id": "GUF",
+      "reporter_name": "French Guiana",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "PYF",
+      "reporter_name": "French Polynesia",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "GAB",
+      "reporter_name": "Gabon",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 25,
+      "wdi_gdp_nonmissing_2000_2024": 25,
+      "wdi_target_ready_20y": true
+    },
+    {
+      "reporter_id": "GMB",
+      "reporter_name": "Gambia, The",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 25,
+      "wdi_gdp_nonmissing_2000_2024": 25,
+      "wdi_target_ready_20y": true
+    },
+    {
+      "reporter_id": "GEO",
+      "reporter_name": "Georgia",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 25,
+      "wdi_gdp_nonmissing_2000_2024": 25,
+      "wdi_target_ready_20y": true
+    },
+    {
+      "reporter_id": "DEU",
+      "reporter_name": "Germany",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 25,
+      "wdi_gdp_nonmissing_2000_2024": 25,
+      "wdi_target_ready_20y": true
+    },
+    {
+      "reporter_id": "GHA",
+      "reporter_name": "Ghana",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 25,
+      "wdi_gdp_nonmissing_2000_2024": 25,
+      "wdi_target_ready_20y": true
+    },
+    {
+      "reporter_id": "GIB",
+      "reporter_name": "Gibraltar",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "GRC",
+      "reporter_name": "Greece",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 25,
+      "wdi_gdp_nonmissing_2000_2024": 25,
+      "wdi_target_ready_20y": true
+    },
+    {
+      "reporter_id": "GRL",
+      "reporter_name": "Greenland",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "GRD",
+      "reporter_name": "Grenada",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "GLP",
+      "reporter_name": "Guadeloupe",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "GUM",
+      "reporter_name": "Guam",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "GTM",
+      "reporter_name": "Guatemala",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 25,
+      "wdi_gdp_nonmissing_2000_2024": 25,
+      "wdi_target_ready_20y": true
+    },
+    {
+      "reporter_id": "GGY",
+      "reporter_name": "Guernsey",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "GIN",
+      "reporter_name": "Guinea",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "GNB",
+      "reporter_name": "Guinea-Bissau",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 25,
+      "wdi_gdp_nonmissing_2000_2024": 25,
+      "wdi_target_ready_20y": true
+    },
+    {
+      "reporter_id": "GUY",
+      "reporter_name": "Guyana",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 25,
+      "wdi_gdp_nonmissing_2000_2024": 25,
+      "wdi_target_ready_20y": true
+    },
+    {
+      "reporter_id": "HTI",
+      "reporter_name": "Haiti",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 25,
+      "wdi_gdp_nonmissing_2000_2024": 25,
+      "wdi_target_ready_20y": true
+    },
+    {
+      "reporter_id": "VAT",
+      "reporter_name": "Holy See",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "HND",
+      "reporter_name": "Honduras",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 25,
+      "wdi_gdp_nonmissing_2000_2024": 25,
+      "wdi_target_ready_20y": true
+    },
+    {
+      "reporter_id": "HKG",
+      "reporter_name": "Hong Kong Special Administrative Region, People's Republic of China",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": true,
+      "exclusion_reasons": [
+        "aggregate_or_unspecified_name"
+      ],
+      "wdi_years_2000_2024": 25,
+      "wdi_gdp_nonmissing_2000_2024": 25,
+      "wdi_target_ready_20y": true
+    },
+    {
+      "reporter_id": "HUN",
+      "reporter_name": "Hungary",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 25,
+      "wdi_gdp_nonmissing_2000_2024": 25,
+      "wdi_target_ready_20y": true
+    },
+    {
+      "reporter_id": "ISL",
+      "reporter_name": "Iceland",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "IND",
+      "reporter_name": "India",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 25,
+      "wdi_gdp_nonmissing_2000_2024": 25,
+      "wdi_target_ready_20y": true
+    },
+    {
+      "reporter_id": "IDN",
+      "reporter_name": "Indonesia",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 25,
+      "wdi_gdp_nonmissing_2000_2024": 25,
+      "wdi_target_ready_20y": true
+    },
+    {
+      "reporter_id": "IRN",
+      "reporter_name": "Iran, Islamic Republic of",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 25,
+      "wdi_gdp_nonmissing_2000_2024": 25,
+      "wdi_target_ready_20y": true
+    },
+    {
+      "reporter_id": "IRQ",
+      "reporter_name": "Iraq",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "IRL",
+      "reporter_name": "Ireland",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 25,
+      "wdi_gdp_nonmissing_2000_2024": 25,
+      "wdi_target_ready_20y": true
+    },
+    {
+      "reporter_id": "IMN",
+      "reporter_name": "Isle of Man",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "ISR",
+      "reporter_name": "Israel",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 25,
+      "wdi_gdp_nonmissing_2000_2024": 25,
+      "wdi_target_ready_20y": true
+    },
+    {
+      "reporter_id": "ITA",
+      "reporter_name": "Italy",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 25,
+      "wdi_gdp_nonmissing_2000_2024": 25,
+      "wdi_target_ready_20y": true
+    },
+    {
+      "reporter_id": "JAM",
+      "reporter_name": "Jamaica",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 25,
+      "wdi_gdp_nonmissing_2000_2024": 25,
+      "wdi_target_ready_20y": true
+    },
+    {
+      "reporter_id": "JPN",
+      "reporter_name": "Japan",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 25,
+      "wdi_gdp_nonmissing_2000_2024": 25,
+      "wdi_target_ready_20y": true
+    },
+    {
+      "reporter_id": "JEY",
+      "reporter_name": "Jersey",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "JOR",
+      "reporter_name": "Jordan",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 25,
+      "wdi_gdp_nonmissing_2000_2024": 25,
+      "wdi_target_ready_20y": true
+    },
+    {
+      "reporter_id": "KAZ",
+      "reporter_name": "Kazakhstan, Republic of",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 25,
+      "wdi_gdp_nonmissing_2000_2024": 25,
+      "wdi_target_ready_20y": true
+    },
+    {
+      "reporter_id": "KEN",
+      "reporter_name": "Kenya",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 25,
+      "wdi_gdp_nonmissing_2000_2024": 25,
+      "wdi_target_ready_20y": true
+    },
+    {
+      "reporter_id": "KIR",
+      "reporter_name": "Kiribati",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "PRK",
+      "reporter_name": "Korea, Democratic People's Republic of",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "KOR",
+      "reporter_name": "Korea, Republic of",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 25,
+      "wdi_gdp_nonmissing_2000_2024": 25,
+      "wdi_target_ready_20y": true
+    },
+    {
+      "reporter_id": "KOS",
+      "reporter_name": "Kosovo, Republic of",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "KWT",
+      "reporter_name": "Kuwait",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "KGZ",
+      "reporter_name": "Kyrgyz Republic",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 25,
+      "wdi_gdp_nonmissing_2000_2024": 25,
+      "wdi_target_ready_20y": true
+    },
+    {
+      "reporter_id": "LAO",
+      "reporter_name": "Lao People's Democratic Republic",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 25,
+      "wdi_gdp_nonmissing_2000_2024": 25,
+      "wdi_target_ready_20y": true
+    },
+    {
+      "reporter_id": "LVA",
+      "reporter_name": "Latvia, Republic of",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 25,
+      "wdi_gdp_nonmissing_2000_2024": 25,
+      "wdi_target_ready_20y": true
+    },
+    {
+      "reporter_id": "LBN",
+      "reporter_name": "Lebanon",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "LSO",
+      "reporter_name": "Lesotho, Kingdom of",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 25,
+      "wdi_gdp_nonmissing_2000_2024": 25,
+      "wdi_target_ready_20y": true
+    },
+    {
+      "reporter_id": "LBR",
+      "reporter_name": "Liberia",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "LBY",
+      "reporter_name": "Libya",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 25,
+      "wdi_gdp_nonmissing_2000_2024": 25,
+      "wdi_target_ready_20y": true
+    },
+    {
+      "reporter_id": "LIE",
+      "reporter_name": "Liechtenstein, Principality of",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "LTU",
+      "reporter_name": "Lithuania, Republic of",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 25,
+      "wdi_gdp_nonmissing_2000_2024": 25,
+      "wdi_target_ready_20y": true
+    },
+    {
+      "reporter_id": "LUX",
+      "reporter_name": "Luxembourg",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 25,
+      "wdi_gdp_nonmissing_2000_2024": 25,
+      "wdi_target_ready_20y": true
+    },
+    {
+      "reporter_id": "MAC",
+      "reporter_name": "Macao Special Administrative Region, People's Republic of China",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": true,
+      "exclusion_reasons": [
+        "aggregate_or_unspecified_name"
+      ],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "MDG",
+      "reporter_name": "Madagascar, Republic of",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 25,
+      "wdi_gdp_nonmissing_2000_2024": 25,
+      "wdi_target_ready_20y": true
+    },
+    {
+      "reporter_id": "MWI",
+      "reporter_name": "Malawi",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 25,
+      "wdi_gdp_nonmissing_2000_2024": 25,
+      "wdi_target_ready_20y": true
+    },
+    {
+      "reporter_id": "MYS",
+      "reporter_name": "Malaysia",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 25,
+      "wdi_gdp_nonmissing_2000_2024": 25,
+      "wdi_target_ready_20y": true
+    },
+    {
+      "reporter_id": "MDV",
+      "reporter_name": "Maldives",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 25,
+      "wdi_gdp_nonmissing_2000_2024": 25,
+      "wdi_target_ready_20y": true
+    },
+    {
+      "reporter_id": "MLI",
+      "reporter_name": "Mali",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 25,
+      "wdi_gdp_nonmissing_2000_2024": 25,
+      "wdi_target_ready_20y": true
+    },
+    {
+      "reporter_id": "MLT",
+      "reporter_name": "Malta",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "MHL",
+      "reporter_name": "Marshall Islands, Republic of the",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "MTQ",
+      "reporter_name": "Martinique",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "MRT",
+      "reporter_name": "Mauritania, Islamic Republic of",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 25,
+      "wdi_gdp_nonmissing_2000_2024": 25,
+      "wdi_target_ready_20y": true
+    },
+    {
+      "reporter_id": "MUS",
+      "reporter_name": "Mauritius",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 25,
+      "wdi_gdp_nonmissing_2000_2024": 25,
+      "wdi_target_ready_20y": true
+    },
+    {
+      "reporter_id": "MYT",
+      "reporter_name": "Mayotte",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "MEX",
+      "reporter_name": "Mexico",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 25,
+      "wdi_gdp_nonmissing_2000_2024": 25,
+      "wdi_target_ready_20y": true
+    },
+    {
+      "reporter_id": "FSM",
+      "reporter_name": "Micronesia, Federated States of",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "MDA",
+      "reporter_name": "Moldova, Republic of",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 25,
+      "wdi_gdp_nonmissing_2000_2024": 25,
+      "wdi_target_ready_20y": true
+    },
+    {
+      "reporter_id": "MCO",
+      "reporter_name": "Monaco",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "MNG",
+      "reporter_name": "Mongolia",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 25,
+      "wdi_gdp_nonmissing_2000_2024": 25,
+      "wdi_target_ready_20y": true
+    },
+    {
+      "reporter_id": "MNE",
+      "reporter_name": "Montenegro",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "MSR",
+      "reporter_name": "Montserrat, United Kingdom-British Overseas Territory",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "MAR",
+      "reporter_name": "Morocco",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 25,
+      "wdi_gdp_nonmissing_2000_2024": 25,
+      "wdi_target_ready_20y": true
+    },
+    {
+      "reporter_id": "MOZ",
+      "reporter_name": "Mozambique, Republic of",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "MMR",
+      "reporter_name": "Myanmar",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "NAM",
+      "reporter_name": "Namibia",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "NRU",
+      "reporter_name": "Naoero, Republic of",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "NPL",
+      "reporter_name": "Nepal",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 25,
+      "wdi_gdp_nonmissing_2000_2024": 25,
+      "wdi_target_ready_20y": true
+    },
+    {
+      "reporter_id": "NLD",
+      "reporter_name": "Netherlands, The",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 25,
+      "wdi_gdp_nonmissing_2000_2024": 25,
+      "wdi_target_ready_20y": true
+    },
+    {
+      "reporter_id": "NCL",
+      "reporter_name": "New Caledonia",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "NZL",
+      "reporter_name": "New Zealand",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 25,
+      "wdi_gdp_nonmissing_2000_2024": 25,
+      "wdi_target_ready_20y": true
+    },
+    {
+      "reporter_id": "NIC",
+      "reporter_name": "Nicaragua",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 25,
+      "wdi_gdp_nonmissing_2000_2024": 25,
+      "wdi_target_ready_20y": true
+    },
+    {
+      "reporter_id": "NER",
+      "reporter_name": "Niger",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 25,
+      "wdi_gdp_nonmissing_2000_2024": 25,
+      "wdi_target_ready_20y": true
+    },
+    {
+      "reporter_id": "NGA",
+      "reporter_name": "Nigeria",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 25,
+      "wdi_gdp_nonmissing_2000_2024": 25,
+      "wdi_target_ready_20y": true
+    },
+    {
+      "reporter_id": "NIU",
+      "reporter_name": "Niue",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "NFK",
+      "reporter_name": "Norfolk Island",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "MKD",
+      "reporter_name": "North Macedonia, Republic of",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 25,
+      "wdi_gdp_nonmissing_2000_2024": 25,
+      "wdi_target_ready_20y": true
+    },
+    {
+      "reporter_id": "MNP",
+      "reporter_name": "Northern Mariana Islands",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "NOR",
+      "reporter_name": "Norway",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 25,
+      "wdi_gdp_nonmissing_2000_2024": 25,
+      "wdi_target_ready_20y": true
+    },
+    {
+      "reporter_id": "OMN",
+      "reporter_name": "Oman",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "PAK",
+      "reporter_name": "Pakistan",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 25,
+      "wdi_gdp_nonmissing_2000_2024": 25,
+      "wdi_target_ready_20y": true
+    },
+    {
+      "reporter_id": "PLW",
+      "reporter_name": "Palau, Republic of",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "PAN",
+      "reporter_name": "Panama",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 25,
+      "wdi_gdp_nonmissing_2000_2024": 25,
+      "wdi_target_ready_20y": true
+    },
+    {
+      "reporter_id": "PNG",
+      "reporter_name": "Papua New Guinea",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 25,
+      "wdi_gdp_nonmissing_2000_2024": 25,
+      "wdi_target_ready_20y": true
+    },
+    {
+      "reporter_id": "PRY",
+      "reporter_name": "Paraguay",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 25,
+      "wdi_gdp_nonmissing_2000_2024": 25,
+      "wdi_target_ready_20y": true
+    },
+    {
+      "reporter_id": "PER",
+      "reporter_name": "Peru",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 25,
+      "wdi_gdp_nonmissing_2000_2024": 25,
+      "wdi_target_ready_20y": true
+    },
+    {
+      "reporter_id": "PHL",
+      "reporter_name": "Philippines",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 25,
+      "wdi_gdp_nonmissing_2000_2024": 25,
+      "wdi_target_ready_20y": true
+    },
+    {
+      "reporter_id": "PCN",
+      "reporter_name": "Pitcairn Islands",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "POL",
+      "reporter_name": "Poland, Republic of",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 25,
+      "wdi_gdp_nonmissing_2000_2024": 25,
+      "wdi_target_ready_20y": true
+    },
+    {
+      "reporter_id": "PRT",
+      "reporter_name": "Portugal",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 25,
+      "wdi_gdp_nonmissing_2000_2024": 25,
+      "wdi_target_ready_20y": true
+    },
+    {
+      "reporter_id": "PRI",
+      "reporter_name": "Puerto Rico",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "QAT",
+      "reporter_name": "Qatar",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 25,
+      "wdi_gdp_nonmissing_2000_2024": 25,
+      "wdi_target_ready_20y": true
+    },
+    {
+      "reporter_id": "ROU",
+      "reporter_name": "Romania",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 25,
+      "wdi_gdp_nonmissing_2000_2024": 25,
+      "wdi_target_ready_20y": true
+    },
+    {
+      "reporter_id": "RUS",
+      "reporter_name": "Russian Federation",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 25,
+      "wdi_gdp_nonmissing_2000_2024": 25,
+      "wdi_target_ready_20y": true
+    },
+    {
+      "reporter_id": "RWA",
+      "reporter_name": "Rwanda",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 25,
+      "wdi_gdp_nonmissing_2000_2024": 25,
+      "wdi_target_ready_20y": true
+    },
+    {
+      "reporter_id": "REU",
+      "reporter_name": "Réunion",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": true,
+      "exclusion_reasons": [
+        "aggregate_or_unspecified_name"
+      ],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "WSM",
+      "reporter_name": "Samoa",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 25,
+      "wdi_gdp_nonmissing_2000_2024": 25,
+      "wdi_target_ready_20y": true
+    },
+    {
+      "reporter_id": "SMR",
+      "reporter_name": "San Marino, Republic of",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "SAU",
+      "reporter_name": "Saudi Arabia",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 25,
+      "wdi_gdp_nonmissing_2000_2024": 25,
+      "wdi_target_ready_20y": true
+    },
+    {
+      "reporter_id": "SEN",
+      "reporter_name": "Senegal",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 25,
+      "wdi_gdp_nonmissing_2000_2024": 25,
+      "wdi_target_ready_20y": true
+    },
+    {
+      "reporter_id": "SRB",
+      "reporter_name": "Serbia, Republic of",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "SYC",
+      "reporter_name": "Seychelles",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 25,
+      "wdi_gdp_nonmissing_2000_2024": 25,
+      "wdi_target_ready_20y": true
+    },
+    {
+      "reporter_id": "SLE",
+      "reporter_name": "Sierra Leone",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "SGP",
+      "reporter_name": "Singapore",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 25,
+      "wdi_gdp_nonmissing_2000_2024": 25,
+      "wdi_target_ready_20y": true
+    },
+    {
+      "reporter_id": "SXM",
+      "reporter_name": "Sint Maarten, Kingdom of the Netherlands",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "SVK",
+      "reporter_name": "Slovak Republic",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 25,
+      "wdi_gdp_nonmissing_2000_2024": 25,
+      "wdi_target_ready_20y": true
+    },
+    {
+      "reporter_id": "SVN",
+      "reporter_name": "Slovenia, Republic of",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 25,
+      "wdi_gdp_nonmissing_2000_2024": 25,
+      "wdi_target_ready_20y": true
+    },
+    {
+      "reporter_id": "SLB",
+      "reporter_name": "Solomon Islands",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 25,
+      "wdi_gdp_nonmissing_2000_2024": 25,
+      "wdi_target_ready_20y": true
+    },
+    {
+      "reporter_id": "SOM",
+      "reporter_name": "Somalia",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "ZAF",
+      "reporter_name": "South Africa",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 25,
+      "wdi_gdp_nonmissing_2000_2024": 25,
+      "wdi_target_ready_20y": true
+    },
+    {
+      "reporter_id": "SSD",
+      "reporter_name": "South Sudan, Republic of",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "ESP",
+      "reporter_name": "Spain",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 25,
+      "wdi_gdp_nonmissing_2000_2024": 25,
+      "wdi_target_ready_20y": true
+    },
+    {
+      "reporter_id": "LKA",
+      "reporter_name": "Sri Lanka",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 25,
+      "wdi_gdp_nonmissing_2000_2024": 25,
+      "wdi_target_ready_20y": true
+    },
+    {
+      "reporter_id": "SHN",
+      "reporter_name": "St. Helena",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "KNA",
+      "reporter_name": "St. Kitts and Nevis",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "LCA",
+      "reporter_name": "St. Lucia",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 25,
+      "wdi_gdp_nonmissing_2000_2024": 25,
+      "wdi_target_ready_20y": true
+    },
+    {
+      "reporter_id": "SPM",
+      "reporter_name": "St. Pierre and Miquelon",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "VCT",
+      "reporter_name": "St. Vincent and the Grenadines",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "SDN",
+      "reporter_name": "Sudan",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "SUR",
+      "reporter_name": "Suriname",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "SJM",
+      "reporter_name": "Svalbard and Jan Mayen Islands",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "SWE",
+      "reporter_name": "Sweden",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 25,
+      "wdi_gdp_nonmissing_2000_2024": 25,
+      "wdi_target_ready_20y": true
+    },
+    {
+      "reporter_id": "CHE",
+      "reporter_name": "Switzerland",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 25,
+      "wdi_gdp_nonmissing_2000_2024": 25,
+      "wdi_target_ready_20y": true
+    },
+    {
+      "reporter_id": "SYR",
+      "reporter_name": "Syrian Arab Republic",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "STP",
+      "reporter_name": "São Tomé and Príncipe, Democratic Republic of",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 25,
+      "wdi_gdp_nonmissing_2000_2024": 25,
+      "wdi_target_ready_20y": true
+    },
+    {
+      "reporter_id": "TWN",
+      "reporter_name": "Taiwan Province of China",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "TJK",
+      "reporter_name": "Tajikistan, Republic of",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "TZA",
+      "reporter_name": "Tanzania, United Republic of",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 25,
+      "wdi_gdp_nonmissing_2000_2024": 25,
+      "wdi_target_ready_20y": true
+    },
+    {
+      "reporter_id": "THA",
+      "reporter_name": "Thailand",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 25,
+      "wdi_gdp_nonmissing_2000_2024": 25,
+      "wdi_target_ready_20y": true
+    },
+    {
+      "reporter_id": "TLS",
+      "reporter_name": "Timor-Leste, Democratic Republic of",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "TGO",
+      "reporter_name": "Togo",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 25,
+      "wdi_gdp_nonmissing_2000_2024": 25,
+      "wdi_target_ready_20y": true
+    },
+    {
+      "reporter_id": "TKL",
+      "reporter_name": "Tokelau",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "TON",
+      "reporter_name": "Tonga",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 25,
+      "wdi_gdp_nonmissing_2000_2024": 25,
+      "wdi_target_ready_20y": true
+    },
+    {
+      "reporter_id": "TTO",
+      "reporter_name": "Trinidad and Tobago",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "TUN",
+      "reporter_name": "Tunisia",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 25,
+      "wdi_gdp_nonmissing_2000_2024": 25,
+      "wdi_target_ready_20y": true
+    },
+    {
+      "reporter_id": "TKM",
+      "reporter_name": "Turkmenistan",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "TCA",
+      "reporter_name": "Turks and Caicos Islands",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "TUV",
+      "reporter_name": "Tuvalu",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "TUR",
+      "reporter_name": "Türkiye, Republic of",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 25,
+      "wdi_gdp_nonmissing_2000_2024": 25,
+      "wdi_target_ready_20y": true
+    },
+    {
+      "reporter_id": "UGA",
+      "reporter_name": "Uganda",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 25,
+      "wdi_gdp_nonmissing_2000_2024": 25,
+      "wdi_target_ready_20y": true
+    },
+    {
+      "reporter_id": "UKR",
+      "reporter_name": "Ukraine",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 25,
+      "wdi_gdp_nonmissing_2000_2024": 25,
+      "wdi_target_ready_20y": true
+    },
+    {
+      "reporter_id": "ARE",
+      "reporter_name": "United Arab Emirates",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "GBR",
+      "reporter_name": "United Kingdom",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 25,
+      "wdi_gdp_nonmissing_2000_2024": 25,
+      "wdi_target_ready_20y": true
+    },
+    {
+      "reporter_id": "USA",
+      "reporter_name": "United States",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 25,
+      "wdi_gdp_nonmissing_2000_2024": 25,
+      "wdi_target_ready_20y": true
+    },
+    {
+      "reporter_id": "VIR",
+      "reporter_name": "United States Virgin Islands",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "URY",
+      "reporter_name": "Uruguay",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "UZB",
+      "reporter_name": "Uzbekistan, Republic of",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "VUT",
+      "reporter_name": "Vanuatu",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 25,
+      "wdi_gdp_nonmissing_2000_2024": 25,
+      "wdi_target_ready_20y": true
+    },
+    {
+      "reporter_id": "VEN",
+      "reporter_name": "Venezuela, República Bolivariana de",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "VNM",
+      "reporter_name": "Vietnam",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 25,
+      "wdi_gdp_nonmissing_2000_2024": 25,
+      "wdi_target_ready_20y": true
+    },
+    {
+      "reporter_id": "WLF",
+      "reporter_name": "Wallis and Futuna Islands",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "WBG",
+      "reporter_name": "West Bank and Gaza",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "YEM",
+      "reporter_name": "Yemen, Republic of",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "ZMB",
+      "reporter_name": "Zambia",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 25,
+      "wdi_gdp_nonmissing_2000_2024": 25,
+      "wdi_target_ready_20y": true
+    },
+    {
+      "reporter_id": "ZWE",
+      "reporter_name": "Zimbabwe",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "ALA",
+      "reporter_name": "Åland Islands",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "BES",
+      "reporter_name": "Bonaire, Saint Eustatius and Saba",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "ATF",
+      "reporter_name": "French Southern Territories",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "CWX",
+      "reporter_name": "Curaçao and Sint Maarten",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "CSK",
+      "reporter_name": "Czechoslovakia",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "DDR",
+      "reporter_name": "German Democratic Republic",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "ANT",
+      "reporter_name": "Netherlands Antilles",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "VDR",
+      "reporter_name": "Vietnam, Democratic Republic of",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "SCG",
+      "reporter_name": "Serbia and Montenegro",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "SUN",
+      "reporter_name": "Union of Soviet Socialist Republics (USSR)",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": true,
+      "exclusion_reasons": [
+        "aggregate_or_unspecified_name"
+      ],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "YAR",
+      "reporter_name": "Yemen Arab Republic",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "YMD",
+      "reporter_name": "Yemen, People's Democratic Republic of",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "YUG",
+      "reporter_name": "Yugoslavia, Socialist Federal Republic of",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "U019",
+      "reporter_name": "Americas",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "U015",
+      "reporter_name": "Northern Africa",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "U202",
+      "reporter_name": "Sub-Saharan Africa",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "U002",
+      "reporter_name": "Africa",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "U142",
+      "reporter_name": "Asia",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "U053",
+      "reporter_name": "Australia and New Zealand",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "U029",
+      "reporter_name": "Caribbean",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "U013",
+      "reporter_name": "Central America",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "U143",
+      "reporter_name": "Central Asia",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "U014",
+      "reporter_name": "Eastern Africa",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "U030",
+      "reporter_name": "Eastern Asia",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "U151",
+      "reporter_name": "Eastern Europe",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "U150",
+      "reporter_name": "Europe",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "U054",
+      "reporter_name": "Melanesia",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "U057",
+      "reporter_name": "Micronesia",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "U017",
+      "reporter_name": "Middle Africa",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "U154",
+      "reporter_name": "Northern Europe",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "U009",
+      "reporter_name": "Oceania",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "U061",
+      "reporter_name": "Polynesia",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "U005",
+      "reporter_name": "South America",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "U035",
+      "reporter_name": "South-eastern Asia",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "U018",
+      "reporter_name": "Southern Africa",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "U034",
+      "reporter_name": "Southern Asia",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "U039",
+      "reporter_name": "Southern Europe",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "U011",
+      "reporter_name": "Western Africa",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "U145",
+      "reporter_name": "Western Asia",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "U155",
+      "reporter_name": "Western Europe",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "G202",
+      "reporter_name": "Advanced Asia",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "G110",
+      "reporter_name": "Advanced Economies",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "G906",
+      "reporter_name": "Advanced Europe",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "G510",
+      "reporter_name": "ASEAN-5",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "G940",
+      "reporter_name": "Caucasus and Central Asia (CCA)",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "G758",
+      "reporter_name": "Central African Economic and Monetary Community (CEMAC)",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "G609",
+      "reporter_name": "CFA franc zone",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "G619",
+      "reporter_name": "East African Community (EAC)",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "G309",
+      "reporter_name": "Eastern Caribbean Currency Union (ECCU)",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": true,
+      "exclusion_reasons": [
+        "aggregate_or_unspecified_name"
+      ],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "G776",
+      "reporter_name": "Economic Community of West African States (ECOWAS)",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "G209",
+      "reporter_name": "EMDEs by External Financing: Net Creditors",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "G606",
+      "reporter_name": "EMDEs by External Financing: Net Debtors",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "G087",
+      "reporter_name": "EMDEs by External Financing: Net Debtors with Arrears and/or Reschedulings",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "G216",
+      "reporter_name": "EMDEs by Source of Export Earnings: Diversified",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "G080",
+      "reporter_name": "EMDEs by Source of Export Earnings: Fuel",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "G083",
+      "reporter_name": "EMDEs by Source of Export Earnings: Manufactures",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "G092",
+      "reporter_name": "EMDEs by Source of Export Earnings: Nonfuel",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "G089",
+      "reporter_name": "EMDEs by Source of Export Earnings: Primary Products (excluding Fuel)",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "G084",
+      "reporter_name": "EMDEs by Source of Export Earnings: Services (including Income, Transfers)",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "G505",
+      "reporter_name": "Emerging and Developing Asia",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "G903",
+      "reporter_name": "Emerging and Developing Europe",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "G1515",
+      "reporter_name": "Emerging Asia",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "G200",
+      "reporter_name": "Emerging Market and Developing Economies",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "G1201",
+      "reporter_name": "Emerging Market and Middle-Income Economies",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "G995",
+      "reporter_name": "Euro Area (EA) – aggregate of member states",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "G998",
+      "reporter_name": "European Union (EU)",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": true,
+      "exclusion_reasons": [
+        "aggregate_or_unspecified_name"
+      ],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "G715",
+      "reporter_name": "Fragile and Conflict-affected States (FCS)",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "G120",
+      "reporter_name": "G20",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "G119",
+      "reporter_name": "G7",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "G450",
+      "reporter_name": "Gulf Cooperation Council (GCC)",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "G711",
+      "reporter_name": "Heavily Indebted Poor Countries (HIPC)",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "G205",
+      "reporter_name": "Latin America and the Caribbean (LAC)",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "G201",
+      "reporter_name": "Low-Income Developing Countries (LIDC)",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "G400",
+      "reporter_name": "Middle East and Central Asia",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "G401",
+      "reporter_name": "Middle East and Central Asia: Oil Exporters",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "G402",
+      "reporter_name": "Middle East and Central Asia: Oil Importers",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "G406",
+      "reporter_name": "Middle East and North Africa (MENA)",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "G92031",
+      "reporter_name": "North America",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "G757",
+      "reporter_name": "Southern African Customs Union (SACU)",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": true,
+      "exclusion_reasons": [
+        "aggregate_or_unspecified_name"
+      ],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "G603",
+      "reporter_name": "Sub-Saharan Africa (SSA)",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "G1627",
+      "reporter_name": "Sub-Saharan Africa (SSA): Low-Income",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "G1626",
+      "reporter_name": "Sub-Saharan Africa (SSA): Middle-Income",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "G1614",
+      "reporter_name": "Sub-Saharan Africa (SSA): Oil Exporters",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "G759",
+      "reporter_name": "West African Economic and Monetary Union (WAEMU)",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": true,
+      "exclusion_reasons": [
+        "aggregate_or_unspecified_name"
+      ],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "G001",
+      "reporter_name": "World",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": true,
+      "exclusion_reasons": [
+        "G001_world_not_reporter",
+        "aggregate_or_unspecified_name"
+      ],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "G163",
+      "reporter_name": "Euro Area (EA)",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "GASEAN",
+      "reporter_name": "ASEAN",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "G765",
+      "reporter_name": "Southern African Development Community (SADC)",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "G760",
+      "reporter_name": "Common Market for Eastern and Southern Africa (COMESA)",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "G129",
+      "reporter_name": "Benelux",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "BLM",
+      "reporter_name": "Saint Barthelemy",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "MAF",
+      "reporter_name": "Saint Martin",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "SGS",
+      "reporter_name": "South Georgia and the South Sandwich Islands",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "CXR",
+      "reporter_name": "Christmas Island",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "CCK",
+      "reporter_name": "Cocos Islands",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "ESH",
+      "reporter_name": "Western Sahara",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "BVT",
+      "reporter_name": "Bouvet Island",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "IOT",
+      "reporter_name": "British Indian Ocean Territory",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "HMD",
+      "reporter_name": "Heard Island and McDonald Islands",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "UMI",
+      "reporter_name": "United States Minor Outlying Islands",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "GSAC",
+      "reporter_name": "Southern African Customs Union (SACU)",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": true,
+      "exclusion_reasons": [
+        "aggregate_or_unspecified_name"
+      ],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "AFR",
+      "reporter_name": "Africa (AFR)",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "APD",
+      "reporter_name": "Asia and Pacific (APD)",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "EUR",
+      "reporter_name": "Europe (EUR)",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "MCD",
+      "reporter_name": "Middle East and Central Asia (MCD)",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "WHD",
+      "reporter_name": "Western Hemisphere (WHD)",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    },
+    {
+      "reporter_id": "SDS",
+      "reporter_name": "Small Developing States (SDS)",
+      "codelist_id": "CL_IMTS_COUNTRY",
+      "excluded_from_reporter_requests": false,
+      "exclusion_reasons": [],
+      "wdi_years_2000_2024": 0,
+      "wdi_gdp_nonmissing_2000_2024": 0,
+      "wdi_target_ready_20y": false
+    }
+  ],
+  "rules": {
+    "no GDP-based selection for acquisition": true,
+    "no aggregate codes requested": true,
+    "all source codes preserved": true
+  }
+}

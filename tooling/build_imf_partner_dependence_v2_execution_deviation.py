@@ -1,0 +1,9 @@
+#!/usr/bin/env python3
+from pathlib import Path
+from datetime import datetime, timezone
+import hashlib, json
+ROOT=Path('/home/ubuntu/CHAOS')
+def sha(rel): return hashlib.sha256((ROOT/rel).read_bytes()).hexdigest()
+contract='experimental_contracts/IMF_IMTS_PARTNER_DEPENDENCE_CONTRACT_V2.json'; run='experiments/multi_domain_native_edges_v2/imf_partner_dependence_v2/IMF_IMTS_PARTNER_DEPENDENCE_RUN_MANIFEST_V2.json'
+d={'deviation_id':'IMF_IMTS_PARTNER_DEPENDENCE_V2_EXECUTION_DEVIATION_V1','created_at_utc':datetime.now(timezone.utc).isoformat(),'contract_ref':contract,'contract_sha256':sha(contract),'contract_status_at_execution':'draft_for_review','required_contract_freeze':'contract_freeze_required_before_authoritative_run','authorization_context':'User explicitly authorized execution of all proposed IMTS expansion methods and requested continuation, while preserving the contract and recording any governance deviation.','execution_classification':'exploratory_research_only','authoritative_run':False,'contract_modified_after_execution':False,'raw_modified':False,'result_status':'rejected','runtime_eligible':False,'causal_claim':False,'run_manifest':{'path':run,'sha256':sha(run)},'decision':'Document deviation; do not rewrite historical contract status, do not treat V2 as frozen-authoritative, and require a new frozen V3 contract before any future same-question rerun.','scope_note':'This record does not alter V2 metrics, evidence status, supervisor quarantine, graph admission, or baseline.'}
+out=ROOT/'experiments/multi_domain_native_edges_v2/imf_partner_dependence_v2/IMF_IMTS_PARTNER_DEPENDENCE_V2_EXECUTION_DEVIATION_V1.json'; out.write_text(json.dumps(d,ensure_ascii=False,indent=2)+'\n'); print(json.dumps({'path':str(out.relative_to(ROOT)),'sha256':sha(str(out.relative_to(ROOT))),'contract_sha256':d['contract_sha256']},ensure_ascii=False,indent=2))

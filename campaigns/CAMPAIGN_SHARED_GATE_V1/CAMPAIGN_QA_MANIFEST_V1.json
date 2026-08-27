@@ -33,18 +33,18 @@
     },
     {
       "path": "campaigns/CAMPAIGN_SHARED_GATE_V1/TRANSITION_EVIDENCE_SCHEMA_VALIDATION_V1.json",
-      "bytes": 1707,
-      "sha256": "bd9c4074e3d0096f1cbde121de6619494fea58e5edefaec87a0810999257d863"
+      "bytes": 1880,
+      "sha256": "9f2e03830938c60524ee965e77ab91f59185a90179b3375060687eada58e9e8c"
     },
     {
       "path": "campaigns/CAMPAIGN_SHARED_GATE_V1/SUPERVISOR_GATE_DECISION_V1.json",
-      "bytes": 2393,
-      "sha256": "0dc63b41a80658b9b798fb9e1056e109aed61a2bd4846f4b2be16163a7323ffb"
+      "bytes": 2592,
+      "sha256": "0d57d77430778bec0ded9dec1bff63aaa3ae225031943c590aef6b2eee740dc9"
     },
     {
       "path": "campaigns/CAMPAIGN_SHARED_GATE_V1/FINAL_SUPERVISOR_ELIGIBILITY_GATE_V1.json",
       "bytes": 1440,
-      "sha256": "67cba6bf4dfa7ce1dbc9e44748aa3cfbdec0df09b970a46fc9005ed03e256837"
+      "sha256": "27e36ac4c6f1c9c6765a4c05690beeca1983fe4ff62babf6da43d1baf61d2bce"
     },
     {
       "path": "campaigns/CAMPAIGN_SHARED_GATE_V1/COMPOSITE_PATH_ADMISSION_DECISION_V1.json",
@@ -109,12 +109,12 @@
     {
       "path": "experiments/macro_plus_eia_energy/evidence_graph_v1/EVIDENCE_GRAPH_SUMMARY.json",
       "bytes": 630,
-      "sha256": "cb0f20bb93d1faae23be9b43f098dee61b1e93733b2b48fb58886e80210e08ee"
+      "sha256": "0573ef872723269c5fc2f3d8504cc6c3aa27a030eadb61fcd43d8a34d8b549bf"
     },
     {
       "path": "experiments/macro_plus_eia_energy/pattern_compiler_v1/PATTERN_COMPILER_SUMMARY.json",
       "bytes": 186,
-      "sha256": "cad7e6471816208df2c72a45f119433bc431b289d87a943f80ef47d66c2146cd"
+      "sha256": "895df3bdd4837e3773bc96aa34b456d7e985af05b76ce860d52420e5b4575aed"
     },
     {
       "path": "campaigns/research_rounds/20260827_BROWSER_DEEP_RESEARCH/BROWSER_DEEP_RESEARCH_ROUND_CONTRACT_V1.json",
@@ -180,6 +180,11 @@
       "path": "campaigns/research_rounds/20260827_BROWSER_DEEP_RESEARCH/BROWSER_DEEP_RESEARCH_ROUND_REPORT_AR.md",
       "bytes": 21523,
       "sha256": "225959a2a7afbeba0eb7490cfa85313b3837ef24399a125a3072c00b01506e95"
+    },
+    {
+      "path": "campaigns/research_rounds/20260827_BROWSER_DEEP_RESEARCH/IMF_IMTS_V2_ADDENDUM_AR.md",
+      "bytes": 5575,
+      "sha256": "17a812093e280e25eb64fd9385cb1833137bcd26511189db0a0b91ae381fee8a"
     },
     {
       "path": "experiments/multi_domain_native_edges_v1/pmr_within_domain_v1/PMR_WITHIN_DOMAIN_TRANSITION_METRICS_V1.csv",
@@ -390,6 +395,196 @@
       "path": "experiments/multi_domain_native_edges_v1/imf_imts_export_to_gdp_v1/IMF_IMTS_EXPANSION_REPORT_AR.md",
       "bytes": 7679,
       "sha256": "b4a81212860f8b984d66f4107634d62be8abb7e567d228a2adeefdab984d29db"
+    },
+    {
+      "path": "tooling/profile_imf_imts_reporter_universe_v2.py",
+      "bytes": 2906,
+      "sha256": "c7ddb4afc6bc54a00242c8523d7a1dd0452d822fa85de7fb6fa4b3ff9a609cc1"
+    },
+    {
+      "path": "campaigns/research_rounds/20260827_BROWSER_DEEP_RESEARCH/IMF_IMTS_REPORTER_UNIVERSE_V2.csv",
+      "bytes": 21954,
+      "sha256": "2668ddf6993824e085f7b7fbaaa97eebb40e24ddf5e49ffec113ba07456f6c24"
+    },
+    {
+      "path": "campaigns/research_rounds/20260827_BROWSER_DEEP_RESEARCH/IMF_IMTS_REPORTER_UNIVERSE_COVERAGE_PROFILE_V2.json",
+      "bytes": 115824,
+      "sha256": "0b5db6d5ee26310d964d6b2ad71add85ff76bdbd557b281a95cc58e7adc3ff7f"
+    },
+    {
+      "path": "tooling/acquire_imf_imts_wdi_ready_v2.py",
+      "bytes": 3092,
+      "sha256": "1678e236340d62e08e158eac5be9af7012421e43aac764efb23d60accff6a597"
+    },
+    {
+      "path": "tooling/acquire_imf_imts_wdi_ready_xg_v2.py",
+      "bytes": 2890,
+      "sha256": "30a41f8c1d2028269a96a44d79336964b821f7c2fd099e3c81f6594d88ad040b"
+    },
+    {
+      "path": "campaigns/research_rounds/20260827_BROWSER_DEEP_RESEARCH/IMF_IMTS_WDI_READY_REPORTER_ACQUISITION_SUMMARY_V2.json",
+      "bytes": 98179,
+      "sha256": "f55d39d4cba6177d71f26370bd7a89d7fda7e535cdd36cbcb813f4e620b6c884"
+    },
+    {
+      "path": "campaigns/research_rounds/20260827_BROWSER_DEEP_RESEARCH/IMF_IMTS_WDI_READY_XG_ACQUISITION_SUMMARY_V2.json",
+      "bytes": 103503,
+      "sha256": "9d82c053444675c56ba4c4948862b6187736a28d63bb885d9dd5f31a3b72c2f9"
+    },
+    {
+      "path": "tooling/acquire_worldbank_country_metadata_v2.py",
+      "bytes": 1508,
+      "sha256": "8e7261e9c315f524c30c4af62cf8f91d79a9885863c2f26558a3d8be22f746f6"
+    },
+    {
+      "path": "campaigns/research_rounds/20260827_BROWSER_DEEP_RESEARCH/WORLD_BANK_COUNTRY_METADATA_ACQUISITION_V2.json",
+      "bytes": 508,
+      "sha256": "534a6dd8fedb6e19564deb89fd5506174069e71422f025eb966001f26ca60498"
+    },
+    {
+      "path": "experimental_contracts/IMF_IMTS_PARTNER_DEPENDENCE_CONTRACT_V2.json",
+      "bytes": 22818,
+      "sha256": "95c15b08aad41212e5cba2a2128a958c4bfcf3ceaf592aeafb6d167aae09d5e6"
+    },
+    {
+      "path": "tooling/build_imf_imts_xg_observations_v2.py",
+      "bytes": 2860,
+      "sha256": "7df11036486b93785245fb1087f58b8e369d406826ad3e869524f4529213e4f0"
+    },
+    {
+      "path": "experiments/multi_domain_native_adapters_v1/imf_imts_v2/IMF_IMTS_XG_OBSERVATIONS_PROFILE_V2.json",
+      "bytes": 63345,
+      "sha256": "f946b057d9d5d633cb2bc436f35bd5b9fef88abe66440923ba2dfb9a5953d202"
+    },
+    {
+      "path": "experiments/multi_domain_native_adapters_v1/imf_imts_v2/IMF_IMTS_XG_OBSERVATION_SHARDS_MANIFEST_V2.json",
+      "bytes": 39918,
+      "sha256": "4d382629b544de714a53b050d2aae33826dfe841cbf1700684e355124854fc95"
+    },
+    {
+      "path": "tooling/shard_imf_imts_xg_observations_v2.py",
+      "bytes": 1501,
+      "sha256": "9686443e936dc7525736ccfb970b1b1c0dd3d02cbb242b43937ec7c9f38a18fc"
+    },
+    {
+      "path": "tooling/build_imf_partner_selection_v2.py",
+      "bytes": 5349,
+      "sha256": "af0ff04dca25dca88795d95f48ad70d6ec90eb1fba33aa6f3362375f598beed1"
+    },
+    {
+      "path": "experiments/multi_domain_native_edges_v2/imf_partner_dependence_v2/IMF_IMTS_PARTNER_SELECTION_SUMMARY_V2.json",
+      "bytes": 44441,
+      "sha256": "6f05c8750eecab5d70f8607385eae563daba8d1d1c6597918c2cb480eca71305"
+    },
+    {
+      "path": "experiments/multi_domain_native_edges_v2/imf_partner_dependence_v2/IMF_IMTS_PARTNER_SELECTION_REGISTER_V2.csv",
+      "bytes": 368940,
+      "sha256": "936dcf922c3470e0966efe2f1bfc56cc10c7fb42396bf09562f7a92808ab9a1e"
+    },
+    {
+      "path": "experiments/multi_domain_native_edges_v2/imf_partner_dependence_v2/IMF_IMTS_REPORTER_PARTNER_COVERAGE_V2.csv",
+      "bytes": 5113,
+      "sha256": "cf9ed4277ab082134e880437681ce8f3dcdf4b236ac38334436b267f33ceffd9"
+    },
+    {
+      "path": "experiments/multi_domain_native_edges_v2/imf_partner_dependence_v2/IMF_IMTS_PARTNER_EXCLUSION_REGISTER_V2.json",
+      "bytes": 6001,
+      "sha256": "5ffc751df37059ba68107b5a25a550c515d3f57e00bf99dded0063a6ac65d1d8"
+    },
+    {
+      "path": "tooling/run_imf_partner_dependence_v2_fast.py",
+      "bytes": 19523,
+      "sha256": "6cc5915ffbfa97f382680d8bf2df36047fcaadc4ef91d370260e98ac7792fe70"
+    },
+    {
+      "path": "experiments/multi_domain_native_edges_v2/imf_partner_dependence_v2/IMF_IMTS_PARTNER_DEPENDENCE_SUMMARY_V2.json",
+      "bytes": 18732,
+      "sha256": "caf9ac0aa983e4d2d186394a00b59a8d682950e434a74e233f134a6880227ad5"
+    },
+    {
+      "path": "experiments/multi_domain_native_edges_v2/imf_partner_dependence_v2/IMF_IMTS_PARTNER_DEPENDENCE_RUN_MANIFEST_V2.json",
+      "bytes": 464,
+      "sha256": "f886a96a2992b3ca53a6440a74f9c853ca0abd305e51ccb5abb49b1e1a3498ac"
+    },
+    {
+      "path": "experiments/multi_domain_native_edges_v2/imf_partner_dependence_v2/IMF_IMTS_PARTNER_DEPENDENCE_METRICS_V2.csv",
+      "bytes": 4561,
+      "sha256": "e42cf42c26c89a2befadb48b300f8e344d099bf72b6a30d8f44c570e0c695ae0"
+    },
+    {
+      "path": "experiments/multi_domain_native_edges_v2/imf_partner_dependence_v2/IMF_IMTS_PARTNER_DEPENDENCE_REPORTER_YEAR_PANEL_V2.csv",
+      "bytes": 2056271,
+      "sha256": "ca76ec338fcbead6a17cfecefb1f32914866e6e91ae987c06e61718c73d3f587"
+    },
+    {
+      "path": "experiments/multi_domain_native_edges_v2/imf_partner_dependence_v2/IMF_IMTS_REPORTER_STABILITY_V2.csv",
+      "bytes": 3784,
+      "sha256": "6a1076cd50d25bd425d7894da7600300f36b4342fa3db63c3dc689df2d6a2985"
+    },
+    {
+      "path": "experiments/multi_domain_native_edges_v2/imf_partner_dependence_v2/IMF_IMTS_REGION_HOLDOUT_V2.csv",
+      "bytes": 380,
+      "sha256": "22405450d7d0e37ae6338332a4d307ea3469a1792b6ceeb2dba82d2eb13038d9"
+    },
+    {
+      "path": "experiments/multi_domain_native_edges_v2/imf_partner_dependence_v2/IMF_IMTS_REGION_HOLDOUT_SUMMARY_V2.json",
+      "bytes": 358,
+      "sha256": "23be2fa542dc02b49d8f5fed18dbcd2dc52b467f1c65645be29de66f783f6328"
+    },
+    {
+      "path": "tooling/build_imf_partner_dependence_v2_audit_summaries.py",
+      "bytes": 1328,
+      "sha256": "84545ed9e00fb11c33ada742ee68a151a3e2ea5faa423b4548cc6d554cf30869"
+    },
+    {
+      "path": "experiments/multi_domain_native_edges_v2/imf_partner_dependence_v2/IMF_IMTS_PARTNER_DEPENDENCE_TRANSITION_EVIDENCE_V2.jsonl",
+      "bytes": 2930,
+      "sha256": "17dc127e0e6d6dc942d45999ab4aa3d410e85e3a712323b599f2df6f749195e3"
+    },
+    {
+      "path": "tooling/build_imf_partner_dependence_transition_evidence_v2.py",
+      "bytes": 3491,
+      "sha256": "91ced13ff76a6e4187c6e2092dac2afd69513f616a1fbf7c6c992e5325c26855"
+    },
+    {
+      "path": "tooling/register_imf_partner_dependence_v2.py",
+      "bytes": 1824,
+      "sha256": "c112c68a67fdea9bf24eabfc4276782d9224831b4bec0281ca40369a8bd7cd4b"
+    },
+    {
+      "path": "tooling/append_imf_partner_dependence_v2_ledger.py",
+      "bytes": 4705,
+      "sha256": "0ba9d1a68c1fc4e14012e145bc4705c0fb504cc9afe25a93f003dc6d2d9c6c3c"
+    },
+    {
+      "path": "experiments/multi_domain_native_edges_v2/imf_partner_dependence_v2/IMF_IMTS_PARTNER_IDENTITY_NULL_SUMMARY_V2.json",
+      "bytes": 573,
+      "sha256": "9a80a42eaae328321302a4a959286dc4a0f030cec63c0ce3e64a71c0f06afd4c"
+    },
+    {
+      "path": "experiments/multi_domain_native_edges_v2/imf_partner_dependence_v2/IMF_IMTS_OUTCOME_NULL_SUMMARY_V2.json",
+      "bytes": 540,
+      "sha256": "a49c87dd3cc13df4e0a0286af0df443cf6a5ab58ed0ab6ff8b2d1f9f78b21430"
+    },
+    {
+      "path": "experiments/multi_domain_native_edges_v2/imf_partner_dependence_v2/IMF_IMTS_TIME_PLACEBO_SUMMARY_V2.json",
+      "bytes": 513,
+      "sha256": "fbf6ef7ac3f8d0912a106e9b97e23758c62f38564355a145252f1e92212c5cb2"
+    },
+    {
+      "path": "experiments/multi_domain_native_edges_v2/imf_partner_dependence_v2/IMF_IMTS_PARTNER_DEPENDENCE_V2_REPORT_AR.md",
+      "bytes": 9896,
+      "sha256": "e34c28b3081d5bbc41db565849f031f12eff7c7f717779b77764e2aa3fa6b00c"
+    },
+    {
+      "path": "experiments/multi_domain_native_edges_v2/imf_partner_dependence_v2/IMF_IMTS_PARTNER_DEPENDENCE_V2_EXECUTION_DEVIATION_V1.json",
+      "bytes": 1460,
+      "sha256": "c116630f5d61319edfbc82119c851bbedae6ce38fb34048435b9a4c9ba265d71"
+    },
+    {
+      "path": "tooling/build_imf_partner_dependence_v2_execution_deviation.py",
+      "bytes": 1877,
+      "sha256": "df201b3f9fd479a0ffb1d5bd2a716d1a9e5483969681fc119a1bad936f7f4b91"
     }
   ],
   "checks": {

@@ -38,3 +38,9 @@
 
 # Large derived IMTS monolithic state file; use tracked reporter shards instead
 experiments/multi_domain_native_adapters_v1/imf_imts_v1/IMF_IMTS_DOMAIN_STATES_ANNUAL_V1.jsonl
+
+# IMF IMTS V2 raw responses remain immutable but outside Git; derived observations are tracked as reporter shards.
+/campaigns/research_rounds/20260827_BROWSER_DEEP_RESEARCH/raw/imf_imts_wdi_target_ready_v2/
+/campaigns/research_rounds/20260827_BROWSER_DEEP_RESEARCH/raw/imf_imts_wdi_target_ready_xg_v2/
+/campaigns/research_rounds/20260827_BROWSER_DEEP_RESEARCH/raw/worldbank_country_metadata_v2/
+/experiments/multi_domain_native_adapters_v1/imf_imts_v2/IMF_IMTS_XG_OBSERVED_RECORDS_2000_2024.csv

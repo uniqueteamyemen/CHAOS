@@ -1,0 +1,14 @@
+#!/usr/bin/env python3
+from pathlib import Path
+import json
+import pandas as pd
+ROOT=Path('/home/ubuntu/CHAOS'); OUT=ROOT/'campaigns/research_rounds/20260827_BROWSER_DEEP_RESEARCH'; CODELIST=OUT/'IMF_IMTS_CODELISTS_V1.json'; MACRO=ROOT/'catalog_first/readiness_gate/macro_plus_eia_energy/MACRO_PLUS_EIA_ENERGY_COMPLETE_139_NUMERIC_RAW_2000_2024_WIDE.csv'; terms=['world','not specified','unspecified','special categories','countries & areas','other countries','all countries','regional aggregate','region','group','union','area not elsewhere included','oil related aggregate','services aggregate']; excluded_ids={'G001'}
+d=json.loads(CODELIST.read_text()); chosen=next((x for x in d['codelists'] if x['id']=='CL_IMTS_COUNTRY'),next(x for x in d['codelists'] if x['id']=='CL_COUNTRY')); codes=chosen['codes']; macro=pd.read_csv(MACRO,usecols=['entity_code','year','wdi__NY.GDP.MKTP.KD.ZG']); macro=macro[(macro.year.between(2000,2024))]; wdi=macro.groupby('entity_code').agg(wdi_years=('year','nunique'),wdi_nonmissing=('wdi__NY.GDP.MKTP.KD.ZG',lambda x:x.notna().sum())).reset_index(); wdi=dict(zip(wdi.entity_code,wdi[['wdi_years','wdi_nonmissing']].to_dict('records'))); rows=[]
+for x in codes:
+ cid=x['id']; name=x.get('names',{}).get('en') or x.get('name') or cid; low=f'{cid} {name}'.lower(); reasons=[]
+ if cid in excluded_ids: reasons.append('G001_world_not_reporter')
+ if any(t in low for t in terms): reasons.append('aggregate_or_unspecified_name')
+ # Self-reporter exclusion applies only to counterpart use, not universe use.
+ rec=wdi.get(cid,{'wdi_years':0,'wdi_nonmissing':0}); rows.append({'reporter_id':cid,'reporter_name':name,'codelist_id':chosen['id'],'excluded_from_reporter_requests':bool(reasons),'exclusion_reasons':reasons,'wdi_years_2000_2024':int(rec['wdi_years']),'wdi_gdp_nonmissing_2000_2024':int(rec['wdi_nonmissing']),'wdi_target_ready_20y':bool(rec['wdi_nonmissing']>=20)})
+profile={'source':'IMF IMTS official codelist','codelist_id':chosen['id'],'codelist_version':chosen.get('version'),'total_codes':len(codes),'request_candidates':int(sum(not r['excluded_from_reporter_requests'] for r in rows)),'excluded_codes':int(sum(r['excluded_from_reporter_requests'] for r in rows)),'wdi_target_ready_20y':int(sum(r['wdi_target_ready_20y'] for r in rows)),'wdi_target_ready_ids':[r['reporter_id'] for r in rows if r['wdi_target_ready_20y']],'rows':rows,'rules':{'no GDP-based selection for acquisition':True,'no aggregate codes requested':True,'all source codes preserved':True}}
+(OUT/'IMF_IMTS_REPORTER_UNIVERSE_V2.csv').write_text(pd.DataFrame(rows).to_csv(index=False)); (OUT/'IMF_IMTS_REPORTER_UNIVERSE_COVERAGE_PROFILE_V2.json').write_text(json.dumps(profile,ensure_ascii=False,indent=2)+'\n'); print(json.dumps({k:profile[k] for k in ['codelist_id','codelist_version','total_codes','request_candidates','excluded_codes','wdi_target_ready_20y']},ensure_ascii=False,indent=2))

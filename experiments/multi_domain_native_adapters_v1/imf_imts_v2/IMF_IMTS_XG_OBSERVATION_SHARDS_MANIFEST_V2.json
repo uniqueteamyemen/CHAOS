@@ -1,0 +1,963 @@
+{
+  "source_artifact": "experiments/multi_domain_native_adapters_v1/imf_imts_v2/IMF_IMTS_XG_OBSERVED_RECORDS_2000_2024.csv",
+  "source_sha256": "a5fdda798b44806eb7a97c461888d516b44b54bc7de763a4f9b6a5b6cebd6906",
+  "shard_count": 136,
+  "row_count": 515663,
+  "reporter_count": 136,
+  "shards": [
+    {
+      "reporter_id": "AGO",
+      "rows": 2726,
+      "bytes": 692915,
+      "sha256": "ddd6c69dfcbc98ca06e5c02bc58ef003735cea0cdfe7b2498abd96a0b7ca504d",
+      "path": "experiments/multi_domain_native_adapters_v1/imf_imts_v2/observations_shards/IMF_IMTS_XG_AGO_2000_2024.csv"
+    },
+    {
+      "reporter_id": "ALB",
+      "rows": 2733,
+      "bytes": 692990,
+      "sha256": "160e7fd0d9203fa892f3f33fcb02e4fdba2c537a4499bca65555380ec3e14996",
+      "path": "experiments/multi_domain_native_adapters_v1/imf_imts_v2/observations_shards/IMF_IMTS_XG_ALB_2000_2024.csv"
+    },
+    {
+      "reporter_id": "ARM",
+      "rows": 2756,
+      "bytes": 699024,
+      "sha256": "dab77610b0fbd62944c0c6fa3d24ba0ec11cedd8c26c601369ad244c3c2c9bd8",
+      "path": "experiments/multi_domain_native_adapters_v1/imf_imts_v2/observations_shards/IMF_IMTS_XG_ARM_2000_2024.csv"
+    },
+    {
+      "reporter_id": "AUS",
+      "rows": 5421,
+      "bytes": 1382996,
+      "sha256": "738b915b83a0b8fd817592f65c32fe71b8e515dfa8cef26c3b30afff4435a171",
+      "path": "experiments/multi_domain_native_adapters_v1/imf_imts_v2/observations_shards/IMF_IMTS_XG_AUS_2000_2024.csv"
+    },
+    {
+      "reporter_id": "AUT",
+      "rows": 5548,
+      "bytes": 1415340,
+      "sha256": "7934f7ffe9c9d1d4dd7899b6c7ac7ba0cb02defa8b54129d1db016853c708a14",
+      "path": "experiments/multi_domain_native_adapters_v1/imf_imts_v2/observations_shards/IMF_IMTS_XG_AUT_2000_2024.csv"
+    },
+    {
+      "reporter_id": "AZE",
+      "rows": 3015,
+      "bytes": 766634,
+      "sha256": "8137f2a4bd224f33a350d3a8c9ce11b828f640be21f58985a7a8dfb4e0a19ed2",
+      "path": "experiments/multi_domain_native_adapters_v1/imf_imts_v2/observations_shards/IMF_IMTS_XG_AZE_2000_2024.csv"
+    },
+    {
+      "reporter_id": "BDI",
+      "rows": 1155,
+      "bytes": 293383,
+      "sha256": "f0e0759fb0dcf24d64991156a3f3b63f57d36ada05b5a32808c65c278360ba15",
+      "path": "experiments/multi_domain_native_adapters_v1/imf_imts_v2/observations_shards/IMF_IMTS_XG_BDI_2000_2024.csv"
+    },
+    {
+      "reporter_id": "BEL",
+      "rows": 5612,
+      "bytes": 1434718,
+      "sha256": "1d5167888d522538d6cc40267eef7c7da8909f0cb4f41b70b77eb9b22a8550b7",
+      "path": "experiments/multi_domain_native_adapters_v1/imf_imts_v2/observations_shards/IMF_IMTS_XG_BEL_2000_2024.csv"
+    },
+    {
+      "reporter_id": "BEN",
+      "rows": 2612,
+      "bytes": 662143,
+      "sha256": "3bd080bb5f51d3912b6f225881c9eb479ffaa1fc1a60096ba4dc80d982fb9f63",
+      "path": "experiments/multi_domain_native_adapters_v1/imf_imts_v2/observations_shards/IMF_IMTS_XG_BEN_2000_2024.csv"
+    },
+    {
+      "reporter_id": "BFA",
+      "rows": 2118,
+      "bytes": 537499,
+      "sha256": "b937da5170718390286524789284fcc955532b1ea2a7b296ba7e17ede1387031",
+      "path": "experiments/multi_domain_native_adapters_v1/imf_imts_v2/observations_shards/IMF_IMTS_XG_BFA_2000_2024.csv"
+    },
+    {
+      "reporter_id": "BGD",
+      "rows": 3422,
+      "bytes": 872412,
+      "sha256": "a20ec8e47ca659e1648089cf2f032d4363571fc9a1263c6724d05a438ebc7f11",
+      "path": "experiments/multi_domain_native_adapters_v1/imf_imts_v2/observations_shards/IMF_IMTS_XG_BGD_2000_2024.csv"
+    },
+    {
+      "reporter_id": "BGR",
+      "rows": 5147,
+      "bytes": 1309492,
+      "sha256": "a2e4c5d438f73eaf8d2bf21a9fe2a7149970ae8065b93b276a6d7ff2805f49ff",
+      "path": "experiments/multi_domain_native_adapters_v1/imf_imts_v2/observations_shards/IMF_IMTS_XG_BGR_2000_2024.csv"
+    },
+    {
+      "reporter_id": "BHR",
+      "rows": 3416,
+      "bytes": 868372,
+      "sha256": "2f33bececc7dd637ea4a5ddcb441b451885f1b8fa7e01296acec1bf56b78fa12",
+      "path": "experiments/multi_domain_native_adapters_v1/imf_imts_v2/observations_shards/IMF_IMTS_XG_BHR_2000_2024.csv"
+    },
+    {
+      "reporter_id": "BHS",
+      "rows": 2647,
+      "bytes": 669564,
+      "sha256": "60ff5166c7a1c2cf9816728591a6040456f7aff4e28802ecc4cf2cf9b22e0c4b",
+      "path": "experiments/multi_domain_native_adapters_v1/imf_imts_v2/observations_shards/IMF_IMTS_XG_BHS_2000_2024.csv"
+    },
+    {
+      "reporter_id": "BLR",
+      "rows": 4065,
+      "bytes": 1035229,
+      "sha256": "d757e8e227f83471a2cd24117464e8315ed0dd4f9749ebf810a3f320e22963cc",
+      "path": "experiments/multi_domain_native_adapters_v1/imf_imts_v2/observations_shards/IMF_IMTS_XG_BLR_2000_2024.csv"
+    },
+    {
+      "reporter_id": "BOL",
+      "rows": 2772,
+      "bytes": 704360,
+      "sha256": "4eae77ec3877765ff93bcf206739f1ba351382100ac31ef329739d0df199fb03",
+      "path": "experiments/multi_domain_native_adapters_v1/imf_imts_v2/observations_shards/IMF_IMTS_XG_BOL_2000_2024.csv"
+    },
+    {
+      "reporter_id": "BRA",
+      "rows": 5417,
+      "bytes": 1384206,
+      "sha256": "299e4e3389615b42e42a75ab386cce8d83e2db6ab34f930967e9b810b66af8bd",
+      "path": "experiments/multi_domain_native_adapters_v1/imf_imts_v2/observations_shards/IMF_IMTS_XG_BRA_2000_2024.csv"
+    },
+    {
+      "reporter_id": "BRN",
+      "rows": 2081,
+      "bytes": 527669,
+      "sha256": "5fb936b2a2f683be0e551d763acec4ee9eb66dcb622ff29bb72cf576e1132458",
+      "path": "experiments/multi_domain_native_adapters_v1/imf_imts_v2/observations_shards/IMF_IMTS_XG_BRN_2000_2024.csv"
+    },
+    {
+      "reporter_id": "BTN",
+      "rows": 1748,
+      "bytes": 441146,
+      "sha256": "e5d5282d1bc0813d504f5a4cc455b7bc87f6351c4df390e6e482182213d17043",
+      "path": "experiments/multi_domain_native_adapters_v1/imf_imts_v2/observations_shards/IMF_IMTS_XG_BTN_2000_2024.csv"
+    },
+    {
+      "reporter_id": "BWA",
+      "rows": 2436,
+      "bytes": 617653,
+      "sha256": "b7b0658fc603125f973a751e4f38fd8498e82fc76fb0052d243472424a32e5e1",
+      "path": "experiments/multi_domain_native_adapters_v1/imf_imts_v2/observations_shards/IMF_IMTS_XG_BWA_2000_2024.csv"
+    },
+    {
+      "reporter_id": "CAN",
+      "rows": 5504,
+      "bytes": 1405333,
+      "sha256": "362caf87cd1249c820df2bd86b360dd6872bb31174e075806812eba7260a3112",
+      "path": "experiments/multi_domain_native_adapters_v1/imf_imts_v2/observations_shards/IMF_IMTS_XG_CAN_2000_2024.csv"
+    },
+    {
+      "reporter_id": "CHE",
+      "rows": 5553,
+      "bytes": 1417991,
+      "sha256": "f0a8c8b655a564608767c21145a648ee23b962d83acb4d2713236aff68666b3b",
+      "path": "experiments/multi_domain_native_adapters_v1/imf_imts_v2/observations_shards/IMF_IMTS_XG_CHE_2000_2024.csv"
+    },
+    {
+      "reporter_id": "CHL",
+      "rows": 4423,
+      "bytes": 1127091,
+      "sha256": "85289bf0d329bfe52935ca0ab456667609a2cce1faae85245512d54ec810a9f6",
+      "path": "experiments/multi_domain_native_adapters_v1/imf_imts_v2/observations_shards/IMF_IMTS_XG_CHL_2000_2024.csv"
+    },
+    {
+      "reporter_id": "CHN",
+      "rows": 5548,
+      "bytes": 1423555,
+      "sha256": "f0d17bc12dc7a6bcd4be97f438d9114f3eb7afd6f879915716474427cc980332",
+      "path": "experiments/multi_domain_native_adapters_v1/imf_imts_v2/observations_shards/IMF_IMTS_XG_CHN_2000_2024.csv"
+    },
+    {
+      "reporter_id": "CIV",
+      "rows": 4119,
+      "bytes": 1047762,
+      "sha256": "6f7483e40a754d2ceb37114afca24dd0aab9f3330001e82b7fbd7946c48ea9f6",
+      "path": "experiments/multi_domain_native_adapters_v1/imf_imts_v2/observations_shards/IMF_IMTS_XG_CIV_2000_2024.csv"
+    },
+    {
+      "reporter_id": "CMR",
+      "rows": 3374,
+      "bytes": 856490,
+      "sha256": "48fa9b314e7c78302fae1d4ae7d931489ce3aa89dcc19e41f573675b310ba02e",
+      "path": "experiments/multi_domain_native_adapters_v1/imf_imts_v2/observations_shards/IMF_IMTS_XG_CMR_2000_2024.csv"
+    },
+    {
+      "reporter_id": "COG",
+      "rows": 3091,
+      "bytes": 784411,
+      "sha256": "f19f05841d6bfce452f7da32a519f8df82ef9b4a1fb1aff0b9ace112c28ae886",
+      "path": "experiments/multi_domain_native_adapters_v1/imf_imts_v2/observations_shards/IMF_IMTS_XG_COG_2000_2024.csv"
+    },
+    {
+      "reporter_id": "COL",
+      "rows": 4699,
+      "bytes": 1195659,
+      "sha256": "22e9358162c553109848aa0bba51f1013c7a990341cf6e44cb176c19cb768372",
+      "path": "experiments/multi_domain_native_adapters_v1/imf_imts_v2/observations_shards/IMF_IMTS_XG_COL_2000_2024.csv"
+    },
+    {
+      "reporter_id": "CPV",
+      "rows": 1054,
+      "bytes": 267155,
+      "sha256": "e442a3520d30f60606a1877f0c88cd6a81e07e1cd4b13704611fb37cd52ef2c7",
+      "path": "experiments/multi_domain_native_adapters_v1/imf_imts_v2/observations_shards/IMF_IMTS_XG_CPV_2000_2024.csv"
+    },
+    {
+      "reporter_id": "CRI",
+      "rows": 3901,
+      "bytes": 991023,
+      "sha256": "e1472f50f3a0a69f4876b926f807da7442ea3331f05b14f060c59350f3a4fe18",
+      "path": "experiments/multi_domain_native_adapters_v1/imf_imts_v2/observations_shards/IMF_IMTS_XG_CRI_2000_2024.csv"
+    },
+    {
+      "reporter_id": "CYP",
+      "rows": 4772,
+      "bytes": 1210803,
+      "sha256": "e9741118eda6b7bda3646d872da8dfb0889001ae7a6f005864070e4d42e913d3",
+      "path": "experiments/multi_domain_native_adapters_v1/imf_imts_v2/observations_shards/IMF_IMTS_XG_CYP_2000_2024.csv"
+    },
+    {
+      "reporter_id": "CZE",
+      "rows": 5329,
+      "bytes": 1358292,
+      "sha256": "6c3ca7bf55a1bc4d92e179d5bcf06d3e04d04d4ac98a4b76751b7c0be2709853",
+      "path": "experiments/multi_domain_native_adapters_v1/imf_imts_v2/observations_shards/IMF_IMTS_XG_CZE_2000_2024.csv"
+    },
+    {
+      "reporter_id": "DEU",
+      "rows": 5645,
+      "bytes": 1446029,
+      "sha256": "d353dd174caf0cc54f1f96cdbcddf224cec1a47c0ffb799299593080e5886d8b",
+      "path": "experiments/multi_domain_native_adapters_v1/imf_imts_v2/observations_shards/IMF_IMTS_XG_DEU_2000_2024.csv"
+    },
+    {
+      "reporter_id": "DMA",
+      "rows": 2365,
+      "bytes": 597066,
+      "sha256": "80a08b756a43f99f3d2ffd7e59a3f4fb904f820c0c54fc080216bc79ceaefb3c",
+      "path": "experiments/multi_domain_native_adapters_v1/imf_imts_v2/observations_shards/IMF_IMTS_XG_DMA_2000_2024.csv"
+    },
+    {
+      "reporter_id": "DNK",
+      "rows": 5601,
+      "bytes": 1428964,
+      "sha256": "2c6c7f7c2e46e88a122b000e3805c1f11c0c0fbd60f645e58fece9e2bfe19677",
+      "path": "experiments/multi_domain_native_adapters_v1/imf_imts_v2/observations_shards/IMF_IMTS_XG_DNK_2000_2024.csv"
+    },
+    {
+      "reporter_id": "DOM",
+      "rows": 3554,
+      "bytes": 902774,
+      "sha256": "aec620d0740890cb155a908bea0be5501447e81b034dfc53f4ae95dcddf02977",
+      "path": "experiments/multi_domain_native_adapters_v1/imf_imts_v2/observations_shards/IMF_IMTS_XG_DOM_2000_2024.csv"
+    },
+    {
+      "reporter_id": "DZA",
+      "rows": 3332,
+      "bytes": 848056,
+      "sha256": "1dbc7f3cbc57fd5167ee2b3e9e65720a6ba1acdb6dd9bf41807b66433208c9bd",
+      "path": "experiments/multi_domain_native_adapters_v1/imf_imts_v2/observations_shards/IMF_IMTS_XG_DZA_2000_2024.csv"
+    },
+    {
+      "reporter_id": "ECU",
+      "rows": 4067,
+      "bytes": 1034275,
+      "sha256": "6d6290f3418627233896ffe1294847d23d0e057af572b0542f0a2abcfbc55c85",
+      "path": "experiments/multi_domain_native_adapters_v1/imf_imts_v2/observations_shards/IMF_IMTS_XG_ECU_2000_2024.csv"
+    },
+    {
+      "reporter_id": "EGY",
+      "rows": 4609,
+      "bytes": 1174208,
+      "sha256": "1487d3207fbff16685a5283437dadabcf86d925dd3f008b26fd033f3b2a7cb75",
+      "path": "experiments/multi_domain_native_adapters_v1/imf_imts_v2/observations_shards/IMF_IMTS_XG_EGY_2000_2024.csv"
+    },
+    {
+      "reporter_id": "ESP",
+      "rows": 5606,
+      "bytes": 1432971,
+      "sha256": "173641d161684de9d99e3e2573b4b63ea3653c54c5f20acf7c5231b5db303682",
+      "path": "experiments/multi_domain_native_adapters_v1/imf_imts_v2/observations_shards/IMF_IMTS_XG_ESP_2000_2024.csv"
+    },
+    {
+      "reporter_id": "EST",
+      "rows": 4533,
+      "bytes": 1151917,
+      "sha256": "b0d0da51fd367ad057b4f13ba7fa58cc1f77a613053805f9a8b15d0fa8951d84",
+      "path": "experiments/multi_domain_native_adapters_v1/imf_imts_v2/observations_shards/IMF_IMTS_XG_EST_2000_2024.csv"
+    },
+    {
+      "reporter_id": "ETH",
+      "rows": 3015,
+      "bytes": 765559,
+      "sha256": "b180e07d2d8da5c873734d90241a1b3031a100cadb01d64837ea7097d3f16e0b",
+      "path": "experiments/multi_domain_native_adapters_v1/imf_imts_v2/observations_shards/IMF_IMTS_XG_ETH_2000_2024.csv"
+    },
+    {
+      "reporter_id": "FIN",
+      "rows": 5472,
+      "bytes": 1394797,
+      "sha256": "17a04c9165b88f2fa5b73795ad6b432ed060c996f65987a8985f5b9fa93b4124",
+      "path": "experiments/multi_domain_native_adapters_v1/imf_imts_v2/observations_shards/IMF_IMTS_XG_FIN_2000_2024.csv"
+    },
+    {
+      "reporter_id": "FJI",
+      "rows": 2561,
+      "bytes": 648691,
+      "sha256": "f92901c7601f98f057f339bb8ed49d0f8f05dc4fc32d5c66694f43feb7c0d29a",
+      "path": "experiments/multi_domain_native_adapters_v1/imf_imts_v2/observations_shards/IMF_IMTS_XG_FJI_2000_2024.csv"
+    },
+    {
+      "reporter_id": "FRA",
+      "rows": 5632,
+      "bytes": 1441521,
+      "sha256": "4532f38e25cbfe667d3b10b4f7038de9e8798477eb64a61646a6cc44f21f49bb",
+      "path": "experiments/multi_domain_native_adapters_v1/imf_imts_v2/observations_shards/IMF_IMTS_XG_FRA_2000_2024.csv"
+    },
+    {
+      "reporter_id": "GAB",
+      "rows": 3511,
+      "bytes": 891146,
+      "sha256": "f8366ad65a11ba291447505e5b82055dc9b78bc0ceedf318ef700b0a5f604665",
+      "path": "experiments/multi_domain_native_adapters_v1/imf_imts_v2/observations_shards/IMF_IMTS_XG_GAB_2000_2024.csv"
+    },
+    {
+      "reporter_id": "GBR",
+      "rows": 5621,
+      "bytes": 1438180,
+      "sha256": "0f74f8e00c3cbb88d33edfa34d7fb7ae62faf9a4390b801decb821ee72572acc",
+      "path": "experiments/multi_domain_native_adapters_v1/imf_imts_v2/observations_shards/IMF_IMTS_XG_GBR_2000_2024.csv"
+    },
+    {
+      "reporter_id": "GEO",
+      "rows": 3110,
+      "bytes": 789867,
+      "sha256": "20457713877ca50a8e8427a966af081b026f2c34ba7f34b1f6453e215afa7338",
+      "path": "experiments/multi_domain_native_adapters_v1/imf_imts_v2/observations_shards/IMF_IMTS_XG_GEO_2000_2024.csv"
+    },
+    {
+      "reporter_id": "GHA",
+      "rows": 3911,
+      "bytes": 992745,
+      "sha256": "722953aee62f34d7ce6e9dac711f51156481f74ade951868c449e2a75a9e2f1c",
+      "path": "experiments/multi_domain_native_adapters_v1/imf_imts_v2/observations_shards/IMF_IMTS_XG_GHA_2000_2024.csv"
+    },
+    {
+      "reporter_id": "GMB",
+      "rows": 1984,
+      "bytes": 500929,
+      "sha256": "934b5925bcb4d46e95b3a1ce14eb523473c2b2dacf13a99730eae5126cb919fe",
+      "path": "experiments/multi_domain_native_adapters_v1/imf_imts_v2/observations_shards/IMF_IMTS_XG_GMB_2000_2024.csv"
+    },
+    {
+      "reporter_id": "GNB",
+      "rows": 1527,
+      "bytes": 386186,
+      "sha256": "135266323a6a516cea5636d81c2a21050fb0a3ad02acc036fe0989a659880087",
+      "path": "experiments/multi_domain_native_adapters_v1/imf_imts_v2/observations_shards/IMF_IMTS_XG_GNB_2000_2024.csv"
+    },
+    {
+      "reporter_id": "GRC",
+      "rows": 5339,
+      "bytes": 1359643,
+      "sha256": "b981dba9b117e71b781056de80d6b50a44e0c944e4501ec1f3acfb357341c907",
+      "path": "experiments/multi_domain_native_adapters_v1/imf_imts_v2/observations_shards/IMF_IMTS_XG_GRC_2000_2024.csv"
+    },
+    {
+      "reporter_id": "GTM",
+      "rows": 3665,
+      "bytes": 931951,
+      "sha256": "d68fb40345ed8a3a2c82a7c91cd37af717d4f59136b0e5d362f270d5095800d1",
+      "path": "experiments/multi_domain_native_adapters_v1/imf_imts_v2/observations_shards/IMF_IMTS_XG_GTM_2000_2024.csv"
+    },
+    {
+      "reporter_id": "GUY",
+      "rows": 2901,
+      "bytes": 735642,
+      "sha256": "91e51b8537aad616cc29e402f3de22daa0afab66d8d6cdebceb752ed429e5560",
+      "path": "experiments/multi_domain_native_adapters_v1/imf_imts_v2/observations_shards/IMF_IMTS_XG_GUY_2000_2024.csv"
+    },
+    {
+      "reporter_id": "HKG",
+      "rows": 5247,
+      "bytes": 1340746,
+      "sha256": "3044b92c0778aecf25db6299cc2a819f9654e1d9c19413a1ab2873307d1c14d9",
+      "path": "experiments/multi_domain_native_adapters_v1/imf_imts_v2/observations_shards/IMF_IMTS_XG_HKG_2000_2024.csv"
+    },
+    {
+      "reporter_id": "HND",
+      "rows": 3075,
+      "bytes": 780960,
+      "sha256": "a72f3170677a66e8155e3d72a5338e75236f08f4d9e73701a885a3ab09996cde",
+      "path": "experiments/multi_domain_native_adapters_v1/imf_imts_v2/observations_shards/IMF_IMTS_XG_HND_2000_2024.csv"
+    },
+    {
+      "reporter_id": "HRV",
+      "rows": 4684,
+      "bytes": 1190417,
+      "sha256": "0d19bf88540c81ee35ce3a45f2aa3f838e4e2cc0767cffe8577b866681b57094",
+      "path": "experiments/multi_domain_native_adapters_v1/imf_imts_v2/observations_shards/IMF_IMTS_XG_HRV_2000_2024.csv"
+    },
+    {
+      "reporter_id": "HTI",
+      "rows": 3294,
+      "bytes": 831728,
+      "sha256": "291e7d0e8ca22e5e866ea8e10ee6c852dc0470a41dc4148a7e676dd846803bf9",
+      "path": "experiments/multi_domain_native_adapters_v1/imf_imts_v2/observations_shards/IMF_IMTS_XG_HTI_2000_2024.csv"
+    },
+    {
+      "reporter_id": "HUN",
+      "rows": 5217,
+      "bytes": 1329166,
+      "sha256": "5a460dcc19bc5470a8b09beec6c42ea9cfee07b3d37efca6d9363a74c629721a",
+      "path": "experiments/multi_domain_native_adapters_v1/imf_imts_v2/observations_shards/IMF_IMTS_XG_HUN_2000_2024.csv"
+    },
+    {
+      "reporter_id": "IDN",
+      "rows": 5536,
+      "bytes": 1412839,
+      "sha256": "f87e16832d592791cb1682dd62afe29c33ae0893dbef419f321f1066fadf545d",
+      "path": "experiments/multi_domain_native_adapters_v1/imf_imts_v2/observations_shards/IMF_IMTS_XG_IDN_2000_2024.csv"
+    },
+    {
+      "reporter_id": "IND",
+      "rows": 5536,
+      "bytes": 1415825,
+      "sha256": "bd9a6b2100d794efa77cc205237752cb8d1a6dc0123267233a96390b9b976ce4",
+      "path": "experiments/multi_domain_native_adapters_v1/imf_imts_v2/observations_shards/IMF_IMTS_XG_IND_2000_2024.csv"
+    },
+    {
+      "reporter_id": "IRL",
+      "rows": 5398,
+      "bytes": 1375696,
+      "sha256": "e711da007a141cdc2c61a2bde5bc14e5253791d4ee7e246b0662cca1aa4056b3",
+      "path": "experiments/multi_domain_native_adapters_v1/imf_imts_v2/observations_shards/IMF_IMTS_XG_IRL_2000_2024.csv"
+    },
+    {
+      "reporter_id": "IRN",
+      "rows": 4359,
+      "bytes": 1109054,
+      "sha256": "51d1892a95f83dceb7cefbd2f755c54f2e7fb75e39a33a99b79db5a74515e8c5",
+      "path": "experiments/multi_domain_native_adapters_v1/imf_imts_v2/observations_shards/IMF_IMTS_XG_IRN_2000_2024.csv"
+    },
+    {
+      "reporter_id": "ISR",
+      "rows": 3762,
+      "bytes": 960965,
+      "sha256": "f417680aba87113076ef03146d3b425071b54c6601b7619972ccf38c01081624",
+      "path": "experiments/multi_domain_native_adapters_v1/imf_imts_v2/observations_shards/IMF_IMTS_XG_ISR_2000_2024.csv"
+    },
+    {
+      "reporter_id": "ITA",
+      "rows": 5617,
+      "bytes": 1437590,
+      "sha256": "fc175dcd0361c7f1e4b1ecbddc47722eccd22577b96d3b28ddeba790171e522a",
+      "path": "experiments/multi_domain_native_adapters_v1/imf_imts_v2/observations_shards/IMF_IMTS_XG_ITA_2000_2024.csv"
+    },
+    {
+      "reporter_id": "JAM",
+      "rows": 3286,
+      "bytes": 832526,
+      "sha256": "ddb38fc0d29daa9f175b86c30c02bb93620f65a308c8d7594185f718ae35472b",
+      "path": "experiments/multi_domain_native_adapters_v1/imf_imts_v2/observations_shards/IMF_IMTS_XG_JAM_2000_2024.csv"
+    },
+    {
+      "reporter_id": "JOR",
+      "rows": 3891,
+      "bytes": 989047,
+      "sha256": "13569bdb32591f3f2fbe8f74f5b4cd45694f12e43b10db7ce237601ea9a08d02",
+      "path": "experiments/multi_domain_native_adapters_v1/imf_imts_v2/observations_shards/IMF_IMTS_XG_JOR_2000_2024.csv"
+    },
+    {
+      "reporter_id": "JPN",
+      "rows": 5522,
+      "bytes": 1413104,
+      "sha256": "ae75e8b24e604cec2e42159cf08efa3b7233d6f37b3843ab42b385acb14a9b28",
+      "path": "experiments/multi_domain_native_adapters_v1/imf_imts_v2/observations_shards/IMF_IMTS_XG_JPN_2000_2024.csv"
+    },
+    {
+      "reporter_id": "KAZ",
+      "rows": 3309,
+      "bytes": 843201,
+      "sha256": "7fad600a3ebf6ffeef7e51a2933a62d8f9bdbaec8a6e1a8561d378dc18f0e906",
+      "path": "experiments/multi_domain_native_adapters_v1/imf_imts_v2/observations_shards/IMF_IMTS_XG_KAZ_2000_2024.csv"
+    },
+    {
+      "reporter_id": "KEN",
+      "rows": 4461,
+      "bytes": 1133383,
+      "sha256": "955e250c28476ab1524fec31654e092fa2b29b354d681fdcb8a26909b68a07ee",
+      "path": "experiments/multi_domain_native_adapters_v1/imf_imts_v2/observations_shards/IMF_IMTS_XG_KEN_2000_2024.csv"
+    },
+    {
+      "reporter_id": "KGZ",
+      "rows": 2288,
+      "bytes": 580819,
+      "sha256": "6f672e05c52ee249f23df31b123748fbc6c56c13810e924a31bd67a64e5c2047",
+      "path": "experiments/multi_domain_native_adapters_v1/imf_imts_v2/observations_shards/IMF_IMTS_XG_KGZ_2000_2024.csv"
+    },
+    {
+      "reporter_id": "KHM",
+      "rows": 2251,
+      "bytes": 572210,
+      "sha256": "fa069b43de70a8d61dd83a983849f91c0978c0e8279fe581befbaeda438076ff",
+      "path": "experiments/multi_domain_native_adapters_v1/imf_imts_v2/observations_shards/IMF_IMTS_XG_KHM_2000_2024.csv"
+    },
+    {
+      "reporter_id": "KOR",
+      "rows": 5569,
+      "bytes": 1424484,
+      "sha256": "f2ccb6935e7267a73c60456caa6bd58ced8a95205997881e7a0e62243758ceae",
+      "path": "experiments/multi_domain_native_adapters_v1/imf_imts_v2/observations_shards/IMF_IMTS_XG_KOR_2000_2024.csv"
+    },
+    {
+      "reporter_id": "LAO",
+      "rows": 1600,
+      "bytes": 406665,
+      "sha256": "ba315a03b8f0b03c91e00f627e6073b9baec35db510894a97f682adb9548c67c",
+      "path": "experiments/multi_domain_native_adapters_v1/imf_imts_v2/observations_shards/IMF_IMTS_XG_LAO_2000_2024.csv"
+    },
+    {
+      "reporter_id": "LBY",
+      "rows": 1670,
+      "bytes": 426260,
+      "sha256": "5b4564ce4b0affd3eb07bc30d225360d9a074655d239593e7031314cee5895e3",
+      "path": "experiments/multi_domain_native_adapters_v1/imf_imts_v2/observations_shards/IMF_IMTS_XG_LBY_2000_2024.csv"
+    },
+    {
+      "reporter_id": "LCA",
+      "rows": 2180,
+      "bytes": 550894,
+      "sha256": "478fda30f2889b48b714737920811057cccc7a0882c1b82e92a34625aa7eafa8",
+      "path": "experiments/multi_domain_native_adapters_v1/imf_imts_v2/observations_shards/IMF_IMTS_XG_LCA_2000_2024.csv"
+    },
+    {
+      "reporter_id": "LKA",
+      "rows": 4475,
+      "bytes": 1138453,
+      "sha256": "9c2f05fedcd6677331d6bdf70ee3afcccba422cc5229f0c5012553963382bfea",
+      "path": "experiments/multi_domain_native_adapters_v1/imf_imts_v2/observations_shards/IMF_IMTS_XG_LKA_2000_2024.csv"
+    },
+    {
+      "reporter_id": "LSO",
+      "rows": 1427,
+      "bytes": 361152,
+      "sha256": "786c1c3814b468e8d006f0f8fc183583d28b8f7214fda3a8bf4d03bb10eb704e",
+      "path": "experiments/multi_domain_native_adapters_v1/imf_imts_v2/observations_shards/IMF_IMTS_XG_LSO_2000_2024.csv"
+    },
+    {
+      "reporter_id": "LTU",
+      "rows": 4790,
+      "bytes": 1218400,
+      "sha256": "0fed2173f27f11c314effe51abaaf326d7d383404394406869fa59600c3559ae",
+      "path": "experiments/multi_domain_native_adapters_v1/imf_imts_v2/observations_shards/IMF_IMTS_XG_LTU_2000_2024.csv"
+    },
+    {
+      "reporter_id": "LUX",
+      "rows": 5105,
+      "bytes": 1297317,
+      "sha256": "4ad45abacfa1af7bb7a89576143c286e945183fe9f0d7efe51b86e582762bd21",
+      "path": "experiments/multi_domain_native_adapters_v1/imf_imts_v2/observations_shards/IMF_IMTS_XG_LUX_2000_2024.csv"
+    },
+    {
+      "reporter_id": "LVA",
+      "rows": 4813,
+      "bytes": 1222870,
+      "sha256": "bfc26f87ec68137f18cefd222fbfd757d378983ebbbb615e0d07b3080e58297e",
+      "path": "experiments/multi_domain_native_adapters_v1/imf_imts_v2/observations_shards/IMF_IMTS_XG_LVA_2000_2024.csv"
+    },
+    {
+      "reporter_id": "MAR",
+      "rows": 4604,
+      "bytes": 1172175,
+      "sha256": "251c67616ff8e069e77d4d8ffc463bb4bdcb72bc40444ae9e80f2490b1dde899",
+      "path": "experiments/multi_domain_native_adapters_v1/imf_imts_v2/observations_shards/IMF_IMTS_XG_MAR_2000_2024.csv"
+    },
+    {
+      "reporter_id": "MDA",
+      "rows": 3074,
+      "bytes": 780464,
+      "sha256": "c6bdd7a6aff5115b9c664141cb8587679a170e87aae69ac59af6529f106923fb",
+      "path": "experiments/multi_domain_native_adapters_v1/imf_imts_v2/observations_shards/IMF_IMTS_XG_MDA_2000_2024.csv"
+    },
+    {
+      "reporter_id": "MDG",
+      "rows": 3658,
+      "bytes": 927042,
+      "sha256": "8774566c7bee7231f93b1c88b3f0242bc8f603d220241d243bf65d07fdcad29e",
+      "path": "experiments/multi_domain_native_adapters_v1/imf_imts_v2/observations_shards/IMF_IMTS_XG_MDG_2000_2024.csv"
+    },
+    {
+      "reporter_id": "MDV",
+      "rows": 1326,
+      "bytes": 336246,
+      "sha256": "9d4e995bd4eab748f64dbdd5f0360629ac838f11c676f379ce2e1aeb94773022",
+      "path": "experiments/multi_domain_native_adapters_v1/imf_imts_v2/observations_shards/IMF_IMTS_XG_MDV_2000_2024.csv"
+    },
+    {
+      "reporter_id": "MEX",
+      "rows": 5134,
+      "bytes": 1308224,
+      "sha256": "f2579f25475e97faf89adcf00a651ab125e932a92fd2eaadfe5482b1949fd2b9",
+      "path": "experiments/multi_domain_native_adapters_v1/imf_imts_v2/observations_shards/IMF_IMTS_XG_MEX_2000_2024.csv"
+    },
+    {
+      "reporter_id": "MKD",
+      "rows": 3376,
+      "bytes": 856657,
+      "sha256": "1d59dc77c1b83752332ce54625c91ad14a8e2002eb23fd0be2315abf02b6d0dd",
+      "path": "experiments/multi_domain_native_adapters_v1/imf_imts_v2/observations_shards/IMF_IMTS_XG_MKD_2000_2024.csv"
+    },
+    {
+      "reporter_id": "MLI",
+      "rows": 3064,
+      "bytes": 776041,
+      "sha256": "969a90cac9c2b1aad9906856ce6ff55dc37f294cc327d757a947259cc578eea1",
+      "path": "experiments/multi_domain_native_adapters_v1/imf_imts_v2/observations_shards/IMF_IMTS_XG_MLI_2000_2024.csv"
+    },
+    {
+      "reporter_id": "MNG",
+      "rows": 2086,
+      "bytes": 529479,
+      "sha256": "aba6e62eeb5b0c99e8413281cf29993ede46d66fc0ca7af5f6c6c70cde55f8e3",
+      "path": "experiments/multi_domain_native_adapters_v1/imf_imts_v2/observations_shards/IMF_IMTS_XG_MNG_2000_2024.csv"
+    },
+    {
+      "reporter_id": "MRT",
+      "rows": 2190,
+      "bytes": 556197,
+      "sha256": "33c67f767d102d828eeec3f0388848b7fcecea508dc306b77865193ef20e9a20",
+      "path": "experiments/multi_domain_native_adapters_v1/imf_imts_v2/observations_shards/IMF_IMTS_XG_MRT_2000_2024.csv"
+    },
+    {
+      "reporter_id": "MUS",
+      "rows": 3803,
+      "bytes": 964071,
+      "sha256": "354cdc8e7b3a0cff8f13e1363556cb9d0a937842cb0716f9094727c985a1600e",
+      "path": "experiments/multi_domain_native_adapters_v1/imf_imts_v2/observations_shards/IMF_IMTS_XG_MUS_2000_2024.csv"
+    },
+    {
+      "reporter_id": "MWI",
+      "rows": 3276,
+      "bytes": 831049,
+      "sha256": "4e34f757ede0e1c98164c0f6f4e83d1950860c09bdeec9a4ca3645751978faa7",
+      "path": "experiments/multi_domain_native_adapters_v1/imf_imts_v2/observations_shards/IMF_IMTS_XG_MWI_2000_2024.csv"
+    },
+    {
+      "reporter_id": "MYS",
+      "rows": 5531,
+      "bytes": 1411901,
+      "sha256": "d8d9dfa6cb492cc1c211e7d601ff2b92d59ac21a42173e9b864ae2ef3475b04b",
+      "path": "experiments/multi_domain_native_adapters_v1/imf_imts_v2/observations_shards/IMF_IMTS_XG_MYS_2000_2024.csv"
+    },
+    {
+      "reporter_id": "NER",
+      "rows": 2442,
+      "bytes": 617895,
+      "sha256": "b8ded653e52b0cf90c72e3d209b4175372b9b0afae6f814a8060244fb8e05fe4",
+      "path": "experiments/multi_domain_native_adapters_v1/imf_imts_v2/observations_shards/IMF_IMTS_XG_NER_2000_2024.csv"
+    },
+    {
+      "reporter_id": "NGA",
+      "rows": 2346,
+      "bytes": 599505,
+      "sha256": "58ad567800ac5ed414cecba7bc52000d97b8faf409355ffd3c8e10a0393ab7db",
+      "path": "experiments/multi_domain_native_adapters_v1/imf_imts_v2/observations_shards/IMF_IMTS_XG_NGA_2000_2024.csv"
+    },
+    {
+      "reporter_id": "NIC",
+      "rows": 2006,
+      "bytes": 510109,
+      "sha256": "0c599bc3386364b0e64ba174d83567a4e276f64caed8b2fa74f94c9ea9313479",
+      "path": "experiments/multi_domain_native_adapters_v1/imf_imts_v2/observations_shards/IMF_IMTS_XG_NIC_2000_2024.csv"
+    },
+    {
+      "reporter_id": "NLD",
+      "rows": 5645,
+      "bytes": 1444204,
+      "sha256": "7faf6d8961a3e64ce0189760ee31f4c327a57d58bda48cb40c3c526d59bd5b05",
+      "path": "experiments/multi_domain_native_adapters_v1/imf_imts_v2/observations_shards/IMF_IMTS_XG_NLD_2000_2024.csv"
+    },
+    {
+      "reporter_id": "NOR",
+      "rows": 5342,
+      "bytes": 1361219,
+      "sha256": "cc0a017e2a123362b7f77b9e1ca7d2331e1249695e6395c5a4171686463cd3e6",
+      "path": "experiments/multi_domain_native_adapters_v1/imf_imts_v2/observations_shards/IMF_IMTS_XG_NOR_2000_2024.csv"
+    },
+    {
+      "reporter_id": "NPL",
+      "rows": 3402,
+      "bytes": 860467,
+      "sha256": "e7b02cf23cbb9c8d3ea79c50f4c3983f9b9aaa88a398f5a7ac140d15a6a437eb",
+      "path": "experiments/multi_domain_native_adapters_v1/imf_imts_v2/observations_shards/IMF_IMTS_XG_NPL_2000_2024.csv"
+    },
+    {
+      "reporter_id": "NZL",
+      "rows": 5370,
+      "bytes": 1367512,
+      "sha256": "1e95373b56d4378e7aea9691e96a59010c370061e0a81452a76d110944d69e7c",
+      "path": "experiments/multi_domain_native_adapters_v1/imf_imts_v2/observations_shards/IMF_IMTS_XG_NZL_2000_2024.csv"
+    },
+    {
+      "reporter_id": "PAK",
+      "rows": 5256,
+      "bytes": 1338142,
+      "sha256": "18799536923f4251ba89d6b0e4df8d8d421593056379a4134ff4974a63a8f712",
+      "path": "experiments/multi_domain_native_adapters_v1/imf_imts_v2/observations_shards/IMF_IMTS_XG_PAK_2000_2024.csv"
+    },
+    {
+      "reporter_id": "PAN",
+      "rows": 2438,
+      "bytes": 619256,
+      "sha256": "7b1441126a1a69191ed68255d386d5886bcf8e4369b658bbcff1b1b3c723afe1",
+      "path": "experiments/multi_domain_native_adapters_v1/imf_imts_v2/observations_shards/IMF_IMTS_XG_PAN_2000_2024.csv"
+    },
+    {
+      "reporter_id": "PER",
+      "rows": 4472,
+      "bytes": 1137833,
+      "sha256": "638744443339bed435e5d497646bbaff3a42f7bfb92b9e6c97366ec7ee95a3dc",
+      "path": "experiments/multi_domain_native_adapters_v1/imf_imts_v2/observations_shards/IMF_IMTS_XG_PER_2000_2024.csv"
+    },
+    {
+      "reporter_id": "PHL",
+      "rows": 5137,
+      "bytes": 1306130,
+      "sha256": "7b78c61c162d2a473429aefc09da470b6ac6ab4d33e07b257d7e67a12cdcf904",
+      "path": "experiments/multi_domain_native_adapters_v1/imf_imts_v2/observations_shards/IMF_IMTS_XG_PHL_2000_2024.csv"
+    },
+    {
+      "reporter_id": "PNG",
+      "rows": 2142,
+      "bytes": 544300,
+      "sha256": "3c58db974caa8999684616a64b77c1f904fab8c55322080d1bd065937efc9128",
+      "path": "experiments/multi_domain_native_adapters_v1/imf_imts_v2/observations_shards/IMF_IMTS_XG_PNG_2000_2024.csv"
+    },
+    {
+      "reporter_id": "POL",
+      "rows": 5502,
+      "bytes": 1403518,
+      "sha256": "18cd6c894a7bee262071cddc98a3f3c029463f1218838f1c0fc09b4c037f7cd6",
+      "path": "experiments/multi_domain_native_adapters_v1/imf_imts_v2/observations_shards/IMF_IMTS_XG_POL_2000_2024.csv"
+    },
+    {
+      "reporter_id": "PRT",
+      "rows": 5408,
+      "bytes": 1377400,
+      "sha256": "5f076137cbf41655688821e02500ecde2b4c1985ac43f9f7f552952c6ea199e4",
+      "path": "experiments/multi_domain_native_adapters_v1/imf_imts_v2/observations_shards/IMF_IMTS_XG_PRT_2000_2024.csv"
+    },
+    {
+      "reporter_id": "PRY",
+      "rows": 3132,
+      "bytes": 796558,
+      "sha256": "87802e0e834f8f0b2fabb1be5aad0cd9e4047ecd272e64021cca6b4b96c3dc83",
+      "path": "experiments/multi_domain_native_adapters_v1/imf_imts_v2/observations_shards/IMF_IMTS_XG_PRY_2000_2024.csv"
+    },
+    {
+      "reporter_id": "QAT",
+      "rows": 3701,
+      "bytes": 943007,
+      "sha256": "96963e94ab550d969052e09c8cf798169ac53f4c9e2c98bc96e1358a90eea0f9",
+      "path": "experiments/multi_domain_native_adapters_v1/imf_imts_v2/observations_shards/IMF_IMTS_XG_QAT_2000_2024.csv"
+    },
+    {
+      "reporter_id": "ROU",
+      "rows": 5036,
+      "bytes": 1282449,
+      "sha256": "80bb1ea69ee0df7f36677e340a2d2410131eda7a43a48c1db72d8a5b09ebba85",
+      "path": "experiments/multi_domain_native_adapters_v1/imf_imts_v2/observations_shards/IMF_IMTS_XG_ROU_2000_2024.csv"
+    },
+    {
+      "reporter_id": "RUS",
+      "rows": 4939,
+      "bytes": 1265870,
+      "sha256": "85a97ea2492a45d5d18dae750217b3d013f914499924827bb4309ebf1368a8b1",
+      "path": "experiments/multi_domain_native_adapters_v1/imf_imts_v2/observations_shards/IMF_IMTS_XG_RUS_2000_2024.csv"
+    },
+    {
+      "reporter_id": "RWA",
+      "rows": 2581,
+      "bytes": 653479,
+      "sha256": "7738a864b0895e837964450f8825db7b2f522eae18d41db2013dc44501e1b032",
+      "path": "experiments/multi_domain_native_adapters_v1/imf_imts_v2/observations_shards/IMF_IMTS_XG_RWA_2000_2024.csv"
+    },
+    {
+      "reporter_id": "SAU",
+      "rows": 4084,
+      "bytes": 1043653,
+      "sha256": "96b3f115ef2e1fe0ded58c30d17788dd5607231b6c04b47701834fc1ce682e6d",
+      "path": "experiments/multi_domain_native_adapters_v1/imf_imts_v2/observations_shards/IMF_IMTS_XG_SAU_2000_2024.csv"
+    },
+    {
+      "reporter_id": "SEN",
+      "rows": 3597,
+      "bytes": 913076,
+      "sha256": "f82d47f7cc5a6bf0a4e727ffc95a73d3d8418ea3d4a4b3f86a573fba5b95b094",
+      "path": "experiments/multi_domain_native_adapters_v1/imf_imts_v2/observations_shards/IMF_IMTS_XG_SEN_2000_2024.csv"
+    },
+    {
+      "reporter_id": "SGP",
+      "rows": 4810,
+      "bytes": 1229818,
+      "sha256": "19a8a9d0bc79e4cf479f96cb006ac38b30eaf69ce576b96aa7836942736ad5fb",
+      "path": "experiments/multi_domain_native_adapters_v1/imf_imts_v2/observations_shards/IMF_IMTS_XG_SGP_2000_2024.csv"
+    },
+    {
+      "reporter_id": "SLB",
+      "rows": 1836,
+      "bytes": 464433,
+      "sha256": "f379048014422e335e288c8f41a6dc963a659ac66aa9ce46fac3132e2d622dce",
+      "path": "experiments/multi_domain_native_adapters_v1/imf_imts_v2/observations_shards/IMF_IMTS_XG_SLB_2000_2024.csv"
+    },
+    {
+      "reporter_id": "SLV",
+      "rows": 3180,
+      "bytes": 806537,
+      "sha256": "18af14584c35a31eeddfea756d345e3abc54f54eebcde454952ff12c8fa101c2",
+      "path": "experiments/multi_domain_native_adapters_v1/imf_imts_v2/observations_shards/IMF_IMTS_XG_SLV_2000_2024.csv"
+    },
+    {
+      "reporter_id": "STP",
+      "rows": 747,
+      "bytes": 189149,
+      "sha256": "7a02c482e520e426a192447fc2c01dc33397c4ff5b4177d35f76fef9b9956551",
+      "path": "experiments/multi_domain_native_adapters_v1/imf_imts_v2/observations_shards/IMF_IMTS_XG_STP_2000_2024.csv"
+    },
+    {
+      "reporter_id": "SVK",
+      "rows": 5069,
+      "bytes": 1290060,
+      "sha256": "b6267071e4d6e323d3c9d28d41921215ce79af1bc003cdc0a3a9c5da714514a4",
+      "path": "experiments/multi_domain_native_adapters_v1/imf_imts_v2/observations_shards/IMF_IMTS_XG_SVK_2000_2024.csv"
+    },
+    {
+      "reporter_id": "SVN",
+      "rows": 4933,
+      "bytes": 1255385,
+      "sha256": "8923e904d9eaa7a2a96f5fb4687751a1b44782ce0f5963f0686c0c6f796656b8",
+      "path": "experiments/multi_domain_native_adapters_v1/imf_imts_v2/observations_shards/IMF_IMTS_XG_SVN_2000_2024.csv"
+    },
+    {
+      "reporter_id": "SWE",
+      "rows": 5597,
+      "bytes": 1428434,
+      "sha256": "9d7d54b9055c531898fa5a2a8819fd90829cf6515886c2371c903c7261174d28",
+      "path": "experiments/multi_domain_native_adapters_v1/imf_imts_v2/observations_shards/IMF_IMTS_XG_SWE_2000_2024.csv"
+    },
+    {
+      "reporter_id": "SYC",
+      "rows": 2399,
+      "bytes": 608113,
+      "sha256": "78a1f86c80f09513c5b5d0af74075023ba0e052761c4d2a81a801093e9d209ae",
+      "path": "experiments/multi_domain_native_adapters_v1/imf_imts_v2/observations_shards/IMF_IMTS_XG_SYC_2000_2024.csv"
+    },
+    {
+      "reporter_id": "TCD",
+      "rows": 2522,
+      "bytes": 637503,
+      "sha256": "689ddf9e7221ede94568854d47244b4d5ee9f4c685c1f21785e19bd4abf63158",
+      "path": "experiments/multi_domain_native_adapters_v1/imf_imts_v2/observations_shards/IMF_IMTS_XG_TCD_2000_2024.csv"
+    },
+    {
+      "reporter_id": "THA",
+      "rows": 5077,
+      "bytes": 1297664,
+      "sha256": "8733b09c032e9fcf40a5be031a903de95db5a61920dea85125d2ae887e5d3170",
+      "path": "experiments/multi_domain_native_adapters_v1/imf_imts_v2/observations_shards/IMF_IMTS_XG_THA_2000_2024.csv"
+    },
+    {
+      "reporter_id": "TON",
+      "rows": 590,
+      "bytes": 149344,
+      "sha256": "8888d153281bc2e54bccdbba1f8b567f924263ae918bcf263d8499c19a8a6784",
+      "path": "experiments/multi_domain_native_adapters_v1/imf_imts_v2/observations_shards/IMF_IMTS_XG_TON_2000_2024.csv"
+    },
+    {
+      "reporter_id": "TUN",
+      "rows": 4256,
+      "bytes": 1082392,
+      "sha256": "25026bfa6d3b0668733149b6263a458e5df1d72b37ae261beade3ba2f9c48009",
+      "path": "experiments/multi_domain_native_adapters_v1/imf_imts_v2/observations_shards/IMF_IMTS_XG_TUN_2000_2024.csv"
+    },
+    {
+      "reporter_id": "TUR",
+      "rows": 5495,
+      "bytes": 1404031,
+      "sha256": "d78087db975283ca4b89277cfc981d332dd074ba47f59c386efc9fb05c3cffef",
+      "path": "experiments/multi_domain_native_adapters_v1/imf_imts_v2/observations_shards/IMF_IMTS_XG_TUR_2000_2024.csv"
+    },
+    {
+      "reporter_id": "TZA",
+      "rows": 4011,
+      "bytes": 1018061,
+      "sha256": "1bf8e17b3b283d14bb0784ee86897cb27fcc36c87254b04f03e8d3ce4ffa30f0",
+      "path": "experiments/multi_domain_native_adapters_v1/imf_imts_v2/observations_shards/IMF_IMTS_XG_TZA_2000_2024.csv"
+    },
+    {
+      "reporter_id": "UGA",
+      "rows": 2638,
+      "bytes": 670541,
+      "sha256": "4c99a991c1fb98f1a4c85a4eebc8e1e29885431f0f80ee941563ae1c8c993e20",
+      "path": "experiments/multi_domain_native_adapters_v1/imf_imts_v2/observations_shards/IMF_IMTS_XG_UGA_2000_2024.csv"
+    },
+    {
+      "reporter_id": "UKR",
+      "rows": 4809,
+      "bytes": 1226702,
+      "sha256": "02c6450f9e43b7020b99861c0cde92fea458001c6882c5780b5abac8aa2c287f",
+      "path": "experiments/multi_domain_native_adapters_v1/imf_imts_v2/observations_shards/IMF_IMTS_XG_UKR_2000_2024.csv"
+    },
+    {
+      "reporter_id": "USA",
+      "rows": 5561,
+      "bytes": 1425813,
+      "sha256": "c8b5a27f104f221d5f5e7904ac7d7209ac03f318d14735df3afbc8633c507429",
+      "path": "experiments/multi_domain_native_adapters_v1/imf_imts_v2/observations_shards/IMF_IMTS_XG_USA_2000_2024.csv"
+    },
+    {
+      "reporter_id": "VNM",
+      "rows": 2672,
+      "bytes": 684459,
+      "sha256": "b57deb419735390f816bf1355d0f9f6ad3d9c3ac220737a18858c21603d7c0e7",
+      "path": "experiments/multi_domain_native_adapters_v1/imf_imts_v2/observations_shards/IMF_IMTS_XG_VNM_2000_2024.csv"
+    },
+    {
+      "reporter_id": "VUT",
+      "rows": 1057,
+      "bytes": 267699,
+      "sha256": "7290b5d956eeac94bb0709291e04355dba3d1a54e13e57779337b74effa6828e",
+      "path": "experiments/multi_domain_native_adapters_v1/imf_imts_v2/observations_shards/IMF_IMTS_XG_VUT_2000_2024.csv"
+    },
+    {
+      "reporter_id": "WSM",
+      "rows": 700,
+      "bytes": 177336,
+      "sha256": "2457e5365ee72fbc20d2eeba53ad8282c4057a2dc23acb9994df809e60e730e3",
+      "path": "experiments/multi_domain_native_adapters_v1/imf_imts_v2/observations_shards/IMF_IMTS_XG_WSM_2000_2024.csv"
+    },
+    {
+      "reporter_id": "ZAF",
+      "rows": 5309,
+      "bytes": 1354287,
+      "sha256": "e476114db4e9d3a759b8fda559bb32b61a2efa1150fd9d7838881eaa320ef52c",
+      "path": "experiments/multi_domain_native_adapters_v1/imf_imts_v2/observations_shards/IMF_IMTS_XG_ZAF_2000_2024.csv"
+    },
+    {
+      "reporter_id": "ZMB",
+      "rows": 3152,
+      "bytes": 799006,
+      "sha256": "bc411aac7fa502d305893d9b74b52e85df107cfd5f47dcbe8e9726308a704ecb",
+      "path": "experiments/multi_domain_native_adapters_v1/imf_imts_v2/observations_shards/IMF_IMTS_XG_ZMB_2000_2024.csv"
+    }
+  ],
+  "reconstruction_order": "sort by reporter_id and concatenate shards; no values changed",
+  "raw_modified": false
+}

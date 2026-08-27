@@ -132,6 +132,10 @@
       "type": "pattern_record"
     },
     {
+      "node_id": "IMF_IMTS_PARTNER_DEPENDENCE_V2",
+      "type": "pattern_record"
+    },
+    {
       "node_id": "WHO_COVID_DAILY_REPORTED_ACTIVITY"
     },
     {
@@ -193,6 +197,9 @@
     },
     {
       "node_id": "dominant_partner_flow_contraction_candidate"
+    },
+    {
+      "node_id": "fixed_candidate_pool_partner_dependence_plus_active_bilateral_export_contraction"
     }
   ],
   "edges": [
@@ -870,6 +877,21 @@
       ]
     },
     {
+      "edge_id": "IMF_IMTS_PARTNER_DEPENDENCE_V2_registry",
+      "source": "IMF_IMTS_PARTNER_DEPENDENCE_V2",
+      "target": "IMF IMTS fixed candidate-pool dependence plus active bilateral export contraction precedes material GDP deterioration",
+      "split": "registry",
+      "metric": null,
+      "p_value": null,
+      "null_method": "registry_summary",
+      "status": "rejected",
+      "causal_claim": false,
+      "source_refs": "experiments/multi_domain_native_edges_v2/imf_partner_dependence_v2/IMF_IMTS_PARTNER_DEPENDENCE_SUMMARY_V2.json",
+      "failure_cases": [
+        "rejected: coverage is adequate and partner-identity null is nondegenerate, but confirmation risk differences are negative and identity, outcome, and time-placebo null controls fail; reporter stability also fails. This record cannot receive positive Composer or runtime weight."
+      ]
+    },
+    {
       "edge_id": "WHO_COVID_DAILY_TO_ANNUAL_GDP_V1",
       "source": "WHO_COVID_DAILY_REPORTED_ACTIVITY",
       "target": "ANNUAL_MATERIAL_DETERIORATION",
@@ -1514,6 +1536,58 @@
         "no entity holdout",
         "bounded 15-reporter extract"
       ]
+    },
+    {
+      "edge_id": "IMF_IMTS_PARTNER_DEPENDENCE_V2",
+      "source": "fixed_candidate_pool_partner_dependence_plus_active_bilateral_export_contraction",
+      "target": "wdi_material_gdp_deterioration",
+      "lag": {
+        "direction": "forward",
+        "unit": "years",
+        "value": 3
+      },
+      "split": "confirmation_2018_2021",
+      "metric": {
+        "horizon": 3,
+        "horizon_values": {
+          "h1": -0.1493506493506494,
+          "h2": -0.21645021645021648,
+          "h3": -0.12121212121212122
+        },
+        "identity_null_p_value": 0.9884011598840116,
+        "name": "max_horizon_risk_difference",
+        "outcome_null_p_value": 0.9994000599940006,
+        "time_placebo_p_value": 0.9992001599680064,
+        "value": -0.12121212121212122
+      },
+      "p_value": 0.9884011598840116,
+      "null_method": "fixed within-reporter active-label permutation among ten candidate partners (10000), within-reporter outcome-label permutation (10000), within-reporter partner-state circular time placebo (5000), reporter-cluster bootstrap (5000)",
+      "status": "rejected",
+      "causal_claim": false,
+      "source_refs": [
+        "experimental_contracts/IMF_IMTS_PARTNER_DEPENDENCE_CONTRACT_V2.json",
+        "campaigns/research_rounds/20260827_BROWSER_DEEP_RESEARCH/IMF_IMTS_REPORTER_UNIVERSE_COVERAGE_PROFILE_V2.json",
+        "campaigns/research_rounds/20260827_BROWSER_DEEP_RESEARCH/IMF_IMTS_WDI_READY_XG_ACQUISITION_SUMMARY_V2.json",
+        "campaigns/research_rounds/20260827_BROWSER_DEEP_RESEARCH/WORLD_BANK_COUNTRY_METADATA_ACQUISITION_V2.json",
+        "experiments/multi_domain_native_adapters_v1/imf_imts_v2/IMF_IMTS_XG_OBSERVED_RECORDS_2000_2024.csv",
+        "experiments/multi_domain_native_edges_v2/imf_partner_dependence_v2/IMF_IMTS_PARTNER_SELECTION_REGISTER_V2.csv",
+        "experiments/multi_domain_native_edges_v2/imf_partner_dependence_v2/IMF_IMTS_PARTNER_DEPENDENCE_SUMMARY_V2.json",
+        "experiments/multi_domain_native_edges_v2/imf_partner_dependence_v2/IMF_IMTS_PARTNER_DEPENDENCE_METRICS_V2.csv",
+        "experiments/multi_domain_native_edges_v2/imf_partner_dependence_v2/IMF_IMTS_PARTNER_DEPENDENCE_REPORTER_YEAR_PANEL_V2.csv",
+        "experiments/multi_domain_native_edges_v2/imf_partner_dependence_v2/IMF_IMTS_PARTNER_IDENTITY_NULL_SUMMARY_V2.json",
+        "experiments/multi_domain_native_edges_v2/imf_partner_dependence_v2/IMF_IMTS_OUTCOME_NULL_SUMMARY_V2.json",
+        "experiments/multi_domain_native_edges_v2/imf_partner_dependence_v2/IMF_IMTS_TIME_PLACEBO_SUMMARY_V2.json",
+        "experiments/multi_domain_native_edges_v2/imf_partner_dependence_v2/IMF_IMTS_REGION_HOLDOUT_SUMMARY_V2.json"
+      ],
+      "failure_cases": [
+        "primary confirmation risk difference is negative at h=1,h=2,h=3; max=-0.1212121212",
+        "partner-identity null is nondegenerate but p=0.98840116, above alpha 0.025",
+        "outcome null p=0.99940006, above alpha 0.025",
+        "time placebo p=0.99920016, above alpha 0.025",
+        "reporter-level stability requirement failed",
+        "coverage and region holdout passed, but passing coverage does not imply predictive support",
+        "135 reporters have complete ten-partner pools; prior 15-reporter V1 baseline remains unchanged"
+      ]
     }
   ],
   "rules": {
@@ -1533,7 +1607,7 @@
   },
   "input_hashes": {
     "transition_evidence": "7e758b1f3ab323ee9a5bd1bcae2dca498b619b6d15754163c4908c7f057d4abf",
-    "registry": "f77342012e14883eff67837f77b3c998221c3720e0d1d0c2d077415e853a34d3",
+    "registry": "ea7cf7f88906c8af3a99d6ebf22da7f1ab0ee96f7320bd40cf6197e22f761092",
     "native_domain_transition_evidence": "21b2d619ff31cc71705613140fda5e9faa582fbe1ec39ff4e6d76354722c8f34",
     "cross_domain_transition_evidence": "079f739ead4bdbe9e18c3641f7728962cc2c3196a2bc3bf728adcdaf40bb1620",
     "trade_transition_evidence": "f2b97903d37dd349587fe63d88c77812040a0be7fde76b1962ce25b4156c19ca",
@@ -1543,6 +1617,7 @@
     "pmr_transition_evidence": "6de52d41f8196baa2bd5a5428d4a4eda5e3763c713c28cb3f54b35293a34cd75",
     "pmr_sensitivity_transition_evidence": "7c28f75aa683e4654f617e878cf1a1b46abce681d1356fc684107017c8dd3329",
     "imf_imts_export_to_gdp_transition_evidence": "bf11dcb2f89dfab736e42329b77e25c5c5f1e989012637c7849bdab6f28c212e",
-    "imf_partner_dependence_transition_evidence": "56d1c7844ce005701e5eea5fa2097c1292c21432ae41394aaac0a5b660004bf2"
+    "imf_partner_dependence_transition_evidence": "56d1c7844ce005701e5eea5fa2097c1292c21432ae41394aaac0a5b660004bf2",
+    "imf_partner_dependence_v2_transition_evidence": "17dc127e0e6d6dc942d45999ab4aa3d410e85e3a712323b599f2df6f749195e3"
   }
 }

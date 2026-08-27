@@ -1,0 +1,12 @@
+{
+  "source": "World Bank Country API",
+  "url": "https://api.worldbank.org/v2/country?format=json&per_page=400",
+  "retrieved_at_utc": "2026-08-27T01:24:23.399518+00:00",
+  "status_code": 200,
+  "raw_path": "campaigns/research_rounds/20260827_BROWSER_DEEP_RESEARCH/raw/worldbank_country_metadata_v2/worldbank_country_metadata.json",
+  "raw_sha256": "d29d57f8adf954c5e2a1520a02fb2c7b45575d8db3bd327a9dff47d66914231c",
+  "bytes": 113590,
+  "rows": 295,
+  "has_region_fields": true,
+  "status": "downloaded"
+}

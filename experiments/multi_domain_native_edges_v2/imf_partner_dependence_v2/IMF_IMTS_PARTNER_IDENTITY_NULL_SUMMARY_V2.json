@@ -1,0 +1,18 @@
+{
+  "test_id": "IMF_IMTS_PARTNER_DEPENDENCE_V2",
+  "contract_id": "IMF_IMTS_PARTNER_DEPENDENCE_CONTRACT_V2",
+  "summary_source": "IMF_IMTS_PARTNER_DEPENDENCE_SUMMARY_V2.json",
+  "result": {
+    "replicates": 10000,
+    "p_value": 0.9884011598840116,
+    "null_mean": -0.07120705204219113,
+    "null_sd": 0.023275259808309995,
+    "null_q95": -0.032277497085114626,
+    "unique_statistics": 715,
+    "eligible_rows": 539
+  },
+  "observed_confirmation_max_risk_difference": -0.12121212121212122,
+  "status": "rejected",
+  "causal_claim": false,
+  "runtime_eligible": false
+}

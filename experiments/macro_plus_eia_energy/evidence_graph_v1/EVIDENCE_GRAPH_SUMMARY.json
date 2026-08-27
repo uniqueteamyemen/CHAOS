@@ -1,10 +1,10 @@
 {
   "graph_id": "CHAOS_EVIDENCE_GRAPH_V1",
-  "node_count": 55,
-  "edge_count": 56,
+  "node_count": 57,
+  "edge_count": 58,
   "edge_status_counts": {
     "supported_predictive": 2,
-    "rejected": 22,
+    "rejected": 24,
     "unresolved": 1,
     "provisionally_supported_descriptive": 1,
     "not_supported_by_current_cross_domain_null": 1,
