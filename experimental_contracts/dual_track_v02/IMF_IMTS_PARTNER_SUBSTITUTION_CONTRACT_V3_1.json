@@ -1,0 +1,202 @@
+{
+  "contract_id": "IMF_IMTS_PARTNER_SUBSTITUTION_V3_1",
+  "protocol_id": "CHAOS_DUAL_TRACK_PROTOCOL_V0_2",
+  "version": "3.1",
+  "status": "frozen",
+  "research_only": true,
+  "execution_status": "not_run",
+  "supersedes_for_future_question_only": "IMF_IMTS_PARTNER_SUBSTITUTION_V3",
+  "does_not_modify": ["IMF_IMTS_PARTNER_SUBSTITUTION_V3", "IMF_IMTS_PARTNER_DEPENDENCE_V2", "CHAOS baseline", "market-intelligence-engine", "raw data"],
+  "question": "Can a pre-shock, source-native readiness state identify which non-baseline trade partner will replace the reporter's baseline top-1 partner and remain top-1 for h subsequent annual periods, outperforming naive persistence, target-history, and simple rank-autocorrelation baselines out of sample?",
+  "hypotheses": {
+    "primary": "Among qualifying baseline-top-1 exit events, a non-baseline candidate that was present in the top-3 in both of the two pre-shock eligible years will predict the replacement top-1 identity and its h-year persistence better than each declared baseline in locked confirmation.",
+    "null": "After preserving reporter, candidate-pool composition, eligibility counts, temporal blocks, and rank/volume constraints as specified, the readiness rule will not outperform the baselines by the pre-registered effect-size and corrected-inference thresholds.",
+    "causal_scope": "No causal hypothesis; partner replacement is an observed network transition and may be endogenous."
+  },
+  "source": {
+    "dataset": "IMF.STA:IMTS",
+    "indicator": "XG_FOB_USD",
+    "flow": "XG",
+    "valuation": "FOB",
+    "unit": "USD",
+    "frequency": "A",
+    "raw_period": [2000, 2024],
+    "raw_observation_fields": ["reporter", "counterpart", "time_period", "obs_value_raw"],
+    "source_ref": "https://data.imf.org/en/datasets/IMF.STA:IMTS",
+    "source_policy": "Use the existing official IMTS XG observations and locked V2 candidate-pool selection register; no new acquisition in V3.1.",
+    "raw_immutable": true
+  },
+  "universe_and_selection": {
+    "reporters": "The 135 reporters with complete ten-partner baseline pools in the locked V2 selection register.",
+    "candidate_pool": "Fixed ten counterpart identities per reporter inherited from the V2 selection register.",
+    "baseline_selection_window": [2000, 2004],
+    "baseline_top1": "The candidate-pool identity ranked first by accumulated raw XG value over 2000-2004.",
+    "baseline_top3": "The three candidate-pool identities ranked first by accumulated raw XG value over 2000-2004.",
+    "reselection_forbidden": true,
+    "annual_eligibility": "A year is eligible only if all ten fixed candidate identities have observed numeric positive annual records; missing is excluded and never treated as zero.",
+    "tie_rule": "Descending raw value, then ascending counterpart code."
+  },
+  "unit_and_timing": {
+    "primary_unit": "reporter-shock-event",
+    "cluster_unit": "reporter",
+    "secondary_reporting_unit": "reporter-year prediction opportunity",
+    "native_frequency": "annual",
+    "forecast_information_set": "All source-state information available through t-1 only.",
+    "shock_year": "t",
+    "pre_shock_years": ["t-2", "t-1"],
+    "future_outcome_years": ["t+1", "t+2", "t+3"],
+    "horizons": [1, 2, 3],
+    "future_information_forbidden": true
+  },
+  "shock_definition": {
+    "shock_id": "baseline_top1_exit_and_replacement",
+    "definition": "A reporter-year t is a qualifying partner-exit shock if the fixed baseline top-1 identity was top-1 at t-1, all ten candidates are eligible at t-1 and t, and a different candidate-pool identity is top-1 at t.",
+    "interpretation": "This is a source-native observed network transition, not an exogenous or quasi-random treatment.",
+    "first_event_rule": "At most the first qualifying exit event per reporter within each declared split is used; a later event is eligible only in a split where it is the first qualifying event for that split.",
+    "repeat_event_policy": "No overlapping event windows within a reporter; events whose required pre-shock or outcome years overlap another selected event are excluded.",
+    "political_or_economic_external_shock": false,
+    "sharp_share_drop_required": false,
+    "event_detection_uses_future_outcome": false
+  },
+  "replacement_definition": {
+    "primary": "The top-1 candidate-pool identity at shock year t, which differs from the baseline top-1 identity.",
+    "candidate_readiness_rule": "At t-1, select the highest-ranked non-baseline identity among the fixed candidate pool that was in the annual top-3 at both t-2 and t-1; if more than one qualifies, select the t-1 top rank, then lexical counterpart code.",
+    "no_ready_candidate": "The candidate issues no replacement prediction; this is a recorded negative prediction, not missing-as-zero.",
+    "diagnostic_variant": "A non-baseline identity that first enters the annual top-3 at t-1 and is top-1 at t; diagnostic only unless separately admitted.",
+    "outside_pool_partner": "Not eligible for the primary task; adding outside-pool partners requires a new contract."
+  },
+  "outcome_definition": {
+    "primary_binary_outcome": "The readiness-selected replacement identity equals the observed top-1 identity at t and remains top-1 in each of the next h eligible annual years.",
+    "horizons": [1, 2, 3],
+    "identity_outcome": "Exact counterpart identity, not merely a rank or share threshold.",
+    "persistence_requires": "The same replacement identity at t, t+1, ..., t+h, with complete candidate-pool eligibility for every required year.",
+    "missing_future_year": "The event is excluded from that horizon and retained in the exclusion register; it is not a failure and not a zero."
+  },
+  "splits": {
+    "fit_discovery": [2005, 2014],
+    "locked_confirmation": [2015, 2024],
+    "confirmation_subwindows": [[2015, 2017], [2018, 2020], [2021, 2023]],
+    "selection_before_confirmation": true,
+    "baseline_parameters_fit_only": ["target-history prevalence", "any calibrated probability parameters"],
+    "configuration_selection_from_confirmation": false,
+    "test_set_usage_for_selection": false
+  },
+  "baseline_suite": {
+    "common_evaluation_set": "Every baseline is evaluated on the same qualifying shock-event rows and the same horizon-specific eligibility mask.",
+    "naive_previous_partner": {
+      "id": "baseline_previous_partner_persistence",
+      "forecast_at_t_minus_1": "The t-1 top-1 identity is forecast to be the replacement at t.",
+      "forecast_probability": "Deterministic identity forecast; binary target score is 1 only when exact identity and persistence outcome is met.",
+      "purpose": "Tests whether the candidate adds anything beyond carrying forward the previous top partner."
+    },
+    "target_history": {
+      "id": "baseline_fit_target_history",
+      "forecast_at_t_minus_1": "Use the fit-period prevalence of the primary persistence outcome for the corresponding horizon, estimated without confirmation data.",
+      "forecast_probability": "A constant fit-derived probability per horizon.",
+      "purpose": "Tests against a target-history prevalence model without partner-identity structure."
+    },
+    "simple_rank_autocorrelation": {
+      "id": "baseline_previous_year_rank2",
+      "forecast_at_t_minus_1": "After a baseline-top-1 exit, forecast the highest-ranked non-baseline candidate at t-1 (rank 2 among the fixed pool, or the highest available non-baseline rank) as the replacement; no two-year readiness condition.",
+      "forecast_probability": "Deterministic binary prediction of exact replacement-and-persistence.",
+      "purpose": "Tests whether the proposed two-year top-3 readiness adds value beyond a simple one-year rank rule."
+    },
+    "comparison_metrics": ["Brier score", "log loss for probabilistic baselines and candidate probability", "exact replacement-and-persistence precision", "recall", "coverage of positive predictions", "reporter-cluster bootstrap interval"]
+  },
+  "candidate_performance": {
+    "probabilistic_forecast": "For each horizon h, estimate p_candidate_h in fit only as successes divided by eligible fit events for which the readiness rule issued a replacement prediction. On a confirmation event with a readiness prediction, use p_candidate_h and the predicted identity; with no readiness prediction, issue no positive identity prediction and use probability 0 for the exact replacement-and-persistence outcome. No smoothing or imputation is applied.",
+    "primary_metric": "Confirmation Brier-score improvement versus each baseline at h=2, computed on the same event-level rows and using p_candidate_2 estimated only from fit.",
+    "secondary_metrics": ["absolute exact replacement-and-persistence rate difference versus rank-autocorrelation baseline at h=1, h=2, h=3", "precision and recall", "calibration by fit-derived probability bins"],
+    "minimum_primary_effect": "Candidate Brier score must be at least 0.05 lower than every applicable baseline at h=2, and the exact persistence-rate difference versus rank-autocorrelation must be at least +0.05.",
+    "direction_rule": "Candidate must not be worse than every baseline at h=1 or h=3; a negative confirmation difference at any primary comparison is an admission failure.",
+    "fit_is_not_enough": true
+  },
+  "null_controls": [
+    {
+      "id": "block_permutation_within_reporter",
+      "method": "Permute contiguous temporal blocks of the post-baseline top-1 identity sequence within reporter; block lengths are fixed before execution and sampled only from a declared set, preserving eligible-year count and local temporal runs.",
+      "default_block_lengths": [2, 3],
+      "replicates": 10000,
+      "preserve": ["reporter", "eligible-year mask", "candidate-pool identities", "block-length family", "identity counts within each reporter"],
+      "change": "Temporal placement of identity blocks and therefore event timing.",
+      "purpose": "Tests whether the readiness/persistence result exceeds a temporal-block structure without destroying all local dependence."
+    },
+    {
+      "id": "restricted_time_placebo",
+      "method": "Move the shock label to a non-event eligible year within reporter while preserving the pre-shock-to-outcome gap and requiring the placebo year not to be an observed baseline-top-1 exit; the same t-2/t-1 information rule is applied.",
+      "replicates": 5000,
+      "preserve": ["reporter", "number of events", "pre/post gap", "eligibility mask", "split membership"],
+      "change": "Event timing only within the declared non-event year set.",
+      "purpose": "Tests whether the candidate works only at the actual exit timing rather than at arbitrary years."
+    },
+    {
+      "id": "rank_preserving_volume_constrained_null",
+      "method": "Within reporter and eligible year, permute the ten candidate ranks while retaining the annual total XG value and the multiset of annual rank positions; raw bilateral values are not averaged or imputed. The event and readiness rule are recomputed on the permuted rank panel.",
+      "replicates": 10000,
+      "preserve": ["reporter", "year", "candidate count", "annual total XG value", "rank multiset", "eligibility mask"],
+      "change": "Partner-to-rank assignment.",
+      "purpose": "Tests whether the result depends on the observed partner identity/rank mapping rather than aggregate exchange volume."
+    },
+    {
+      "id": "reporter_cluster_bootstrap",
+      "method": "Resample reporters with replacement and recompute candidate and baseline contrasts on clustered event rows.",
+      "replicates": 5000,
+      "preserve": ["reporter clustering", "event rows within selected reporters"],
+      "purpose": "Quantifies uncertainty without treating partner rows as independent outcomes."
+    }
+  ],
+  "null_interpretation": {
+    "required_record_fields": ["why_this_null", "invariants_preserved", "elements_permuted", "replicates", "degeneracy_check", "p_value_definition"],
+    "p_value": "Right-tail probability of a null candidate-versus-baseline advantage at least as large as the observed advantage, with +1 correction.",
+    "null_failure": "A failed null or degenerate null invalidates admission for that family; it does not establish causality."
+  },
+  "multiple_testing": {
+    "primary_confirmatory_family": "Candidate-versus-three-baseline comparisons at locked confirmation h=2: 3 comparisons.",
+    "primary_correction": "Holm-Bonferroni, family alpha=0.025, applied before any admission decision.",
+    "horizon_secondary_family": "The same comparisons at h=1 and h=3 are a declared secondary family; report Holm-adjusted values separately and do not select the primary horizon after viewing results.",
+    "exploratory_screening_family": "All fit variants and diagnostics use Benjamini-Hochberg FDR q=0.025 for reporting only; screening cannot create supported_predictive status.",
+    "no_post_result_family_expansion": true
+  },
+  "admission_criteria": {
+    "all_required": true,
+    "alpha": "All primary confirmatory comparisons pass Holm-adjusted alpha=0.025.",
+    "effect_size": "At h=2 candidate Brier improvement >=0.05 versus every applicable baseline and exact persistence-rate lift >=0.05 versus rank-autocorrelation baseline.",
+    "oos": "The effect and direction are present in locked confirmation 2015-2024; fit-only success is insufficient.",
+    "subwindow_stability": "The candidate advantage remains positive and exact persistence-rate lift remains >=0.05 in each of 2015-2017, 2018-2020, and 2021-2023, subject to coverage thresholds.",
+    "concentration": "No reporter contributes more than 5% of qualifying confirmation shock events.",
+    "influential_reporters": "Identify the top three reporters by fit-period event contribution before looking at confirmation; after excluding them, all primary direction and minimum-effect rules still hold.",
+    "coverage": "At least 30 reporter-year prediction opportunities in each declared prediction group and at least 30 eligible event rows in each confirmation subwindow; fewer rows means not_testable, not a pass.",
+    "nulls": "Block permutation, restricted time placebo, and rank-preserving volume-constrained nulls are non-degenerate and the primary advantage exceeds each declared null at corrected alpha.",
+    "reporter_stability": "Cluster bootstrap 95% interval for the primary candidate-versus-rank-baseline lift does not cross zero.",
+    "classification_if_all_pass": "supported_predictive",
+    "classification_if_core_fail": "rejected",
+    "classification_if_data_or_null_inadequate": "not_testable_or_unresolved",
+    "causal_validation_status": "not_run",
+    "runtime_status": "not_eligible_until_current_supervisor_gate"
+  },
+  "exclusions": [
+    "Reporters without complete fixed ten-candidate pools",
+    "Any year with missing/non-numeric/non-positive value for one of the ten candidates",
+    "Years 2000-2004 used for baseline selection",
+    "Events without t-2, t-1, t, ..., t+h eligible years",
+    "Overlapping event windows within a reporter",
+    "Partners outside the fixed candidate pool",
+    "Any use of confirmation or test outcomes to define readiness, thresholds, or influential reporters",
+    "Any imputation, missing-as-zero, source averaging, log transformation, differencing, smoothing, or frequency conversion"
+  ],
+  "provenance_and_reproducibility": {
+    "required_hashes": ["contract", "protocol", "selection register", "observation aggregate or shards manifest", "code", "all seed lists", "all output files"],
+    "required_outputs": ["frozen contract", "run manifest", "event register", "prediction opportunities", "baseline metrics", "candidate metrics", "all null summaries", "subwindow stability", "influential-reporter audit", "exclusion register", "TransitionEvidence", "supervisor decision", "ledger record"],
+    "seed_list": [271108, 271109, 271110, 271111, 271112],
+    "replay": "Rebuild from the existing raw IMTS responses or tracked reporter shards; raw files remain outside Git and immutable."
+  },
+  "governance": {
+    "approval_context": "User explicitly approved drafting a frozen V3.1 contract before any promotion and accepted that the current V3 remains unresolved/quarantined.",
+    "contract_hash_required_before_run": true,
+    "run_before_freeze_forbidden": true,
+    "supervisor_single_admission_authority": true,
+    "positive_composer_statuses": ["supported_predictive"],
+    "causal_claim": false,
+    "market_intelligence_engine_modified": false
+  }
+}

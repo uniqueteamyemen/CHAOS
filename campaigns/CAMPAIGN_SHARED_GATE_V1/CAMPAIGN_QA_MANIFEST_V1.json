@@ -597,6 +597,11 @@
       "sha256": "ed77ba6aea5d5c6a22dfc02bbdce9407365e3ded7451bad8295574cdf77969b7"
     },
     {
+      "path": "experimental_contracts/dual_track_v02/IMF_IMTS_PARTNER_SUBSTITUTION_CONTRACT_V3_1.json",
+      "bytes": 16498,
+      "sha256": "bd07afbe45ee58e79a604c8b718e2fc0906d23a8142c5d4ba3ac0de448ce53c0"
+    },
+    {
       "path": "templates/dual_track_v02/DISCOVERY_CANDIDATE_TEMPLATE_V0_2.json",
       "bytes": 2188,
       "sha256": "1a33c692f87c0b6e13ce261ad15131bd815197123ecf7ff21d975fcabf329ca1"
@@ -720,6 +725,11 @@
       "path": "tooling/append_dual_track_v02_ledger.py",
       "bytes": 2692,
       "sha256": "c556b09b5ab49b7689fa98c4e515f9ee37e195f7683ef439174a1cc570f0ee8b"
+    },
+    {
+      "path": "tooling/append_imf_partner_substitution_v3_1_contract_ledger.py",
+      "bytes": 1855,
+      "sha256": "a1d0af19bf45cc6b2e2716fa0fdab123600853321978172e1734ca5c78c5d175"
     }
   ],
   "checks": {
