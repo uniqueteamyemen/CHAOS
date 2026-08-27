@@ -33,18 +33,18 @@
     },
     {
       "path": "campaigns/CAMPAIGN_SHARED_GATE_V1/TRANSITION_EVIDENCE_SCHEMA_VALIDATION_V1.json",
-      "bytes": 2043,
-      "sha256": "08b64ca6d49e84411fc9556ad8c7cdba189f505bda41535acce3fbdd39c207b4"
+      "bytes": 2210,
+      "sha256": "65c1136e8d665353d36938c1cd70bd7ab16c983f9b6a67bc739489d8674bc618"
     },
     {
       "path": "campaigns/CAMPAIGN_SHARED_GATE_V1/SUPERVISOR_GATE_DECISION_V1.json",
-      "bytes": 2781,
-      "sha256": "e28cc2fa11a4a945017c079b998a74ed649ede313d5b8c7fd6ad0736a4bea670"
+      "bytes": 2974,
+      "sha256": "de58fd07464a4fa82235722fdbc9d6ab9934f54c18cf7ef73b4b4c66698443ab"
     },
     {
       "path": "campaigns/CAMPAIGN_SHARED_GATE_V1/FINAL_SUPERVISOR_ELIGIBILITY_GATE_V1.json",
       "bytes": 1440,
-      "sha256": "08f8b23440b33f261a161999d49969790fb1990e260de6131a8c608d175b8b4e"
+      "sha256": "0bf1febb4490b0ffce63d441cb26e28fdcaaed788b3f5b1067b58a0825615d1d"
     },
     {
       "path": "campaigns/CAMPAIGN_SHARED_GATE_V1/COMPOSITE_PATH_ADMISSION_DECISION_V1.json",
@@ -109,12 +109,12 @@
     {
       "path": "experiments/macro_plus_eia_energy/evidence_graph_v1/EVIDENCE_GRAPH_SUMMARY.json",
       "bytes": 630,
-      "sha256": "3dcdc63886c93ab5c668618f5718c3dad14c44f073c87e7ee49cab7e23b8821e"
+      "sha256": "6098c6b6d9164c36bee737823172c6f1317ba034d8ec4f66afb1aeec2e0ceafa"
     },
     {
       "path": "experiments/macro_plus_eia_energy/pattern_compiler_v1/PATTERN_COMPILER_SUMMARY.json",
       "bytes": 186,
-      "sha256": "81f5c2ce82ab758603ae7e493adbbe0a04ee728d08fd9b664b819e3bc6328ea1"
+      "sha256": "f9289938ac982687267fa0c21b62fa40c13e0660d130373b92e58918da4f18b1"
     },
     {
       "path": "campaigns/research_rounds/20260827_BROWSER_DEEP_RESEARCH/BROWSER_DEEP_RESEARCH_ROUND_CONTRACT_V1.json",
@@ -730,6 +730,106 @@
       "path": "tooling/append_imf_partner_substitution_v3_1_contract_ledger.py",
       "bytes": 1855,
       "sha256": "a1d0af19bf45cc6b2e2716fa0fdab123600853321978172e1734ca5c78c5d175"
+    },
+    {
+      "path": "tooling/run_imf_partner_substitution_v3_1.py",
+      "bytes": 15190,
+      "sha256": "96d18e13a955cbc789d718125a5850f2f236c4c2ccb05a9b77a70f6f047af8f6"
+    },
+    {
+      "path": "tooling/summarize_imf_partner_substitution_v3_1_stability.py",
+      "bytes": 2163,
+      "sha256": "673fcce905d1541515b90f71bcb77bfd633aa8030c3805581099afe4d67d07b2"
+    },
+    {
+      "path": "tooling/build_imf_partner_substitution_v3_1_transition_evidence.py",
+      "bytes": 3509,
+      "sha256": "cf412d7fc488ad95915d5f1b112635794811b2e578f2428ad89475ce108ae796"
+    },
+    {
+      "path": "tooling/register_imf_partner_substitution_v3_1.py",
+      "bytes": 2008,
+      "sha256": "f9b9817a7440a737523396e86066f2156476285f332d9d25eaf341c306140aad"
+    },
+    {
+      "path": "experiments/dual_track_v02/imf_partner_substitution_v3_1/IMF_IMTS_PARTNER_SUBSTITUTION_V3_1_SUMMARY.json",
+      "bytes": 10054,
+      "sha256": "daaa8ed3b1016d948b5b525bf76f611d8c15c9e6a97cfea8f63073025f1c4f80"
+    },
+    {
+      "path": "experiments/dual_track_v02/imf_partner_substitution_v3_1/IMF_IMTS_PARTNER_SUBSTITUTION_V3_1_METRICS.csv",
+      "bytes": 670,
+      "sha256": "117224e64a60e39a11ac0d22d8f15a8e599ff8542d9c485ba8a1632d2cc3aca8"
+    },
+    {
+      "path": "experiments/dual_track_v02/imf_partner_substitution_v3_1/IMF_IMTS_PARTNER_SUBSTITUTION_V3_1_EVENTS.csv",
+      "bytes": 5753,
+      "sha256": "18fadbe76ffcafb547fc74c85cc4674cbce8fcebc78dadb7938a8234d6ea9a56"
+    },
+    {
+      "path": "experiments/dual_track_v02/imf_partner_substitution_v3_1/IMF_IMTS_PARTNER_SUBSTITUTION_V3_1_NULL_SUMMARIES.json",
+      "bytes": 3044,
+      "sha256": "ae08f6982971a8fdd095304cd969bff244bc75f0a29bdcffbb21ccfc0f1954b6"
+    },
+    {
+      "path": "experiments/dual_track_v02/imf_partner_substitution_v3_1/IMF_IMTS_PARTNER_SUBSTITUTION_V3_1_SUBWINDOW_STABILITY.csv",
+      "bytes": 705,
+      "sha256": "e8acd68512844dd810d95be45e42159961a6b55437a99650494535d2e05149f2"
+    },
+    {
+      "path": "experiments/dual_track_v02/imf_partner_substitution_v3_1/IMF_IMTS_PARTNER_SUBSTITUTION_V3_1_STABILITY.csv",
+      "bytes": 2483,
+      "sha256": "e809d6c94db1c7bba00b2c2ac3092bb9739c87c0d8695f54ccc6a3c8761afca5"
+    },
+    {
+      "path": "experiments/dual_track_v02/imf_partner_substitution_v3_1/IMF_IMTS_PARTNER_SUBSTITUTION_V3_1_STABILITY_SUMMARY.json",
+      "bytes": 2669,
+      "sha256": "722c0248ad68f76e62d818e100bd429bc74af565bed5f2cc964cdbd805c3ef6a"
+    },
+    {
+      "path": "experiments/dual_track_v02/imf_partner_substitution_v3_1/IMF_IMTS_PARTNER_SUBSTITUTION_V3_1_TRANSITION_EVIDENCE.jsonl",
+      "bytes": 4112,
+      "sha256": "638d17aafb672f0397f6dcb9d74144184db936aaf06b7485986cdb9f07639e38"
+    },
+    {
+      "path": "experiments/dual_track_v02/imf_partner_substitution_v3_1/IMF_IMTS_PARTNER_SUBSTITUTION_V3_1_RUN_MANIFEST.json",
+      "bytes": 3783,
+      "sha256": "e796c56d8e9f82e7b282d383a4ded0b2e25fb546693eaaa61954b0c40413caf1"
+    },
+    {
+      "path": "experiments/dual_track_v02/imf_partner_substitution_v3_1/IMF_IMTS_PARTNER_SUBSTITUTION_V3_1_REPORT_AR.md",
+      "bytes": 5733,
+      "sha256": "9cece6eb2a33a8fac11a6d7901fa08dc231233a205d9433e9020db75dae0b6c4"
+    },
+    {
+      "path": "experiments/dual_track_v02/imf_partner_substitution_v3_1/IMF_IMTS_PARTNER_SUBSTITUTION_V3_1_RUN_MANIFEST.json",
+      "bytes": 3783,
+      "sha256": "e796c56d8e9f82e7b282d383a4ded0b2e25fb546693eaaa61954b0c40413caf1"
+    },
+    {
+      "path": "tooling/finalize_imf_partner_substitution_v3_1_manifest.py",
+      "bytes": 1974,
+      "sha256": "c26196cc193f525d37f86f980fbaeed1b9b8bcca222f2b790b0ec1179f2b0dc9"
+    },
+    {
+      "path": "tooling/register_imf_partner_substitution_v3_1.py",
+      "bytes": 2008,
+      "sha256": "f9b9817a7440a737523396e86066f2156476285f332d9d25eaf341c306140aad"
+    },
+    {
+      "path": "experiments/macro_plus_eia_energy/CONTROLLED_PATTERN_REGISTRY_V1.jsonl",
+      "bytes": 23926,
+      "sha256": "f038655520a850570b3efeb0a5f2fbb6ad7495ff0106c250370319d141400a44"
+    },
+    {
+      "path": "tooling/append_imf_partner_substitution_v3_1_final_ledger.py",
+      "bytes": 2768,
+      "sha256": "7f1d7b7bd1dd3e7e93c8750ae25f9f36937f5d6c210ab07fd85068c155f48c85"
+    },
+    {
+      "path": "tooling/finalize_imf_partner_substitution_v3_1_manifest.py",
+      "bytes": 1974,
+      "sha256": "c26196cc193f525d37f86f980fbaeed1b9b8bcca222f2b790b0ec1179f2b0dc9"
     }
   ],
   "checks": {

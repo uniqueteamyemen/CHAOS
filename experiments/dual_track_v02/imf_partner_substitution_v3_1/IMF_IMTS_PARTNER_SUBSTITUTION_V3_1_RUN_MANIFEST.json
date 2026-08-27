@@ -1,0 +1,57 @@
+{
+  "run_id": "IMF_IMTS_PARTNER_SUBSTITUTION_V3_1_FULL_DISCOVERY_RUN",
+  "created_at_utc": "2026-08-27T04:42:34.922977+00:00",
+  "contract_ref": "experimental_contracts/dual_track_v02/IMF_IMTS_PARTNER_SUBSTITUTION_CONTRACT_V3_1.json",
+  "contract_sha256": "bd07afbe45ee58e79a604c8b718e2fc0906d23a8142c5d4ba3ac0de448ce53c0",
+  "protocol_ref": "campaigns/dual_track_v02/CHAOS_DUAL_TRACK_PROTOCOL_V0_2.json",
+  "protocol_sha256": "f2eb1e89f1539362b8166603b24271105251eb401455c1a0868f5bd183a2e053",
+  "code_ref": "tooling/run_imf_partner_substitution_v3_1.py",
+  "code_sha256": "96d18e13a955cbc789d718125a5850f2f236c4c2ccb05a9b77a70f6f047af8f6",
+  "seed": 271108,
+  "stability_seeds": [
+    271108,
+    271109,
+    271110,
+    271111,
+    271112
+  ],
+  "null_replicates": {
+    "block_permutation": 10000,
+    "rank_preserving": 10000,
+    "restricted_time_placebo": 5000
+  },
+  "input_refs": [
+    "experiments/multi_domain_native_edges_v2/imf_partner_dependence_v2/IMF_IMTS_PARTNER_SELECTION_REGISTER_V2.csv",
+    "experiments/multi_domain_native_adapters_v1/imf_imts_v2/IMF_IMTS_XG_OBSERVATIONS_PROFILE_V2.json",
+    "experiments/multi_domain_native_adapters_v1/imf_imts_v2/IMF_IMTS_XG_OBSERVATION_SHARDS_MANIFEST_V2.json"
+  ],
+  "input_sha256": {
+    "experiments/multi_domain_native_edges_v2/imf_partner_dependence_v2/IMF_IMTS_PARTNER_SELECTION_REGISTER_V2.csv": "936dcf922c3470e0966efe2f1bfc56cc10c7fb42396bf09562f7a92808ab9a1e",
+    "experiments/multi_domain_native_adapters_v1/imf_imts_v2/IMF_IMTS_XG_OBSERVATIONS_PROFILE_V2.json": "f946b057d9d5d633cb2bc436f35bd5b9fef88abe66440923ba2dfb9a5953d202",
+    "experiments/multi_domain_native_adapters_v1/imf_imts_v2/IMF_IMTS_XG_OBSERVATION_SHARDS_MANIFEST_V2.json": "4d382629b544de714a53b050d2aae33826dfe841cbf1700684e355124854fc95"
+  },
+  "output_refs": [
+    "experiments/dual_track_v02/imf_partner_substitution_v3_1/IMF_IMTS_PARTNER_SUBSTITUTION_V3_1_EVENTS.csv",
+    "experiments/dual_track_v02/imf_partner_substitution_v3_1/IMF_IMTS_PARTNER_SUBSTITUTION_V3_1_METRICS.csv",
+    "experiments/dual_track_v02/imf_partner_substitution_v3_1/IMF_IMTS_PARTNER_SUBSTITUTION_V3_1_NULL_SUMMARIES.json",
+    "experiments/dual_track_v02/imf_partner_substitution_v3_1/IMF_IMTS_PARTNER_SUBSTITUTION_V3_1_REPORT_AR.md",
+    "experiments/dual_track_v02/imf_partner_substitution_v3_1/IMF_IMTS_PARTNER_SUBSTITUTION_V3_1_RUN_MANIFEST.json",
+    "experiments/dual_track_v02/imf_partner_substitution_v3_1/IMF_IMTS_PARTNER_SUBSTITUTION_V3_1_RUN_STDOUT.json",
+    "experiments/dual_track_v02/imf_partner_substitution_v3_1/IMF_IMTS_PARTNER_SUBSTITUTION_V3_1_STABILITY.csv",
+    "experiments/dual_track_v02/imf_partner_substitution_v3_1/IMF_IMTS_PARTNER_SUBSTITUTION_V3_1_STABILITY_SUMMARY.json",
+    "experiments/dual_track_v02/imf_partner_substitution_v3_1/IMF_IMTS_PARTNER_SUBSTITUTION_V3_1_SUBWINDOW_STABILITY.csv",
+    "experiments/dual_track_v02/imf_partner_substitution_v3_1/IMF_IMTS_PARTNER_SUBSTITUTION_V3_1_SUMMARY.json",
+    "experiments/dual_track_v02/imf_partner_substitution_v3_1/IMF_IMTS_PARTNER_SUBSTITUTION_V3_1_TRANSITION_EVIDENCE.jsonl",
+    "experiments/dual_track_v02/imf_partner_substitution_v3_1/stability_runs/SUMMARY_SEED_271108.json",
+    "experiments/dual_track_v02/imf_partner_substitution_v3_1/stability_runs/SUMMARY_SEED_271109.json",
+    "experiments/dual_track_v02/imf_partner_substitution_v3_1/stability_runs/SUMMARY_SEED_271110.json",
+    "experiments/dual_track_v02/imf_partner_substitution_v3_1/stability_runs/SUMMARY_SEED_271111.json",
+    "experiments/dual_track_v02/imf_partner_substitution_v3_1/stability_runs/SUMMARY_SEED_271112.json"
+  ],
+  "status": "not_testable",
+  "research_only": true,
+  "causal_validation_status": "not_run",
+  "runtime_eligible": false,
+  "causal_claim": false,
+  "raw_modified": false
+}

@@ -2,9 +2,9 @@
   "compiler_id": "CHAOS_PATTERN_COMPILER_V1",
   "inputs": {
     "registry": "experiments/macro_plus_eia_energy/CONTROLLED_PATTERN_REGISTRY_V1.jsonl",
-    "registry_sha256": "fd6d820d06efcce0b158c95b0b2dce7a005264716dc0ff4c4a8d085d588fb9ab",
+    "registry_sha256": "f038655520a850570b3efeb0a5f2fbb6ad7495ff0106c250370319d141400a44",
     "evidence_graph": "experiments/macro_plus_eia_energy/evidence_graph_v1/EVIDENCE_GRAPH_V1.json",
-    "evidence_graph_sha256": "e9eac753dc395ecac293754b0670a34e92cb1eef23777da5ed46b6a5fc1f7834"
+    "evidence_graph_sha256": "95e6d32598cf4e6530ec022aa041612b93f78ee1ba5f05f2dedd371cb92b7041"
   },
   "eligible_supported_predictive": [],
   "research_only_candidates": [
@@ -66,7 +66,8 @@
     "IMF_IMTS_EXPORT_CONTRACTION_TO_GDP_V1",
     "IMF_IMTS_DOMINANT_PARTNER_DEPENDENCE_V1",
     "IMF_IMTS_PARTNER_DEPENDENCE_V2",
-    "IMF_IMTS_PARTNER_SUBSTITUTION_V3"
+    "IMF_IMTS_PARTNER_SUBSTITUTION_V3",
+    "IMF_IMTS_PARTNER_SUBSTITUTION_V3_1"
   ],
   "rules": {
     "causal_claims_permitted": false,

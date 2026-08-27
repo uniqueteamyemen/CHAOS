@@ -1,0 +1,61 @@
+{
+  "run_count": 5,
+  "seeds": [
+    271108,
+    271109,
+    271110,
+    271111,
+    271112
+  ],
+  "rows": 15,
+  "ranges": [
+    {
+      "horizon": 1,
+      "candidate_rate_min": 0.5238095238095238,
+      "candidate_rate_max": 0.5238095238095238,
+      "rank_rate_min": 0.5476190476190477,
+      "rank_rate_max": 0.5476190476190477,
+      "candidate_lift_min": -0.023809523809523836,
+      "candidate_lift_max": -0.023809523809523836,
+      "brier_candidate_min": 0.21662202380952383,
+      "brier_candidate_max": 0.21662202380952383,
+      "brier_rank_min": 0.24824404761904764,
+      "brier_rank_max": 0.24824404761904764
+    },
+    {
+      "horizon": 2,
+      "candidate_rate_min": 0.35714285714285715,
+      "candidate_rate_max": 0.35714285714285715,
+      "rank_rate_min": 0.38095238095238093,
+      "rank_rate_max": 0.38095238095238093,
+      "candidate_lift_min": -0.02380952380952378,
+      "candidate_lift_max": -0.02380952380952378,
+      "brier_candidate_min": 0.21410714285714294,
+      "brier_candidate_max": 0.21410714285714294,
+      "brier_rank_min": 0.2405952380952382,
+      "brier_rank_max": 0.2405952380952382
+    },
+    {
+      "horizon": 3,
+      "candidate_rate_min": 0.2857142857142857,
+      "candidate_rate_max": 0.2857142857142857,
+      "rank_rate_min": 0.30952380952380953,
+      "rank_rate_max": 0.30952380952380953,
+      "candidate_lift_min": -0.023809523809523836,
+      "candidate_lift_max": -0.023809523809523836,
+      "brier_candidate_min": 0.1953125,
+      "brier_candidate_max": 0.1953125,
+      "brier_rank_min": 0.21800595238095238,
+      "brier_rank_max": 0.21800595238095238
+    }
+  ],
+  "source_sha256": {
+    "experiments/dual_track_v02/imf_partner_substitution_v3_1/stability_runs/SUMMARY_SEED_271108.json": "daaa8ed3b1016d948b5b525bf76f611d8c15c9e6a97cfea8f63073025f1c4f80",
+    "experiments/dual_track_v02/imf_partner_substitution_v3_1/stability_runs/SUMMARY_SEED_271109.json": "6596eacaa1a1abfc14553937a79ad56e2b0aa614cfd5784272de117dae3fdd71",
+    "experiments/dual_track_v02/imf_partner_substitution_v3_1/stability_runs/SUMMARY_SEED_271110.json": "7b5cbd03d26cc0814c472791df949d1467bb83786a6e2587004e89ed5d6228ff",
+    "experiments/dual_track_v02/imf_partner_substitution_v3_1/stability_runs/SUMMARY_SEED_271111.json": "5853b1da6386723081e2bedc8a49b4e211d4b655e8b14b5d8ef99468ecdcf3d4",
+    "experiments/dual_track_v02/imf_partner_substitution_v3_1/stability_runs/SUMMARY_SEED_271112.json": "122ec6ed872cca5f3b1167de12be428ce8607962f7d935e817163f040c47c67b"
+  },
+  "decision": "stable_negative_primary_lift",
+  "contract_ref": "experimental_contracts/dual_track_v02/IMF_IMTS_PARTNER_SUBSTITUTION_CONTRACT_V3_1.json"
+}
