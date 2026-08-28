@@ -280,6 +280,44 @@ class EventPathEngine:
                 predictions.append(Prediction(_id("prediction", entity, index), _id("path", entity, index), entity, event_by_id[actual.event_id].timestamp, predicted, actual.label, "oos", provenance, train[-1].label, majority, trend))
         return predictions, evaluate_predictions(predictions, states)
 
+    def rolling_oos_frozen(self, states: Sequence[State], events: Sequence[Event], train_size: int = 8) -> tuple[list[Prediction], dict[str, dict[str, float]]]:
+        """Leakage-safe predictor: discover/freeze conditional paths inside each train prefix.
+
+        Unsupported paths abstain; they are never silently converted to persistence.
+        """
+        event_by_id = {event.event_id: event for event in events}
+        state_by_entity: dict[str, list[State]] = defaultdict(list)
+        for state in states:
+            state_by_entity[event_by_id[state.event_id].entity].append(state)
+        predictions: list[Prediction] = []
+        for entity, series in state_by_entity.items():
+            series.sort(key=lambda state: event_by_id[state.event_id].timestamp)
+            for index in range(train_size, len(series)):
+                train = series[:index]
+                actual = series[index]
+                signature = tuple(state.label for state in train[-self.window_width:])
+                outcome_by_signature: dict[tuple[str, ...], list[str]] = defaultdict(list)
+                for end in range(self.window_width - 1, len(train) - 1):
+                    historical_signature = tuple(state.label for state in train[end - self.window_width + 1:end + 1])
+                    outcome_by_signature[historical_signature].append(train[end + 1].label)
+                outcomes = outcome_by_signature.get(signature, [])
+                supported = len(outcomes) >= self.min_support
+                predicted = self._majority(outcomes) if supported else "abstain_insufficient_support"
+                majority = self._majority([state.label for state in train])
+                trend = self._majority([state.label for state in train[-3:]])
+                provenance = actual.provenance
+                predictions.append(Prediction(_id("prediction-frozen", entity, index), _id("path-frozen", entity, index), entity, event_by_id[actual.event_id].timestamp, predicted, actual.label, "oos_frozen", provenance, train[-1].label, majority, trend))
+        scored = [prediction for prediction in predictions if prediction.predicted_state != "abstain_insufficient_support"]
+        actual = [prediction.actual_state for prediction in scored if prediction.actual_state is not None]
+        majority_rows = [prediction for prediction in predictions if prediction.predicted_state != "abstain_insufficient_support"]
+        metrics = {
+            "path_model": {"n": float(len(actual)), "accuracy": _accuracy([prediction.predicted_state for prediction in scored], actual)["accuracy"] if actual else 0.0, "coverage": len(scored) / len(predictions) if predictions else 0.0},
+            "majority_baseline": {"n": float(len(majority_rows)), "accuracy": _accuracy([prediction.baseline_majority for prediction in majority_rows], [prediction.actual_state for prediction in majority_rows])["accuracy"] if majority_rows else 0.0, "coverage": len(majority_rows) / len(predictions) if predictions else 0.0},
+            "persistence_baseline": {"n": float(len(majority_rows)), "accuracy": _accuracy([prediction.baseline_persistence for prediction in majority_rows], [prediction.actual_state for prediction in majority_rows])["accuracy"] if majority_rows else 0.0, "coverage": len(majority_rows) / len(predictions) if predictions else 0.0},
+            "abstention": {"n": float(len(predictions) - len(scored)), "rate": (len(predictions) - len(scored)) / len(predictions) if predictions else 0.0},
+        }
+        return predictions, metrics
+
 
 def evaluate_predictions(predictions: Sequence[Prediction], states: Sequence[State]) -> dict[str, dict[str, float]]:
     actual = [p.actual_state for p in predictions if p.actual_state is not None]

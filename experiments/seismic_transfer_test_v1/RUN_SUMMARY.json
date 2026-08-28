@@ -12,20 +12,23 @@
   },
   "metrics": {
     "path_model": {
-      "n": 400.0,
-      "accuracy": 0.2675
-    },
-    "persistence_baseline": {
-      "n": 400.0,
-      "accuracy": 0.075
+      "n": 269.0,
+      "accuracy": 0.3271375464684015,
+      "coverage": 0.6725
     },
     "majority_baseline": {
-      "n": 400.0,
-      "accuracy": 0.2575
+      "n": 269.0,
+      "accuracy": 0.24535315985130113,
+      "coverage": 0.6725
     },
-    "simple_trend_baseline": {
-      "n": 400.0,
-      "accuracy": 0.2025
+    "persistence_baseline": {
+      "n": 269.0,
+      "accuracy": 0.08550185873605948,
+      "coverage": 0.6725
+    },
+    "abstention": {
+      "n": 131.0,
+      "rate": 0.3275
     }
   },
   "status": "provisional"

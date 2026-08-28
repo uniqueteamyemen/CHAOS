@@ -48,3 +48,15 @@ def test_insufficient_history_is_explicit():
         dataset = AnnualPanelAdapter("value").load(path)
         states = build_states(dataset.events)
         assert states[0].label == "insufficient_history"
+
+
+def test_frozen_predictor_abstains_when_path_support_is_below_threshold():
+    with tempfile.TemporaryDirectory() as tmp:
+        path = Path(tmp) / "panel.csv"
+        _fixture(path)
+        dataset = AnnualPanelAdapter("value").load(path)
+        states = build_states(dataset.events)
+        predictions, metrics = EventPathEngine(window_width=3, min_support=99).rolling_oos_frozen(states, dataset.events, train_size=3)
+        assert predictions
+        assert all(prediction.predicted_state == "abstain_insufficient_support" for prediction in predictions)
+        assert metrics["abstention"]["rate"] == 1.0

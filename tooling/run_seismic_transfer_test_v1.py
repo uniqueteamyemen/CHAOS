@@ -20,15 +20,18 @@ def main() -> None:
     transitions = build_transitions(dataset.events, states)
     windows = build_windows(dataset.events, states, width=3)
     paths = build_paths(windows, states, transitions)
-    predictions, metrics = EventPathEngine(window_width=3, min_support=2, max_path_length=6).rolling_oos(states, dataset.events, train_size=8)
+    predictions, metrics = EventPathEngine(window_width=3, min_support=2, max_path_length=6).rolling_oos_frozen(states, dataset.events, train_size=8)
     write_artifacts(OUTPUT, dataset, dataset.events, states, transitions, predictions, metrics)
     OUTPUT.mkdir(parents=True, exist_ok=True)
     (OUTPUT / "WINDOWS.jsonl").write_text("\n".join(json.dumps(asdict(row), ensure_ascii=False, sort_keys=True) for row in windows) + "\n", encoding="utf-8")
     (OUTPUT / "PATHS.jsonl").write_text("\n".join(json.dumps(asdict(row), ensure_ascii=False, sort_keys=True) for row in paths) + "\n", encoding="utf-8")
     (OUTPUT / "TRANSFER_CONTRACT_REF.json").write_text(json.dumps({"contract": "experimental_contracts/EVENT_PATH_SEISMIC_TRANSFER_CONTRACT_V1.json", "economic_definition_changed": False, "window_width": 3, "train_size": 8, "tuning_after_transfer": False}, indent=2) + "\n", encoding="utf-8")
-    report = ["# Gulf of Aden Seismic Transfer Test v1", "", "This is a frozen transfer test; no economic-model tuning was performed.", "", f"- Source: `{INPUT}`", "- Fixed region: 10–15°N, 42–52°E", "- Fixed period: 2000-01-01 through 2024-12-31 UTC", "- Fixed threshold: magnitude ≥ 4.5", "- Events retained: **%d**" % len(dataset.events), "- Window width: **3**; train size: **8**", "", "## Metrics", "", "| Model | Accuracy | N |", "|---|---:|---:|"]
+    report = ["# Gulf of Aden Seismic Transfer Test v1", "", "This is a frozen transfer test after the prediction-mechanics repair; no economic-model tuning was performed.", "", f"- Source: `{INPUT}`", "- Fixed region: 10–15°N, 42–52°E", "- Fixed period: 2000-01-01 through 2024-12-31 UTC", "- Fixed threshold: magnitude ≥ 4.5", "- Events retained: **%d**" % len(dataset.events), "- Window width: **3**; train size: **8**", "- Path support: **2**; unsupported paths abstain", "", "## Metrics", "", "| Model | Accuracy | N | Coverage/rate |", "|---|---:|---:|---:|"]
     for name, values in metrics.items():
-        report.append(f"| {name} | {values['accuracy']:.4f} | {int(values['n'])} |")
+        if "accuracy" in values:
+            report.append(f"| {name} | {values['accuracy']:.4f} | {int(values['n'])} | coverage={values.get('coverage', 1.0):.4f} |")
+        else:
+            report.append(f"| {name} | — | {int(values['n'])} | rate={values.get('rate', 0.0):.4f} |")
     if len(dataset.events) <= 8 or not predictions:
         status = "not_testable"
         reason = "The frozen query did not provide enough chronological events for the fixed OOS design."
