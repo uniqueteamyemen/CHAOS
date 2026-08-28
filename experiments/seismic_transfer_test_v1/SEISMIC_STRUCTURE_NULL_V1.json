@@ -1,0 +1,56 @@
+{
+  "contract": "seismic-structure-null-v1",
+  "source_sha256": "4f8c01ab1a15d6765ca891df46df33f7559f24c79747a85027dc57037b0fa8b3",
+  "repetitions": 1000,
+  "seed": 20260828,
+  "preserved": [
+    "event_count",
+    "UTC_timestamps",
+    "inter_event_intervals",
+    "entity",
+    "magnitude_multiset",
+    "geographic_attributes"
+  ],
+  "broken": [
+    "magnitude-to-time/order association",
+    "magnitude-derived state sequence",
+    "path-to-outcome alignment"
+  ],
+  "pipeline": {
+    "window_width": 3,
+    "train_size": 8,
+    "min_support": 2,
+    "same_event_path_code": true
+  },
+  "observed": {
+    "path_accuracy": 0.2675,
+    "majority_accuracy": 0.2575,
+    "lift": 0.010000000000000009,
+    "n": 400
+  },
+  "null": {
+    "path_accuracy": {
+      "observed": 0.2675,
+      "null_mean": 0.31982,
+      "null_std": 0.0228764092462082,
+      "null_p95": 0.3575,
+      "empirical_p_value_ge_observed": 0.995004995004995
+    },
+    "majority_accuracy": {
+      "observed": 0.2575,
+      "null_mean": 0.247645,
+      "null_std": 0.022986767389087143,
+      "null_p95": 0.2825,
+      "empirical_p_value_ge_observed": 0.3886113886113886
+    },
+    "lift": {
+      "observed": 0.010000000000000009,
+      "null_mean": 0.072175,
+      "null_std": 0.030477768537082898,
+      "null_p95": 0.12,
+      "empirical_p_value_ge_observed": 0.984015984015984
+    }
+  },
+  "primary_test": "empirical p-value for observed Event-Path lift over Majority baseline",
+  "interpretation_rule": "real lift outside the null distribution supports an initial predictive signal; otherwise evidence is insufficient"
+}
