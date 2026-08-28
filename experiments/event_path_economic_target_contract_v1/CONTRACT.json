@@ -1,0 +1,13 @@
+{
+  "contract_id": "event-path-economic-raw-target-v1",
+  "source_feature": "wdi__NY.GDP.MKTP.KD.ZG",
+  "source_rule": "GDP growth at t > 4.0%",
+  "raw_target": "GDP growth at t+3 <= GDP growth at t - 2pp",
+  "horizon": 3,
+  "window_width": 3,
+  "train_size": 8,
+  "min_support": 2,
+  "unsupported_paths": "abstain",
+  "no_future_target_in_source_states": true,
+  "causal_claims_permitted": false
+}

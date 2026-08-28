@@ -1,0 +1,19 @@
+{
+  "repetitions": 1000,
+  "seed": 20260828,
+  "observed": {
+    "lift": 0.029556650246305383,
+    "path_accuracy": 0.541871921182266,
+    "majority_accuracy": 0.5123152709359606,
+    "coverage": 0.1938872970391595
+  },
+  "null": {
+    "lift_mean": -0.026699507389162557,
+    "lift_std": 0.03776034784079365,
+    "lift_p95": 0.03448275862068961,
+    "p_ge_observed": 0.08391608391608392,
+    "coverage_mean": 0.1938872970391595,
+    "coverage_std": 0.0
+  },
+  "interpretation": "positive separation requires observed lift above null distribution with adequate coverage"
+}
