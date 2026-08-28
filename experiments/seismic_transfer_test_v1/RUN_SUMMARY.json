@@ -1,0 +1,32 @@
+{
+  "source": {
+    "source_id": "usgs-earthquake-catalog:gulf-of-aden-v1",
+    "source_ref": "/home/ubuntu/CHAOS/data/raw/seismic_gulf_of_aden_v1/usgs_gulf_of_aden_query.geojson",
+    "source_sha256": "4f8c01ab1a15d6765ca891df46df33f7559f24c79747a85027dc57037b0fa8b3"
+  },
+  "counts": {
+    "events": 408,
+    "states": 408,
+    "transitions": 407,
+    "predictions": 400
+  },
+  "metrics": {
+    "path_model": {
+      "n": 400.0,
+      "accuracy": 0.2675
+    },
+    "persistence_baseline": {
+      "n": 400.0,
+      "accuracy": 0.075
+    },
+    "majority_baseline": {
+      "n": 400.0,
+      "accuracy": 0.2575
+    },
+    "simple_trend_baseline": {
+      "n": 400.0,
+      "accuracy": 0.2025
+    }
+  },
+  "status": "provisional"
+}

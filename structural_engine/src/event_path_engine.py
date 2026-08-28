@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from dataclasses import asdict, dataclass, field
 from collections import Counter, defaultdict
+from datetime import datetime, timezone
 import csv
 import hashlib
 import json
@@ -26,6 +27,7 @@ class Event:
     value: float
     event_type: str
     provenance: Provenance
+    attributes: dict[str, float | str | int | None] = field(default_factory=dict)
 
 
 @dataclass(frozen=True)
@@ -91,6 +93,29 @@ class Dataset:
     source_sha256: str
 
 
+class USGSGeoJSONAdapter:
+    """Adapt a frozen USGS GeoJSON earthquake query without changing Event-Path parameters."""
+
+    def load(self, path: str | FSPath, entity: str = "gulf_of_aden") -> Dataset:
+        source_path = FSPath(path)
+        raw = source_path.read_bytes()
+        digest = hashlib.sha256(raw).hexdigest()
+        source_id = "usgs-earthquake-catalog:gulf-of-aden-v1"
+        provenance = Provenance(source_id, str(source_path), digest)
+        payload = json.loads(raw.decode("utf-8"))
+        events: list[Event] = []
+        for feature in payload.get("features", []):
+            props = feature.get("properties", {})
+            geometry = feature.get("geometry") or {}
+            coords = geometry.get("coordinates") or [None, None, None]
+            if props.get("mag") is None or props.get("time") is None or not feature.get("id"):
+                continue
+            timestamp = datetime.fromtimestamp(float(props["time"]) / 1000.0, tz=timezone.utc).isoformat()
+            events.append(Event(f"event:usgs:{feature['id']}", "seismic", entity, timestamp, float(props["mag"]), "earthquake", provenance, {"longitude": coords[0], "latitude": coords[1], "depth_km": coords[2], "place": props.get("place"), "mag_type": props.get("magType")}))
+        events.sort(key=lambda event: event.timestamp)
+        return Dataset(events, source_id, str(source_path), digest)
+
+
 class AnnualPanelAdapter:
     """Adapt a governed annual panel into event-native observations without frequency mixing."""
 
@@ -133,6 +158,13 @@ def classify_state(interval_delta: float | None, relative_increment_delta: float
     return f"{interval}+{increment}"
 
 
+def _time_value(timestamp: str) -> float:
+    try:
+        return float(timestamp)
+    except ValueError:
+        return datetime.fromisoformat(timestamp.replace("Z", "+00:00")).timestamp()
+
+
 def build_states(events: Sequence[Event]) -> list[State]:
     by_entity: dict[str, list[Event]] = defaultdict(list)
     for event in events:
@@ -148,8 +180,8 @@ def build_states(events: Sequence[Event]) -> list[State]:
             increment = None
             if previous_event is not None:
                 try:
-                    interval = float(event.timestamp) - float(previous_event.timestamp)
-                except ValueError:
+                    interval = _time_value(event.timestamp) - _time_value(previous_event.timestamp)
+                except (ValueError, TypeError):
                     interval = None
                 increment = (event.value - previous_event.value) / max(abs(previous_event.value), 1e-12)
             interval_delta = None if interval is None or previous_interval is None else interval - previous_interval
@@ -200,8 +232,8 @@ def build_transitions(events: Sequence[Event], states: Sequence[State]) -> list[
         for source, target in zip(ordered, ordered[1:]):
             source_event, target_event = event_by_id[source.event_id], event_by_id[target.event_id]
             try:
-                lag = float(target_event.timestamp) - float(source_event.timestamp)
-            except ValueError:
+                lag = _time_value(target_event.timestamp) - _time_value(source_event.timestamp)
+            except (ValueError, TypeError):
                 lag = 0.0
             transitions.append(Transition(_id("transition", source.state_id, target.state_id), source.state_id, target.state_id, lag, {"source_value": source_event.value, "target_value": target_event.value}, target.provenance))
     return transitions

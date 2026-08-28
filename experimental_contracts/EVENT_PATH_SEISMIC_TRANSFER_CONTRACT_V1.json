@@ -1,0 +1,44 @@
+{
+  "contract_id": "event-path-seismic-transfer-v1",
+  "status": "frozen_before_data_retrieval",
+  "source": {
+    "provider": "USGS Earthquake Catalog FDSN Event Web Service",
+    "query_endpoint": "https://earthquake.usgs.gov/fdsnws/event/1/query",
+    "format": "geojson",
+    "catalog": "default_preferred_catalog",
+    "event_type": "earthquake"
+  },
+  "geography": {
+    "type": "fixed_bounding_box",
+    "minlatitude": 10.0,
+    "maxlatitude": 15.0,
+    "minlongitude": 42.0,
+    "maxlongitude": 52.0,
+    "label": "Gulf of Aden fixed operational box"
+  },
+  "time": {
+    "starttime": "2000-01-01T00:00:00Z",
+    "endtime": "2024-12-31T23:59:59Z",
+    "timezone": "UTC"
+  },
+  "threshold": {
+    "minmagnitude": 4.5,
+    "maxmagnitude": null,
+    "magnitude_field": "preferred mag"
+  },
+  "ordering": "time-asc",
+  "limit": 20000,
+  "frozen_before_results": true,
+  "transfer_rule": {
+    "economic_model_definition_unchanged": true,
+    "window_width": 3,
+    "train_size": 8,
+    "no_seismic_tuning": true,
+    "no_cross_stage_model_selection": true
+  },
+  "failure_policy": "not_testable_if_source_returns_insufficient_events_or_missing_required_fields",
+  "references": [
+    "https://earthquake.usgs.gov/fdsnws/event/1/",
+    "https://earthquake.usgs.gov/earthquakes/feed/v1.0/geojson.php"
+  ]
+}
