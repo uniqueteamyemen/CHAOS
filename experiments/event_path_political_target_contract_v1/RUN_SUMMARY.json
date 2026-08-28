@@ -1,0 +1,49 @@
+{
+  "source": "ama_gdp_growth_pct",
+  "target": "state_based_conflict",
+  "contract": "information available at t -> Event-Path -> raw political outcome at t+h",
+  "horizons": {
+    "1": {
+      "path_model": {
+        "n": 1808.0,
+        "accuracy": 0.8755530973451328,
+        "coverage": 0.4703433922996878
+      },
+      "majority_baseline": {
+        "n": 1808.0,
+        "accuracy": 0.8821902654867256,
+        "coverage": 0.4703433922996878
+      },
+      "abstention": {
+        "n": 2036.0,
+        "rate": 0.5296566077003122
+      },
+      "target": {
+        "horizon_years": 1.0,
+        "n": 3844.0
+      }
+    },
+    "3": {
+      "path_model": {
+        "n": 877.0,
+        "accuracy": 0.887115165336374,
+        "coverage": 0.2745773324984346
+      },
+      "majority_baseline": {
+        "n": 877.0,
+        "accuracy": 0.8893956670467503,
+        "coverage": 0.2745773324984346
+      },
+      "abstention": {
+        "n": 2317.0,
+        "rate": 0.7254226675015655
+      },
+      "target": {
+        "horizon_years": 3.0,
+        "n": 3194.0
+      }
+    }
+  },
+  "events": 5474,
+  "entities": 163
+}

@@ -61,3 +61,25 @@ def test_frozen_predictor_abstains_when_path_support_is_below_threshold():
         assert predictions
         assert all(prediction.predicted_state == "abstain_insufficient_support" for prediction in predictions)
         assert metrics["abstention"]["rate"] == 1.0
+
+
+def test_adapter_accepts_governed_boolean_values():
+    with tempfile.TemporaryDirectory() as tmp:
+        path = Path(tmp) / "boolean_panel.csv"
+        path.write_text("entity_code,year,value\nX,2000,True\nX,2001,False\n", encoding="utf-8")
+        dataset = AnnualPanelAdapter("value", domain="political").load(path)
+        assert [event.value for event in dataset.events] == [1.0, 0.0]
+
+
+def test_target_aware_predictor_uses_raw_future_target_contract():
+    with tempfile.TemporaryDirectory() as tmp:
+        path = Path(tmp) / "panel.csv"
+        _fixture(path)
+        dataset = AnnualPanelAdapter("value").load(path)
+        states = build_states(dataset.events)
+        targets = {"X": {2000: "0", 2001: "1", 2002: "0", 2003: "1", 2004: "0"}, "Y": {2000: "1", 2001: "1", 2002: "0", 2003: "0", 2004: "1"}}
+        predictions, metrics = EventPathEngine(window_width=3, min_support=1).rolling_oos_frozen_targets(states, dataset.events, targets, horizon=1, train_size=3)
+        assert predictions
+        assert all(prediction.split == "oos_target" for prediction in predictions)
+        assert metrics["target"]["horizon_years"] == 1.0
+        assert all(prediction.actual_state in {"0", "1"} for prediction in predictions)
