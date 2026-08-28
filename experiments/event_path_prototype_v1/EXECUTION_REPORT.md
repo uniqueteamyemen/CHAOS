@@ -7,15 +7,16 @@ This is a predictive prototype, not causal evidence.
 - Window width: `3`
 - Chronological train size: `8`
 - Events: **4780**; states: **4780**; transitions: **4586**; windows: **4392**; predictions: **3229**
+- Unsupported paths abstain; no fallback is included in path_model.
 
 ## Rolling OOS metrics
 
-| Model | Accuracy | N |
-|---|---:|---:|
-| path_model | 0.5274 | 3229 |
-| persistence_baseline | 0.3369 | 3229 |
-| majority_baseline | 0.4896 | 3229 |
-| simple_trend_baseline | 0.4172 | 3229 |
+| Model | Accuracy | N | Coverage/rate |
+|---|---:|---:|---:|
+| path_model | 0.6028 | 1523 | coverage=0.4717 |
+| majority_baseline | 0.4859 | 1523 | coverage=0.4717 |
+| persistence_baseline | 0.3454 | 1523 | coverage=0.4717 |
+| abstention | — | 1706 | rate=0.5283 |
 
 ## Interpretation
 

@@ -1,30 +1,26 @@
-# Gulf of Aden Seismic Transfer Test v1 — Repaired Predictor
+# Gulf of Aden Seismic Transfer Test v1
 
-هذا هو نفس اختبار النقل السابق بعد إصلاح ميكانيكية التنبؤ. لم تتغير بيانات USGS أو عقد النطاق أو تعريف الحالات أو `window_width=3` أو `train_size=8` أو المصدر. أصبح المسار الآن يجمّد العلاقة الشرطية داخل train ويطبق `min_support=2`؛ المسارات غير المدعومة تمتنع بدل استخدام persistence fallback.
+This is a frozen transfer test after the prediction-mechanics repair; no economic-model tuning was performed.
 
-- Source: `data/raw/seismic_gulf_of_aden_v1/usgs_gulf_of_aden_query.geojson`
+- Source: `/home/ubuntu/CHAOS/data/raw/seismic_gulf_of_aden_v1/usgs_gulf_of_aden_query.geojson`
 - Fixed region: 10–15°N, 42–52°E
 - Fixed period: 2000-01-01 through 2024-12-31 UTC
 - Fixed threshold: magnitude ≥ 4.5
 - Events retained: **408**
-- OOS rows: **400**
+- Window width: **3**; train size: **8**
+- Path support: **2**; unsupported paths abstain
 
-## Metrics on supported-path rows
+## Metrics
 
-| Model | Accuracy | N | Coverage |
+| Model | Accuracy | N | Coverage/rate |
 |---|---:|---:|---:|
-| Repaired Event-Path | 0.3271 | 269 | 0.6725 |
-| Majority baseline | 0.2454 | 269 | 0.6725 |
-| Persistence baseline | 0.0855 | 269 | 0.6725 |
+| path_model | 0.3271 | 269 | coverage=0.6725 |
+| majority_baseline | 0.2454 | 269 | coverage=0.6725 |
+| persistence_baseline | 0.0855 | 269 | coverage=0.6725 |
+| abstention | — | 131 | rate=0.3275 |
 
-الامتناع كان في `131/400` حالة، بمعدل **0.3275**. لذلك لا يصح عرض `0.3271` كدقة على كامل السجل؛ إنها دقة على الحالات التي اجتازت دعم المسار، مع coverage معلنة.
+## Status: `provisional_transfer_only`
 
-## Interpretation
+The transfer result is descriptive and predictive only; it does not revise the economic judgment.
 
-الإصلاح رفع الفصل بين Path model وMajority على الصفوف المدعومة إلى Lift قدره `0.0818`، لكنه لا يحول النتيجة تلقائيًا إلى دليل مستقر. يجب قراءته مع coverage والـNull المجدد. لا يوجد tuning زلزالي، ولا تُستخدم هذه النتيجة لتعديل النموذج الاقتصادي.
-
-## Status
-
-`provisional_transfer_only`
-
-النتيجة لا تزال نقلًا أوليًا، وليست دليلًا سببيًا أو إشارة قابلة للنشر.
+No seismic result is used to alter the economic Event-Path definition, window width, train size, or model selection.

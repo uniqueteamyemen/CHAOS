@@ -258,7 +258,7 @@ class EventPathEngine:
     def _majority(labels: Sequence[str], fallback: str = "insufficient_history") -> str:
         return Counter(labels).most_common(1)[0][0] if labels else fallback
 
-    def rolling_oos(self, states: Sequence[State], events: Sequence[Event], train_size: int = 8) -> tuple[list[Prediction], dict[str, dict[str, float]]]:
+    def rolling_oos_legacy(self, states: Sequence[State], events: Sequence[Event], train_size: int = 8) -> tuple[list[Prediction], dict[str, dict[str, float]]]:
         event_by_id = {event.event_id: event for event in events}
         state_by_entity: dict[str, list[State]] = defaultdict(list)
         for state in states:
@@ -279,6 +279,10 @@ class EventPathEngine:
                 trend = self._majority([state.label for state in train[-3:]])
                 predictions.append(Prediction(_id("prediction", entity, index), _id("path", entity, index), entity, event_by_id[actual.event_id].timestamp, predicted, actual.label, "oos", provenance, train[-1].label, majority, trend))
         return predictions, evaluate_predictions(predictions, states)
+
+    def rolling_oos(self, states: Sequence[State], events: Sequence[Event], train_size: int = 8) -> tuple[list[Prediction], dict[str, dict[str, float]]]:
+        """Public leakage-safe API; unsupported paths abstain instead of falling back."""
+        return self.rolling_oos_frozen(states, events, train_size=train_size)
 
     def rolling_oos_frozen(self, states: Sequence[State], events: Sequence[Event], train_size: int = 8) -> tuple[list[Prediction], dict[str, dict[str, float]]]:
         """Leakage-safe predictor: discover/freeze conditional paths inside each train prefix.

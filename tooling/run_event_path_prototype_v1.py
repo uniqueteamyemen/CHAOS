@@ -53,9 +53,12 @@ def main() -> None:
         candidate_counts[signature] = candidate_counts.get(signature, 0) + 1
     candidates = [{"pattern_id": f"event-path:{i:04d}", "state_signature": signature, "support": support, "status": "candidate" if support >= 2 else "unresolved", "evidence_refs": ["RUN_SUMMARY.json", "PATHS.jsonl"]} for i, (signature, support) in enumerate(sorted(candidate_counts.items(), key=lambda item: (-item[1], item[0])), 1)]
     (args.output / "CANDIDATE_PATTERNS.jsonl").write_text("\n".join(json.dumps(row, ensure_ascii=False, sort_keys=True) for row in candidates) + "\n", encoding="utf-8")
-    report = ["# Event-Path Prototype v1 — Execution Report", "", "This is a predictive prototype, not causal evidence.", "", f"- Source: `{args.input}`", f"- Value column: `{args.value_column}`", f"- Window width: `{args.window_width}`", f"- Chronological train size: `{args.train_size}`", f"- Events: **{len(dataset.events)}**; states: **{len(states)}**; transitions: **{len(transitions)}**; windows: **{len(windows)}**; predictions: **{len(predictions)}**", "", "## Rolling OOS metrics", "", "| Model | Accuracy | N |", "|---|---:|---:|"]
+    report = ["# Event-Path Prototype v1 — Execution Report", "", "This is a predictive prototype, not causal evidence.", "", f"- Source: `{args.input}`", f"- Value column: `{args.value_column}`", f"- Window width: `{args.window_width}`", f"- Chronological train size: `{args.train_size}`", f"- Events: **{len(dataset.events)}**; states: **{len(states)}**; transitions: **{len(transitions)}**; windows: **{len(windows)}**; predictions: **{len(predictions)}**", "- Unsupported paths abstain; no fallback is included in path_model.", "", "## Rolling OOS metrics", "", "| Model | Accuracy | N | Coverage/rate |", "|---|---:|---:|---:|"]
     for name, values in metrics.items():
-        report.append(f"| {name} | {values['accuracy']:.4f} | {int(values['n'])} |")
+        if "accuracy" in values:
+            report.append(f"| {name} | {values['accuracy']:.4f} | {int(values['n'])} | coverage={values.get('coverage', 1.0):.4f} |")
+        else:
+            report.append(f"| {name} | — | {int(values['n'])} | rate={values.get('rate', 0.0):.4f} |")
     report += ["", "## Interpretation", "", "The path model is marked **provisional** because this first pass uses one annual economic series and has not yet undergone independent-domain replication, null-search correction, or external event-native validation. Accuracy is reported only against chronological out-of-sample outcomes; it must not be described as causal evidence or as a deployable signal.", ""]
     (args.output / "EXECUTION_REPORT.md").write_text("\n".join(report), encoding="utf-8")
     print({"input": str(args.input), "output": str(args.output), "events": len(dataset.events), "states": len(states), "transitions": len(transitions), "windows": len(windows), "paths": len(paths), "predictions": len(predictions), "metrics": metrics})

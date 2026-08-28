@@ -37,8 +37,9 @@ def test_path_objects_and_rolling_oos_are_reproducible():
         assert all(len(p.state_labels) == 3 for p in paths)
         predictions, metrics = EventPathEngine(window_width=3, min_support=1).rolling_oos(states, dataset.events, train_size=3)
         assert predictions
-        assert metrics["path_model"]["n"] == float(len(predictions))
+        assert metrics["path_model"]["n"] <= float(len(predictions))
         assert 0.0 <= metrics["majority_baseline"]["accuracy"] <= 1.0
+        assert 0.0 <= metrics["path_model"]["coverage"] <= 1.0
 
 
 def test_insufficient_history_is_explicit():
