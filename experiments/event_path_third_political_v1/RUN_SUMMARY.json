@@ -1,0 +1,35 @@
+{
+  "source": {
+    "source_id": "annual-panel:state_based_conflict",
+    "source_ref": "/home/ubuntu/CHAOS/experiments/macro_plus_eia_energy/ama_ucdp_cross_domain_v1/AMA_UCDP_CROSS_DOMAIN_REPLAY_ROWS.csv",
+    "source_sha256": "cdb4d8566f07aa3d0c47b87ee11aa09549258b5db12c3d759a4d699a125c227b"
+  },
+  "counts": {
+    "events": 5474,
+    "states": 5474,
+    "transitions": 5311,
+    "predictions": 4170
+  },
+  "metrics": {
+    "path_model": {
+      "n": 3515.0,
+      "accuracy": 0.9815078236130867,
+      "coverage": 0.842925659472422
+    },
+    "majority_baseline": {
+      "n": 3515.0,
+      "accuracy": 0.46145092460881937,
+      "coverage": 0.842925659472422
+    },
+    "persistence_baseline": {
+      "n": 3515.0,
+      "accuracy": 0.0,
+      "coverage": 0.842925659472422
+    },
+    "abstention": {
+      "n": 655.0,
+      "rate": 0.15707434052757793
+    }
+  },
+  "status": "provisional"
+}

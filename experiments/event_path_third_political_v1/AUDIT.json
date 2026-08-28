@@ -1,0 +1,37 @@
+{
+  "events": 5474,
+  "entities": 163,
+  "predictions": 4170,
+  "state_label_counts": {
+    "insufficient_history": 326,
+    "lengthening_intervals+stable_relative_increment": 2402,
+    "shortening_intervals+stable_relative_increment": 2402,
+    "lengthening_intervals+declining_relative_increment": 86,
+    "shortening_intervals+rising_relative_increment": 86,
+    "lengthening_intervals+rising_relative_increment": 86,
+    "shortening_intervals+declining_relative_increment": 86
+  },
+  "metrics": {
+    "path_model": {
+      "n": 3515.0,
+      "accuracy": 0.9815078236130867,
+      "coverage": 0.842925659472422
+    },
+    "majority_baseline": {
+      "n": 3515.0,
+      "accuracy": 0.46145092460881937,
+      "coverage": 0.842925659472422
+    },
+    "persistence_baseline": {
+      "n": 3515.0,
+      "accuracy": 0.0,
+      "coverage": 0.842925659472422
+    },
+    "abstention": {
+      "n": 655.0,
+      "rate": 0.15707434052757793
+    }
+  },
+  "support_policy": "min_support=2 fixed; unsupported paths abstain",
+  "interpretation": "This diagnostic is not a null validation and does not support causal claims."
+}

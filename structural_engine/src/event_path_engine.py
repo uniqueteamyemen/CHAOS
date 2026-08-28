@@ -138,7 +138,13 @@ class AnnualPanelAdapter:
                 try:
                     numeric = float(value)
                 except ValueError:
-                    continue
+                    normalized = str(value).strip().lower()
+                    if normalized in {"true", "yes", "y", "1"}:
+                        numeric = 1.0
+                    elif normalized in {"false", "no", "n", "0"}:
+                        numeric = 0.0
+                    else:
+                        continue
                 entity = row[entity_column]
                 timestamp = row[time_column]
                 event_id = f"event:{self.domain}:{entity}:{timestamp}:{self.value_column}"
