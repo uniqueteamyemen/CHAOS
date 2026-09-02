@@ -1,8 +1,8 @@
 {
   "agent_id":"HEALTH_PANDEMIC_AGENT_V1",
-  "status":"native_states_ready_edge_blocked",
+  "status":"raw_source_and_native_contract_ready_edge_blocked",
   "input":"experiments/multi_domain_native_adapters_v1/WHO_COVID_DOMAIN_STATES_DAILY_V1.jsonl.gz",
-  "source":"WHO_COVID_GLOBAL_DAILY_RAW.csv",
+  "source":"data/raw/who_covid_global_v2/WHO-COVID-19-global-daily-data.csv",
   "native_frequency":"daily",
   "raw_rows":573360,
   "reported_rows_used_for_states":215751,
