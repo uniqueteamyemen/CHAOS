@@ -1,0 +1,34 @@
+{
+  "source": {
+    "source_id": "annual-panel:value",
+    "source_ref": "/home/ubuntu/CHAOS/data/raw/financial_world_bank_v1/WB_FS_AST_PRVT_GD_ZS_2000_2024.csv",
+    "source_sha256": "dae8a23280d6c1d16a03e1891bfbadccd46b87c35b5f8db020d7ab783fc1bebc"
+  },
+  "counts": {
+    "events": 5123,
+    "states": 5123,
+    "transitions": 4890,
+    "predictions": 2571
+  },
+  "metrics": {
+    "path_model": {
+      "n": 572.0,
+      "accuracy": 0.5174825174825175,
+      "coverage": 0.22248152469856086
+    },
+    "majority_baseline": {
+      "n": 572.0,
+      "accuracy": 0.5454545454545454,
+      "coverage": 0.22248152469856086
+    },
+    "abstention": {
+      "n": 1999.0,
+      "rate": 0.7775184753014391
+    },
+    "target": {
+      "horizon_years": 3.0,
+      "n": 2571.0
+    }
+  },
+  "status": "provisional"
+}

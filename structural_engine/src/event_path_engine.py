@@ -339,6 +339,87 @@ class EventPathEngine:
         }
         return predictions, metrics
 
+    def rolling_oos_frozen_targets_backoff(self, states: Sequence[State], events: Sequence[Event], targets_by_entity_year: dict[str, dict[int, str]], horizon: int, train_size: int = 8, min_support: int | None = None) -> tuple[list[Prediction], dict[str, dict[str, float]]]:
+        """Use a pre-registered suffix hierarchy without pooling entities."""
+        event_by_id = {event.event_id: event for event in events}
+        by_entity: dict[str, list[State]] = defaultdict(list)
+        for state in states:
+            by_entity[event_by_id[state.event_id].entity].append(state)
+        for series in by_entity.values():
+            series.sort(key=lambda state: _time_value(event_by_id[state.event_id].timestamp))
+        required_support = self.min_support if min_support is None else min_support
+        predictions: list[Prediction] = []
+        for entity, series in by_entity.items():
+            target_map = targets_by_entity_year.get(entity, {})
+            for index in range(train_size, len(series)):
+                source = series[index]
+                as_of_year = int(float(event_by_id[source.event_id].timestamp))
+                actual = target_map.get(as_of_year + horizon)
+                if actual is None:
+                    continue
+                train = series[:index]
+                selected: list[str] = []
+                selected_width = 0
+                for width in range(min(self.window_width, len(train)), 0, -1):
+                    signature = tuple(state.label for state in train[-width:])
+                    outcomes = []
+                    for end in range(width - 1, len(train) - 1):
+                        historical_year = int(float(event_by_id[train[end].event_id].timestamp))
+                        if historical_year + horizon >= as_of_year or historical_year + horizon not in target_map:
+                            continue
+                        historical_signature = tuple(state.label for state in train[end-width+1:end+1])
+                        if historical_signature == signature:
+                            outcomes.append(target_map[historical_year + horizon])
+                    if len(outcomes) >= required_support:
+                        selected = outcomes
+                        selected_width = width
+                        break
+                predicted = self._majority(selected) if selected else "abstain_insufficient_support"
+                eligible = [target_map[int(float(event_by_id[st.event_id].timestamp)) + horizon] for st in train if int(float(event_by_id[st.event_id].timestamp)) + horizon < as_of_year and int(float(event_by_id[st.event_id].timestamp)) + horizon in target_map]
+                majority = self._majority(eligible)
+                predictions.append(Prediction(_id("prediction-backoff", entity, index, horizon), _id("path-backoff", entity, index, horizon), entity, event_by_id[source.event_id].timestamp, predicted, actual, "oos_target_backoff", source.provenance, str(selected_width), majority, majority))
+        covered = [p for p in predictions if p.predicted_state != "abstain_insufficient_support"]
+        metrics = {"path_model": {"n": float(len(covered)), "accuracy": _accuracy([p.predicted_state for p in covered], [p.actual_state for p in covered])["accuracy"] if covered else 0.0, "coverage": len(covered)/len(predictions) if predictions else 0.0}, "majority_baseline": {"n": float(len(covered)), "accuracy": _accuracy([p.baseline_majority for p in covered], [p.actual_state for p in covered])["accuracy"] if covered else 0.0, "coverage": len(covered)/len(predictions) if predictions else 0.0}, "abstention": {"n": float(len(predictions)-len(covered)), "rate": (len(predictions)-len(covered))/len(predictions) if predictions else 0.0}, "target": {"horizon_years": float(horizon), "n": float(len(predictions)), "backoff_widths": f"{min(self.window_width, 3)}..1"}}
+        return predictions, metrics
+
+    def rolling_oos_frozen_targets_pooled(self, states: Sequence[State], events: Sequence[Event], targets_by_entity_year: dict[str, dict[int, str]], horizon: int, train_size: int = 8, min_entity_support: int = 2) -> tuple[list[Prediction], dict[str, dict[str, float]]]:
+        """Cross-entity target-aware predictor with entity-independent support governance."""
+        event_by_id = {event.event_id: event for event in events}
+        by_entity: dict[str, list[State]] = defaultdict(list)
+        for state in states:
+            by_entity[event_by_id[state.event_id].entity].append(state)
+        for series in by_entity.values():
+            series.sort(key=lambda state: _time_value(event_by_id[state.event_id].timestamp))
+        predictions: list[Prediction] = []
+        for entity, series in by_entity.items():
+            target_map = targets_by_entity_year.get(entity, {})
+            for index in range(train_size, len(series)):
+                source = series[index]
+                as_of_year = int(float(event_by_id[source.event_id].timestamp))
+                actual = target_map.get(as_of_year + horizon)
+                if actual is None:
+                    continue
+                signature = tuple(state.label for state in series[:index][-self.window_width:])
+                outcomes: list[tuple[str, str]] = []
+                for other_entity, other_series in by_entity.items():
+                    other_targets = targets_by_entity_year.get(other_entity, {})
+                    for end in range(self.window_width - 1, len(other_series) - 1):
+                        other_year = int(float(event_by_id[other_series[end].event_id].timestamp))
+                        if other_year + horizon >= as_of_year or other_year + horizon not in other_targets:
+                            continue
+                        other_signature = tuple(state.label for state in other_series[end-self.window_width+1:end+1])
+                        if other_signature == signature:
+                            outcomes.append((other_entity, other_targets[other_year + horizon]))
+                distinct_entities = {entity_id for entity_id, _ in outcomes}
+                supported = len(outcomes) >= self.min_support and len(distinct_entities) >= min_entity_support
+                predicted = self._majority([label for _, label in outcomes]) if supported else "abstain_insufficient_support"
+                eligible = [other_targets[int(float(stamp.event_id.split(":")[-2])) + horizon] for other_entity, other_series in by_entity.items() for other_targets in [targets_by_entity_year.get(other_entity, {})] for stamp in other_series[:index] if int(float(stamp.event_id.split(":")[-2])) + horizon < as_of_year and int(float(stamp.event_id.split(":")[-2])) + horizon in other_targets]
+                majority = self._majority(eligible)
+                predictions.append(Prediction(_id("prediction-pooled", entity, index, horizon), _id("path-pooled", entity, index, horizon), entity, event_by_id[source.event_id].timestamp, predicted, actual, "oos_target_pooled", source.provenance, "", majority, majority))
+        covered = [p for p in predictions if p.predicted_state != "abstain_insufficient_support"]
+        metrics = {"path_model": {"n": float(len(covered)), "accuracy": _accuracy([p.predicted_state for p in covered], [p.actual_state for p in covered])["accuracy"] if covered else 0.0, "coverage": len(covered)/len(predictions) if predictions else 0.0}, "majority_baseline": {"n": float(len(covered)), "accuracy": _accuracy([p.baseline_majority for p in covered], [p.actual_state for p in covered])["accuracy"] if covered else 0.0, "coverage": len(covered)/len(predictions) if predictions else 0.0}, "abstention": {"n": float(len(predictions)-len(covered)), "rate": (len(predictions)-len(covered))/len(predictions) if predictions else 0.0}, "target": {"horizon_years": float(horizon), "n": float(len(predictions)), "min_entity_support": float(min_entity_support)}}
+        return predictions, metrics
+
     def rolling_oos_frozen(self, states: Sequence[State], events: Sequence[Event], train_size: int = 8) -> tuple[list[Prediction], dict[str, dict[str, float]]]:
         """Leakage-safe predictor: discover/freeze conditional paths inside each train prefix.
 

@@ -1,0 +1,21 @@
+{
+  "rows": 1047,
+  "covered": 203,
+  "coverage": 0.1938872970391595,
+  "abstention": 0.8061127029608405,
+  "support_distribution": {
+    "0": 519,
+    "1": 325,
+    "2": 148,
+    "3": 40,
+    "4": 14,
+    "5": 1
+  },
+  "unique_current_signatures": 8,
+  "current_signature_recurrence": {
+    "once": 0,
+    "twice": 0,
+    "three_or_more": 8
+  },
+  "interpretation": "Coverage loss is caused by unsupported exact state signatures; this is a diagnostic, not permission to lower min_support."
+}

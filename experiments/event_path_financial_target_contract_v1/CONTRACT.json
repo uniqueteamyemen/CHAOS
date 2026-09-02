@@ -1,0 +1,13 @@
+{
+  "contract_id": "event-path-financial-raw-target-v1",
+  "source": "World Bank WDI API",
+  "indicator": "FS.AST.PRVT.GD.ZS",
+  "feature_at_t": "domestic credit to private sector (% of GDP)",
+  "raw_target_at_t_plus_3": "credit ratio at t+3 < credit ratio at t",
+  "window_width": 3,
+  "train_size": 8,
+  "min_support": 2,
+  "unsupported_paths": "abstain",
+  "no_future_target_in_source_states": true,
+  "causal_claims_permitted": false
+}
