@@ -1,9 +1,0 @@
-#!/usr/bin/env python3
-from pathlib import Path
-from datetime import datetime,timezone
-import hashlib,json,requests
-ROOT=Path('/home/ubuntu/CHAOS'); RAW=ROOT/'campaigns/research_rounds/20260827_BROWSER_DEEP_RESEARCH/raw/imf_imts_bounded_usa_world'; RAW.mkdir(parents=True,exist_ok=True)
-URL='https://api.imf.org/external/sdmx/3.0/data/dataflow/IMF.STA/IMTS/1.0.0/USA.XG_FOB_USD+MG_FOB_USD+MG_CIF_USD+TBG_USD.G001.A?c[TIME_PERIOD]=ge:2000+le:2024&attributes=all&detail=full&includeHistory=true&limit=100'
-def main():
- now=datetime.now(timezone.utc).isoformat(); r=requests.get(URL,timeout=180,headers={'User-Agent':'CHAOS-research-acquisition/1.0','Accept':'application/vnd.sdmx.data+csv;version=2.0'}); data=r.content; p=RAW/'IMF_IMTS_BOUNDED_USA_WORLD_2000_2024_RESPONSE.bin'; p.write_bytes(data); sha=hashlib.sha256(data).hexdigest(); (RAW/'request_url.txt').write_text(URL+'\n'); (RAW/'response_headers.json').write_text(json.dumps({'status_code':r.status_code,'content_type':r.headers.get('content-type'),'content_length':r.headers.get('content-length'),'retrieved_at_utc':now,'url':r.url},ensure_ascii=False,indent=2)+'\n'); summary={'source_id':'IMF.STA:IMTS','official_dataset_url':'https://data.imf.org/en/datasets/IMF.STA:IMTS','api_url':URL,'retrieved_at_utc':now,'status_code':r.status_code,'content_type':r.headers.get('content-type'),'bytes':len(data),'sha256':sha,'raw_path':str(p.relative_to(ROOT)),'raw_immutable':True,'query_scope':{'country':'USA','counterpart_country':'G001','indicators':['XG_FOB_USD','MG_FOB_USD','MG_CIF_USD','TBG_USD'],'frequency':'A','period':'2000-2024'},'status':'downloaded_response' if r.ok else 'endpoint_error'}; (ROOT/'campaigns/research_rounds/20260827_BROWSER_DEEP_RESEARCH/IMF_IMTS_BOUNDED_ACQUISITION_SUMMARY_V1.json').write_text(json.dumps(summary,ensure_ascii=False,indent=2)+'\n'); print(json.dumps(summary,ensure_ascii=False,indent=2));
-if __name__=='__main__': main()

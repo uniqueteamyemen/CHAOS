@@ -1,9 +1,0 @@
-#!/usr/bin/env python3
-from pathlib import Path
-import json,hashlib
-ROOT=Path('/home/ubuntu/CHAOS'); reg=ROOT/'experiments/macro_plus_eia_energy/CONTROLLED_PATTERN_REGISTRY_V1.jsonl'; d=ROOT/'experiments/dual_track_v02/imf_partner_substitution_v3'; s=json.loads((d/'IMF_IMTS_PARTNER_SUBSTITUTION_SUMMARY_V3.json').read_text()); a=json.loads((d/'IMF_IMTS_PARTNER_SUBSTITUTION_ELIGIBILITY_AUDIT_V3.json').read_text())
-r={'pattern_id':'IMF_IMTS_PARTNER_SUBSTITUTION_V3','status':'unresolved','statement':'IMF baseline top-1 partner displacement is followed by persistence of a replacement top-1 identity over 1-3 annual horizons','evidence':{'artifact':'experiments/dual_track_v02/imf_partner_substitution_v3/IMF_IMTS_PARTNER_SUBSTITUTION_SUMMARY_V3.json','eligibility_audit':'experiments/dual_track_v02/imf_partner_substitution_v3/IMF_IMTS_PARTNER_SUBSTITUTION_ELIGIBILITY_AUDIT_V3.json','fit_confirmation':{'reporters':s['reporters'],'confirmation_horizons':{'h1_rate':0.8612903225806452,'h2_rate':0.7712177121771218,'h3_rate':0.6978723404255319},'identity_null_p_h1':0.00009999000099990002,'time_placebo_p_h1':0.0001999600079984003},'stability_runs':5},'causal_claim':False,'operational_promotion':False,'interpretation':'promising descriptive/predictive candidate but unresolved; no positive Composer or runtime weight. Requires a new frozen admission erratum/contract with explicit alpha/FDR/pass rules and stronger temporal-dependence null before support admission or causal validation.'}
-ids={json.loads(x)['pattern_id'] for x in reg.read_text().splitlines() if x.strip()};
-if r['pattern_id'] not in ids:
- reg.open('a').write(json.dumps(r,ensure_ascii=False,sort_keys=True)+'\n'); print(json.dumps({'appended':True,'pattern_id':r['pattern_id']},ensure_ascii=False,indent=2))
-else: print(json.dumps({'appended':False,'pattern_id':r['pattern_id']},ensure_ascii=False,indent=2))
