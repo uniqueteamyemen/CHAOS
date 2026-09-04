@@ -1,5 +1,5 @@
 import React from 'react';
-import { ShieldCheck, Lock, Activity, Database, GitFork, AlertTriangle, Sparkles, Play, Globe2 } from 'lucide-react';
+import { ShieldCheck, Lock, Activity, Database, GitFork, AlertTriangle, Sparkles, Play, Globe2, ArrowRightLeft } from 'lucide-react';
 
 interface HeaderProps {
   activeTab: string;
@@ -10,6 +10,7 @@ interface HeaderProps {
 export const Header: React.FC<HeaderProps> = ({ activeTab, setActiveTab }) => {
   const navItems = [
     { id: 'fleet50', label: 'أسطول الـ 50 والأثر البشري (Fleet 50)', icon: Globe2 },
+    { id: 'transition', label: 'اختبار الصمود والانتقال (2008 ← 2013)', icon: ArrowRightLeft },
     { id: 'runtime', label: 'CHAOS Runtime V1 (واجهة التشغيل)', icon: Play },
     { id: 'discovery', label: 'مختبر استكشاف البنية الزمنية (Discovery Engine)', icon: Sparkles },
     { id: 'gate', label: 'Supervisor Gate', icon: ShieldCheck },
