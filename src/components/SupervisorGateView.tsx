@@ -1,10 +1,17 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { SUPERVISOR_GATE_DATA, AGENT_SPECS } from '../data/chaosData';
-import { ShieldCheck, ShieldAlert, CheckCircle2, XCircle, FileText, Bot, Lock, ExternalLink } from 'lucide-react';
+import { REAL_TIME_SERIES_LIBRARY } from '../data/timeSeriesLibrary';
+import { evaluateCausalCircuitBreaker, CircuitBreakerEvaluation } from '../utils/causalCircuitBreaker';
+import { ShieldCheck, ShieldAlert, CheckCircle2, XCircle, FileText, Bot, Lock, AlertTriangle, Zap, Activity } from 'lucide-react';
 
 export const SupervisorGateView: React.FC = () => {
   const [filterDomain, setFilterDomain] = useState<string>('all');
   const [searchTerm, setSearchTerm] = useState<string>('');
+  
+  // Interactive Circuit Breaker State
+  const [selectedSeriesA, setSelectedSeriesA] = useState<string>(REAL_TIME_SERIES_LIBRARY[0]?.id || '');
+  const [selectedSeriesB, setSelectedSeriesB] = useState<string>(REAL_TIME_SERIES_LIBRARY[2]?.id || '');
+  const [testClaimType, setTestClaimType] = useState<'CORRELATION_ANALYSIS' | 'CAUSAL_ASSERTION'>('CAUSAL_ASSERTION');
 
   const inputFilesList = Object.entries(SUPERVISOR_GATE_DATA.input_hashes);
 
@@ -16,6 +23,20 @@ export const SupervisorGateView: React.FC = () => {
     if (filterDomain === 'all') return true;
     return agent.domain === filterDomain;
   });
+
+  // Execute Causal Circuit Breaker dynamically from genuine raw arrays
+  const circuitBreakerResult: CircuitBreakerEvaluation | null = useMemo(() => {
+    const sA = REAL_TIME_SERIES_LIBRARY.find(s => s.id === selectedSeriesA);
+    const sB = REAL_TIME_SERIES_LIBRARY.find(s => s.id === selectedSeriesB);
+    if (!sA || !sB) return null;
+
+    return evaluateCausalCircuitBreaker(
+      `CLAIM_${sA.id}_VS_${sB.id}`,
+      testClaimType,
+      { id: sA.id, source: sA.source, code: sA.indicatorCode, data: sA.points.map(p => p.value) },
+      { id: sB.id, source: sB.source, code: sB.indicatorCode, data: sB.points.map(p => p.value) }
+    );
+  }, [selectedSeriesA, selectedSeriesB, testClaimType]);
 
   return (
     <div className="space-y-6">
@@ -163,6 +184,126 @@ export const SupervisorGateView: React.FC = () => {
             </div>
           </div>
         </div>
+      </div>
+
+      {/* Causal Circuit-Breaker Engine (Interactive Integrity Test) */}
+      <div className="bg-slate-900 border border-slate-800 rounded-xl p-5">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+          <div>
+            <h3 className="text-base font-semibold text-slate-200 flex items-center space-x-2">
+              <Zap className="w-4 h-4 text-amber-400" />
+              <span>محرك قاطع الدائرة السببي (Causal Circuit-Breaker Engine)</span>
+            </h3>
+            <p className="text-xs text-slate-400 mt-0.5">
+              فحص حي مباشر للسلاسل الزمنية الرسمية للتحقق من المصدر، وحظر ادعاءات السببية غير المثبتة تجريبياً.
+            </p>
+          </div>
+
+          <div className="flex items-center space-x-2">
+            <span className="text-xs font-mono px-2.5 py-1 rounded bg-slate-950 border border-slate-800 text-slate-300">
+              AGENTS.md Enforced
+            </span>
+          </div>
+        </div>
+
+        {/* Series and Claim Selector */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 p-4 bg-slate-950/60 rounded-lg border border-slate-800 mb-4">
+          <div>
+            <label className="block text-xs font-mono text-slate-400 mb-1">السلسلة الأساسية (Primary Series):</label>
+            <select
+              value={selectedSeriesA}
+              onChange={(e) => setSelectedSeriesA(e.target.value)}
+              className="w-full bg-slate-900 border border-slate-700 rounded px-2.5 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-cyan-500"
+            >
+              {REAL_TIME_SERIES_LIBRARY.map((s) => (
+                <option key={s.id} value={s.id}>
+                  {s.name} ({s.source})
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-xs font-mono text-slate-400 mb-1">السلسلة المقارنة (Secondary Series):</label>
+            <select
+              value={selectedSeriesB}
+              onChange={(e) => setSelectedSeriesB(e.target.value)}
+              className="w-full bg-slate-900 border border-slate-700 rounded px-2.5 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-cyan-500"
+            >
+              {REAL_TIME_SERIES_LIBRARY.map((s) => (
+                <option key={s.id} value={s.id}>
+                  {s.name} ({s.source})
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-xs font-mono text-slate-400 mb-1">نوع الادعاء المقدم للبوابة:</label>
+            <select
+              value={testClaimType}
+              onChange={(e) => setTestClaimType(e.target.value as any)}
+              className="w-full bg-slate-900 border border-slate-700 rounded px-2.5 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-cyan-500"
+            >
+              <option value="CAUSAL_ASSERTION">ادعاء سببي حتمي (Causal Assertion)</option>
+              <option value="CORRELATION_ANALYSIS">تحليل ارتباط إحصائي (Correlation Only)</option>
+            </select>
+          </div>
+        </div>
+
+        {/* Live Evaluation Result */}
+        {circuitBreakerResult && (
+          <div className={`p-4 rounded-lg border ${
+            circuitBreakerResult.admitted 
+              ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-300' 
+              : 'bg-rose-500/10 border-rose-500/30 text-rose-300'
+          }`}>
+            <div className="flex items-start justify-between">
+              <div className="flex items-center space-x-2">
+                {circuitBreakerResult.admitted ? (
+                  <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" />
+                ) : (
+                  <AlertTriangle className="w-5 h-5 text-rose-400 shrink-0" />
+                )}
+                <span className="font-bold text-sm">
+                  {circuitBreakerResult.admitted ? 'تمت الموافقة المشروطة (ADMITTED)' : 'تم قطع الدائرة وحظر الادعاء (CIRCUIT BREAKER TRIPPED)'}
+                </span>
+              </div>
+              <span className="text-[10px] font-mono px-2 py-0.5 rounded border border-current">
+                STATUS: {circuitBreakerResult.status}
+              </span>
+            </div>
+
+            <p className="mt-2 text-xs leading-relaxed text-slate-200">
+              {circuitBreakerResult.reason}
+            </p>
+
+            <div className="mt-3 pt-3 border-t border-slate-800/80 grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs font-mono text-slate-400">
+              <div>
+                <span>حجم العينة المتطابق:</span>
+                <span className="block text-slate-200 font-bold">{circuitBreakerResult.metrics.sampleSize} سنة</span>
+              </div>
+              <div>
+                <span>معامل بيرسون المحسوب:</span>
+                <span className="block text-cyan-300 font-bold">
+                  {circuitBreakerResult.metrics.empiricalCorrelation !== undefined ? circuitBreakerResult.metrics.empiricalCorrelation : 'N/A'}
+                </span>
+              </div>
+              <div>
+                <span>تدقيق المصدرين:</span>
+                <span className="block text-emerald-400 font-bold">
+                  {circuitBreakerResult.provenanceAudit.primaryVerified && circuitBreakerResult.provenanceAudit.secondaryVerified ? 'موثق رسمياً' : 'غير مكتمل'}
+                </span>
+              </div>
+              <div>
+                <span>الحجر الصحي (Quarantine):</span>
+                <span className={`block font-bold ${circuitBreakerResult.quarantineRequired ? 'text-rose-400' : 'text-emerald-400'}`}>
+                  {circuitBreakerResult.quarantineRequired ? 'مطلوب (QUARANTINED)' : 'غير مطلوب'}
+                </span>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Agent Orchestration Registry */}

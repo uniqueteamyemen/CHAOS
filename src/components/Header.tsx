@@ -16,7 +16,7 @@ export const Header: React.FC<HeaderProps> = ({ activeTab, setActiveTab }) => {
     { id: 'gate', label: 'Supervisor Gate', icon: ShieldCheck },
     { id: 'contracts', label: 'Experimental Contracts', icon: Lock },
     { id: 'governance', label: 'Governance Kernel MVP', icon: GitFork },
-    { id: 'benchmarks', label: 'Model Benchmarks & TFT', icon: Activity },
+    { id: 'benchmarks', label: 'ميثاق النزاهة وحظر المحاكاة (Audit)', icon: ShieldCheck },
     { id: 'catalog', label: 'Data Readiness & Catalog', icon: Database },
     { id: 'guardrails', label: 'Scientific Guardrails', icon: AlertTriangle }
   ];
