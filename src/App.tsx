@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Header } from './components/Header';
 import { HumanFleetEngineView } from './components/HumanFleetEngineView';
+import { PatternDiscoveryEngineView } from './components/PatternDiscoveryEngineView';
 import { FutureForecastEngineView } from './components/FutureForecastEngineView';
 import { TransitionRobustnessView } from './components/TransitionRobustnessView';
 import { ChaosRuntimeView } from './components/ChaosRuntimeView';
@@ -23,8 +24,9 @@ export const App: React.FC = () => {
         status="active"
       />
 
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className="max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1">
         {activeTab === 'fleet50' && <HumanFleetEngineView />}
+        {activeTab === 'pattern_discovery' && <PatternDiscoveryEngineView />}
         {activeTab === 'forecast' && <FutureForecastEngineView />}
         {activeTab === 'transition' && <TransitionRobustnessView />}
         {activeTab === 'runtime' && <ChaosRuntimeView />}

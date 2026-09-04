@@ -10,10 +10,11 @@ interface HeaderProps {
 export const Header: React.FC<HeaderProps> = ({ activeTab, setActiveTab }) => {
   const navItems = [
     { id: 'fleet50', label: 'أسطول الـ 50 والأثر البشري (Fleet 50)', icon: Globe2 },
+    { id: 'pattern_discovery', label: 'محرك اكتشاف الأنماط والتراخي (Pattern Discovery)', icon: Sparkles },
     { id: 'forecast', label: 'محرك الاستشراف المستقبلي (2025 ← 2030)', icon: Activity },
     { id: 'transition', label: 'اختبار الصمود والانتقال (2008 ← 2013)', icon: ArrowRightLeft },
     { id: 'runtime', label: 'CHAOS Runtime V1 (واجهة التشغيل)', icon: Play },
-    { id: 'discovery', label: 'مختبر استكشاف البنية الزمنية (Discovery Engine)', icon: Sparkles },
+    { id: 'discovery', label: 'مختبر استكشاف البنية الزمنية (Single Series)', icon: Sparkles },
     { id: 'gate', label: 'Supervisor Gate', icon: ShieldCheck },
     { id: 'contracts', label: 'Experimental Contracts', icon: Lock },
     { id: 'governance', label: 'Governance Kernel MVP', icon: GitFork },
