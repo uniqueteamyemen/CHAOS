@@ -1,0 +1,3 @@
+{"step": 1, "action": "create", "h0": "H0", "code": 200, "provenance": "stated", "note": "bootstrap + order transition captured", "state": null, "signal": null}
+{"step": 2, "action": "ack", "h0": "H0", "code": 200, "provenance": "stated", "note": "SIGNAL_RECORDED for ORDER-001", "state": null, "signal": null}
+{"step": 3, "action": "unlock", "h0": "H0", "code": 200, "provenance": "observed", "note": "UNLOCKED with h1 in response", "state": null, "signal": null}

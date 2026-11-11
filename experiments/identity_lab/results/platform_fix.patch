@@ -1,0 +1,99 @@
+--- platform_orig.js	2026-11-11 07:27:01.448133630 +0300
++++ platform.js	2026-11-11 07:28:24.308141885 +0300
+@@ -60,6 +60,51 @@
+   await redis.rpush('audit_log', entry);
+ }
+ 
++// ========== 3b. الذرية: قفل جلسة واحد للتعديل المتزامن ==========
++// كل معالجة تقرأ الجلسة ثم تكتبها. بدون قفل، طلبان متزامنان يقرآن النسخة نفسها
++// فيكتب أحدهما فوق إشارة الآخر. القفل يجعل «اقرأ-عدّل-اكتب» عملية واحدة لكل جلسة.
++async function acquireLock(h0, ttlSeconds = 15, waitMs = 10000) {
++  const token = crypto.randomBytes(12).toString('hex');
++  const deadline = Date.now() + waitMs;
++  while (Date.now() < deadline) {
++    const ok = await redis.set(`lock:${h0}`, token, 'NX', 'EX', ttlSeconds);
++    if (ok) return token;
++    await new Promise(r => setTimeout(r, 20));
++  }
++  return null;
++}
++
++async function releaseLock(h0, token) {
++  const current = await redis.get(`lock:${h0}`);
++  if (current === token) await redis.del(`lock:${h0}`);
++}
++
++// حجز ذري لإشارة الفتح: أمر واحد، بلا قفل وبلا طابور.
++// يمنع التكرار فورًا، ويترك القفل للكتابة على الجلسة فقط.
++async function claimUnlock(req, res, next) {
++  const h0 = req.body && req.body.h0;
++  if (!h0) return next();
++  const claimed = await redis.set(`unlock:${h0}`, '1', 'NX', 'EX', 3600);
++  if (!claimed) {
++    return res.status(409).json({ error: 'user_unlock already recorded' });
++  }
++  next();
++}
++
++async function lockSession(req, res, next) {
++  const h0 = req.body && req.body.h0;
++  if (!h0) return next();
++  const token = await acquireLock(h0);
++  if (!token) {
++    return res.status(503).json({ error: 'Session busy, retry' });
++  }
++  let released = false;
++  const release = async () => { if (!released) { released = true; await releaseLock(h0, token); } };
++  res.on('finish', release);
++  res.on('close', release);
++  next();
++}
++
+ // ========== 4. المتانة: منع تكرار الطلبات (Idempotency Middleware) ==========
+ async function idempotency(req, res, next) {
+   const key = req.headers['idempotency-key'];
+@@ -132,7 +177,7 @@
+ 
+ // ========== Optional Webhooks (Provider-Enabled) ==========
+ // If a provider chooses to send payment receipts/cancellations to PayLock, the session can be closed automatically.
+-app.post('/v1/webhook/payment', async (req, res) => {
++app.post('/v1/webhook/payment', lockSession, async (req, res) => {
+   if (!requireFields(req.body, ['h0', 'receipt_id'])) {
+     return res.status(400).json({ error: 'Missing required fields: h0, receipt_id' });
+   }
+@@ -160,7 +205,7 @@
+   res.json({ ok: true, h0 });
+ });
+ 
+-app.post('/v1/webhook/cancel', async (req, res) => {
++app.post('/v1/webhook/cancel', lockSession, async (req, res) => {
+   if (!requireFields(req.body, ['h0', 'receipt_id'])) {
+     return res.status(400).json({ error: 'Missing required fields: h0, receipt_id' });
+   }
+@@ -240,7 +285,7 @@
+ });
+ 
+ // ========== نقطة النهاية 3: إلحاق إشارة ==========
+-app.post('/v1/signal', async (req, res) => {
++app.post('/v1/signal', lockSession, async (req, res) => {
+   if (!requireFields(req.body, ['h0', 'signal_type', 'signal_ref'])) {
+     return res.status(400).json({ error: 'Missing required fields: h0, signal_type, signal_ref' });
+   }
+@@ -272,7 +317,7 @@
+ });
+ 
+ // ========== نقطة النهاية 4: فتح القفل (Unlock) ==========
+-app.post('/v1/unlock', async (req, res) => {
++app.post('/v1/unlock', claimUnlock, lockSession, async (req, res) => {
+   if (!requireFields(req.body, ['h0'])) {
+     return res.status(400).json({ error: 'Missing required field: h0' });
+   }
+@@ -329,7 +374,7 @@
+ });
+ 
+ // ========== نقطة النهاية 4: الحل وإصدار H1 ==========
+-app.post('/v1/resolve', async (req, res) => {
++app.post('/v1/resolve', lockSession, async (req, res) => {
+   if (!requireFields(req.body, ['h0'])) {
+     return res.status(400).json({ error: 'Missing required field: h0' });
+   }
