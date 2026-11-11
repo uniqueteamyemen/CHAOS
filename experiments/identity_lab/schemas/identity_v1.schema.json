@@ -1,0 +1,60 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "CHAOS_IDENTITY_V1",
+  "title": "CHAOS Identity Contract V1",
+  "description": "A zero-parameter statement that must hold for every observation. If it fails, either a term is mis-recorded or a flow is missing. It never contains estimated coefficients.",
+  "type": "object",
+  "required": ["identity_id", "version", "kind", "terms", "equation", "closure", "frozen_at"],
+  "additionalProperties": false,
+  "properties": {
+    "identity_id": {"type": "string", "pattern": "^[A-Z0-9_]+_V[0-9]+$"},
+    "version": {"type": "integer", "minimum": 1},
+    "kind": {
+      "enum": ["stock_balance", "single_occurrence", "independent_measurement", "definitional_ratio"],
+      "description": "stock_balance = conservation over a closed period; single_occurrence = at most one completion per intent; independent_measurement = same quantity recorded twice; definitional_ratio = algebraic relation between derived series"
+    },
+    "terms": {
+      "type": "array",
+      "minItems": 2,
+      "items": {
+        "type": "object",
+        "required": ["name", "role", "unit", "recorded_by", "derived"],
+        "additionalProperties": false,
+        "properties": {
+          "name": {"type": "string"},
+          "role": {"enum": ["inflow", "outflow", "state", "measurement", "claim"]},
+          "unit": {"type": "string"},
+          "recorded_by": {"type": "string", "description": "the independent process that writes this term; two terms written by the same process cannot form a testable identity"},
+          "derived": {"type": "boolean", "description": "true if the term is computed from another term; a derived term can never validate the identity"}
+        }
+      }
+    },
+    "equation": {"type": "string", "description": "human-readable zero-parameter equation, e.g. opening + arrivals - dispensed - expired = closing"},
+    "closure": {
+      "type": "object",
+      "required": ["type", "description"],
+      "additionalProperties": false,
+      "properties": {
+        "type": {"enum": ["physical_count", "external_record", "second_measurement", "unique_token", "algorithmic"]},
+        "description": {"type": "string", "description": "what independent act closes the identity; empty closure means the identity cannot produce residuals"},
+        "latency": {"type": "string", "description": "time between the event and its closure (e.g. monthly, instantaneous)"}
+      }
+    },
+    "expected_residual": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "center": {"type": "number"},
+        "scale": {"type": "number", "description": "robust scale (MAD-based) measured on a declared quiet window"},
+        "quiet_window": {"type": "string"}
+      }
+    },
+    "attribution_terms": {
+      "type": "array",
+      "items": {"type": "string"},
+      "description": "subset of term names that a residual may be attributed to; anything else makes the event unattributed and non-actionable"
+    },
+    "frozen_at": {"type": "string"},
+    "supersedes": {"type": ["string", "null"]}
+  }
+}

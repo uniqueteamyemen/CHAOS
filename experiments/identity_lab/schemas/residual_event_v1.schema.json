@@ -1,0 +1,147 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "CHAOS_RESIDUAL_EVENT_V1",
+  "title": "CHAOS Residual Event V1",
+  "description": "The missing twin of TRANSITION_EVIDENCE. It records a break of a frozen identity, never a probability of a state. No event is actionable without an attributed term and an identity version.",
+  "type": "object",
+  "required": [
+    "event_id",
+    "identity_id",
+    "identity_version",
+    "entity",
+    "time",
+    "native_frequency",
+    "magnitude",
+    "attributed_term",
+    "classification",
+    "detector",
+    "adjudication",
+    "evidence_refs"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "event_id": {
+      "type": "string"
+    },
+    "identity_id": {
+      "type": "string"
+    },
+    "identity_version": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "entity": {
+      "type": "string"
+    },
+    "time": {
+      "type": "string",
+      "description": "native time label of the observation, not a derived index"
+    },
+    "native_frequency": {
+      "enum": [
+        "instant",
+        "daily",
+        "weekly",
+        "monthly",
+        "quarterly",
+        "annual"
+      ]
+    },
+    "magnitude": {
+      "type": "object",
+      "required": [
+        "value",
+        "unit"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "value": {
+          "type": "number"
+        },
+        "unit": {
+          "type": "string"
+        }
+      }
+    },
+    "cumulative_magnitude": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "attributed_term": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "term of the identity suspected of carrying the break; null = unattributed and must not trigger action"
+    },
+    "classification": {
+      "enum": [
+        "measurement_defect",
+        "missing_flow",
+        "definitional_mismatch",
+        "regime_break",
+        "unresolved",
+        "control_violation"
+      ]
+    },
+    "detector": {
+      "type": "object",
+      "required": [
+        "rule",
+        "params"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "rule": {
+          "type": "string"
+        },
+        "params": {
+          "type": "object"
+        }
+      }
+    },
+    "adjudication": {
+      "type": "object",
+      "required": [
+        "status"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "status": {
+          "enum": [
+            "unreviewed",
+            "confirmed",
+            "rejected_noise",
+            "rejected_measurement"
+          ]
+        },
+        "reviewer": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "reviewed_at": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "note": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "evidence_refs": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}
