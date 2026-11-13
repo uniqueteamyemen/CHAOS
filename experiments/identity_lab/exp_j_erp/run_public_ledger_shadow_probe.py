@@ -96,7 +96,7 @@ def build_public_ledger_bundle() -> tuple[dict, dict]:
             "location_pair_available": False,
             "recorded_at_available": False,
             "uom_adapter": "units_out/units_in mapped to one count reference unit; not exported Odoo uom.uom metadata",
-            "pseudonymization": "source product and row IDs replaced with deterministic sequential aliases; supplier_id discarded",
+            "pseudonymization": "source product and row identifiers replaced with deterministic aliases; vendor identifiers omitted",
         },
         "moves": moves,
         "uom_rows": [{
