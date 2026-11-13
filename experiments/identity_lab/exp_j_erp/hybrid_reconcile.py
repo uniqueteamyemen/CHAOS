@@ -163,6 +163,35 @@ def match_hybrid(
         if rid and source:
             linked_owners[rid].add(source)
 
+    # Reserve every receipt explicitly linked to an in-scope shipment before
+    # approximate discovery. Otherwise an earlier shipment could claim a receipt
+    # that belongs to a later exact-linked shipment.
+    in_scope_shipments = {sid for sid in shipment_ids if sid}
+    reserved_receipt_ids = {
+        relation_id(r.get("counterpart_picking_id"))
+        for r in receipts
+        if relation_id(r.get("source_picking_id")) in in_scope_shipments
+        and relation_id(r.get("counterpart_picking_id"))
+    }
+    candidate_cache: dict[str, list[dict]] = {}
+    candidate_owners: dict[str, set[str]] = defaultdict(set)
+    for candidate_shipment in shipments:
+        candidate_sid = relation_id(candidate_shipment.get("picking_id"))
+        if not candidate_sid or links.get(candidate_sid):
+            continue
+        try:
+            _decimal(candidate_shipment.get("quantity", "0"), "shipment_quantity_invalid")
+        except UomNormalizationError:
+            continue
+        found = discover_candidates(
+            candidate_shipment, receipts, uoms_by_id, date_window_days,
+            candidate_quantity_tolerance_absolute,
+            candidate_quantity_tolerance_relative, reserved_receipt_ids,
+        )
+        candidate_cache[candidate_sid] = found
+        for candidate in found:
+            candidate_owners[candidate["receipt_id"]].add(candidate_sid)
+
     used_receipt_ids: set[str] = set()
     results: list[dict] = []
     for shipment in shipments:
@@ -245,12 +274,14 @@ def match_hybrid(
             })
             continue
 
-        candidates = discover_candidates(
-            shipment, receipts, uoms_by_id, date_window_days,
-            candidate_quantity_tolerance_absolute,
-            candidate_quantity_tolerance_relative, used_receipt_ids,
+        candidates = candidate_cache.get(sid, [])
+        shared_candidate = (
+            len(candidates) == 1
+            and len(candidate_owners[candidates[0]["receipt_id"]]) > 1
         )
-        if len(candidates) == 1:
+        if shared_candidate:
+            state, reason = "ambiguous", "receipt_candidate_shared_across_shipments"
+        elif len(candidates) == 1:
             state, reason = "candidate_approximate", "single_approximate_candidate"
         elif len(candidates) > 1:
             state, reason = "ambiguous", "multiple_approximate_candidates"
