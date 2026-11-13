@@ -30,8 +30,8 @@
         "D3": []
       },
       "max_abs_residual_per_entity": {
-        "DIST-C": 3.74,
         "DIST-A": 5.14,
+        "DIST-C": 3.74,
         "DIST-B": 6.6
       }
     },
@@ -80,8 +80,8 @@
         "D3": []
       },
       "max_abs_residual_per_entity": {
-        "DIST-C": 3.74,
         "DIST-A": 5.14,
+        "DIST-C": 3.74,
         "DIST-B": 92.95
       }
     },
@@ -190,8 +190,8 @@
         ]
       },
       "max_abs_residual_per_entity": {
-        "DIST-C": 3.74,
         "DIST-A": 5.14,
+        "DIST-C": 3.74,
         "DIST-B": 6.6
       }
     },
@@ -212,8 +212,8 @@
         "D3": []
       },
       "max_abs_residual_per_entity": {
-        "DIST-C": 6.56,
         "DIST-A": 5.14,
+        "DIST-C": 6.56,
         "DIST-B": 6.6
       }
     }

@@ -1,0 +1,208 @@
+{
+  "table": {
+    "clean": {
+      "breaks": [],
+      "break_cases": 0,
+      "candidates": [],
+      "candidate_cases": 0
+    },
+    "leak": {
+      "breaks": [
+        "stock_balance@DIST-B"
+      ],
+      "break_cases": 1,
+      "candidates": [],
+      "candidate_cases": 0
+    },
+    "edge": {
+      "breaks": [
+        "transfer_edge@DIST-A->DIST-B"
+      ],
+      "break_cases": 1,
+      "candidates": [],
+      "candidate_cases": 0
+    },
+    "struct": {
+      "breaks": [],
+      "break_cases": 0,
+      "candidates": [
+        "structuring@DIST-C"
+      ],
+      "candidate_cases": 1
+    },
+    "leak+edge": {
+      "breaks": [
+        "stock_balance@DIST-B",
+        "transfer_edge@DIST-A->DIST-B"
+      ],
+      "break_cases": 2,
+      "candidates": [],
+      "candidate_cases": 0
+    },
+    "edge+struct": {
+      "breaks": [
+        "transfer_edge@DIST-A->DIST-B"
+      ],
+      "break_cases": 1,
+      "candidates": [
+        "structuring@DIST-C"
+      ],
+      "candidate_cases": 1
+    },
+    "leak+struct": {
+      "breaks": [
+        "stock_balance@DIST-B"
+      ],
+      "break_cases": 1,
+      "candidates": [
+        "structuring@DIST-C"
+      ],
+      "candidate_cases": 1
+    },
+    "all": {
+      "breaks": [
+        "stock_balance@DIST-B",
+        "transfer_edge@DIST-A->DIST-B"
+      ],
+      "break_cases": 2,
+      "candidates": [
+        "structuring@DIST-C"
+      ],
+      "candidate_cases": 1
+    }
+  },
+  "verdicts": {
+    "clean": "PASS",
+    "leak": "PASS",
+    "edge": "PASS",
+    "struct": "PASS",
+    "leak+edge": "PASS",
+    "edge+struct": "PASS",
+    "leak+struct": "PASS",
+    "all": "PASS"
+  },
+  "detail": {
+    "clean": {
+      "sigma": 2.161,
+      "breaks": [],
+      "candidates": []
+    },
+    "leak": {
+      "sigma": 2.161,
+      "breaks": [
+        {
+          "kind": "stock_balance",
+          "target": "DIST-B",
+          "months": 6,
+          "first_month": 9
+        }
+      ],
+      "candidates": []
+    },
+    "edge": {
+      "sigma": 2.161,
+      "breaks": [
+        {
+          "kind": "transfer_edge",
+          "target": "DIST-A->DIST-B",
+          "months": 12,
+          "first_month": 7
+        }
+      ],
+      "candidates": []
+    },
+    "struct": {
+      "sigma": 2.161,
+      "breaks": [],
+      "candidates": [
+        {
+          "kind": "structuring",
+          "target": "DIST-C",
+          "months": 1,
+          "first_month": 12
+        }
+      ]
+    },
+    "leak+edge": {
+      "sigma": 2.161,
+      "breaks": [
+        {
+          "kind": "stock_balance",
+          "target": "DIST-B",
+          "months": 6,
+          "first_month": 9
+        },
+        {
+          "kind": "transfer_edge",
+          "target": "DIST-A->DIST-B",
+          "months": 12,
+          "first_month": 7
+        }
+      ],
+      "candidates": []
+    },
+    "edge+struct": {
+      "sigma": 2.161,
+      "breaks": [
+        {
+          "kind": "transfer_edge",
+          "target": "DIST-A->DIST-B",
+          "months": 12,
+          "first_month": 7
+        }
+      ],
+      "candidates": [
+        {
+          "kind": "structuring",
+          "target": "DIST-C",
+          "months": 1,
+          "first_month": 12
+        }
+      ]
+    },
+    "leak+struct": {
+      "sigma": 2.161,
+      "breaks": [
+        {
+          "kind": "stock_balance",
+          "target": "DIST-B",
+          "months": 6,
+          "first_month": 9
+        }
+      ],
+      "candidates": [
+        {
+          "kind": "structuring",
+          "target": "DIST-C",
+          "months": 1,
+          "first_month": 12
+        }
+      ]
+    },
+    "all": {
+      "sigma": 2.161,
+      "breaks": [
+        {
+          "kind": "stock_balance",
+          "target": "DIST-B",
+          "months": 6,
+          "first_month": 9
+        },
+        {
+          "kind": "transfer_edge",
+          "target": "DIST-A->DIST-B",
+          "months": 12,
+          "first_month": 7
+        }
+      ],
+      "candidates": [
+        {
+          "kind": "structuring",
+          "target": "DIST-C",
+          "months": 1,
+          "first_month": 12
+        }
+      ]
+    }
+  }
+}
