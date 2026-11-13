@@ -1,0 +1,42 @@
+{
+  "seeds": 20,
+  "clean": {
+    "state_accuracy": 1.0,
+    "detected_losses": 31.05,
+    "missed_losses": 0,
+    "false_positive_losses": 0,
+    "loss_precision": 1.0,
+    "loss_recall": 1.0
+  },
+  "stressed": {
+    "state_accuracy": 0.9698,
+    "detected_losses": 19.25,
+    "missed_losses": 11.8,
+    "false_positive_losses": 0,
+    "loss_precision": 1.0,
+    "loss_recall": 0.6253
+  },
+  "stressed_states": {
+    "confirmed": 128.0,
+    "candidate": 20.4,
+    "ambiguous": 15.9,
+    "unmatched": 35.8
+  },
+  "example": {
+    "transfers": 200,
+    "receipts": 195,
+    "state_accuracy": 0.97,
+    "states": {
+      "confirmed": 129,
+      "candidate": 22,
+      "ambiguous": 16,
+      "unmatched": 33
+    },
+    "true_losses": 35,
+    "detected_losses": 23,
+    "missed_losses": 12,
+    "false_positive_losses": 0,
+    "loss_precision": 1.0,
+    "loss_recall": 0.6571
+  }
+}
