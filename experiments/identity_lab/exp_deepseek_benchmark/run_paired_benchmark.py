@@ -372,7 +372,7 @@ def run():
             "strict_confirmation_precision": "fraction of exact confirmations whose receipt owner is the same shipment.",
             "ambiguity": "number of ambiguous classifications per seed.",
             "false_positives": "number of false loss claims per seed.",
-            "paired_difference": "DeepSeek minus hardened matcher on the same seed and byte-identical generated dataset.",
+            "paired_difference": "first named scoring/matcher variant minus second on the same seed and byte-identical generated dataset.",
             "statistics": "exact two-sided paired sign-flip permutation test (4096 assignments) and 10,000-resample paired bootstrap 95% percentile CI.",
             "uom_fix_control": "legacy scorer keeps the original fixed unit reference; corrected scorer changes only the product-specific UoM normalization. Both use the original >0.5 loss threshold.",
         },
@@ -424,7 +424,7 @@ def run():
             lines.append(
                 f"| {window} | {metric} | {ds['mean']:.4f} ± {ds['sd']:.4f} | "
                 f"{hm['mean']:.4f} ± {hm['sd']:.4f} | "
-                f"{stat['mean_difference_deepseek_minus_hardened']:.4f} | "
+                f"{stat['mean_difference_first_minus_second']:.4f} | "
                 f"{stat['paired_sign_flip_p_two_sided']:.4f} | [{ci[0]:.4f}, {ci[1]:.4f}] |"
             )
     lines += [
@@ -443,7 +443,7 @@ def run():
             lines.append(
                 f"| {window} | {metric} | {ds['mean']:.4f} ± {ds['sd']:.4f} | "
                 f"{hm['mean']:.4f} ± {hm['sd']:.4f} | "
-                f"{stat['mean_difference_deepseek_minus_hardened']:.4f} | "
+                f"{stat['mean_difference_first_minus_second']:.4f} | "
                 f"{stat['paired_sign_flip_p_two_sided']:.4f} | [{ci[0]:.4f}, {ci[1]:.4f}] |"
             )
     lines += [
