@@ -31,11 +31,25 @@ def mad_sigma(values: list[float]) -> float:
 
 
 def stock_residuals(rows: list[dict]) -> list[dict]:
-    """closing_expected = opening + arrivals - dispensed - expired; residual = expected - counted."""
+    """closing_expected = opening + arrivals + transfers_in - dispensed - expired - transfers_out.
+
+    Transfers are optional so the original single-entity demo stays valid.
+    """
     out = []
     for r in rows:
-        expected = r["opening"] + r["arrivals"] - r["dispensed"] - r["expired"]
+        tin = float(r.get("transfers_in") or 0)
+        tout = float(r.get("transfers_out") or 0)
+        expected = r["opening"] + r["arrivals"] + tin - r["dispensed"] - r["expired"] - tout
         out.append({**r, "expected": expected, "residual": expected - r["closing"]})
+    return out
+
+
+def edge_residuals(transfers: list[dict]) -> list[dict]:
+    """A transfer has two recordings. The edge residual is their disagreement, in units."""
+    out = []
+    for t in transfers:
+        q_out, q_in = float(t["qty_out"]), float(t["qty_in"])
+        out.append({**t, "residual": q_out - q_in, "lag_months": int(t["month_in"]) - int(t["month_out"])})
     return out
 
 

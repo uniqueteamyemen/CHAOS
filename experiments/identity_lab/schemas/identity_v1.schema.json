@@ -10,8 +10,8 @@
     "identity_id": {"type": "string", "pattern": "^[A-Z0-9_]+_V[0-9]+$"},
     "version": {"type": "integer", "minimum": 1},
     "kind": {
-      "enum": ["stock_balance", "single_occurrence", "independent_measurement", "definitional_ratio"],
-      "description": "stock_balance = conservation over a closed period; single_occurrence = at most one completion per intent; independent_measurement = same quantity recorded twice; definitional_ratio = algebraic relation between derived series"
+      "enum": ["stock_balance", "single_occurrence", "independent_measurement", "definitional_ratio", "transfer_edge"],
+      "description": "stock_balance = conservation over a closed period; single_occurrence = at most one completion per intent; independent_measurement = same quantity recorded twice; definitional_ratio = algebraic relation between derived series; transfer_edge = two records of the same movement must agree in quantity and time (the break exists only between two ledgers, never inside one)"
     },
     "terms": {
       "type": "array",

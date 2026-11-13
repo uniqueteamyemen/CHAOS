@@ -1,0 +1,221 @@
+{
+  "matrix": {
+    "clean": {
+      "D1": 0,
+      "D2": 0,
+      "D3": 0
+    },
+    "f1_leak": {
+      "D1": 6,
+      "D2": 0,
+      "D3": 0
+    },
+    "f2_edge": {
+      "D1": 0,
+      "D2": 0,
+      "D3": 12
+    },
+    "f3_structuring": {
+      "D1": 0,
+      "D2": 1,
+      "D3": 0
+    }
+  },
+  "detail": {
+    "clean": {
+      "sigma": 2.161,
+      "alerts": {
+        "D1": [],
+        "D2": [],
+        "D3": []
+      },
+      "max_abs_residual_per_entity": {
+        "DIST-B": 6.6,
+        "DIST-A": 5.14,
+        "DIST-C": 3.74
+      }
+    },
+    "f1_leak": {
+      "sigma": 2.161,
+      "alerts": {
+        "D1": [
+          {
+            "detector": "D1",
+            "entity": "DIST-B",
+            "month": 9,
+            "value": 92.04
+          },
+          {
+            "detector": "D1",
+            "entity": "DIST-B",
+            "month": 12,
+            "value": 90.38
+          },
+          {
+            "detector": "D1",
+            "entity": "DIST-B",
+            "month": 15,
+            "value": 87.27
+          },
+          {
+            "detector": "D1",
+            "entity": "DIST-B",
+            "month": 18,
+            "value": 90.63
+          },
+          {
+            "detector": "D1",
+            "entity": "DIST-B",
+            "month": 21,
+            "value": 89.75
+          },
+          {
+            "detector": "D1",
+            "entity": "DIST-B",
+            "month": 24,
+            "value": 90.84
+          }
+        ],
+        "D2": [],
+        "D3": []
+      },
+      "max_abs_residual_per_entity": {
+        "DIST-B": 92.95,
+        "DIST-A": 5.14,
+        "DIST-C": 3.74
+      }
+    },
+    "f2_edge": {
+      "sigma": 2.161,
+      "alerts": {
+        "D1": [],
+        "D2": [],
+        "D3": [
+          {
+            "detector": "D3",
+            "entity": "DIST-A->DIST-B",
+            "month": 7,
+            "value": 30.0,
+            "transfer_id": "T-07",
+            "status": "candidate"
+          },
+          {
+            "detector": "D3",
+            "entity": "DIST-A->DIST-B",
+            "month": 8,
+            "value": 30.0,
+            "transfer_id": "T-08",
+            "status": "candidate"
+          },
+          {
+            "detector": "D3",
+            "entity": "DIST-A->DIST-B",
+            "month": 9,
+            "value": 30.0,
+            "transfer_id": "T-09",
+            "status": "candidate"
+          },
+          {
+            "detector": "D3",
+            "entity": "DIST-A->DIST-B",
+            "month": 10,
+            "value": 30.0,
+            "transfer_id": "T-10",
+            "status": "candidate"
+          },
+          {
+            "detector": "D3",
+            "entity": "DIST-A->DIST-B",
+            "month": 11,
+            "value": 30.0,
+            "transfer_id": "T-11",
+            "status": "candidate"
+          },
+          {
+            "detector": "D3",
+            "entity": "DIST-A->DIST-B",
+            "month": 12,
+            "value": 30.0,
+            "transfer_id": "T-12",
+            "status": "candidate"
+          },
+          {
+            "detector": "D3",
+            "entity": "DIST-A->DIST-B",
+            "month": 13,
+            "value": 30.0,
+            "transfer_id": "T-13",
+            "status": "candidate"
+          },
+          {
+            "detector": "D3",
+            "entity": "DIST-A->DIST-B",
+            "month": 14,
+            "value": 30.0,
+            "transfer_id": "T-14",
+            "status": "candidate"
+          },
+          {
+            "detector": "D3",
+            "entity": "DIST-A->DIST-B",
+            "month": 15,
+            "value": 30.0,
+            "transfer_id": "T-15",
+            "status": "candidate"
+          },
+          {
+            "detector": "D3",
+            "entity": "DIST-A->DIST-B",
+            "month": 16,
+            "value": 30.0,
+            "transfer_id": "T-16",
+            "status": "candidate"
+          },
+          {
+            "detector": "D3",
+            "entity": "DIST-A->DIST-B",
+            "month": 17,
+            "value": 30.0,
+            "transfer_id": "T-17",
+            "status": "candidate"
+          },
+          {
+            "detector": "D3",
+            "entity": "DIST-A->DIST-B",
+            "month": 18,
+            "value": 30.0,
+            "transfer_id": "T-18",
+            "status": "candidate"
+          }
+        ]
+      },
+      "max_abs_residual_per_entity": {
+        "DIST-B": 6.6,
+        "DIST-A": 5.14,
+        "DIST-C": 3.74
+      }
+    },
+    "f3_structuring": {
+      "sigma": 2.161,
+      "alerts": {
+        "D1": [],
+        "D2": [
+          {
+            "detector": "D2",
+            "entity": "DIST-C",
+            "month": 12,
+            "value": 22.75,
+            "ops": 5,
+            "status": "candidate"
+          }
+        ],
+        "D3": []
+      },
+      "max_abs_residual_per_entity": {
+        "DIST-B": 6.6,
+        "DIST-A": 5.14,
+        "DIST-C": 6.56
+      }
+    }
+  }
+}

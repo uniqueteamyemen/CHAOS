@@ -50,6 +50,7 @@ def build_demo(seed: int = 11) -> None:
                 "entity": entity, "month": month, "opening": round(opening, 3),
                 "arrivals": ARRIVALS, "dispensed": DISPENSED, "expired": EXPIRED,
                 "closing": round(closing, 3), "arrivals_central_log": ARRIVALS,
+                "transfers_in": 0, "transfers_out": 0,
             })
             stock = closing
     DATA.parent.mkdir(parents=True, exist_ok=True)
@@ -71,6 +72,8 @@ def load(path: Path) -> dict[str, list[dict]]:
                 "expired": float(r["expired"]),
                 "closing": float(r["closing"]),
                 "arrivals_central_log": float(r.get("arrivals_central_log") or r["arrivals"]),
+                "transfers_in": float(r.get("transfers_in") or 0),
+                "transfers_out": float(r.get("transfers_out") or 0),
             })
     return by_entity
 
