@@ -24,3 +24,8 @@ From experiments/identity_lab:
 - python3 -m unittest exp_m_pr_curve_complexity.test_experiment -v
 
 Outputs: results/precision_recall_curve.json and results/precision_recall_report.md
+
+## Reproducible execution
+- Fixed seed: `20261113`.
+- The `ERP reconciliation tests` GitHub Actions workflow executes the unit tests and generates both reports on pushes affecting this experiment directory.
+- The generated curve is runtime output; it is not committed as a precomputed result.
