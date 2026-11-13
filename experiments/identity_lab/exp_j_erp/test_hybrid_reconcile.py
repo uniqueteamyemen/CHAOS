@@ -83,6 +83,11 @@ class HybridReconcileTests(unittest.TestCase):
         self.assertEqual(row["state"], "unmatched")
         self.assertEqual(row["candidate_receipt_ids"], [])
 
+    def test_negative_threshold_is_rejected(self):
+        with self.assertRaises(ValueError):
+            match_hybrid([shipment()], [receipt()], UOMS,
+                         loss_classification_threshold=Decimal("-0.1"))
+
     def test_sender_mismatch_excludes_candidate(self):
         row = self.run_match([shipment()], [receipt(source=None, sender="OTHER")])[0]
         self.assertEqual(row["state"], "unmatched")
