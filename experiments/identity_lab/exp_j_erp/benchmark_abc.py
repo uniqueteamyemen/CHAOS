@@ -102,6 +102,7 @@ def make_cases(seed):
         receipt(f"{seed}-RM1", None, "10"),
         receipt(f"{seed}-RM2", None, "10.05"),
     ], False, note="multiple_candidates")
+    truth[f"{seed}-MULTI"]["candidate_ids"] = [f"{seed}-RM1", f"{seed}-RM2"]
 
     # Same approximate receipt fits two shipments; it must not be assigned twice.
     shared = receipt(f"{seed}-SHARED", None, "10", sender=None)
@@ -223,7 +224,7 @@ def legacy_a_normalized(results):
     return normalized
 
 
-def normalize_b(results):
+def normalize_b(results, unlinked_receipt_ids):
     out = {}
     for r in results:
         out[r["picking_id"]] = {
@@ -232,12 +233,12 @@ def normalize_b(results):
             "ambiguous": r.get("state") == "ambiguous",
             "received": r.get("qty_received"),
             "loss_claim": "loss" in r.get("issues", []),
-            "candidate_ids": r.get("candidate_receipt_ids", []),
+            "candidate_ids": [rid for rid in r.get("candidate_receipt_ids", []) if rid in unlinked_receipt_ids],
         }
     return out
 
 
-def normalize_c(results):
+def normalize_c(results, unlinked_receipt_ids):
     out = {}
     for r in results:
         out[r["picking_id"]] = {
@@ -246,6 +247,7 @@ def normalize_c(results):
             "ambiguous": r.get("state") == "ambiguous",
             "received": r.get("qty_received"),
             "loss_claim": "loss" in r.get("issues", []),
+            "candidate_ids": [rid for rid in r.get("candidate_receipt_ids", []) if rid in unlinked_receipt_ids],
         }
     return out
 
@@ -311,7 +313,13 @@ def run():
                          reconciliation_quantity_tolerance=Decimal("0.01"),
                          loss_classification_threshold=LOSS_THRESHOLD)
         timings["C"].append(time.perf_counter()-start)
-        preds = {"A": legacy_a_normalized(a), "B": normalize_b(b), "C": normalize_c(c)}
+        unlinked_ids = {
+            str(r.get("counterpart_picking_id") or "") for r in receipts
+            if not r.get("source_picking_id") and r.get("counterpart_picking_id")
+        }
+        preds = {"A": legacy_a_normalized(a),
+                 "B": normalize_b(b, unlinked_ids),
+                 "C": normalize_c(c, unlinked_ids)}
         for label, pred in preds.items():
             row = score(label, pred, truth)
             rows.append({"seed": seed, **row})
