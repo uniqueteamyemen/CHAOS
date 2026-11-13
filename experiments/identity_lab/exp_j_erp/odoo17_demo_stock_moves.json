@@ -11,16 +11,18 @@
     "is_live_operational_data": false,
     "is_ground_truth": false,
     "date_anchor": "2026-11-14",
-    "date_anchor_policy": "Freeze DateTime.today() in the XML fixture at 2026-11-14 for deterministic replay; preserve explicit relative offsets.",
-    "source_scope": "Only the six stock.picking records passed to stock.picking._action_done; other draft/confirmed sample pickings are excluded.",
+    "date_anchor_policy": "Freeze DateTime.today() at 2026-11-14 for deterministic replay; preserve explicit relative offsets.",
+    "source_scope": "Four outgoing pickings for which the XML calls action_assign and writes stock.move.line.quantity. Their pre-completion state is assigned; picked is false in the fixture because no picked flag is written.",
     "source_counts": {
       "unique_stock_pickings": 20,
       "stock_move_lines_defined": 20,
-      "pickings_marked_done_by_fixture": 6,
-      "normalized_completed_moves": 6
+      "pickings_passed_to_action_done": 6,
+      "pickings_passed_to_action_assign": 4,
+      "selected_outgoing_rows_with_quantity_write": 4,
+      "completed_stock_moves_proven_by_seed": 0
     },
-    "resolution": "Resolve nested move_ids, action_confirm/action_assign, stock.move.line quantity writes, stock.picking._action_done, date_done overrides, and stock.move.date overrides.",
-    "important": "quantity is the executed move quantity resolved from stock.move.line operations, not product_uom_qty demand. The Chicago outgoing warehouse 2 line retains full demand because the fixture completes it without a smaller quantity override."
+    "resolution": "Resolve nested move_ids, action_confirm/action_assign, quantity writes, picking._action_done, and stock.move date overrides; then check Odoo 17 stock.move._action_done picked gate.",
+    "important": "The seed invokes stock.picking._action_done and writes move-line quantities, but does not set stock.move.line.picked. Odoo 17 stock.move._action_done skips moves that are not picked. Therefore these four rows are retained as assigned/pre-completion movement records. A separate test-only completion overlay is required for running the matcher path that intentionally accepts state=done only."
   },
   "moves": [
     {
@@ -31,7 +33,8 @@
       "product_uom_category_id": "uom.product_uom_categ_unit",
       "product_uom_qty": "180",
       "quantity": "100",
-      "state": "done",
+      "state": "assigned",
+      "picked": false,
       "location_id": "stock.stock_location_stock",
       "location_dest_id": "stock.stock_location_customers",
       "picking_type_id": "stock.picking_type_out",
@@ -41,9 +44,9 @@
       "company_id": "base.main_company",
       "date": "2026-11-14",
       "scheduled_date": "2026-10-30",
-      "date_done": "2026-11-14",
-      "quantity_basis": "stock.move.line.quantity explicitly written as 100",
-      "date_basis": "default stock.move date frozen at demo installation anchor; date_done is runtime completion"
+      "picking_date_done_write": "2026-11-14",
+      "quantity_basis": "stock.move.line.quantity explicitly written as 100; picked flag not set",
+      "date_basis": "move date default frozen at 2026-11-14; picking date_done is not proof move reached done"
     },
     {
       "id": "demo:outgoing_shipment_main_warehouse5:move:0",
@@ -53,7 +56,8 @@
       "product_uom_category_id": "uom.product_uom_categ_unit",
       "product_uom_qty": "40",
       "quantity": "32",
-      "state": "done",
+      "state": "assigned",
+      "picked": false,
       "location_id": "stock.stock_location_stock",
       "location_dest_id": "stock.stock_location_customers",
       "picking_type_id": "stock.picking_type_out",
@@ -63,8 +67,8 @@
       "company_id": "base.main_company",
       "date": "2026-10-27",
       "scheduled_date": "2026-11-02",
-      "date_done": "2026-10-28",
-      "quantity_basis": "stock.move.line.quantity explicitly written as 32",
+      "picking_date_done_write": "2026-10-28",
+      "quantity_basis": "stock.move.line.quantity explicitly written as 32; picked flag not set",
       "date_basis": "stock.move.date explicitly written as DateTime.today()-18 days"
     },
     {
@@ -75,7 +79,8 @@
       "product_uom_category_id": "uom.product_uom_categ_unit",
       "product_uom_qty": "50",
       "quantity": "50",
-      "state": "done",
+      "state": "assigned",
+      "picked": false,
       "location_id": "stock.stock_location_stock",
       "location_dest_id": "stock.stock_location_customers",
       "picking_type_id": "stock.picking_type_out",
@@ -85,31 +90,9 @@
       "company_id": "base.main_company",
       "date": "2026-11-07",
       "scheduled_date": "2026-10-25",
-      "date_done": "2026-11-07",
-      "quantity_basis": "stock.move.line.quantity explicitly written as 50",
+      "picking_date_done_write": "2026-11-07",
+      "quantity_basis": "stock.move.line.quantity explicitly written as 50; picked flag not set",
       "date_basis": "stock.move.date explicitly written as DateTime.today()-7 days"
-    },
-    {
-      "id": "demo:incomming_chicago_warehouse1:move:0",
-      "picking_id": "stock.incomming_chicago_warehouse1",
-      "product_id": "product.product_delivery_01",
-      "product_uom": "uom.product_uom_unit",
-      "product_uom_category_id": "uom.product_uom_categ_unit",
-      "product_uom_qty": "180",
-      "quantity": "100",
-      "state": "done",
-      "location_id": "stock.stock_location_suppliers",
-      "location_dest_id": "stock.stock_location_shop0",
-      "picking_type_id": "stock.chi_picking_type_in",
-      "picking_type_code": "incoming",
-      "origin": null,
-      "partner_id": null,
-      "company_id": "stock.res_company_1",
-      "date": "2026-11-14",
-      "scheduled_date": "2026-11-09",
-      "date_done": "2026-11-09",
-      "quantity_basis": "stock.move.line.quantity explicitly written as 100",
-      "date_basis": "default stock.move date frozen at demo installation anchor; picking date_done explicitly set"
     },
     {
       "id": "demo:outgoing_chicago_warehouse1:move:0",
@@ -119,7 +102,8 @@
       "product_uom_category_id": "uom.product_uom_categ_unit",
       "product_uom_qty": "180",
       "quantity": "100",
-      "state": "done",
+      "state": "assigned",
+      "picked": false,
       "location_id": "stock.stock_location_shop0",
       "location_dest_id": "stock.stock_location_customers",
       "picking_type_id": "stock.chi_picking_type_out",
@@ -129,31 +113,9 @@
       "company_id": "stock.res_company_1",
       "date": "2026-11-14",
       "scheduled_date": "2026-11-04",
-      "date_done": "2026-11-09",
-      "quantity_basis": "stock.move.line.quantity explicitly written as 100",
-      "date_basis": "default stock.move date frozen at demo installation anchor; picking date_done explicitly set"
-    },
-    {
-      "id": "demo:outgoing_chicago_warehouse2:move:0",
-      "picking_id": "stock.outgoing_chicago_warehouse2",
-      "product_id": "product.product_delivery_02",
-      "product_uom": "uom.product_uom_unit",
-      "product_uom_category_id": "uom.product_uom_categ_unit",
-      "product_uom_qty": "45",
-      "quantity": "45",
-      "state": "done",
-      "location_id": "stock.stock_location_shop0",
-      "location_dest_id": "stock.stock_location_customers",
-      "picking_type_id": "stock.chi_picking_type_out",
-      "picking_type_code": "outgoing",
-      "origin": "chicago_warehouse",
-      "partner_id": null,
-      "company_id": "stock.res_company_1",
-      "date": "2026-11-14",
-      "scheduled_date": "2026-11-14",
-      "date_done": "2026-11-14",
-      "quantity_basis": "full-demand quantity retained on the move when _action_done is called; no smaller quantity override in fixture",
-      "date_basis": "default stock.move date frozen at demo installation anchor"
+      "picking_date_done_write": "2026-11-09",
+      "quantity_basis": "stock.move.line.quantity explicitly written as 100; picked flag not set",
+      "date_basis": "move date default frozen at 2026-11-14; picking date_done was explicitly written"
     }
   ],
   "uom_rows": [
