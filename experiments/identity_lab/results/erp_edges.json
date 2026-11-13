@@ -1,21 +1,22 @@
 {
-  "moves_total": 8,
-  "moves_done": 6,
-  "pickings": 3,
-  "edges": 3,
-  "unmatched": 0,
+  "moves_total": 10,
+  "moves_done": 8,
+  "pickings": 4,
+  "edges": 4,
+  "rejected": [],
+  "partial_executions": 2,
   "locations": [
     "SHOP-1",
     "SHOP-2",
-    "WH/Shelf A",
     "WH/Stock"
   ],
   "loss_events": 1,
   "delay_events": 0,
+  "unmatched": 0,
   "ambiguous": 0,
   "losses": [
     {
-      "edge": "WH/Stock->SHOP-1",
+      "edge": "WH/Stock->SHOP-2",
       "month": 24309,
       "missing": 6.0
     }
