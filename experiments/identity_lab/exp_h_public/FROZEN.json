@@ -1,0 +1,11 @@
+{
+  "frozen_at": "2026-11-13T05:18:43+00:00",
+  "reason": "Experiment H reports a negative result and must not be edited to fit a hypothesis.",
+  "files": {
+    "exp_h_public/data/stock_movements.csv": "d15bfcc0c26ca9e9e7a3d6049db8453730075c4593eacc0bbe94c463d610c0ef",
+    "exp_h_public/data/products.csv": "a4b841ca94f6b8e6a5686f19fa5b56177d87eee2c47b6395c7b64578b6e291b0",
+    "exp_h_public/public_ledger.py": "6f63ef98dcbc90b1708aa8940a51db81795d26ddcdd89efeb0d8a081b0d558e4",
+    "results/public_ledger.json": "595cac9ff98f2039d8ae3c48f043c94180ec8fdba454f1593c176aa5ef4de99b",
+    "results/public_ledger_report.md": "ee2fdc2c63538210400e5697e93b62610386248dddbcef719e56f9acbc0032bf"
+  }
+}
