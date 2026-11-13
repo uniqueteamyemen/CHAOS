@@ -1,4 +1,8 @@
-"""Read a movement export in Odoo's document model and turn it into edge transfers.
+"""Read Odoo movement exports.
+
+The legacy to_edges() helper below is retained for historical synthetic fixtures only.
+Operational exports must use reconcile_export(), which aggregates one-sided stock.move
+records and requires a separate counterparty receipt evidence stream.
 
 Field names are taken from Odoo 17's own source (`stock_move.py`), not invented:
   stock.move:  picking_id, location_id, location_dest_id, product_id,
@@ -45,6 +49,7 @@ def executed(move: dict) -> tuple[float | None, str]:
 
 
 def to_edges(moves: list[dict]) -> tuple[list[dict], dict]:
+    """Legacy same-file fixture adapter; not valid evidence of independent receipts."""
     done = [m for m in moves if str(m.get("state", "")).lower() == DONE]
     by_picking: dict[str, list[dict]] = {}
     for m in done:
