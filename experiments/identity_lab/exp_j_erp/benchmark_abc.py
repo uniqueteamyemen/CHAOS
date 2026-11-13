@@ -68,7 +68,7 @@ def make_cases(seed):
             "exact": exact, "loss": bool(exact and received is not None and
                 Decimal(s["quantity"]) - Decimal(str(received)) > LOSS_THRESHOLD),
             "received": None if received is None else str(received),
-            "candidate_id": candidate_id, "note": note,
+            "candidate_id": candidate_id, "candidate_ids": ([candidate_id] if candidate_id else []), "note": note,
         }
 
     # Exact full receipt, exact loss, and exact over-receipt.
@@ -169,10 +169,10 @@ def legacy_a(shipments, receipts):
         key = str(e["transfer_id"])
         exact = by_key.get(key, [])
         if len(exact) == 1:
-            results.append({"edge": key, "state": "confirmed", "receipt": exact[0]})
+            results.append({"edge": key, "state": "confirmed", "receipt": exact[0], "candidate_ids": []})
             continue
         if len(exact) > 1:
-            results.append({"edge": key, "state": "ambiguous"})
+            results.append({"edge": key, "state": "ambiguous", "candidate_ids": []})
             continue
         candidates = []
         for r in old_receipts:
@@ -191,7 +191,9 @@ def legacy_a(shipments, receipts):
             candidates.append(r)
         results.append({"edge": key, "state": "candidate" if len(candidates)==1 else
                         "ambiguous" if candidates else "unmatched",
-                        "receipt": candidates[0] if len(candidates)==1 else None})
+                        "receipt": candidates[0] if len(candidates)==1 else None,
+                        "candidate_ids": [str(x.get("counterpart_picking_id") or "")
+                                          for x in candidates]})
     return results
 
 
@@ -216,6 +218,7 @@ def legacy_a_normalized(results):
             "ambiguous": r["state"] == "ambiguous",
             "received": None if received is None else str(received),
             "loss_claim": loss_claim,
+            "candidate_ids": r.get("candidate_ids", []),
         }
     return normalized
 
@@ -229,6 +232,7 @@ def normalize_b(results):
             "ambiguous": r.get("state") == "ambiguous",
             "received": r.get("qty_received"),
             "loss_claim": "loss" in r.get("issues", []),
+            "candidate_ids": r.get("candidate_receipt_ids", []),
         }
     return out
 
@@ -249,7 +253,7 @@ def normalize_c(results):
 def score(name, predicted, truth):
     tp = fp = fn = 0
     loss_tp = loss_fp = loss_fn = 0
-    candidate_tp = candidate_fp = 0
+    candidate_tp = candidate_fp = candidate_fn = 0
     false_confirmations = []
     for sid, t in truth.items():
         p = predicted.get(sid, {})
@@ -262,8 +266,11 @@ def score(name, predicted, truth):
         if p.get("loss_claim") and t["loss"]: loss_tp += 1
         elif p.get("loss_claim") and not t["loss"]: loss_fp += 1
         elif not p.get("loss_claim") and t["loss"]: loss_fn += 1
-        if p.get("candidate") and t["candidate_id"]: candidate_tp += 1
-        elif p.get("candidate"): candidate_fp += 1
+        expected_candidates = set(t.get("candidate_ids") or [])
+        actual_candidates = set(p.get("candidate_ids") or [])
+        candidate_tp += len(expected_candidates & actual_candidates)
+        candidate_fp += len(actual_candidates - expected_candidates)
+        candidate_fn += len(expected_candidates - actual_candidates)
     precision = tp/(tp+fp) if tp+fp else 1.0
     recall = tp/(tp+fn) if tp+fn else 1.0
     loss_precision = loss_tp/(loss_tp+loss_fp) if loss_tp+loss_fp else 1.0
@@ -276,6 +283,9 @@ def score(name, predicted, truth):
         "loss_precision": round(loss_precision, 6),
         "loss_recall": round(loss_recall, 6),
         "candidate_tp": candidate_tp, "candidate_fp": candidate_fp,
+        "candidate_fn": candidate_fn,
+        "candidate_precision": round(candidate_tp/(candidate_tp+candidate_fp), 6) if candidate_tp+candidate_fp else 1.0,
+        "candidate_recall": round(candidate_tp/(candidate_tp+candidate_fn), 6) if candidate_tp+candidate_fn else 1.0,
         "false_confirmation_ids": false_confirmations,
     }
 
@@ -321,6 +331,7 @@ def run():
         lfn = sum(r["missed_losses"] for r in subset)
         ctp = sum(r["candidate_tp"] for r in subset)
         cfp = sum(r["candidate_fp"] for r in subset)
+        cfn = sum(r["candidate_fn"] for r in subset)
         summary[label] = {
             "exact_tp": exact_tp, "false_confirmations": exact_fp,
             "missed_exact": exact_fn,
@@ -329,7 +340,9 @@ def run():
             "loss_tp": ltp, "false_loss_claims": lfp, "missed_losses": lfn,
             "loss_precision": round(ltp/(ltp+lfp), 6) if ltp+lfp else 1,
             "loss_recall": round(ltp/(ltp+lfn), 6) if ltp+lfn else 1,
-            "candidate_tp": ctp, "candidate_fp": cfp,
+            "candidate_tp": ctp, "candidate_fp": cfp, "candidate_fn": cfn,
+            "candidate_precision": round(ctp/(ctp+cfp), 6) if ctp+cfp else 1,
+            "candidate_recall": round(ctp/(ctp+cfn), 6) if ctp+cfn else 1,
             "mean_runtime_ms": round(statistics.mean(timings[label])*1000, 4),
             "p95_runtime_ms": round(sorted(timings[label])[int(.95*(len(timings[label])-1))]*1000, 4),
         }
@@ -360,8 +373,9 @@ def run():
         "|---|---:|---:|---:|",
     ]
     keys = ["exact_precision", "exact_recall", "loss_precision", "loss_recall",
-            "false_confirmations", "false_loss_claims", "missed_exact",
-            "missed_losses", "candidate_tp", "candidate_fp", "mean_runtime_ms", "p95_runtime_ms"]
+            "candidate_precision", "candidate_recall", "false_confirmations",
+            "false_loss_claims", "missed_exact", "missed_losses",
+            "candidate_tp", "candidate_fp", "candidate_fn", "mean_runtime_ms", "p95_runtime_ms"]
     for key in keys:
         lines.append("| " + key + " | " + " | ".join(str(summary[x][key]) for x in ("A","B","C")) + " |")
     lines += ["", "## Interpretation guardrails", "",
