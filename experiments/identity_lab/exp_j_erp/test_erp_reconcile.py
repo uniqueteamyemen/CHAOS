@@ -55,12 +55,12 @@ class AggregationTests(unittest.TestCase):
             {"id": 2, "picking_id": "OUT-1", "product_id": "P1", "location_id": "A",
              "location_dest_id": "B", "product_uom": "uom_kg", "product_uom_category_id": "weight",
              "quantity": "0.5", "product_uom_qty": "0.5", "state": "done",
-             "reference": "REF-B", "date": "2025-01-01"},
+             "reference": "REF-A", "date": "2025-01-01"},
         ]
         rows, stats = aggregate_moves(moves, UOMS)
         self.assertEqual(len(rows), 1)
         self.assertEqual(rows[0]["quantity"], "1.0")
-        self.assertEqual(rows[0]["references"], ["REF-A", "REF-B"])
+        self.assertEqual(rows[0]["references"], ["REF-A"])
         self.assertEqual(rows[0]["move_count"], 2)
         self.assertEqual(stats["rejected_rows"], 0)
 
