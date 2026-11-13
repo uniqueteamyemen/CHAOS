@@ -114,7 +114,17 @@ def evaluate(seed: int, window: int):
     for row in rows:
         expected = truth_by_id[row["picking_id"]]
         state = row["state"]
-        if state == expected["expected_state"]:
+        expected_state = expected["expected_state"]
+        if expected_state == "candidate":
+            # A five-day shifted receipt enters the candidate window only at windows >= 5.
+            candidate_is_in_window = not expected["shifted"] or window >= 5
+            state_matches = (
+                state in ("approximate_unique", "ambiguous")
+                if candidate_is_in_window else state == "unmatched"
+            )
+        else:
+            state_matches = state == expected_state
+        if state_matches:
             state_correct += 1
         if state == "exact":
             confirmed += 1
