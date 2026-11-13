@@ -1,0 +1,26 @@
+name: ERP reconciliation tests
+
+on:
+  push:
+    branches:
+      - feat/erp-reconcile-hardening
+    paths:
+      - "experiments/identity_lab/exp_j_erp/**"
+      - ".github/workflows/erp-reconcile-tests.yml"
+  pull_request:
+    paths:
+      - "experiments/identity_lab/exp_j_erp/**"
+      - ".github/workflows/erp-reconcile-tests.yml"
+
+jobs:
+  reconcile-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Run ERP reconciliation unit tests
+        run: python -m unittest experiments.identity_lab.exp_j_erp.test_erp_reconcile -v
+      - name: Run deterministic plumbing fixture
+        run: python experiments/identity_lab/exp_j_erp/run_reconcile.py
