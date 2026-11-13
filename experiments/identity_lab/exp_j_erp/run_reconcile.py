@@ -5,8 +5,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "exp_j_erp"))
-from reconcile import aggregate_moves, match_counterpart_receipts
-from uom import index_uoms
+from odoo_reader import reconcile_export
 
 RESULTS = ROOT / "results"
 UOM_ROWS = [
@@ -31,15 +30,16 @@ MOVES = [
 ]
 RECEIPTS = [
     {"source_picking_id":"P1","counterpart_picking_id":"RCV-1","product_id":"pr-1","counterpart_qty":"20","counterpart_uom_id":"unit","product_uom_category_id":"count","location_id":"SHOP-1","counterpart_date":"2025-09-06","counterpart_source":"signed_receipt.pdf","recorded_at":"2025-09-06T10:00:00Z"},
-    {"counterpart_picking_id":"RCV-7","product_id":"pr-7","counterpart_qty":"10","counterpart_uom_id":"unit","product_uom_category_id":"count","location_id":"SHOP-7","counterpart_date":"2025-09-12"},
-    {"counterpart_picking_id":"RCV-8A","product_id":"pr-8","counterpart_qty":"10","counterpart_uom_id":"unit","product_uom_category_id":"count","location_id":"SHOP-8","counterpart_date":"2025-09-13"},
-    {"counterpart_picking_id":"RCV-8B","product_id":"pr-8","counterpart_qty":"10","counterpart_uom_id":"unit","product_uom_category_id":"count","location_id":"SHOP-8","counterpart_date":"2025-09-13"},
+    {"counterpart_picking_id":"RCV-7","product_id":"pr-7","counterpart_qty":"10","counterpart_uom_id":"unit","product_uom_category_id":"count","location_id":"SHOP-7","counterpart_date":"2025-09-12","counterpart_source":"receipt_scan","recorded_at":"2025-09-12T10:00:00Z"},
+    {"counterpart_picking_id":"RCV-8A","product_id":"pr-8","counterpart_qty":"10","counterpart_uom_id":"unit","product_uom_category_id":"count","location_id":"SHOP-8","counterpart_date":"2025-09-13","counterpart_source":"receipt_scan","recorded_at":"2025-09-13T10:00:00Z"},
+    {"counterpart_picking_id":"RCV-8B","product_id":"pr-8","counterpart_qty":"10","counterpart_uom_id":"unit","product_uom_category_id":"count","location_id":"SHOP-8","counterpart_date":"2025-09-13","counterpart_source":"receipt_scan","recorded_at":"2025-09-13T11:00:00Z"},
 ]
 
 def main():
-    uoms = index_uoms(UOM_ROWS)
-    movements, stats = aggregate_moves(MOVES, uoms)
-    matches = match_counterpart_receipts(movements, RECEIPTS, uoms)
+    result = reconcile_export(MOVES, UOM_ROWS, RECEIPTS)
+    movements = result["movements"]
+    stats = result["movement_stats"]
+    matches = result["receipt_matches"]
     states = {s: sum(1 for x in matches if x["state"] == s) for s in ("exact","approximate_unique","ambiguous","unmatched")}
     losses = [x for x in matches if x.get("confirmed") and "loss" in x.get("issues", [])]
     p1 = next(x for x in movements if x["picking_id"] == "P1")
