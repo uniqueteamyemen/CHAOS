@@ -10,7 +10,10 @@ from datetime import date
 from decimal import Decimal
 from typing import Mapping
 
-from uom import UomNormalizationError, normalize_to_reference
+try:
+    from .uom import UomNormalizationError, normalize_to_reference, relation_id
+except ImportError:  # direct script execution from this directory
+    from uom import UomNormalizationError, normalize_to_reference, relation_id
 
 
 def _executed(move: Mapping) -> Decimal:
@@ -56,15 +59,15 @@ def aggregate_moves(
         if str(move.get("state", "")).lower() != "done":
             continue
         done_count += 1
-        picking = str(move.get("picking_id") or "")
-        product = str(move.get("product_id") or "")
+        picking = relation_id(move.get("picking_id"))
+        product = relation_id(move.get("product_id"))
         if not picking or not product:
             rejected.append({"row": index, "reason": "movement_identity_missing"})
             continue
         pickings.add(picking)
 
         uom_id = move.get("product_uom") or move.get("product_uom_id")
-        source_uom = uoms_by_id.get(str(uom_id))
+        source_uom = uoms_by_id.get(relation_id(uom_id))
         if source_uom is None:
             rejected.append({"row": index, "picking_id": picking, "product_id": product,
                              "reason": "uom_unresolved"})
@@ -85,10 +88,10 @@ def aggregate_moves(
                              "reason": exc.code, "detail": exc.detail})
             continue
 
-        category = str(source_uom.get("category_id"))
+        category = relation_id(source_uom.get("category_id"))
         product_categories.setdefault((picking, product), set()).add(category)
-        source = str(move.get("location_id") or "")
-        destination = str(move.get("location_dest_id") or "")
+        source = relation_id(move.get("location_id"))
+        destination = relation_id(move.get("location_dest_id"))
         # Location pair and reference UoM are part of the subgroup key. They are
         # intentionally not collapsed even when picking and product are identical.
         key = (picking, product, source, destination, ref_uom_id)
@@ -182,12 +185,12 @@ def match_counterpart_receipts(
     """
     results: list[dict] = []
     for shipment in shipments:
-        shipment_id = str(shipment.get("picking_id") or "")
-        product_id = str(shipment.get("product_id") or "")
+        shipment_id = relation_id(shipment.get("picking_id"))
+        product_id = relation_id(shipment.get("product_id"))
         exact = [
             receipt for receipt in receipts
-            if str(receipt.get("source_picking_id") or "") == shipment_id
-            and str(receipt.get("product_id") or "") == product_id
+            if relation_id(receipt.get("source_picking_id")) == shipment_id
+            and relation_id(receipt.get("product_id")) == product_id
         ]
         if len(exact) > 1:
             results.append({
@@ -207,8 +210,8 @@ def match_counterpart_receipts(
             for receipt in receipts:
                 if str(receipt.get("product_id") or "") != product_id:
                     continue
-                receipt_location = str(receipt.get("location_id") or "")
-                if receipt_location and receipt_location != str(shipment.get("location_dest_id") or ""):
+                receipt_location = relation_id(receipt.get("location_id"))
+                if receipt_location and receipt_location != relation_id(shipment.get("location_dest_id")):
                     continue
                 receipt_date = _date(receipt.get("counterpart_date"))
                 if ship_date is None or receipt_date is None:
@@ -216,7 +219,7 @@ def match_counterpart_receipts(
                 if abs((receipt_date - ship_date).days) > date_window_days:
                     continue
                 try:
-                    receipt_uom_id = str(receipt.get("counterpart_uom_id") or "")
+                    receipt_uom_id = relation_id(receipt.get("counterpart_uom_id"))
                     receipt_uom = uoms_by_id[receipt_uom_id]
                     receipt_qty, receipt_ref_id = normalize_to_reference(
                         receipt.get("counterpart_qty"), receipt_uom, uoms_by_id,
@@ -224,7 +227,7 @@ def match_counterpart_receipts(
                     )
                 except (KeyError, UomNormalizationError):
                     continue
-                if receipt_ref_id != str(shipment.get("reference_uom_id")):
+                if receipt_ref_id != relation_id(shipment.get("reference_uom_id")):
                     continue
                 if abs(receipt_qty - ship_qty) <= quantity_tolerance:
                     candidates.append(receipt)
