@@ -25,12 +25,16 @@ class ComparativeBenchmarkTests(unittest.TestCase):
         self.assertEqual(len(b), len(shipments))
         self.assertEqual(len(c), len(shipments))
         self.assertEqual(set(legacy_a_normalized(a)), set(truth))
-        self.assertEqual(set(normalize_b(b)), set(truth))
-        self.assertEqual(set(normalize_c(c)), set(truth))
+        unlinked = {str(r["counterpart_picking_id"]) for r in receipts
+                    if not r.get("source_picking_id") and r.get("counterpart_picking_id")}
+        self.assertEqual(set(normalize_b(b, unlinked)), set(truth))
+        self.assertEqual(set(normalize_c(c, unlinked)), set(truth))
 
     def test_hybrid_never_claims_loss_for_approximate_candidate(self):
         shipments, receipts, truth = make_cases(11)
-        out = normalize_c(match_hybrid(shipments, receipts, UOMS))
+        unlinked = {str(r["counterpart_picking_id"]) for r in receipts
+                    if not r.get("source_picking_id") and r.get("counterpart_picking_id")}
+        out = normalize_c(match_hybrid(shipments, receipts, UOMS), unlinked)
         for sid, expected in truth.items():
             if not expected["exact"]:
                 self.assertFalse(out[sid]["loss_claim"], sid)
