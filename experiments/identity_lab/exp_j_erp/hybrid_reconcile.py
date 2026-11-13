@@ -166,7 +166,6 @@ def match_hybrid(
     # Reserve every receipt explicitly linked to an in-scope shipment before
     # approximate discovery. Otherwise an earlier shipment could claim a receipt
     # that belongs to a later exact-linked shipment.
-    in_scope_shipments = {sid for sid in shipment_ids if sid}
     reserved_receipt_ids = {
         relation_id(r.get("counterpart_picking_id"))
         for r in receipts
