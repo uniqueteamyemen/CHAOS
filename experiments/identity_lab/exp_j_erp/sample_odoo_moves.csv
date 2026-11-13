@@ -1,9 +1,11 @@
-picking_id,location_id,location_dest_id,product_id,product_uom_qty,state,reference,date
-WH/IN/0001,WH/Stock,WH/Shelf A,prod-1,50,done,WH/IN/0001,2025-09-02
-WH/IN/0001,WH/Shelf A,WH/Stock,prod-1,50,done,WH/IN/0001,2025-09-02
-WH/INT/0002,WH/Stock,SHOP-1,prod-1,30,done,WH/INT/0002,2025-09-10
-WH/INT/0002,SHOP-1,WH/Stock,prod-1,24,done,WH/INT/0002,2025-09-10
-WH/INT/0003,WH/Stock,SHOP-2,prod-2,12,done,WH/INT/0003,2025-09-11
-WH/INT/0003,SHOP-2,WH/Stock,prod-2,12,done,WH/INT/0003,2025-09-11
-WH/INT/0004,WH/Stock,SHOP-2,prod-3,9,draft,WH/INT/0004,2025-09-12
-WH/INT/0004,SHOP-2,WH/Stock,prod-3,9,draft,WH/INT/0004,2025-09-12
+picking_id,location_id,location_dest_id,product_id,product_uom_qty,quantity,product_uom,uom_factor,state,reference,date
+WH/INT/0001,WH/Stock,SHOP-1,prod-1,50,50,Units,1,done,WH/INT/0001,2025-09-05
+WH/INT/0001,SHOP-1,WH/Stock,prod-1,50,50,Units,1,done,WH/INT/0001,2025-09-05
+WH/INT/0002,WH/Stock,SHOP-1,prod-1,30,24,Units,1,done,WH/INT/0002,2025-09-10
+WH/INT/0002,SHOP-1,WH/Stock,prod-1,30,24,Units,1,done,WH/INT/0002,2025-09-10
+WH/INT/0003,WH/Stock,SHOP-2,prod-2,40,30,Units,1,done,WH/INT/0003,2025-09-12
+WH/INT/0003,SHOP-2,WH/Stock,prod-2,40,24,Units,1,done,WH/INT/0003,2025-09-12
+WH/INT/0004,WH/Stock,SHOP-2,prod-3,12,12,Units,1,done,WH/INT/0004,2025-09-15
+WH/INT/0004,SHOP-2,WH/Stock,prod-3,12,12,Units,1,done,WH/INT/0004,2025-09-15
+WH/INT/0005,WH/Stock,SHOP-2,prod-3,9,9,Units,1,draft,WH/INT/0005,2025-09-16
+WH/INT/0005,SHOP-2,WH/Stock,prod-3,9,9,Units,1,draft,WH/INT/0005,2025-09-16
