@@ -19,6 +19,14 @@ Evidence: https://marketplacelearn.walmart.com/ca/guides/Walmart%20Fulfillment%2
 
 **Assessment:** strong real-world receipt evidence if an eligible seller can export it and retain the source shipment identifiers and provenance.
 
+## High-volume practice dataset: findi360 Data Dare DD-INV-002
+
+The dataset page advertises 45,857 stock-movement rows through June 2026, a separate Parquet period for the final three months, cycle counts, supplier price feed, stock budget, and item/location/supplier dimensions (8 tables total). Download requires a free member account.
+
+Evidence: https://www.findi360.com/data-dare/datasets/DD-INV-002/retail-and-manufacturing-transfers-counts-and-stock-nobody-ordered-inventory-stock
+
+**Assessment:** strong candidate for D1 balance checks, movement sequencing, and D2 time-pattern analysis. It is presented as a practice dataset for a named Mizan business scenario, not independently verified operational records. The public description does not prove separate counterparty receipts or a shared shipment key. Inspect the data dictionary and relationship diagram before considering it for D3; do not label it real operational validation.
+
 ## Public research dataset candidate: Mendeley Warehouse Distribution System
 
 The public record describes Jan–Jun 2023 shipping/distribution data, item and warehouse/sorting-facility information, and collection from historical records, shipping manifests and existing databases. It is CC BY 4.0.
