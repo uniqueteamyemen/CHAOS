@@ -1,0 +1,83 @@
+{
+  "false_alarms_over_30_seeds": {
+    "D1": 0,
+    "D2": 0,
+    "D3": 0
+  },
+  "classification": {
+    "clean": {
+      "loss": 0,
+      "delay": 0,
+      "unmatched": 0,
+      "ambiguous_id": 0,
+      "ok": 12,
+      "matched_by_fallback": 0
+    },
+    "loss": {
+      "loss": 12,
+      "delay": 0,
+      "unmatched": 0,
+      "ambiguous_id": 0,
+      "ok": 0,
+      "matched_by_fallback": 0
+    },
+    "delay1": {
+      "loss": 0,
+      "delay": 0,
+      "unmatched": 0,
+      "ambiguous_id": 0,
+      "ok": 12,
+      "matched_by_fallback": 0
+    },
+    "delay2": {
+      "loss": 0,
+      "delay": 12,
+      "unmatched": 0,
+      "ambiguous_id": 0,
+      "ok": 0,
+      "matched_by_fallback": 0
+    },
+    "no_id": {
+      "loss": 0,
+      "delay": 0,
+      "unmatched": 0,
+      "ambiguous_id": 0,
+      "ok": 12,
+      "matched_by_fallback": 12
+    },
+    "dup_id": {
+      "loss": 0,
+      "delay": 0,
+      "unmatched": 0,
+      "ambiguous_id": 12,
+      "ok": 0,
+      "matched_by_fallback": 0
+    },
+    "unmatched": {
+      "loss": 0,
+      "delay": 0,
+      "unmatched": 12,
+      "ambiguous_id": 0,
+      "ok": 0,
+      "matched_by_fallback": 0
+    },
+    "nested": {
+      "loss": 0,
+      "delay": 0,
+      "unmatched": 0,
+      "ambiguous_id": 0,
+      "ok": 24,
+      "matched_by_fallback": 0
+    }
+  },
+  "verdict": {
+    "clean": "silent",
+    "loss": "loss",
+    "delay1": "silent",
+    "delay2": "delay, not loss",
+    "no_id": "matched by fallback, no false loss",
+    "dup_id": "ambiguity reported, no loss claimed",
+    "unmatched": "unmatched reported, no loss claimed",
+    "nested": "silent"
+  }
+}

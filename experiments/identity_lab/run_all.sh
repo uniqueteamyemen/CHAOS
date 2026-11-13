@@ -9,6 +9,7 @@ python3 exp_b_stock/false_alarm.py
 python3 exp_c_eia/oil.py
 python3 exp_c_eia/analyse.py
 python3 exp_d_relational/relational.py
+python3 exp_e_robustness/robustness.py
 python3 - <<'PY'
 import json, glob, sys
 from pathlib import Path
