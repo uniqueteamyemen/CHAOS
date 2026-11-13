@@ -170,7 +170,7 @@ def match_hybrid(
     reserved_receipt_ids = {
         relation_id(r.get("counterpart_picking_id"))
         for r in receipts
-        if relation_id(r.get("source_picking_id")) in in_scope_shipments
+        if relation_id(r.get("source_picking_id"))
         and relation_id(r.get("counterpart_picking_id"))
     }
     candidate_cache: dict[str, list[dict]] = {}
