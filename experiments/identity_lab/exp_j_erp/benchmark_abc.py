@@ -88,6 +88,13 @@ def make_cases(seed):
         True, loss_qty, note="exact_loss")
     add(shipment(f"{seed}-E2"), [receipt(f"{seed}-R2", f"{seed}-E2", "10.7")],
         True, "10.7", note="exact_over")
+    # Separate the classification boundary from the candidate tolerance.
+    add(shipment(f"{seed}-SUBTHRESH"), [
+        receipt(f"{seed}-RST", f"{seed}-SUBTHRESH", "9.7")
+    ], True, "9.7", note="subthreshold_gap_0_3")
+    add(shipment(f"{seed}-BOUNDARY"), [
+        receipt(f"{seed}-RB", f"{seed}-BOUNDARY", "9.49")
+    ], True, "9.49", note="above_loss_threshold_0_51")
 
     # Two linked partial receipts: C can sum them; A/B should remain conservative.
     add(shipment(f"{seed}-PART"), [
