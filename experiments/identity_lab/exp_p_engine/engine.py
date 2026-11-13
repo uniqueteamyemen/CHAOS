@@ -50,6 +50,28 @@ def residuals(rows, domain):
     return out
 
 
+def adapt(rows, mapping):
+    """Map ANY incoming columns onto the canonical identity fields.
+
+    The engine imposes no schema on incoming data. This is the only place a
+    shape is assumed, and it is supplied by the caller, so a new source is a
+    mapping, never a rewrite. Missing optional terms (`other`, `time`) default.
+    """
+    out = []
+    for r in rows:
+        other_key = mapping.get("other")
+        time_key = mapping.get("time", "month")
+        out.append({
+            "opening": r[mapping["opening"]],
+            "inflow": r[mapping["inflow"]],
+            "outflow": r[mapping["outflow"]],
+            "other": r[other_key] if other_key in r else 0.0,
+            "closing": r[mapping["closing"]],
+            "month": r[time_key],
+        })
+    return out
+
+
 def frozen_bias(series, quiet_range):
     """The identity's offset, taken once from a declared quiet window and held."""
     pts = [r["residual"] for r in series

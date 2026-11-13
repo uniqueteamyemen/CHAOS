@@ -2,7 +2,7 @@
 import random
 import unittest
 
-from experiments.identity_lab.exp_p_engine.engine import DOMAINS, run
+from experiments.identity_lab.exp_p_engine.engine import DOMAINS, adapt, run
 
 
 def generate(domain, months=200, leak=0, start=10, excess=0, noise=2.0, seed=1):
@@ -65,6 +65,17 @@ class EngineTests(unittest.TestCase):
         out = run("stock", generate("stock", leak=10), quiet_range=(1, 6))
         self.assertIsNotNone(out["baseline"]["bias_frozen"])
         self.assertIsNotNone(out["baseline"]["sigma_last"])
+
+    def test_adapt_maps_arbitrary_columns(self):
+        # the engine imposes no schema: any source is a mapping, not a rewrite
+        raw = [{"date": 1, "open_qty": 2000, "in_qty": 400, "out_qty": 400,
+                "close_qty": 1995}]
+        mapping = {"opening": "open_qty", "inflow": "in_qty", "outflow": "out_qty",
+                   "closing": "close_qty", "time": "date"}
+        adapted = adapt(raw, mapping)
+        self.assertEqual(adapted[0]["opening"], 2000)
+        self.assertEqual(adapted[0]["other"], 0.0)   # optional term defaults
+        self.assertEqual(adapted[0]["month"], 1)
 
 
 if __name__ == "__main__":
