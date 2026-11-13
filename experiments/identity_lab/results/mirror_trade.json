@@ -1,0 +1,24 @@
+{
+  "stats": {
+    "observations": 144,
+    "edges": 12,
+    "lag0_median_abs_rel": 0.0734,
+    "lag1_median_abs_rel": 0.0888,
+    "share_lag0_above_tolerance": 0.639,
+    "share_lag1_above_tolerance": 0.735
+  },
+  "per_edge_median": {
+    "DE->FR": 0.036,
+    "FR->DE": 0.0013,
+    "DE->NL": -0.0518,
+    "NL->DE": 0.063,
+    "FR->IT": 0.2877,
+    "IT->FR": 0.0912,
+    "ES->FR": 0.0982,
+    "FR->ES": 0.0238,
+    "PL->DE": -0.0781,
+    "DE->PL": 0.0637,
+    "NL->BE": -0.0823,
+    "BE->NL": 0.1656
+  }
+}
