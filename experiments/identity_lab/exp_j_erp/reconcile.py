@@ -196,12 +196,22 @@ def match_counterpart_receipts(
     for shipment in shipments:
         shipment_id = relation_id(shipment.get("picking_id"))
         product_id = relation_id(shipment.get("product_id"))
-        exact = [
+        explicit_links = [
             receipt for receipt in receipts
             if relation_id(receipt.get("source_picking_id")) == shipment_id
-            and relation_id(receipt.get("product_id")) == product_id
+        ]
+        exact = [
+            receipt for receipt in explicit_links
+            if relation_id(receipt.get("product_id")) == product_id
             and (not relation_id(receipt.get("location_id")) or relation_id(receipt.get("location_id")) == relation_id(shipment.get("location_dest_id")))
         ]
+        if explicit_links and not exact:
+            results.append({
+                "picking_id": shipment_id, "product_id": product_id,
+                "state": "ambiguous", "confidence": 0.0, "confirmed": False,
+                "reason": "explicit_link_conflict",
+            })
+            continue
         if len(exact) == 1 and not _receipt_evidence_complete(exact[0]):
             results.append({
                 "picking_id": shipment_id, "product_id": product_id,
