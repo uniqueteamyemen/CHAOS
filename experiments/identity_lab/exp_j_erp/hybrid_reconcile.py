@@ -253,6 +253,8 @@ def match_hybrid(
             issues = []
             if delta > loss_classification_threshold:
                 issues.append("loss")
+            elif delta > reconciliation_quantity_tolerance:
+                issues.append("partial_delivery")
             elif delta < -reconciliation_quantity_tolerance:
                 issues.append("over_receipt")
             dates = [_date(r.get("counterpart_date")) for r in linked]
