@@ -44,6 +44,8 @@ jobs:
         run: python -m experiments.identity_lab.exp_j_erp.run_public_ledger_shadow_probe
       - name: Run deterministic plumbing fixture
         run: python experiments/identity_lab/exp_j_erp/run_reconcile.py
+      - name: Run adversarial A/B/C cases (decoy quantity, multiline picking, receipt reuse)
+        run: python -m experiments.identity_lab.exp_j_erp.adversarial_abc
       - name: Run temporal precision-recall and concurrent UoM tests
         run: python -m unittest experiments.identity_lab.exp_m_pr_curve_complexity.test_experiment -v
       - name: Generate precision-recall curve and complexity report

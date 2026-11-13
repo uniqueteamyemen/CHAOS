@@ -1,0 +1,298 @@
+{
+  "data": {
+    "weeks_total": 617,
+    "weeks_detection": 513,
+    "range": [
+      "2015-01-09",
+      "2026-10-30"
+    ],
+    "detect_start": "2017-01-06",
+    "years": 9.9
+  },
+  "identity": {
+    "sigma_kbd": 195.6,
+    "bias_kbd": -333.1,
+    "bias_frozen_from_quiet_window": true
+  },
+  "cusum": {
+    "k_sigma": 0.5,
+    "h_sigma": 5.0,
+    "alarms": 39,
+    "per_year": 3.95
+  },
+  "alarm_list": [
+    {
+      "date": "2017-03-17",
+      "cusum": 8.27,
+      "residual_kbd": 799.9,
+      "nearest_known_event": "COVID demand collapse",
+      "distance_days": 1099
+    },
+    {
+      "date": "2017-04-21",
+      "cusum": 7.06,
+      "residual_kbd": 664.9,
+      "nearest_known_event": "COVID demand collapse",
+      "distance_days": 1064
+    },
+    {
+      "date": "2017-05-12",
+      "cusum": 6.35,
+      "residual_kbd": 374.6,
+      "nearest_known_event": "COVID demand collapse",
+      "distance_days": 1043
+    },
+    {
+      "date": "2017-06-30",
+      "cusum": 5.67,
+      "residual_kbd": 461.0,
+      "nearest_known_event": "COVID demand collapse",
+      "distance_days": 994
+    },
+    {
+      "date": "2017-07-14",
+      "cusum": 5.62,
+      "residual_kbd": 586.7,
+      "nearest_known_event": "COVID demand collapse",
+      "distance_days": 980
+    },
+    {
+      "date": "2017-08-11",
+      "cusum": 6.09,
+      "residual_kbd": 797.0,
+      "nearest_known_event": "COVID demand collapse",
+      "distance_days": 952
+    },
+    {
+      "date": "2017-09-01",
+      "cusum": 6.68,
+      "residual_kbd": 957.9,
+      "nearest_known_event": "COVID demand collapse",
+      "distance_days": 931
+    },
+    {
+      "date": "2017-09-15",
+      "cusum": 6.09,
+      "residual_kbd": 685.3,
+      "nearest_known_event": "COVID demand collapse",
+      "distance_days": 917
+    },
+    {
+      "date": "2018-01-19",
+      "cusum": 5.64,
+      "residual_kbd": 477.4,
+      "nearest_known_event": "COVID demand collapse",
+      "distance_days": 791
+    },
+    {
+      "date": "2018-03-02",
+      "cusum": 6.93,
+      "residual_kbd": 902.9,
+      "nearest_known_event": "COVID demand collapse",
+      "distance_days": 749
+    },
+    {
+      "date": "2018-04-06",
+      "cusum": 5.44,
+      "residual_kbd": 811.9,
+      "nearest_known_event": "COVID demand collapse",
+      "distance_days": 714
+    },
+    {
+      "date": "2018-07-06",
+      "cusum": 7.79,
+      "residual_kbd": 790.0,
+      "nearest_known_event": "COVID demand collapse",
+      "distance_days": 623
+    },
+    {
+      "date": "2019-01-25",
+      "cusum": 5.27,
+      "residual_kbd": 777.9,
+      "nearest_known_event": "COVID demand collapse",
+      "distance_days": 420
+    },
+    {
+      "date": "2019-03-15",
+      "cusum": 10.3,
+      "residual_kbd": 1145.0,
+      "nearest_known_event": "COVID demand collapse",
+      "distance_days": 371
+    },
+    {
+      "date": "2019-05-03",
+      "cusum": 5.58,
+      "residual_kbd": 1189.6,
+      "nearest_known_event": "COVID demand collapse",
+      "distance_days": 322
+    },
+    {
+      "date": "2020-05-08",
+      "cusum": 8.68,
+      "residual_kbd": 1246.4,
+      "nearest_known_event": "COVID demand collapse",
+      "distance_days": 49
+    },
+    {
+      "date": "2020-05-15",
+      "cusum": 6.3,
+      "residual_kbd": 1331.0,
+      "nearest_known_event": "COVID demand collapse",
+      "distance_days": 56
+    },
+    {
+      "date": "2020-05-22",
+      "cusum": 6.31,
+      "residual_kbd": 1332.0,
+      "nearest_known_event": "COVID demand collapse",
+      "distance_days": 63
+    },
+    {
+      "date": "2020-05-29",
+      "cusum": 6.32,
+      "residual_kbd": 1333.6,
+      "nearest_known_event": "COVID demand collapse",
+      "distance_days": 70
+    },
+    {
+      "date": "2020-06-05",
+      "cusum": 5.84,
+      "residual_kbd": 1239.9,
+      "nearest_known_event": "COVID demand collapse",
+      "distance_days": 77
+    },
+    {
+      "date": "2020-06-19",
+      "cusum": 6.05,
+      "residual_kbd": 385.7,
+      "nearest_known_event": "COVID demand collapse",
+      "distance_days": 91
+    },
+    {
+      "date": "2020-07-03",
+      "cusum": 9.54,
+      "residual_kbd": 1098.3,
+      "nearest_known_event": "COVID demand collapse",
+      "distance_days": 105
+    },
+    {
+      "date": "2020-07-10",
+      "cusum": 5.13,
+      "residual_kbd": 1100.6,
+      "nearest_known_event": "COVID demand collapse",
+      "distance_days": 112
+    },
+    {
+      "date": "2020-07-31",
+      "cusum": 5.29,
+      "residual_kbd": 941.3,
+      "nearest_known_event": "COVID demand collapse",
+      "distance_days": 133
+    },
+    {
+      "date": "2020-09-11",
+      "cusum": 5.07,
+      "residual_kbd": 1089.0,
+      "nearest_known_event": "Texas freeze",
+      "distance_days": 161
+    },
+    {
+      "date": "2020-10-09",
+      "cusum": 8.01,
+      "residual_kbd": 1118.1,
+      "nearest_known_event": "Texas freeze",
+      "distance_days": 133
+    },
+    {
+      "date": "2020-10-30",
+      "cusum": 5.68,
+      "residual_kbd": 1209.6,
+      "nearest_known_event": "Texas freeze",
+      "distance_days": 112
+    },
+    {
+      "date": "2021-02-26",
+      "cusum": 6.1,
+      "residual_kbd": 1290.7,
+      "nearest_known_event": "Texas freeze",
+      "distance_days": 7
+    },
+    {
+      "date": "2021-12-03",
+      "cusum": 6.05,
+      "residual_kbd": 752.9,
+      "nearest_known_event": "Russia-Ukraine invasion",
+      "distance_days": 91
+    },
+    {
+      "date": "2021-12-24",
+      "cusum": 6.44,
+      "residual_kbd": 964.3,
+      "nearest_known_event": "Russia-Ukraine invasion",
+      "distance_days": 70
+    },
+    {
+      "date": "2022-01-07",
+      "cusum": 5.98,
+      "residual_kbd": 1267.4,
+      "nearest_known_event": "Russia-Ukraine invasion",
+      "distance_days": 56
+    },
+    {
+      "date": "2022-01-28",
+      "cusum": 10.06,
+      "residual_kbd": 1710.9,
+      "nearest_known_event": "Russia-Ukraine invasion",
+      "distance_days": 35
+    },
+    {
+      "date": "2022-02-11",
+      "cusum": 5.64,
+      "residual_kbd": 773.9,
+      "nearest_known_event": "Russia-Ukraine invasion",
+      "distance_days": 21
+    },
+    {
+      "date": "2022-03-04",
+      "cusum": 5.02,
+      "residual_kbd": 1079.9,
+      "nearest_known_event": "Russia-Ukraine invasion",
+      "distance_days": 0
+    },
+    {
+      "date": "2023-02-03",
+      "cusum": 8.24,
+      "residual_kbd": 1035.0,
+      "nearest_known_event": "SPR refill start",
+      "distance_days": 119
+    },
+    {
+      "date": "2023-12-08",
+      "cusum": 7.73,
+      "residual_kbd": 691.3,
+      "nearest_known_event": "SPR refill start",
+      "distance_days": 189
+    },
+    {
+      "date": "2024-02-02",
+      "cusum": 5.78,
+      "residual_kbd": 1227.7,
+      "nearest_known_event": "SPR refill start",
+      "distance_days": 245
+    },
+    {
+      "date": "2025-01-24",
+      "cusum": 6.12,
+      "residual_kbd": 616.0,
+      "nearest_known_event": "SPR refill start",
+      "distance_days": 602
+    },
+    {
+      "date": "2026-02-13",
+      "cusum": 5.53,
+      "residual_kbd": 1180.1,
+      "nearest_known_event": "SPR refill start",
+      "distance_days": 987
+    }
+  ]
+}

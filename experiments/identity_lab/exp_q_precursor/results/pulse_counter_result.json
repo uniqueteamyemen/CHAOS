@@ -1,0 +1,88 @@
+{
+  "sigma_pooled": 1.9429,
+  "window": 12,
+  "threshold_c_std_p99": 0.7726,
+  "threshold_m_delta_p99": 1.3547,
+  "bands": [
+    "0-15",
+    "15-35",
+    "35-inf"
+  ],
+  "results": {
+    "no_leak": {
+      "n": 40,
+      "no_activity": 40,
+      "c_mean": 0.0,
+      "c_std": 0.0,
+      "m_delta": 0.0,
+      "pulse_flag_rate": 0.0,
+      "rate_change_flag_rate": 0.0,
+      "band_distribution": {
+        "0-15": 0,
+        "15-35": 0,
+        "35-inf": 0
+      }
+    },
+    "constant": {
+      "n": 40,
+      "no_activity": 0,
+      "c_mean": 3.76,
+      "c_std": 0.569,
+      "m_delta": 0.022,
+      "pulse_flag_rate": 0.0,
+      "rate_change_flag_rate": 0.0,
+      "band_distribution": {
+        "0-15": 60.58,
+        "15-35": 0.35,
+        "35-inf": 0
+      }
+    },
+    "pulse": {
+      "n": 40,
+      "no_activity": 0,
+      "c_mean": 2.803,
+      "c_std": 0.937,
+      "m_delta": 0.139,
+      "pulse_flag_rate": 1.0,
+      "rate_change_flag_rate": 0.025,
+      "band_distribution": {
+        "0-15": 44.83,
+        "15-35": 0.25,
+        "35-inf": 0
+      }
+    },
+    "shift_up": {
+      "n": 40,
+      "no_activity": 0,
+      "c_mean": 3.866,
+      "c_std": 0.495,
+      "m_delta": 28.894,
+      "pulse_flag_rate": 0.0,
+      "rate_change_flag_rate": 1.0,
+      "band_distribution": {
+        "0-15": 15.53,
+        "15-35": 0.35,
+        "35-inf": 46.75
+      }
+    },
+    "shift_down": {
+      "n": 40,
+      "no_activity": 0,
+      "c_mean": 3.803,
+      "c_std": 0.535,
+      "m_delta": -29.129,
+      "pulse_flag_rate": 0.0,
+      "rate_change_flag_rate": 1.0,
+      "band_distribution": {
+        "0-15": 45.33,
+        "15-35": 0.4,
+        "35-inf": 15.93
+      }
+    }
+  },
+  "verdict": {
+    "status": "supported",
+    "claim": "one break counter reads three states: no activity (C=0), pulse (C oscillates), rate change (M shifts).",
+    "blind_spot": "a leak below the level threshold emits no break and is invisible to this counter."
+  }
+}

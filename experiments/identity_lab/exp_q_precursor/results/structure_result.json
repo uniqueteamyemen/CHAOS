@@ -1,0 +1,51 @@
+{
+  "sigma_pooled": 1.9429,
+  "change_month": 60,
+  "window": 12,
+  "threshold_median_p99": 12.097,
+  "threshold_dispersion_p99": 2.7275,
+  "results": {
+    "shift_up": {
+      "n": 40,
+      "flagged": 40,
+      "flag_rate": 1.0,
+      "flagged_near_a_real_change": 40,
+      "near_rate": 1.0,
+      "dispersion_stat_used": 0,
+      "level_detector_fires": 40
+    },
+    "shift_down": {
+      "n": 40,
+      "flagged": 40,
+      "flag_rate": 1.0,
+      "flagged_near_a_real_change": 40,
+      "near_rate": 1.0,
+      "dispersion_stat_used": 0,
+      "level_detector_fires": 40
+    },
+    "pulse": {
+      "n": 40,
+      "flagged": 40,
+      "flag_rate": 1.0,
+      "flagged_near_a_real_change": 11,
+      "near_rate": 0.275,
+      "dispersion_stat_used": 40,
+      "level_detector_fires": 40
+    },
+    "constant": {
+      "n": 40,
+      "flagged": 0,
+      "flag_rate": 0.0,
+      "flagged_near_a_real_change": 0,
+      "near_rate": 0.0,
+      "dispersion_stat_used": 0,
+      "level_detector_fires": 40
+    }
+  },
+  "verdict": {
+    "detection": "supported",
+    "localisation": "step_supported_pulse_partial",
+    "claim": "a structure change (step or pulse) is detected with ~0 false flags on a constant leak; the month is localised for steps, but a periodic change is detected without reliable localisation.",
+    "boundary": "synthetic; one identity; thresholds calibrated on the control; multiple changes are not segmented."
+  }
+}

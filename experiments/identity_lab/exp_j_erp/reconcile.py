@@ -187,6 +187,7 @@ def match_counterpart_receipts(
     date_window_days: int = 3,
     quantity_tolerance: Decimal = Decimal("0.01"),
     loss_classification_threshold: Decimal | None = None,
+    quantity_tolerance_relative: Decimal | None = None,
 ) -> list[dict]:
     """Match independent receipt records to outbound movements.
 
@@ -215,23 +216,45 @@ def match_counterpart_receipts(
         raise ValueError("quantity_tolerances_must_be_finite_and_non_negative")
 
     results: list[dict] = []
+    used_receipt_ids: set[str] = set()
+    products_in_picking: dict[str, set[str]] = {}
+    for s in shipments:
+        products_in_picking.setdefault(relation_id(s.get("picking_id")), set()).add(
+            relation_id(s.get("product_id")))
     for shipment in shipments:
         shipment_id = relation_id(shipment.get("picking_id"))
         product_id = relation_id(shipment.get("product_id"))
+        if quantity_tolerance_relative is not None:
+            rel = Decimal(str(quantity_tolerance_relative))
+            if not rel.is_finite() or rel < 0:
+                raise ValueError("quantity_tolerance_relative_must_be_finite_and_non_negative")
+            candidate_tolerance = abs(Decimal(str(shipment.get("quantity", "0")))) * rel
         explicit_links = [
             receipt for receipt in receipts
             if relation_id(receipt.get("source_picking_id")) == shipment_id
+            and relation_id(receipt.get("counterpart_picking_id")) not in used_receipt_ids
+        ]
+        # A picking may carry several product lines. A link for another product of
+        # this picking is that line's evidence, not a conflict for this line. A link
+        # for a product no line carries is a genuine conflict.
+        explicit_for_product = [
+            receipt for receipt in explicit_links
+            if relation_id(receipt.get("product_id")) == product_id
+        ]
+        foreign_links = [
+            receipt for receipt in explicit_links
+            if relation_id(receipt.get("product_id"))
+            not in products_in_picking.get(shipment_id, set())
         ]
         destination_id = relation_id(shipment.get("location_dest_id"))
         exact = [
-            receipt for receipt in explicit_links
-            if relation_id(receipt.get("product_id")) == product_id
-            and relation_id(receipt.get("location_id")) == destination_id
+            receipt for receipt in explicit_for_product
+            if relation_id(receipt.get("location_id")) == destination_id
         ]
-        # An explicit source link is evidence, not permission to ignore conflicting
-        # records carrying the same source key. Missing destination or a linked
-        # record for another product/location makes the shipment ambiguous.
-        explicit_conflict = bool(explicit_links) and len(exact) != len(explicit_links)
+        explicit_conflict = (
+            (bool(explicit_for_product) and len(exact) != len(explicit_for_product))
+            or bool(foreign_links)
+        )
         if explicit_conflict:
             results.append({
                 "picking_id": shipment_id, "product_id": product_id,
@@ -266,6 +289,8 @@ def match_counterpart_receipts(
             candidates = []
             for receipt in receipts:
                 if relation_id(receipt.get("product_id")) != product_id:
+                    continue
+                if relation_id(receipt.get("counterpart_picking_id")) in used_receipt_ids:
                     continue
                 receipt_location = relation_id(receipt.get("location_id"))
                 if receipt_location and receipt_location != relation_id(shipment.get("location_dest_id")):
@@ -356,4 +381,6 @@ def match_counterpart_receipts(
             "counterpart_date": receipt.get("counterpart_date"),
             "issues": issues,
         })
+        if confirmed:
+            used_receipt_ids.add(relation_id(receipt.get("counterpart_picking_id")))
     return results

@@ -1,0 +1,300 @@
+{
+  "data": {
+    "weeks": 617,
+    "detect_weeks": 513,
+    "years": 9.9
+  },
+  "claim1_seasonality": {
+    "months": 12,
+    "n": 513,
+    "F": 1.21,
+    "month_means_kbd": {
+      "1": -308.9,
+      "2": -366.6,
+      "3": -448.0,
+      "4": -566.8,
+      "5": -431.1,
+      "6": -329.1,
+      "7": -349.8,
+      "8": -533.1,
+      "9": -521.4,
+      "10": -542.5,
+      "11": -641.0,
+      "12": -463.8
+    }
+  },
+  "claim2_baseline": {
+    "frozen": {
+      "sigma_kbd": 195.6,
+      "bias_kbd": -333.1,
+      "alarms": 39,
+      "per_year": 3.95,
+      "aligned_within_60d": 7,
+      "alarms_detail": [
+        {
+          "date": "2017-03-17",
+          "nearest": "COVID",
+          "days": 1099
+        },
+        {
+          "date": "2017-04-21",
+          "nearest": "COVID",
+          "days": 1064
+        },
+        {
+          "date": "2017-05-12",
+          "nearest": "COVID",
+          "days": 1043
+        },
+        {
+          "date": "2017-06-30",
+          "nearest": "COVID",
+          "days": 994
+        },
+        {
+          "date": "2017-07-14",
+          "nearest": "COVID",
+          "days": 980
+        },
+        {
+          "date": "2017-08-11",
+          "nearest": "COVID",
+          "days": 952
+        },
+        {
+          "date": "2017-09-01",
+          "nearest": "COVID",
+          "days": 931
+        },
+        {
+          "date": "2017-09-15",
+          "nearest": "COVID",
+          "days": 917
+        },
+        {
+          "date": "2018-01-19",
+          "nearest": "COVID",
+          "days": 791
+        },
+        {
+          "date": "2018-03-02",
+          "nearest": "COVID",
+          "days": 749
+        },
+        {
+          "date": "2018-04-06",
+          "nearest": "COVID",
+          "days": 714
+        },
+        {
+          "date": "2018-07-06",
+          "nearest": "COVID",
+          "days": 623
+        },
+        {
+          "date": "2019-01-25",
+          "nearest": "COVID",
+          "days": 420
+        },
+        {
+          "date": "2019-03-15",
+          "nearest": "COVID",
+          "days": 371
+        },
+        {
+          "date": "2019-05-03",
+          "nearest": "COVID",
+          "days": 322
+        },
+        {
+          "date": "2020-05-08",
+          "nearest": "COVID",
+          "days": 49
+        },
+        {
+          "date": "2020-05-15",
+          "nearest": "COVID",
+          "days": 56
+        },
+        {
+          "date": "2020-05-22",
+          "nearest": "COVID",
+          "days": 63
+        },
+        {
+          "date": "2020-05-29",
+          "nearest": "COVID",
+          "days": 70
+        },
+        {
+          "date": "2020-06-05",
+          "nearest": "COVID",
+          "days": 77
+        },
+        {
+          "date": "2020-06-19",
+          "nearest": "COVID",
+          "days": 91
+        },
+        {
+          "date": "2020-07-03",
+          "nearest": "COVID",
+          "days": 105
+        },
+        {
+          "date": "2020-07-10",
+          "nearest": "COVID",
+          "days": 112
+        },
+        {
+          "date": "2020-07-31",
+          "nearest": "COVID",
+          "days": 133
+        },
+        {
+          "date": "2020-09-11",
+          "nearest": "Texas freeze",
+          "days": 161
+        },
+        {
+          "date": "2020-10-09",
+          "nearest": "Texas freeze",
+          "days": 133
+        },
+        {
+          "date": "2020-10-30",
+          "nearest": "Texas freeze",
+          "days": 112
+        },
+        {
+          "date": "2021-02-26",
+          "nearest": "Texas freeze",
+          "days": 7
+        },
+        {
+          "date": "2021-12-03",
+          "nearest": "Russia-Ukraine",
+          "days": 91
+        },
+        {
+          "date": "2021-12-24",
+          "nearest": "Russia-Ukraine",
+          "days": 70
+        },
+        {
+          "date": "2022-01-07",
+          "nearest": "Russia-Ukraine",
+          "days": 56
+        },
+        {
+          "date": "2022-01-28",
+          "nearest": "Russia-Ukraine",
+          "days": 35
+        },
+        {
+          "date": "2022-02-11",
+          "nearest": "Russia-Ukraine",
+          "days": 21
+        },
+        {
+          "date": "2022-03-04",
+          "nearest": "Russia-Ukraine",
+          "days": 0
+        },
+        {
+          "date": "2023-02-03",
+          "nearest": "SPR refill",
+          "days": 119
+        },
+        {
+          "date": "2023-12-08",
+          "nearest": "SPR refill",
+          "days": 189
+        },
+        {
+          "date": "2024-02-02",
+          "nearest": "SPR refill",
+          "days": 245
+        },
+        {
+          "date": "2025-01-24",
+          "nearest": "SPR refill",
+          "days": 602
+        },
+        {
+          "date": "2026-02-13",
+          "nearest": "SPR refill",
+          "days": 987
+        }
+      ]
+    },
+    "rolling": {
+      "window_weeks": 104,
+      "alarms": 12,
+      "per_year": 1.22,
+      "aligned_within_60d": 2,
+      "alarms_detail": [
+        {
+          "date": "2017-03-17",
+          "nearest": "COVID",
+          "days": 1099
+        },
+        {
+          "date": "2017-05-05",
+          "nearest": "COVID",
+          "days": 1050
+        },
+        {
+          "date": "2017-07-21",
+          "nearest": "COVID",
+          "days": 973
+        },
+        {
+          "date": "2017-09-15",
+          "nearest": "COVID",
+          "days": 917
+        },
+        {
+          "date": "2020-05-08",
+          "nearest": "COVID",
+          "days": 49
+        },
+        {
+          "date": "2020-05-22",
+          "nearest": "COVID",
+          "days": 63
+        },
+        {
+          "date": "2020-06-05",
+          "nearest": "COVID",
+          "days": 77
+        },
+        {
+          "date": "2020-06-26",
+          "nearest": "COVID",
+          "days": 98
+        },
+        {
+          "date": "2020-07-10",
+          "nearest": "COVID",
+          "days": 112
+        },
+        {
+          "date": "2020-08-14",
+          "nearest": "COVID",
+          "days": 147
+        },
+        {
+          "date": "2020-10-09",
+          "nearest": "Texas freeze",
+          "days": 133
+        },
+        {
+          "date": "2022-01-07",
+          "nearest": "Russia-Ukraine",
+          "days": 56
+        }
+      ]
+    }
+  }
+}
