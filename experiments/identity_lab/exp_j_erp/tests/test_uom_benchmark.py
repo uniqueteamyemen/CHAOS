@@ -1,8 +1,13 @@
 """Independent tests for benchmark-only UoM normalization."""
+import sys
+from pathlib import Path
 import unittest
 
-from reconcile_benchmark import classify
-from uom import convert
+ERP_DIR = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ERP_DIR))
+
+from reconcile_benchmark import classify  # noqa: E402
+from uom import convert  # noqa: E402
 
 
 class UomConversionTests(unittest.TestCase):
@@ -20,7 +25,7 @@ class UomConversionTests(unittest.TestCase):
     def test_reverse_weight_conversion(self):
         self.assertEqual(convert(1000, "g", "kg"), (1.0, "ok"))
 
-    def test_classify_uses_product_reference_category_and_audit_values(self):
+    def test_classify_uses_each_product_reference_unit_and_audits_originals(self):
         edges = [
             {"transfer_id": "COUNT-1", "product": "count-product", "qty_out": 24},
             {"transfer_id": "WEIGHT-1", "product": "weight-product", "qty_out": 1.5},
@@ -36,6 +41,12 @@ class UomConversionTests(unittest.TestCase):
         })
         self.assertEqual(len(summary["confirmed_loss"]), 0)
         self.assertEqual(summary["confirmed"], 2)
+        self.assertEqual(summary["uom_audit"][0]["quantity_original"], 2)
+        self.assertEqual(summary["uom_audit"][0]["unit_original"], "dozen")
+        self.assertEqual(summary["uom_audit"][0]["quantity_normalized"], 24.0)
+        self.assertEqual(summary["uom_audit"][1]["quantity_original"], 1500)
+        self.assertEqual(summary["uom_audit"][1]["unit_original"], "g")
+        self.assertEqual(summary["uom_audit"][1]["quantity_normalized"], 1.5)
 
     def test_classify_rejects_cross_category_conversion(self):
         edges = [{"transfer_id": "X", "product": "count-product", "qty_out": 10}]
@@ -44,6 +55,9 @@ class UomConversionTests(unittest.TestCase):
         summary = classify(results, edges, {"count-product": "unit"})
         self.assertEqual(summary["ambiguous"], 1)
         self.assertEqual(summary["confirmed"], 0)
+        self.assertEqual(summary["uom_audit"][0]["unit_original"], "kg")
+        self.assertTrue(summary["uom_audit"][0]["normalization"].startswith(
+            "uom_category_mismatch:"))
 
 
 if __name__ == "__main__":
