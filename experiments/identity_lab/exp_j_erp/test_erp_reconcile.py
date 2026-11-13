@@ -126,6 +126,7 @@ class CounterpartTests(unittest.TestCase):
             "counterpart_picking_id": "IN-91", "product_id": "P1",
             "counterpart_qty": "30", "counterpart_uom_id": "uom_unit",
             "product_uom_category_id": "unit", "counterpart_date": "2025-01-02",
+            "counterpart_source": "receipt_scan", "recorded_at": "2025-01-02T10:00:00",
             "location_id": "B",
         }]
         result = match_counterpart_receipts(self.shipment, receipts, UOMS)[0]
@@ -140,17 +141,31 @@ class CounterpartTests(unittest.TestCase):
                 "counterpart_picking_id": receipt_id, "product_id": "P1",
                 "counterpart_qty": "30", "counterpart_uom_id": "uom_unit",
                 "product_uom_category_id": "unit", "counterpart_date": "2025-01-02",
+                "counterpart_source": "receipt_scan", "recorded_at": "2025-01-02T10:00:00",
                 "location_id": "B",
             })
         result = match_counterpart_receipts(self.shipment, receipts, UOMS)[0]
         self.assertEqual(result["state"], "ambiguous")
         self.assertFalse(result["confirmed"])
 
+    def test_missing_provenance_cannot_be_confirmed(self):
+        receipts = [{
+            "source_picking_id": "OUT-7", "counterpart_picking_id": "IN-91",
+            "product_id": "P1", "counterpart_qty": "24", "counterpart_uom_id": "uom_unit",
+            "product_uom_category_id": "unit", "counterpart_date": "2025-01-02",
+            "location_id": "B",
+        }]
+        result = match_counterpart_receipts(self.shipment, receipts, UOMS)[0]
+        self.assertEqual(result["state"], "ambiguous")
+        self.assertFalse(result["confirmed"])
+        self.assertEqual(result["reason"], "receipt_provenance_incomplete")
+
     def test_receiver_document_id_is_not_mistaken_for_source_key(self):
         receipts = [{
             "counterpart_picking_id": "OUT-7", "product_id": "P1",
             "counterpart_qty": "30", "counterpart_uom_id": "uom_unit",
             "product_uom_category_id": "unit", "counterpart_date": "2025-01-02",
+            "counterpart_source": "receipt_scan", "recorded_at": "2025-01-02T10:00:00",
             "location_id": "B",
         }]
         result = match_counterpart_receipts(self.shipment, receipts, UOMS)[0]
