@@ -52,8 +52,9 @@ def _normalise_receipt(receipt: Mapping, shipment: Mapping,
     uom = uoms_by_id.get(uid)
     if uom is None:
         raise UomNormalizationError("receipt_uom_unresolved", uid)
+    raw_qty = _decimal(receipt.get("counterpart_qty"), "receipt_quantity_invalid")
     qty, ref_id = normalize_to_reference(
-        receipt.get("counterpart_qty"), uom, uoms_by_id,
+        raw_qty, uom, uoms_by_id,
         receipt.get("product_uom_category_id"),
     )
     if ref_id != relation_id(shipment.get("reference_uom_id")):
