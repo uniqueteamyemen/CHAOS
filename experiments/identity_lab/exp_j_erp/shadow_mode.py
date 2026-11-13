@@ -150,7 +150,7 @@ def run_shadow(bundle):
     return {"classification":"shadow_observation_not_ground_truth","snapshot":{"sha256":input_hash,
         "moves":len(snapshot["moves"]),"uom_rows":len(snapshot["uom_rows"]),"receipts":len(snapshot["receipts"])},
         "export_metadata":snapshot["export_metadata"],"movement_stats":movement_stats,
-        "engine_summaries":{e:summarize(results[e]) for e in ("A","B","C")},
+        "engine_summaries":{e:summarize(results[e]) for e in ("A","B","C")},\n        "engine_configuration":{"A":{"candidate_tolerance":"2% relative","loss_threshold":"0.5 category reference units"},\n            "B":{"quantity_tolerance":"2% relative, applied as absolute per shipment","loss_threshold":"same quantity_tolerance (coupled in B implementation)"},\n            "C":{"candidate_tolerance":"2% relative","reconciliation_tolerance":"1% relative? no: 0.01 absolute reference units","loss_threshold":"0.5 category reference units"}},
         "pairwise_state_disagreements":pairwise,"disagreement_count":len(disagreements),
         "disagreements":disagreements,"results":results,
         "guardrails":{"odoo_connection_used":False,"writes_to_odoo":False,
@@ -168,7 +168,7 @@ def write_run(report, output_root):
           "| Metric | A | B | C |","|---|---:|---:|---:|"]
     for k in ("shipments_scored","confirmed","loss_claims","candidate_cases","ambiguous","unmatched"):
         md.append("| "+k+" | "+" | ".join(str(report["engine_summaries"][e][k]) for e in ("A","B","C"))+" |")
-    md += ["","Pairwise state disagreements:"] + ["- "+k+": "+str(v) for k,v in report["pairwise_state_disagreements"].items()]
+    md += ["","Engine threshold configuration:","- A: 2% candidate tolerance; 0.5 category-reference-unit loss threshold.","- B: 2% per-shipment tolerance is passed to the shared quantity_tolerance parameter and therefore also controls loss classification.","- C: 2% candidate tolerance; 0.01 absolute reconciliation tolerance; 0.5 category-reference-unit loss threshold.","","Pairwise state disagreements:"] + ["- "+k+": "+str(v) for k,v in report["pairwise_state_disagreements"].items()]
     md += ["","Total shipments with disagreement: "+str(report["disagreement_count"]),"",
            "Safety: no Odoo connection, no Odoo writes, no source mutation, no automated promotion."]
     files = {"shadow_report.json":json.dumps(report,indent=2,ensure_ascii=False),
