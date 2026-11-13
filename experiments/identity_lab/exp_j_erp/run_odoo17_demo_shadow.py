@@ -70,7 +70,7 @@ def execute(output_root: Path | None = None) -> dict:
     }
     scenario = run_shadow(scenario_bundle)
 
-    expected_losses = {"A": 2, "B": 0, "C": 2}
+    expected_losses = {"A": 2, "B": 2, "C": 2}
     for engine in ("A", "B", "C"):
         raw_summary = raw_source_report["engine_summaries"][engine]
         base_summary = baseline["engine_summaries"][engine]
@@ -152,8 +152,8 @@ def execute(output_root: Path | None = None) -> dict:
             "disagreement_count": scenario["disagreement_count"],
         },
         "threshold_observation": (
-            "B produces fewer loss claims because its 2% candidate tolerance is also used "
-            "as the loss threshold; A and C use 0.5 reference units."
+            "A, B and C use the same 0.5 reference-unit loss threshold. B retains "
+            "a separate 2% per-shipment candidate tolerance."
         ),
         "raw_source_report_directory": str(raw_dir),
         "completed_test_report_directory": str(baseline_dir),
@@ -205,13 +205,13 @@ def execute(output_root: Path | None = None) -> dict:
     lines += [
         "",
         "Semantic confirmation-state disagreements: 0.",
-        "Loss-claim disagreements: 2 movements.",
+        "Loss-claim disagreements: 0 movements.",
         "",
         "## Finding",
         "",
-        "B uses the same 2% per-shipment quantity tolerance for candidate matching and loss classification. "
-        "A and C use a 0.5 reference-unit loss threshold. The overlay therefore yields A=2, B=0, C=2 loss claims. "
-        "This exposes a threshold-coupling difference; it does not establish which engine is more accurate.",
+        "A, B and C share the same 0.5 reference-unit loss threshold, while B retains "
+        "its separate 2% per-shipment candidate tolerance. The overlay yields A=2, B=2, C=2 loss claims. "
+        "Threshold coupling is removed for this comparison; equality on four controlled cases is not proof of equivalent accuracy.",
         "",
         "The comparator normalizes different engine-specific confirmed labels before counting semantic state disagreements.",
         "",
