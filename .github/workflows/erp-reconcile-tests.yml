@@ -1,0 +1,24 @@
+name: ERP reconciliation unit tests
+
+on:
+  push:
+    branches:
+      - feat/erp-uom-aggregation-counterpart
+    paths:
+      - "experiments/identity_lab/exp_j_erp/**"
+      - ".github/workflows/erp-reconcile-tests.yml"
+  pull_request:
+    paths:
+      - "experiments/identity_lab/exp_j_erp/**"
+      - ".github/workflows/erp-reconcile-tests.yml"
+
+jobs:
+  reconcile-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Run ERP reconciliation tests
+        run: python -m unittest experiments.identity_lab.exp_j_erp.test_erp_reconcile -v
