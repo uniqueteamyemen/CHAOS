@@ -71,9 +71,25 @@ def transfers_for(scenario: str):
     return rows
 
 
+def count_episodes(events):
+    """12 monthly observations of one persistent mismatch are one case, not twelve."""
+    by_edge = {}
+    for e in events:
+        by_edge.setdefault(e["edge"], []).append(e["month"])
+    total = 0
+    for months in by_edge.values():
+        months = sorted(months)
+        total += 1
+        for i in range(1, len(months)):
+            if months[i] != months[i - 1] + 1:
+                total += 1
+    return total
+
+
 def d3_classify(transfers):
     """The whole point: a name for each outcome, not a single 'alert'."""
-    out = {"loss": [], "delay": [], "unmatched": [], "ambiguous_id": [], "ok": 0, "matched_by_fallback": 0}
+    out = {"loss": [], "delay": [], "unmatched": [], "ambiguous_id": [], "ok": 0,
+           "matched_by_fallback": 0, "loss_episodes": 0, "delay_episodes": 0}
     ids = [t["transfer_id"] for t in transfers]
     seen = {i for i in ids if i}
     duplicated = {i for i in seen if ids.count(i) > 1}
@@ -99,6 +115,8 @@ def d3_classify(transfers):
                                  "month": t["month_out"], "lag": lag})
         else:
             out["ok"] += 1
+    out["loss_episodes"] = count_episodes(out["loss"])
+    out["delay_episodes"] = count_episodes(out["delay"])
     return out, "ok"
 
 
@@ -152,17 +170,19 @@ def main() -> None:
         "",
         "## 2. Can D3 name the outcome?",
         "",
-        "| scenario | loss | delay | unmatched | ambiguous id | ok | verdict |",
-        "|---|---|---|---|---|---|---|",
+        "| scenario | loss obs. | loss cases | delay | unmatched | ambiguous | ok | verdict |",
+        "|---|---|---|---|---|---|---|---|",
     ]
     for s in scenarios:
         t = table[s]
-        lines.append(f"| {s} | {t['loss']} | {t['delay']} | {t['unmatched']} | {t['ambiguous_id']} | {t['ok']} | {verdict[s]} |")
+        lines.append(f"| {s} | {t['loss']} | {t['loss_episodes']} | {t['delay']} | {t['unmatched']} | "
+                     f"{t['ambiguous_id']} | {t['ok']} | {verdict[s]} |")
 
     lines += [
         "",
         "## ما أثبته كل صف",
         "",
+        "- **loss**: 12 ملاحظة شهرية تساوي **حالة واحدة مستمرة** — لا 12 كسرًا. العمودان منفصلان عمدًا.",
         "- **delay1**: التسليم في الشهر التالي لا يُصنَّف خسارة إطلاقًا — صفر في عمود loss.",
         "- **delay2**: تأخر شهرين يُصنَّف **تأخرًا** لا خسارة، ويُعدّ تجاوزًا للتسامح المعلن.",
         "- **unmatched**: الطرف المرسل بلا سجل مقابل → `unmatched`، ولا ادعاء خسارة. الفرق مهم:",

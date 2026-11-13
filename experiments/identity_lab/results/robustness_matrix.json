@@ -11,7 +11,9 @@
       "unmatched": 0,
       "ambiguous_id": 0,
       "ok": 12,
-      "matched_by_fallback": 0
+      "matched_by_fallback": 0,
+      "loss_episodes": 0,
+      "delay_episodes": 0
     },
     "loss": {
       "loss": 12,
@@ -19,7 +21,9 @@
       "unmatched": 0,
       "ambiguous_id": 0,
       "ok": 0,
-      "matched_by_fallback": 0
+      "matched_by_fallback": 0,
+      "loss_episodes": 1,
+      "delay_episodes": 0
     },
     "delay1": {
       "loss": 0,
@@ -27,7 +31,9 @@
       "unmatched": 0,
       "ambiguous_id": 0,
       "ok": 12,
-      "matched_by_fallback": 0
+      "matched_by_fallback": 0,
+      "loss_episodes": 0,
+      "delay_episodes": 0
     },
     "delay2": {
       "loss": 0,
@@ -35,7 +41,9 @@
       "unmatched": 0,
       "ambiguous_id": 0,
       "ok": 0,
-      "matched_by_fallback": 0
+      "matched_by_fallback": 0,
+      "loss_episodes": 0,
+      "delay_episodes": 1
     },
     "no_id": {
       "loss": 0,
@@ -43,7 +51,9 @@
       "unmatched": 0,
       "ambiguous_id": 0,
       "ok": 12,
-      "matched_by_fallback": 12
+      "matched_by_fallback": 12,
+      "loss_episodes": 0,
+      "delay_episodes": 0
     },
     "dup_id": {
       "loss": 0,
@@ -51,7 +61,9 @@
       "unmatched": 0,
       "ambiguous_id": 12,
       "ok": 0,
-      "matched_by_fallback": 0
+      "matched_by_fallback": 0,
+      "loss_episodes": 0,
+      "delay_episodes": 0
     },
     "unmatched": {
       "loss": 0,
@@ -59,7 +71,9 @@
       "unmatched": 12,
       "ambiguous_id": 0,
       "ok": 0,
-      "matched_by_fallback": 0
+      "matched_by_fallback": 0,
+      "loss_episodes": 0,
+      "delay_episodes": 0
     },
     "nested": {
       "loss": 0,
@@ -67,7 +81,9 @@
       "unmatched": 0,
       "ambiguous_id": 0,
       "ok": 24,
-      "matched_by_fallback": 0
+      "matched_by_fallback": 0,
+      "loss_episodes": 0,
+      "delay_episodes": 0
     }
   },
   "verdict": {

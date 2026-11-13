@@ -13,19 +13,20 @@ structural, not statistical: it reports what the classifier decides, not how oft
 
 ## 2. Can D3 name the outcome?
 
-| scenario | loss | delay | unmatched | ambiguous id | ok | verdict |
-|---|---|---|---|---|---|---|
-| clean | 0 | 0 | 0 | 0 | 12 | silent |
-| loss | 12 | 0 | 0 | 0 | 0 | loss |
-| delay1 | 0 | 0 | 0 | 0 | 12 | silent |
-| delay2 | 0 | 12 | 0 | 0 | 0 | delay, not loss |
-| no_id | 0 | 0 | 0 | 0 | 12 | matched by fallback, no false loss |
-| dup_id | 0 | 0 | 0 | 12 | 0 | ambiguity reported, no loss claimed |
-| unmatched | 0 | 0 | 12 | 0 | 0 | unmatched reported, no loss claimed |
-| nested | 0 | 0 | 0 | 0 | 24 | silent |
+| scenario | loss obs. | loss cases | delay | unmatched | ambiguous | ok | verdict |
+|---|---|---|---|---|---|---|---|
+| clean | 0 | 0 | 0 | 0 | 0 | 12 | silent |
+| loss | 12 | 1 | 0 | 0 | 0 | 0 | loss |
+| delay1 | 0 | 0 | 0 | 0 | 0 | 12 | silent |
+| delay2 | 0 | 0 | 12 | 0 | 0 | 0 | delay, not loss |
+| no_id | 0 | 0 | 0 | 0 | 0 | 12 | matched by fallback, no false loss |
+| dup_id | 0 | 0 | 0 | 0 | 12 | 0 | ambiguity reported, no loss claimed |
+| unmatched | 0 | 0 | 0 | 12 | 0 | 0 | unmatched reported, no loss claimed |
+| nested | 0 | 0 | 0 | 0 | 0 | 24 | silent |
 
 ## ما أثبته كل صف
 
+- **loss**: 12 ملاحظة شهرية تساوي **حالة واحدة مستمرة** — لا 12 كسرًا. العمودان منفصلان عمدًا.
 - **delay1**: التسليم في الشهر التالي لا يُصنَّف خسارة إطلاقًا — صفر في عمود loss.
 - **delay2**: تأخر شهرين يُصنَّف **تأخرًا** لا خسارة، ويُعدّ تجاوزًا للتسامح المعلن.
 - **unmatched**: الطرف المرسل بلا سجل مقابل → `unmatched`، ولا ادعاء خسارة. الفرق مهم:
