@@ -196,13 +196,28 @@ def legacy_a(shipments, receipts):
 
 
 def legacy_a_normalized(results):
-    return {r["edge"]: {
-        "confirmed": r["state"] == "confirmed",
-        "candidate": r["state"] == "candidate",
-        "ambiguous": r["state"] == "ambiguous",
-        "received": (str(r["receipt"]["counterpart_qty"]) if r.get("receipt") else None),
-        "loss_claim": False,
-    } for r in results}
+    from .legacy_uom import convert
+    normalized = {}
+    for r in results:
+        confirmed = r["state"] == "confirmed"
+        received = None
+        loss_claim = False
+        if r.get("receipt"):
+            received, _ = convert(
+                float(r["receipt"].get("counterpart_qty") or 0),
+                r["receipt"].get("counterpart_uom", "unit"), "unit"
+            )
+        if confirmed and received is not None:
+            edge_qty = 10.0
+            loss_claim = edge_qty - received > 0.5
+        normalized[r["edge"]] = {
+            "confirmed": confirmed,
+            "candidate": r["state"] == "candidate",
+            "ambiguous": r["state"] == "ambiguous",
+            "received": None if received is None else str(received),
+            "loss_claim": loss_claim,
+        }
+    return normalized
 
 
 def normalize_b(results):
