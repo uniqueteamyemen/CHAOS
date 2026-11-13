@@ -180,6 +180,7 @@ def legacy_a(shipments, receipts):
             # Historical A compared this field to transfer_id. Map the source link
             # into that legacy key; preserve the actual receiver ID separately.
             "counterpart_picking_id": r.get("source_picking_id") or "",
+            "receiver_id": r.get("counterpart_picking_id"),
             "counterpart_qty": r.get("counterpart_qty"),
             "counterpart_uom": r.get("counterpart_uom_id"),
             "from_entity": r.get("from_entity"),
@@ -220,8 +221,7 @@ def legacy_a(shipments, receipts):
         results.append({"edge": key, "state": "candidate" if len(candidates)==1 else
                         "ambiguous" if candidates else "unmatched",
                         "receipt": candidates[0] if len(candidates)==1 else None,
-                        "candidate_ids": [str(x.get("counterpart_picking_id") or "")
-                                          for x in candidates]})
+                        "candidate_ids": [str(x.get("receiver_id") or "") for x in candidates]})
     return results
 
 
@@ -347,6 +347,12 @@ def run():
         preds = {"A": legacy_a_normalized(a),
                  "B": normalize_b(b, unlinked_ids),
                  "C": normalize_c(c, unlinked_ids)}
+        if seed == 0:
+            print("CANDIDATE_DEBUG", json.dumps({
+                label: {sid: pred[sid]["candidate_ids"] for sid in truth
+                        if truth[sid].get("candidate_ids")}
+                for label, pred in preds.items()
+            }))
         for label, pred in preds.items():
             row = score(label, pred, truth)
             rows.append({"seed": seed, **row})
