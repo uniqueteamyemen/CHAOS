@@ -78,6 +78,11 @@ class HybridReconcileTests(unittest.TestCase):
         self.assertTrue(all(row["reason"] == "receipt_candidate_shared_across_shipments"
                             for row in rows))
 
+    def test_receipt_linked_outside_batch_is_not_reassigned(self):
+        row = self.run_match([shipment("S1")], [receipt(source="S-OTHER")])[0]
+        self.assertEqual(row["state"], "unmatched")
+        self.assertEqual(row["candidate_receipt_ids"], [])
+
     def test_sender_mismatch_excludes_candidate(self):
         row = self.run_match([shipment()], [receipt(source=None, sender="OTHER")])[0]
         self.assertEqual(row["state"], "unmatched")
