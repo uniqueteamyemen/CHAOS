@@ -168,6 +168,14 @@ def aggregate_moves(
     return aggregated, stats
 
 
+def _receipt_evidence_complete(receipt: Mapping) -> bool:
+    required = (
+        "counterpart_picking_id", "counterpart_qty", "counterpart_uom_id",
+        "counterpart_date", "counterpart_source", "recorded_at",
+    )
+    return all(receipt.get(field) not in (None, "") for field in required)
+
+
 def match_counterpart_receipts(
     shipments: list[Mapping],
     receipts: list[Mapping],
@@ -194,6 +202,13 @@ def match_counterpart_receipts(
             and relation_id(receipt.get("product_id")) == product_id
             and (not relation_id(receipt.get("location_id")) or relation_id(receipt.get("location_id")) == relation_id(shipment.get("location_dest_id")))
         ]
+        if len(exact) == 1 and not _receipt_evidence_complete(exact[0]):
+            results.append({
+                "picking_id": shipment_id, "product_id": product_id,
+                "state": "ambiguous", "confidence": 0.0, "confirmed": False,
+                "reason": "receipt_provenance_incomplete",
+            })
+            continue
         if len(exact) > 1:
             results.append({
                 "picking_id": shipment_id, "product_id": product_id,
