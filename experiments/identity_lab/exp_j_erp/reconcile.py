@@ -48,8 +48,15 @@ def aggregate(moves: list[dict], ref_uom: str = "unit") -> tuple[list[dict], lis
     return groups, rejected
 
 
-def match(edges: list[dict], receipts: list[dict]) -> list[dict]:
-    """Exact key first; approximate only as a candidate with a confidence grade."""
+def match(edges: list[dict], receipts: list[dict], date_window: int = DATE_WINDOW_DAYS,
+          qty_tolerance: float = QTY_TOLERANCE, ref_uom: dict | None = None,
+          promote_unique: bool = False) -> list[dict]:
+    """Exact key first; approximate only as a candidate with a confidence grade.
+
+    date_window and qty_tolerance are parameters so the trade-off curve can be measured rather
+    than argued. ref_uom maps product -> its reference unit; default is 'unit'.
+    """
+    ref_uom = ref_uom or {}
     by_key = {}
     for r in receipts:
         key = str(r.get("counterpart_picking_id") or "")
@@ -77,18 +84,21 @@ def match(edges: list[dict], receipts: list[dict]) -> list[dict]:
                 continue
             if str(r.get("to_entity")) != str(edge.get("to_entity")):
                 continue
-            qty, reason = convert(float(r.get("counterpart_qty") or 0), r.get("counterpart_uom", "unit"), "unit")
+            target = ref_uom.get(str(edge.get("product")), "unit")
+            qty, reason = convert(float(r.get("counterpart_qty") or 0), r.get("counterpart_uom", target), target)
             if qty is None:
                 continue
-            if edge["qty_out"] and abs(qty - edge["qty_out"]) / edge["qty_out"] > QTY_TOLERANCE:
+            if edge["qty_out"] and abs(qty - edge["qty_out"]) / edge["qty_out"] > qty_tolerance:
                 continue
-            if abs(int(r.get("day_offset", 0))) > DATE_WINDOW_DAYS:
+            if abs(int(r.get("day_offset", 0))) > date_window:
                 continue
             candidates.append(r)
 
         if len(candidates) == 1:
-            results.append({"edge": key, "state": "candidate", "confidence": "approximate_unique",
-                            "candidates": 1, "note": "matched on party, quantity and a date window"})
+            state = "confirmed_approx" if promote_unique else "candidate"
+            results.append({"edge": key, "state": state, "confidence": "approximate_unique",
+                            "candidates": 1, "receipt": candidates[0],
+                            "note": "matched on party, quantity and a date window"})
         elif len(candidates) > 1:
             results.append({"edge": key, "state": "ambiguous", "confidence": "none",
                             "candidates": len(candidates), "note": "several receipts fit"})
@@ -101,10 +111,11 @@ def match(edges: list[dict], receipts: list[dict]) -> list[dict]:
 def classify(edge_results: list[dict], edges: list[dict]) -> dict:
     """Only a confirmed edge may produce a loss. Candidates stay candidates."""
     by_edge = {str(e["transfer_id"]): e for e in edges}
-    out = {"confirmed": 0, "confirmed_loss": [], "candidate": 0, "ambiguous": 0, "unmatched": 0}
+    out = {"confirmed": 0, "confirmed_approx": 0, "confirmed_loss": [], "candidate": 0,
+           "ambiguous": 0, "unmatched": 0}
     for r in edge_results:
         out[r["state"]] = out.get(r["state"], 0) + 1
-        if r["state"] != "confirmed":
+        if r["state"] not in ("confirmed", "confirmed_approx"):
             continue
         edge = by_edge[r["edge"]]
         qty_in, reason = convert(float(r["receipt"].get("counterpart_qty") or 0),
