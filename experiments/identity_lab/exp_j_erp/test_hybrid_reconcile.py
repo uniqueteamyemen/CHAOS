@@ -1,5 +1,6 @@
 """Regression tests for the hybrid evidence-gated reconciliation engine."""
 import unittest
+from decimal import Decimal
 
 from experiments.identity_lab.exp_j_erp.hybrid_reconcile import match_hybrid
 
@@ -43,7 +44,7 @@ class HybridReconcileTests(unittest.TestCase):
         r["product_uom_category_id"] = "weight"
         row = self.run_match([s], [r])[0]
         self.assertEqual(row["state"], "confirmed_exact")
-        self.assertEqual(row["qty_received"], "0.400")
+        self.assertEqual(Decimal(row["qty_received"]), Decimal("0.4"))
         self.assertEqual(row["issues"], ["loss"])
 
     def test_subthreshold_variance_is_not_a_loss_claim(self):
