@@ -10,7 +10,8 @@ class TemporalCurveTests(unittest.TestCase):
   d=build_window_dataset()
   for w in range(11):
    r=score_window(d,w); self.assertEqual(r["tp"]+r["fn"],70)
-   self.assertTrue(0<=r["precision"]<=1); self.assertTrue(0<=r["recall"]<=1)
+   self.assertTrue(0<=r["precision"]<=1); self.assertTrue(0<=r["resolved_recall"]<=1)
+   self.assertGreaterEqual(r["candidate_recall"],r["resolved_recall"])
  def test_approximate_never_confirms_loss(self):
   d=build_window_dataset()
   for w in range(11):
