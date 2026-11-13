@@ -201,7 +201,7 @@ def score_deepseek_legacy_uom(edges, receipts, truth, ref_uom, seed, window, pro
                              ref_uom=ref_uom, promote_unique=promote)
     summary = legacy_uom_classify(matches, edges)
     detected = {str(x["edge"]) for x in summary["confirmed_loss"]}
-    common = _deepseek_common_metrics(matches, edges, receipts, truth, ref_uom, window)
+    common = _deepseek_common_metrics(matches, edges, receipts, ref_uom, window)
     loss = loss_counts(detected, truth)
     return {
         "algorithm": "deepseek_legacy_uom_control",
