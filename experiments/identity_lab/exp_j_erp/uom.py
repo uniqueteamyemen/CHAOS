@@ -10,6 +10,15 @@ from decimal import Decimal, InvalidOperation
 from typing import Mapping
 
 
+def relation_id(value: object) -> str:
+    """Normalize Odoo many2one values from either id or [id, display_name] form."""
+    if isinstance(value, (list, tuple)):
+        value = value[0] if value else None
+    elif isinstance(value, Mapping):
+        value = value.get("id")
+    return "" if value in (None, False, "") else str(value)
+
+
 class UomNormalizationError(ValueError):
     def __init__(self, code: str, detail: str = "") -> None:
         self.code = code
@@ -44,8 +53,8 @@ def normalize_quantity(
     Odoo's own _compute_quantity formula is (qty / from.factor) * to.factor.
     Both units must belong to the same uom.category.
     """
-    from_category = str(from_uom.get("category_id") or "")
-    to_category = str(to_uom.get("category_id") or "")
+    from_category = relation_id(from_uom.get("category_id"))
+    to_category = relation_id(to_uom.get("category_id"))
     if not from_category or not to_category:
         raise UomNormalizationError("uom_category_unresolved")
     if from_category != to_category:
@@ -67,8 +76,8 @@ def normalize_to_reference(
     The product's stock-UoM category is required. This prevents a product's
     movement from being accepted merely because some unrelated UoM exists.
     """
-    source_category = str(source_uom.get("category_id") or "")
-    product_category = str(product_uom_category_id or "")
+    source_category = relation_id(source_uom.get("category_id"))
+    product_category = relation_id(product_uom_category_id)
     if not product_category:
         raise UomNormalizationError("product_uom_category_unresolved")
     if source_category != product_category:
@@ -80,7 +89,7 @@ def normalize_to_reference(
     references = [
         (str(uid), uom)
         for uid, uom in uoms_by_id.items()
-        if str(uom.get("category_id") or "") == source_category
+        if relation_id(uom.get("category_id")) == source_category
         and str(uom.get("uom_type") or "").lower() == "reference"
     ]
     if len(references) != 1:
