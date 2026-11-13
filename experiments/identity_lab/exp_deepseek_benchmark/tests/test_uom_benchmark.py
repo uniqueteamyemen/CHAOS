@@ -63,15 +63,14 @@ class UomBenchmarkTests(unittest.TestCase):
         self.assertTrue(out["uom_audit"][0]["normalization"].startswith(
             "uom_category_mismatch:"))
 
-    def test_relative_two_percent_boundary(self):
+    def test_original_half_unit_loss_threshold_is_preserved(self):
         edges = [{"transfer_id": "T", "product": "p", "qty_out": 100.0}]
-        at_boundary = [{"edge": "T", "state": "confirmed",
-                        "receipt": {"counterpart_qty": 98.0, "counterpart_uom": "unit"}}]
-        beyond_boundary = [{"edge": "T", "state": "confirmed",
-                            "receipt": {"counterpart_qty": 97.99, "counterpart_uom": "unit"}}]
-        ref = {"p": "unit"}
-        self.assertEqual(classify(at_boundary, edges, ref)["confirmed_loss"], [])
-        self.assertEqual(len(classify(beyond_boundary, edges, ref)["confirmed_loss"]), 1)
+        exactly_half = [{"edge": "T", "state": "confirmed",
+                         "receipt": {"counterpart_qty": 99.5, "counterpart_uom": "unit"}}]
+        above_half = [{"edge": "T", "state": "confirmed",
+                       "receipt": {"counterpart_qty": 99.49, "counterpart_uom": "unit"}}]
+        self.assertEqual(classify(exactly_half, edges, {"p": "unit"})["confirmed_loss"], [])
+        self.assertEqual(len(classify(above_half, edges, {"p": "unit"})["confirmed_loss"]), 1)
 
 
 if __name__ == "__main__":
