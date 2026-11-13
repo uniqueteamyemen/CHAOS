@@ -1,9 +1,11 @@
+import tempfile
 import unittest
+from pathlib import Path
 
 from experiments.identity_lab.exp_j_erp.run_public_ledger_shadow_probe import (
     build_public_ledger_bundle,
 )
-from experiments.identity_lab.exp_j_erp.shadow_mode import run_shadow
+from experiments.identity_lab.exp_j_erp.shadow_mode import run_shadow, write_run
 
 
 class PublicLedgerShadowProbeTests(unittest.TestCase):
@@ -29,6 +31,16 @@ class PublicLedgerShadowProbeTests(unittest.TestCase):
         for engine in ("A", "B", "C"):
             self.assertEqual(report["engine_summaries"][engine]["confirmed"], 0, engine)
             self.assertEqual(report["engine_summaries"][engine]["loss_claims"], 0, engine)
+
+    def test_report_does_not_label_unverified_candidate_rows_as_independent_receipts(self):
+        bundle, _ = build_public_ledger_bundle()
+        report = run_shadow(bundle)
+        with tempfile.TemporaryDirectory() as tmp:
+            folder = write_run(report, Path(tmp))
+            comparison = (folder / "comparison.md").read_text(encoding="utf-8")
+        self.assertIn("Source classification: downloaded_public_single_ledger (not an Odoo export)", comparison)
+        self.assertIn("Receipt/candidate rows (independence unverified): 34", comparison)
+        self.assertNotIn("Independent receipt records: 34", comparison)
 
 
 if __name__ == "__main__":
