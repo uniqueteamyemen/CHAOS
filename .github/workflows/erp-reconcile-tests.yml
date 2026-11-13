@@ -31,6 +31,8 @@ jobs:
         run: python -m unittest experiments.identity_lab.exp_j_erp.test_benchmark_abc -v
       - name: Run hybrid Odoo export integration tests
         run: python -m unittest experiments.identity_lab.exp_j_erp.test_hybrid_odoo_integration -v
+      - name: Run read-only A/B/C shadow mode tests
+        run: python -m unittest experiments.identity_lab.exp_j_erp.test_shadow_mode -v
       - name: Run deterministic plumbing fixture
         run: python experiments/identity_lab/exp_j_erp/run_reconcile.py
       - name: Run temporal precision-recall and concurrent UoM tests
