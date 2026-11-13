@@ -52,6 +52,15 @@ class HybridReconcileTests(unittest.TestCase):
         row = self.run_match([shipment()], [receipt("R1", source=None), receipt("R2", source=None)])[0]
         self.assertEqual(row["state"], "ambiguous")
 
+    def test_one_approximate_receipt_shared_by_two_shipments_is_ambiguous(self):
+        rows = self.run_match(
+            [shipment("S1", sender="SRC1"), shipment("S2", sender="SRC2")],
+            [receipt(source=None, sender=None)],
+        )
+        self.assertEqual([row["state"] for row in rows], ["ambiguous", "ambiguous"])
+        self.assertTrue(all(row["reason"] == "receipt_candidate_shared_across_shipments"
+                            for row in rows))
+
     def test_sender_mismatch_excludes_candidate(self):
         row = self.run_match([shipment()], [receipt(source=None, sender="OTHER")])[0]
         self.assertEqual(row["state"], "unmatched")
