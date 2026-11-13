@@ -1,26 +1,116 @@
-"""Unit-of-measure handling with an explicit category check.
+"""Odoo UoM normalization with Odoo's factor semantics.
 
-A conversion is allowed only inside one category. Units to kilograms is not a factor question:
-for a product whose category is *count*, no weight conversion exists unless the product itself
-declares a unit weight — and that is a product fact, not a UoM fact.
+Odoo defines factor as: 1 reference-UoM unit = factor * this-UoM units.
+Therefore quantity_in_reference = quantity / source.factor.
+Cross-category conversions are forbidden; product category membership is checked separately.
 """
 from __future__ import annotations
 
-CATEGORY = {
-    "unit": "count", "dozen": "count",
-    "kg": "weight", "g": "weight",
-    "l": "volume", "ml": "volume",
-}
-TO_REF = {"unit": 1.0, "dozen": 12.0, "kg": 1.0, "g": 0.001, "l": 1.0, "ml": 0.001}
+from decimal import Decimal, InvalidOperation
+from typing import Mapping
 
 
-def convert(qty: float, src: str, dst: str) -> tuple[float | None, str]:
-    """Direction is handled by the ratio, so kg->g and g->kg both work."""
-    src, dst = (src or "").lower(), (dst or "").lower()
-    if src not in CATEGORY or dst not in CATEGORY:
-        return None, f"unknown_uom:{src or '?'}->{dst or '?'}"
-    if CATEGORY[src] != CATEGORY[dst]:
-        return None, f"uom_category_mismatch:{CATEGORY[src]}->{CATEGORY[dst]}"
-    if TO_REF[dst] == 0:
-        return None, "zero_factor"
-    return qty * TO_REF[src] / TO_REF[dst], "ok"
+def relation_id(value: object) -> str:
+    """Normalize Odoo many2one values from either id or [id, display_name] form."""
+    if isinstance(value, (list, tuple)):
+        value = value[0] if value else None
+    elif isinstance(value, Mapping):
+        value = value.get("id")
+    return "" if value in (None, False, "") else str(value)
+
+
+class UomNormalizationError(ValueError):
+    def __init__(self, code: str, detail: str = "") -> None:
+        self.code = code
+        self.detail = detail
+        super().__init__(f"{code}: {detail}" if detail else code)
+
+
+def _decimal(value: object, code: str) -> Decimal:
+    try:
+        result = Decimal(str(value))
+    except (InvalidOperation, TypeError, ValueError):
+        raise UomNormalizationError(code, f"invalid numeric value: {value!r}")
+    if not result.is_finite():
+        raise UomNormalizationError(code, f"non-finite numeric value: {value!r}")
+    return result
+
+
+def _factor(uom: Mapping) -> Decimal:
+    value = _decimal(uom.get("factor"), "uom_factor_invalid")
+    if value <= 0:
+        raise UomNormalizationError("uom_factor_invalid", "factor must be > 0")
+    return value
+
+
+def normalize_quantity(
+    quantity: object,
+    from_uom: Mapping,
+    to_uom: Mapping,
+) -> Decimal:
+    """Convert quantity from one Odoo UoM to another without rounding.
+
+    Odoo's own _compute_quantity formula is (qty / from.factor) * to.factor.
+    Both units must belong to the same uom.category.
+    """
+    from_category = relation_id(from_uom.get("category_id"))
+    to_category = relation_id(to_uom.get("category_id"))
+    if not from_category or not to_category:
+        raise UomNormalizationError("uom_category_unresolved")
+    if from_category != to_category:
+        raise UomNormalizationError(
+            "uom_category_mismatch", f"{from_category} != {to_category}"
+        )
+    qty = _decimal(quantity, "quantity_invalid")
+    return (qty / _factor(from_uom)) * _factor(to_uom)
+
+
+def normalize_to_reference(
+    quantity: object,
+    source_uom: Mapping,
+    uoms_by_id: Mapping[str, Mapping],
+    product_uom_category_id: object,
+) -> tuple[Decimal, str]:
+    """Convert a movement quantity to its category's reference UoM.
+
+    The product's stock-UoM category is required. This prevents a product's
+    movement from being accepted merely because some unrelated UoM exists.
+    """
+    source_category = relation_id(source_uom.get("category_id"))
+    product_category = relation_id(product_uom_category_id)
+    if not product_category:
+        raise UomNormalizationError("product_uom_category_unresolved")
+    if source_category != product_category:
+        raise UomNormalizationError(
+            "product_uom_category_mismatch",
+            f"movement={source_category}, product={product_category}",
+        )
+
+    references = [
+        (str(uid), uom)
+        for uid, uom in uoms_by_id.items()
+        if relation_id(uom.get("category_id")) == source_category
+        and str(uom.get("uom_type") or "").lower() == "reference"
+    ]
+    if len(references) != 1:
+        raise UomNormalizationError(
+            "uom_reference_unresolved",
+            f"expected one reference UoM for category {source_category}, found {len(references)}",
+        )
+    ref_id, reference_uom = references[0]
+    normalized = normalize_quantity(quantity, source_uom, reference_uom)
+    return normalized, ref_id
+
+
+def index_uoms(rows: list[Mapping]) -> dict[str, Mapping]:
+    """Index exported uom.uom rows by their Odoo database id."""
+    indexed: dict[str, Mapping] = {}
+    for row in rows:
+        uid = row.get("id")
+        if uid in (None, ""):
+            raise UomNormalizationError("uom_id_missing")
+        key = str(uid)
+        if key in indexed:
+            raise UomNormalizationError("uom_id_duplicate", key)
+        indexed[key] = row
+    return indexed
