@@ -75,8 +75,9 @@ class HybridReconcileTests(unittest.TestCase):
     def test_one_receipt_cannot_be_reused_by_two_shipments(self):
         rows = self.run_match([shipment("S1"), shipment("S2")], [receipt(source="S1")])
         self.assertEqual(rows[0]["state"], "confirmed_exact")
-        self.assertEqual(rows[1]["state"], "ambiguous")
-        self.assertEqual(rows[1]["reason"], "explicit_link_conflict_or_receipt_reuse")
+        self.assertEqual(rows[1]["state"], "unmatched")
+        self.assertFalse(rows[1]["confirmed"])
+        self.assertNotIn("R1", rows[1]["candidate_receipt_ids"])
 
     def test_cross_category_uom_is_rejected(self):
         r = receipt()
