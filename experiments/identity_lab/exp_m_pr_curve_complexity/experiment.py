@@ -3,7 +3,10 @@ import json
 from datetime import date, timedelta
 from decimal import Decimal
 from pathlib import Path
-from ..exp_j_erp.reconcile import aggregate_moves, match_counterpart_receipts
+try:
+ from ..exp_j_erp.reconcile import aggregate_moves, match_counterpart_receipts
+except ImportError:
+ from exp_j_erp.reconcile import aggregate_moves, match_counterpart_receipts
 
 ROOT=Path(__file__).resolve().parent
 RESULTS=ROOT/"results"
