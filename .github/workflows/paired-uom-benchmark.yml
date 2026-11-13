@@ -1,0 +1,45 @@
+name: Paired UoM benchmark
+on:
+  push:
+    branches:
+      - benchmark/uom-paired-clean
+  pull_request:
+    branches:
+      - feat/erp-reconcile-hardening
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  validate-and-benchmark:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout benchmark branch
+        uses: actions/checkout@v4
+        with:
+          path: benchmark
+      - name: Checkout unchanged hardened matcher source
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ github.repository }}
+          ref: feat/erp-reconcile-hardening
+          path: hardened
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Run independent UoM and scorer tests
+        working-directory: benchmark
+        run: python -m unittest discover -s experiments/identity_lab/exp_deepseek_benchmark/tests -v
+      - name: Execute paired 240 x 12 benchmark
+        working-directory: benchmark
+        env:
+          HARDENED_IDENTITY_ROOT: ${{ github.workspace }}/hardened/experiments/identity_lab
+          GITHUB_SHA: ${{ github.sha }}
+        run: python experiments/identity_lab/exp_deepseek_benchmark/run_paired_benchmark.py
+      - name: Upload complete benchmark results
+        uses: actions/upload-artifact@v4
+        with:
+          name: paired-uom-benchmark-240x12
+          path: |
+            benchmark/experiments/identity_lab/exp_deepseek_benchmark/results/paired_uom_benchmark.json
+            benchmark/experiments/identity_lab/exp_deepseek_benchmark/results/paired_uom_benchmark_report.md
