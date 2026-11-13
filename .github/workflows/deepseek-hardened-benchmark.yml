@@ -1,0 +1,30 @@
+name: DeepSeek protocol on hardened matcher
+
+on:
+  push:
+    branches:
+      - experiment/deepseek-method-on-our-matcher
+  pull_request:
+    branches:
+      - feat/erp-reconcile-hardening
+      - main
+
+jobs:
+  benchmark:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Run 240-transfer, 12-seed benchmark
+        env:
+          PYTHONPATH: experiments/identity_lab
+        run: python -m exp_deepseek_protocol_on_hardened.benchmark
+      - name: Upload benchmark report
+        uses: actions/upload-artifact@v4
+        with:
+          name: deepseek-method-on-hardened-matcher
+          path: |
+            experiments/identity_lab/exp_deepseek_protocol_on_hardened/results/*.json
+            experiments/identity_lab/exp_deepseek_protocol_on_hardened/results/*.md
