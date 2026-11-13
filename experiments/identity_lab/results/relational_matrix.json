@@ -30,9 +30,9 @@
         "D3": []
       },
       "max_abs_residual_per_entity": {
-        "DIST-A": 5.14,
+        "DIST-B": 6.6,
         "DIST-C": 3.74,
-        "DIST-B": 6.6
+        "DIST-A": 5.14
       }
     },
     "f1_leak": {
@@ -80,9 +80,9 @@
         "D3": []
       },
       "max_abs_residual_per_entity": {
-        "DIST-A": 5.14,
+        "DIST-B": 92.95,
         "DIST-C": 3.74,
-        "DIST-B": 92.95
+        "DIST-A": 5.14
       }
     },
     "f2_edge": {
@@ -190,9 +190,9 @@
         ]
       },
       "max_abs_residual_per_entity": {
-        "DIST-A": 5.14,
+        "DIST-B": 6.6,
         "DIST-C": 3.74,
-        "DIST-B": 6.6
+        "DIST-A": 5.14
       }
     },
     "f3_structuring": {
@@ -212,9 +212,9 @@
         "D3": []
       },
       "max_abs_residual_per_entity": {
-        "DIST-A": 5.14,
+        "DIST-B": 6.6,
         "DIST-C": 6.56,
-        "DIST-B": 6.6
+        "DIST-A": 5.14
       }
     }
   }

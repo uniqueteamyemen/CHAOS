@@ -1,0 +1,21 @@
+id,shop,item,unit_cost,opening_stock,reorder_level,ledger_starts_at
+1,trade_counter,Wood screws 4x40 box,6.40,59,24,2025-09-06 01:52:10
+2,trade_counter,Wall plugs 8 mm pack,3.20,36,20,2025-09-03 15:34:18
+3,trade_counter,Hex bolts M8 box,9.80,22,18,2025-09-01 01:12:15
+4,trade_counter,Washers M8 pack,2.10,45,14,2025-09-07 08:07:50
+5,trade_counter,Cable ties 200 mm bag,4.50,57,7,2025-09-04 22:41:59
+6,trade_counter,Silicone sealant tube,5.90,5,19,2025-09-06 15:28:44
+7,trade_counter,Wood glue 500 ml,7.30,33,14,2025-09-05 08:35:41
+8,trade_counter,Sandpaper assorted pack,4.80,48,10,2025-09-05 21:57:41
+9,trade_counter,Masking tape 50 m,2.90,36,6,2025-09-06 16:40:16
+10,trade_counter,Paint roller 230 mm,6.10,46,21,2025-09-02 02:56:55
+11,trade_counter,Paint tray,3.70,43,23,2025-09-06 19:01:05
+12,trade_counter,Extension lead 5 m,14.50,12,21,2025-09-02 23:31:03
+13,trade_counter,LED bulb E27 pack,8.90,41,28,2025-09-05 05:54:55
+14,trade_counter,Door hinge pair,4.10,43,10,2025-09-01 01:36:06
+15,trade_counter,Padlock 40 mm,9.20,43,7,2025-09-06 08:59:40
+16,trade_counter,Spirit level 60 cm,12.60,45,21,2025-09-01 06:25:52
+17,trade_counter,Tape measure 5 m,7.80,37,23,2025-09-06 03:45:57
+18,trade_counter,Utility knife,5.20,38,11,2025-09-01 21:26:34
+19,trade_counter,Work gloves pair,3.90,24,12,2025-09-01 04:01:49
+20,trade_counter,Safety glasses,4.40,40,23,2025-09-03 12:35:46

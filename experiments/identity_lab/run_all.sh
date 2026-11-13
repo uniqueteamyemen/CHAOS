@@ -12,6 +12,7 @@ python3 exp_d_relational/relational.py
 python3 exp_e_robustness/robustness.py
 python3 exp_f_engine/engine.py
 python3 exp_g_real/mirror_trade.py
+python3 exp_h_public/public_ledger.py
 python3 - <<'PY'
 import json, glob, sys
 from pathlib import Path
