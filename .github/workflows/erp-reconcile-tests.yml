@@ -5,6 +5,7 @@ on:
     branches:
       - feat/erp-reconcile-hardening
       - feat/erp-hybrid-reconciliation
+      - feat/erp-shadow-mode
     paths:
       - "experiments/identity_lab/exp_j_erp/**"
       - "experiments/identity_lab/exp_m_pr_curve_complexity/**"
@@ -31,6 +32,16 @@ jobs:
         run: python -m unittest experiments.identity_lab.exp_j_erp.test_benchmark_abc -v
       - name: Run hybrid Odoo export integration tests
         run: python -m unittest experiments.identity_lab.exp_j_erp.test_hybrid_odoo_integration -v
+      - name: Run read-only A/B/C shadow mode tests
+        run: python -m unittest experiments.identity_lab.exp_j_erp.test_shadow_mode -v
+      - name: Run Odoo 17 demo movement A/B/C integration tests
+        run: python -m unittest experiments.identity_lab.exp_j_erp.test_odoo17_demo_shadow -v
+      - name: Run Odoo 17 demo movement A/B/C shadow experiment
+        run: python -m experiments.identity_lab.exp_j_erp.run_odoo17_demo_shadow
+      - name: Run public-ledger candidate-only shadow probe tests
+        run: python -m unittest experiments.identity_lab.exp_j_erp.test_public_ledger_shadow_probe -v
+      - name: Run public-ledger A/B/C candidate-only shadow probe
+        run: python -m experiments.identity_lab.exp_j_erp.run_public_ledger_shadow_probe
       - name: Run deterministic plumbing fixture
         run: python experiments/identity_lab/exp_j_erp/run_reconcile.py
       - name: Run temporal precision-recall and concurrent UoM tests
@@ -45,4 +56,18 @@ jobs:
           path: |
             experiments/identity_lab/results/erp_abc_benchmark.json
             experiments/identity_lab/results/erp_abc_benchmark.md
+          if-no-files-found: warn
+      - name: Upload public-ledger shadow probe artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: erp-public-ledger-shadow-probe
+          path: ${{ runner.temp }}/erp-public-ledger-shadow-probe/**
+          if-no-files-found: warn
+      - name: Upload Odoo 17 demo movement A/B/C artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: erp-odoo17-demo-shadow
+          path: ${{ runner.temp }}/odoo17-demo-stock-shadow/**
           if-no-files-found: warn

@@ -186,6 +186,7 @@ def match_counterpart_receipts(
     uoms_by_id: Mapping[str, Mapping],
     date_window_days: int = 3,
     quantity_tolerance: Decimal = Decimal("0.01"),
+    loss_classification_threshold: Decimal | None = None,
 ) -> list[dict]:
     """Match independent receipt records to outbound movements.
 
@@ -195,7 +196,24 @@ def match_counterpart_receipts(
 
     Approximate matching uses product, destination, date window and quantity. It is
     a candidate only (never confirmed) and can never emit a loss classification.
+
+    Backward compatibility: quantity_tolerance remains the candidate tolerance and,
+    when loss_classification_threshold is omitted, also remains the loss threshold.
+    New comparisons should pass loss_classification_threshold explicitly so candidate
+    discovery and confirmed-loss classification are independent.
     """
+    try:
+        candidate_tolerance = Decimal(str(quantity_tolerance))
+        loss_threshold = (
+            candidate_tolerance if loss_classification_threshold is None
+            else Decimal(str(loss_classification_threshold))
+        )
+    except Exception as exc:
+        raise ValueError("quantity_tolerances_must_be_decimal_values") from exc
+    if (not candidate_tolerance.is_finite() or candidate_tolerance < 0
+            or not loss_threshold.is_finite() or loss_threshold < 0):
+        raise ValueError("quantity_tolerances_must_be_finite_and_non_negative")
+
     results: list[dict] = []
     for shipment in shipments:
         shipment_id = relation_id(shipment.get("picking_id"))
@@ -268,7 +286,7 @@ def match_counterpart_receipts(
                     continue
                 if receipt_ref_id != relation_id(shipment.get("reference_uom_id")):
                     continue
-                if abs(receipt_qty - ship_qty) <= quantity_tolerance:
+                if abs(receipt_qty - ship_qty) <= candidate_tolerance:
                     candidates.append(receipt)
             if len(candidates) == 1:
                 state = "approximate_unique"
@@ -305,9 +323,9 @@ def match_counterpart_receipts(
         delta = sent_qty - received_qty
         confirmed = state == "exact"
         issues = []
-        if confirmed and delta > quantity_tolerance:
+        if confirmed and delta > loss_threshold:
             issues.append("loss")
-        elif confirmed and delta < -quantity_tolerance:
+        elif confirmed and delta < -loss_threshold:
             issues.append("over_receipt")
         ship_date = _date((shipment.get("dates") or [None])[0])
         receipt_date = _date(receipt.get("counterpart_date"))

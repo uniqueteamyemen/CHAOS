@@ -1,0 +1,27 @@
+{
+  "overlay_classification": "synthetic_completion_state_overlay_for_algorithm_test_only",
+  "not_source_data": true,
+  "purpose": "The Odoo source fixture writes move-line quantities but omits picked=true. This explicit test overlay marks the four selected movements picked and done so the A/B/C engines can exercise the completed-movement path. It does not claim those flags existed in the source fixture.",
+  "overrides": [
+    {
+      "picking_id": "stock.outgoing_shipment_main_warehouse1",
+      "state": "done",
+      "picked": true
+    },
+    {
+      "picking_id": "stock.outgoing_shipment_main_warehouse5",
+      "state": "done",
+      "picked": true
+    },
+    {
+      "picking_id": "stock.outgoing_shipment_main_warehouse6",
+      "state": "done",
+      "picked": true
+    },
+    {
+      "picking_id": "stock.outgoing_chicago_warehouse1",
+      "state": "done",
+      "picked": true
+    }
+  ]
+}
