@@ -87,16 +87,16 @@ def legacy_a(shipments, receipts, uoms):
     return out
 
 def run_b(shipments, receipts, uoms):
+    # Full batch, not per shipment: per-shipment calls lose the picking's other
+    # product lines and any shared used-receipt state.
+    rows = match_counterpart_receipts(
+        shipments, receipts, uoms, date_window_days=DATE_WINDOW,
+        quantity_tolerance=Decimal("0"), quantity_tolerance_relative=REL_TOL,
+        loss_classification_threshold=LOSS_THRESHOLD,
+    )
     out = {}
-    for s in shipments:
-        tol = abs(Decimal(str(s.get("quantity","0"))))*REL_TOL
-        rows = match_counterpart_receipts(
-            [s], receipts, uoms, date_window_days=DATE_WINDOW,
-            quantity_tolerance=tol,
-            loss_classification_threshold=LOSS_THRESHOLD,
-        )
-        r = rows[0] if rows else {}
-        sid = relation_id(s.get("picking_id"))
+    for r in rows:
+        sid = relation_id(r.get("picking_id"))
         out[sid] = {"state":r.get("state","unmatched"),"confirmed":bool(r.get("confirmed")),
                     "loss_claim":"loss" in (r.get("issues") or []),
                     "receipt_ids":list(r.get("candidate_receipt_ids") or []),
