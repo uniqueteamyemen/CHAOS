@@ -318,6 +318,13 @@ def match_counterpart_receipts(
             "picking_id": shipment_id,
             "product_id": product_id,
             "counterpart_picking_id": str(receipt.get("counterpart_picking_id") or ""),
+            "candidate_receipt_ids": [str(receipt.get("counterpart_picking_id") or "")],
+            "date_delta_days": (
+                ( _date(receipt.get("counterpart_date")) - _date((shipment.get("dates") or [None])[0]) ).days
+                if _date(receipt.get("counterpart_date")) and _date((shipment.get("dates") or [None])[0])
+                else None
+            ),
+            "date_window_days": date_window_days,
             "state": state,
             "confidence": 1.0 if confirmed else 0.5,
             "confirmed": confirmed,
