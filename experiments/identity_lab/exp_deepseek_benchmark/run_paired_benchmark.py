@@ -448,6 +448,27 @@ def run():
             )
     lines += [
         "",
+        "## DeepSeek promotion diagnostics",
+        "",
+        "| Window | Unique promotions mean ± SD | Approximate confirmation precision | False loss claims mean |",
+        "|---:|---:|---:|---:|",
+        *[
+            (
+                lambda rows, window: (
+                    f"| {window} | "
+                    f"{statistics.mean(r['approximate_confirmations'] for r in rows):.3f} ± "
+                    f"{(statistics.stdev(r['approximate_confirmations'] for r in rows) if len(rows)>1 else 0.0):.3f} | "
+                    f"{statistics.mean(r['approximate_confirmation_precision'] for r in rows if r['approximate_confirmation_precision'] is not None):.4f} | "
+                    f"{statistics.mean(r['false_positives'] for r in rows):.3f} |"
+                )
+            )(
+                [r for r in per_seed if r["algorithm"] == "deepseek_corrected"
+                 and r["policy"] == "promote" and r["window"] == window],
+                window
+            )
+            for window in WINDOWS
+        ],
+        "",
         "## Reproducibility",
         "",
         f"- Benchmark commit: `{os.environ.get('GITHUB_SHA', 'local')}`.",
