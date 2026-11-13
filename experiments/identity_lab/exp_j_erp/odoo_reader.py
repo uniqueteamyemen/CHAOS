@@ -13,8 +13,9 @@ The executed quantity is `quantity`. `product_uom_qty` is the demand: using it w
 backorder into a phantom loss. If `quantity` is absent from the export, the reader refuses the
 row instead of falling back to demand — a loud failure beats a silent misclassification.
 
-UoM: every quantity is multiplied by `uom_factor` to reach one reference unit. If a row's factor
-is missing, the row is excluded from edges and counted as `uom_unresolved`.
+The legacy fixture adapter uses the pre-normalized `uom_factor` column. The operational
+`reconcile_export()` path derives conversion from exported `uom.uom` rows and checks the
+product's stock-UoM category before aggregating.
 """
 from __future__ import annotations
 
