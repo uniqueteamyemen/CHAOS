@@ -92,9 +92,10 @@ def execute(output_root: Path | None = None) -> dict:
         "A_vs_B": 0, "A_vs_C": 0, "B_vs_C": 0
     }:
         raise AssertionError("engines_disagree_on_semantic_confirmation_state")
-    if scenario["disagreement_count"] != 2:
+    if scenario["disagreement_count"] != 0:
         raise AssertionError(
-            f"expected_two_loss_threshold_disagreements:{scenario['disagreement_count']}"
+            f"expected_no_semantic_or_loss_disagreements_after_threshold_alignment:"
+            f"{scenario['disagreement_count']}"
         )
 
     if output_root is None:
