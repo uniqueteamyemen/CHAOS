@@ -181,8 +181,8 @@ def main():
             "the month is localised for steps, but a periodic change is detected without reliable localisation."),
         "boundary": "synthetic; one identity; thresholds calibrated on the control; multiple changes are not segmented.",
     }
-    (Path(__file__).resolve().parent / "output").mkdir(exist_ok=True)
-    ((Path(__file__).resolve().parent / "output") / "structure_result.json").write_text(
+    (Path(__file__).resolve().parent / "results").mkdir(exist_ok=True)
+    ((Path(__file__).resolve().parent / "results") / "structure_result.json").write_text(
         json.dumps(out, ensure_ascii=False, indent=2), encoding="utf-8")
     print(json.dumps(out, ensure_ascii=False, indent=2))
     return 0 if detection_ok else 1

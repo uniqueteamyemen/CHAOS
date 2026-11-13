@@ -236,9 +236,9 @@ def main():
 
     out = {"sigma_stock": round(sigma, 4), "A_variable_leak": a,
            "B_calibration": b, "C_cross_domain": c, "rule": rule}
-    (Path(__file__).resolve().parent / "output").mkdir(exist_ok=True)
-    ((Path(__file__).resolve().parent / "output") / "precursor_rule_v2.json").write_text(json.dumps(rule, ensure_ascii=False, indent=2), encoding="utf-8")
-    ((Path(__file__).resolve().parent / "output") / "precursor_result_v2.json").write_text(json.dumps(out, ensure_ascii=False, indent=2), encoding="utf-8")
+    (Path(__file__).resolve().parent / "results").mkdir(exist_ok=True)
+    ((Path(__file__).resolve().parent / "results") / "precursor_rule_v2.json").write_text(json.dumps(rule, ensure_ascii=False, indent=2), encoding="utf-8")
+    ((Path(__file__).resolve().parent / "results") / "precursor_result_v2.json").write_text(json.dumps(out, ensure_ascii=False, indent=2), encoding="utf-8")
     print(json.dumps(out, ensure_ascii=False, indent=2))
     return 0 if rule["adjudication"]["status"] == "supported" else 1
 

@@ -200,8 +200,8 @@ def main():
         "claim": "one break counter reads three states: no activity (C=0), pulse (C oscillates), rate change (M shifts).",
         "blind_spot": "a leak below the level threshold emits no break and is invisible to this counter.",
     }
-    (Path(__file__).resolve().parent / "output").mkdir(exist_ok=True)
-    ((Path(__file__).resolve().parent / "output") / "pulse_counter_result.json").write_text(
+    (Path(__file__).resolve().parent / "results").mkdir(exist_ok=True)
+    ((Path(__file__).resolve().parent / "results") / "pulse_counter_result.json").write_text(
         json.dumps(out, ensure_ascii=False, indent=2), encoding="utf-8")
     print(json.dumps(out, ensure_ascii=False, indent=2))
     return 0 if verdict else 1
