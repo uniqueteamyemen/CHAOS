@@ -50,7 +50,7 @@ class HybridReconcileTests(unittest.TestCase):
     def test_subthreshold_variance_is_not_a_loss_claim(self):
         row = self.run_match([shipment(qty="24")], [receipt(qty="1.98")])[0]
         self.assertEqual(row["state"], "confirmed_exact")
-        self.assertFalse(row["issues"])
+        self.assertEqual(row["issues"], ["partial_delivery"])
 
     def test_multiple_explicit_partial_receipts_are_summed(self):
         row = self.run_match([shipment()], [receipt("R1", qty="1"), receipt("R2", qty="1")])[0]
