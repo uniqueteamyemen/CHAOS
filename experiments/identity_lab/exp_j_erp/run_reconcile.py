@@ -30,10 +30,10 @@ MOVES = [
     {"id":12,"picking_id":"P9","product_id":"pr-9","quantity":"10","product_uom_qty":"10","product_uom":"unit","product_uom_category_id":"count","state":"done","location_id":"WH","location_dest_id":"SHOP-9","reference":"P9","date":"2025-09-13"},
 ]
 RECEIPTS = [
-    {"source_picking_id":"P1","counterpart_picking_id":"RCV-1","product_id":"pr-1","counterpart_qty":"20","counterpart_uom_id":"unit","product_uom_category_id":"count","location_id":"SHOP-1","counterpart_date":"2025-09-06","counterpart_source":"signed_receipt.pdf","recorded_at":"2025-09-06T10:00:00Z"},
-    {"counterpart_picking_id":"RCV-7","product_id":"pr-7","counterpart_qty":"10","counterpart_uom_id":"unit","product_uom_category_id":"count","location_id":"SHOP-7","counterpart_date":"2025-09-12","counterpart_source":"receipt_scan","recorded_at":"2025-09-12T10:00:00Z"},
-    {"counterpart_picking_id":"RCV-8A","product_id":"pr-8","counterpart_qty":"10","counterpart_uom_id":"unit","product_uom_category_id":"count","location_id":"SHOP-8","counterpart_date":"2025-09-13","counterpart_source":"receipt_scan","recorded_at":"2025-09-13T10:00:00Z"},
-    {"counterpart_picking_id":"RCV-8B","product_id":"pr-8","counterpart_qty":"10","counterpart_uom_id":"unit","product_uom_category_id":"count","location_id":"SHOP-8","counterpart_date":"2025-09-13","counterpart_source":"receipt_scan","recorded_at":"2025-09-13T11:00:00Z"},
+    {"source_picking_id":"P1","counterpart_picking_id":"RCV-1","product_id":"pr-1","counterpart_qty":"20","counterpart_uom_id":"unit","product_uom_category_id":"count","location_id":"SHOP-1","counterpart_date":"2025-09-06","counterpart_system":"receiving_wms","counterpart_source":"signed_receipt.pdf","recorded_at":"2025-09-06T10:00:00Z"},
+    {"counterpart_picking_id":"RCV-7","product_id":"pr-7","counterpart_qty":"10","counterpart_uom_id":"unit","product_uom_category_id":"count","location_id":"SHOP-7","counterpart_date":"2025-09-12","counterpart_system":"receiving_wms","counterpart_source":"receipt_scan","recorded_at":"2025-09-12T10:00:00Z"},
+    {"counterpart_picking_id":"RCV-8A","product_id":"pr-8","counterpart_qty":"10","counterpart_uom_id":"unit","product_uom_category_id":"count","location_id":"SHOP-8","counterpart_date":"2025-09-13","counterpart_system":"receiving_wms","counterpart_source":"receipt_scan","recorded_at":"2025-09-13T10:00:00Z"},
+    {"counterpart_picking_id":"RCV-8B","product_id":"pr-8","counterpart_qty":"10","counterpart_uom_id":"unit","product_uom_category_id":"count","location_id":"SHOP-8","counterpart_date":"2025-09-13","counterpart_system":"receiving_wms","counterpart_source":"receipt_scan","recorded_at":"2025-09-13T11:00:00Z"},
 ]
 
 def main():
