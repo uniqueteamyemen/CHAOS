@@ -5,7 +5,9 @@ This module combines broad candidate discovery with strict evidence-gated confir
 ## Contract
 - Odoo UoM reference data and Decimal arithmetic normalize receipt quantities.
 - Candidate tolerances, reconciliation tolerance, and loss classification threshold are independent.
-- Approximate candidates never confirm and never emit loss, over-receipt, or delay claims.
+- Approximate candidates never confirm and never emit loss, partial-delivery, over-receipt, or delay claims.
+- Exact receipts distinguish sub-threshold partial delivery from threshold-crossing loss; all thresholds are independently configured and validated.
+- Approximate receipts are reserved if they already carry an explicit source link, and candidate collisions across shipments become ambiguous.
 - Explicit linked partial receipts may be aggregated for one shipment after provenance and identity checks.
 - Duplicate receipt identifiers, conflicting explicit links, incomplete provenance, and cross-category UoM conversions cannot confirm.
 - A receipt identifier can be consumed at most once by an exact confirmation.
