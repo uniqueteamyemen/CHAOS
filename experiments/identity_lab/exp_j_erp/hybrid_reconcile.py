@@ -174,16 +174,28 @@ def match_hybrid(
                             "reason": "shipment_identity_missing_or_duplicated",
                             "candidate_receipt_ids": []})
             continue
-        sent = _decimal(shipment.get("quantity", "0"), "shipment_quantity_invalid")
+        try:
+            sent = _decimal(shipment.get("quantity", "0"), "shipment_quantity_invalid")
+        except UomNormalizationError as exc:
+            results.append({"picking_id": sid, "product_id": pid,
+                            "state": "ambiguous", "confirmed": False,
+                            "reason": exc.code, "candidate_receipt_ids": []})
+            continue
         linked = links.get(sid, [])
         if linked:
             linked_products = {relation_id(r.get("product_id")) for r in linked}
             linked_locations = {relation_id(r.get("location_id")) for r in linked}
             expected_location = relation_id(shipment.get("location_dest_id"))
+            expected_sender = relation_id(shipment.get("from_entity") or shipment.get("location_id"))
+            linked_senders = {
+                relation_id(r.get("from_entity")) for r in linked
+                if relation_id(r.get("from_entity"))
+            }
             ids = [relation_id(r.get("counterpart_picking_id")) for r in linked]
             conflict = (
                 linked_products != {pid}
                 or (expected_location and linked_locations != {expected_location})
+                or (expected_sender and linked_senders and linked_senders != {expected_sender})
                 or any(not rid or receipt_id_counts[rid] != 1 for rid in ids)
                 or any(len(linked_owners[rid]) != 1 for rid in ids if rid)
                 or any(rid in used_receipt_ids for rid in ids)
