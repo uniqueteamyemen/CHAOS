@@ -1,0 +1,25 @@
+name: Isolated UoM benchmark
+on:
+  push:
+    branches:
+      - benchmark/uom-normalization-fix
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  validate-and-run:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Unit tests
+        run: python -m unittest discover -s experiments/identity_lab/exp_j_erp/tests -v
+      - name: Run corrected DeepSeek benchmark
+        run: python experiments/identity_lab/exp_m_curve/run_deepseek_uom_fixed.py
+      - name: Upload per-seed results
+        uses: actions/upload-artifact@v4
+        with:
+          name: deepseek-uom-fixed-benchmark
+          path: experiments/identity_lab/exp_m_curve/results/deepseek_uom_fixed_*.json
