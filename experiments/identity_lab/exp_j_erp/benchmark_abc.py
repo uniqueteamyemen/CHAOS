@@ -341,6 +341,7 @@ def run():
         b = match_counterpart_receipts(
             shipments, receipts, UOMS, date_window_days=3,
             quantity_tolerance=Decimal("0.2"),
+            loss_classification_threshold=LOSS_THRESHOLD,
         )
         timings["B"].append(time.perf_counter()-start)
         start = time.perf_counter()
