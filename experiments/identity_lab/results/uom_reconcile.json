@@ -1,0 +1,105 @@
+{
+  "checks": {
+    "P1 aggregated 10 unit + 1 dozen = 22": true,
+    "P1 kept one location pair": true,
+    "unit+kg rejected": true,
+    "draft ignored": true,
+    "exact key -> confirmed": true,
+    "approximate -> candidate": true,
+    "two fits -> ambiguous": true,
+    "none -> unmatched": true,
+    "only confirmed yields a loss": true,
+    "loss value is 2": true
+  },
+  "failed": [],
+  "groups": [
+    {
+      "picking_id": "P1",
+      "product_id": "pr-1",
+      "executed": 22.0,
+      "moves": 2,
+      "locations": [
+        "WH->SHOP-1"
+      ],
+      "references": [
+        "P1"
+      ],
+      "mixed_locations": false,
+      "demand": 22.0
+    },
+    {
+      "picking_id": "P2",
+      "product_id": "pr-2",
+      "executed": 5.0,
+      "moves": 1,
+      "locations": [
+        "WH->SHOP-2"
+      ],
+      "references": [
+        "P2"
+      ],
+      "mixed_locations": false,
+      "demand": 5.0
+    }
+  ],
+  "rejected": [
+    {
+      "picking": "P2",
+      "product": "pr-2",
+      "reason": "uom_category_mismatch:weight->count"
+    }
+  ],
+  "match": [
+    {
+      "edge": "P1",
+      "state": "confirmed",
+      "confidence": "exact",
+      "receipt": {
+        "counterpart_picking_id": "P1",
+        "product_id": "pr-1",
+        "from_entity": "WH",
+        "to_entity": "SHOP-1",
+        "counterpart_qty": 20,
+        "counterpart_uom": "unit",
+        "counterpart_source": "shop-receipt-app",
+        "recorded_at": "2025-09-06T10:00:00Z",
+        "day_offset": 0
+      },
+      "note": "shared document key"
+    },
+    {
+      "edge": "P4",
+      "state": "candidate",
+      "confidence": "approximate_unique",
+      "candidates": 1,
+      "note": "matched on party, quantity and a date window"
+    },
+    {
+      "edge": "P5",
+      "state": "ambiguous",
+      "confidence": "none",
+      "candidates": 2,
+      "note": "several receipts fit"
+    },
+    {
+      "edge": "P6",
+      "state": "unmatched",
+      "confidence": "none",
+      "candidates": 0,
+      "note": "no receipt found"
+    }
+  ],
+  "summary": {
+    "confirmed": 1,
+    "confirmed_loss": [
+      {
+        "edge": "P1",
+        "missing": 2.0,
+        "source": "shop-receipt-app"
+      }
+    ],
+    "candidate": 1,
+    "ambiguous": 1,
+    "unmatched": 1
+  }
+}
