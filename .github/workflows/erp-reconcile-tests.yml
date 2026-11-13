@@ -5,6 +5,7 @@ on:
     branches:
       - feat/erp-reconcile-hardening
       - feat/erp-hybrid-reconciliation
+      - feat/erp-shadow-mode
     paths:
       - "experiments/identity_lab/exp_j_erp/**"
       - "experiments/identity_lab/exp_m_pr_curve_complexity/**"
