@@ -18,6 +18,7 @@ python3 exp_h_public/freeze.py verify
 python3 exp_j_erp/run_erp.py
 python3 exp_j_erp/run_reconcile.py
 python3 exp_l_stress/stress.py
+python3 exp_m_curve/curve.py
 python3 exp_g_real/bias_holdout.py
 if command -v node >/dev/null 2>&1; then python3 exp_i_platform/run_cycle.py; fi
 python3 - <<'PY'
