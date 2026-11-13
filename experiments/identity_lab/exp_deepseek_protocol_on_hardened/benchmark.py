@@ -122,12 +122,15 @@ def evaluate(seed: int, window: int):
     for row in rows:
         expected = truth_by_id[row["picking_id"]]
         state = row["state"]
-        expected_state = expected["expected_state"]
-        # State accuracy is restricted to independently labelled explicit-identity cases.
-        # Unkeyed candidate cases are scored separately by candidate recall, not conflated
-        # with exact-key identity accuracy.
-        if expected_state != "candidate":
-            target_state = "exact" if expected_state == "confirmed" else expected_state
+        # State accuracy is restricted to records with explicit identity evidence.
+        # Unkeyed records (including shifted receipts) are scored through candidate recall
+        # and ambiguity/unmatched rates because their expected state depends on the window.
+        if expected["keyed"]:
+            target_state = (
+                "unmatched" if expected["deleted"]
+                else "ambiguous" if expected["duplicated"]
+                else "exact"
+            )
             if state == target_state:
                 state_correct += 1
         if state == "exact":
@@ -159,7 +162,7 @@ def evaluate(seed: int, window: int):
         "seed": seed, "window_days": window, "tp": tp, "fp": fp, "fn": fn,
         "precision": precision, "recall": recall, "f1": f1,
         "candidate_recall": candidate_hits / n,
-        "state_accuracy": state_correct / sum(1 for item in truth if item["expected_state"] != "candidate"),
+        "state_accuracy": state_correct / sum(1 for item in truth if item["keyed"]),
         "confirmed_coverage": confirmed / n,
         "approximate_unique_rate": approximate / n,
         "ambiguity_rate": ambiguous / n, "unmatched_rate": unmatched / n,
@@ -201,7 +204,7 @@ def run():
             "loss_precision": "TP/(TP+FP) for confirmed loss claims",
             "loss_recall": "TP/(TP+FN) over labelled true-loss shipments",
             "candidate_recall": "true receipt ID appears in candidate_receipt_ids / all shipments",
-            "state_accuracy": "state accuracy on explicitly labelled keyed/deleted/duplicate cases only; unkeyed cases are evaluated by candidate recall",
+            "state_accuracy": "state accuracy on keyed receipts only; unkeyed cases are evaluated by candidate recall and ambiguity/unmatched rates",
             "confirmed_coverage": "exact confirmed shipments / all shipments",
         },
         "limitations": [
