@@ -13,6 +13,8 @@ python3 exp_e_robustness/robustness.py
 python3 exp_f_engine/engine.py
 python3 exp_g_real/mirror_trade.py
 python3 exp_h_public/public_ledger.py
+python3 exp_h_public/derive_lab_ledger.py
+python3 exp_h_public/freeze.py verify
 python3 exp_g_real/bias_holdout.py
 if command -v node >/dev/null 2>&1; then python3 exp_i_platform/run_cycle.py; fi
 python3 - <<'PY'
