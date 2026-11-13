@@ -1,25 +1,46 @@
-name: Isolated UoM benchmark
+name: Paired UoM benchmark
 on:
   push:
     branches:
       - benchmark/uom-normalization-fix
+  pull_request:
+    branches:
+      - main
+      - feat/erp-reconcile-hardening
   workflow_dispatch:
 permissions:
   contents: read
 jobs:
-  validate-and-run:
+  validate-and-benchmark:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - name: Checkout benchmark branch
+        uses: actions/checkout@v4
+        with:
+          path: benchmark
+      - name: Checkout unchanged hardened matcher
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ github.repository }}
+          ref: feat/erp-reconcile-hardening
+          path: hardened
+      - name: Set up Python
+        uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - name: Unit tests
+      - name: Verify isolated UoM scorer
+        working-directory: benchmark
         run: python -m unittest discover -s experiments/identity_lab/exp_j_erp/tests -v
-      - name: Run corrected DeepSeek benchmark
+      - name: Run paired 240 x 12 benchmark
+        working-directory: benchmark
+        env:
+          HARDENED_IDENTITY_ROOT: ${{ github.workspace }}/hardened/experiments/identity_lab
+          GITHUB_SHA: ${{ github.sha }}
         run: python experiments/identity_lab/exp_m_curve/run_deepseek_uom_fixed.py
-      - name: Upload per-seed results
+      - name: Upload per-seed data and statistical report
         uses: actions/upload-artifact@v4
         with:
-          name: deepseek-uom-fixed-benchmark
-          path: experiments/identity_lab/exp_m_curve/results/deepseek_uom_fixed_*.json
+          name: paired-uom-benchmark-240x12
+          path: |
+            benchmark/experiments/identity_lab/exp_m_curve/results/paired_uom_benchmark.json
+            benchmark/experiments/identity_lab/exp_m_curve/results/paired_uom_benchmark_report.md
