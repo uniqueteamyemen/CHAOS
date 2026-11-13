@@ -115,17 +115,13 @@ def evaluate(seed: int, window: int):
         expected = truth_by_id[row["picking_id"]]
         state = row["state"]
         expected_state = expected["expected_state"]
-        if expected_state == "candidate":
-            # A five-day shifted receipt enters the candidate window only at windows >= 5.
-            candidate_is_in_window = not expected["shifted"] or window >= 5
-            state_matches = (
-                state in ("approximate_unique", "ambiguous")
-                if candidate_is_in_window else state == "unmatched"
-            )
-        else:
-            state_matches = state == expected_state
-        if state_matches:
-            state_correct += 1
+        # State accuracy is restricted to independently labelled explicit-identity cases.
+        # Unkeyed candidate cases are scored separately by candidate recall, not conflated
+        # with exact-key identity accuracy.
+        if expected_state != "candidate":
+            target_state = "exact" if expected_state == "confirmed" else expected_state
+            if state == target_state:
+                state_correct += 1
         if state == "exact":
             confirmed += 1
         elif state == "approximate_unique":
@@ -155,7 +151,7 @@ def evaluate(seed: int, window: int):
         "seed": seed, "window_days": window, "tp": tp, "fp": fp, "fn": fn,
         "precision": precision, "recall": recall, "f1": f1,
         "candidate_recall": candidate_hits / n,
-        "state_accuracy": state_correct / n,
+        "state_accuracy": state_correct / sum(1 for item in truth if item["expected_state"] != "candidate"),
         "confirmed_coverage": confirmed / n,
         "approximate_unique_rate": approximate / n,
         "ambiguity_rate": ambiguous / n, "unmatched_rate": unmatched / n,
@@ -197,7 +193,7 @@ def run():
             "loss_precision": "TP/(TP+FP) for confirmed loss claims",
             "loss_recall": "TP/(TP+FN) over labelled true-loss shipments",
             "candidate_recall": "true receipt ID appears in candidate_receipt_ids / all shipments",
-            "state_accuracy": "matcher state equals generator's expected state",
+            "state_accuracy": "state accuracy on explicitly labelled keyed/deleted/duplicate cases only; unkeyed cases are evaluated by candidate recall",
             "confirmed_coverage": "exact confirmed shipments / all shipments",
         },
         "limitations": [
