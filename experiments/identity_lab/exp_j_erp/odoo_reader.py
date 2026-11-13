@@ -105,8 +105,12 @@ def reconcile_export(moves: list[dict], uom_rows: list[dict], receipts: list[dic
     Unlike the historical fixture adapter above, this path never treats two stock.move
     rows in one picking as independent sender/receiver records.
     """
-    from reconcile import aggregate_moves, match_counterpart_receipts
-    from uom import index_uoms
+    try:
+        from .reconcile import aggregate_moves, match_counterpart_receipts
+        from .uom import index_uoms
+    except ImportError:  # direct script execution from this directory
+        from reconcile import aggregate_moves, match_counterpart_receipts
+        from uom import index_uoms
 
     uoms = index_uoms(uom_rows)
     movements, movement_stats = aggregate_moves(moves, uoms)
