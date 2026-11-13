@@ -64,6 +64,23 @@ class AggregationTests(unittest.TestCase):
         self.assertEqual(rows[0]["move_count"], 2)
         self.assertEqual(stats["rejected_rows"], 0)
 
+    def test_partial_flag_uses_aggregated_totals(self):
+        moves = [
+            {"picking_id": "OUT-1", "product_id": "P1", "location_id": "A",
+             "location_dest_id": "B", "product_uom": "uom_unit",
+             "product_uom_category_id": "unit", "quantity": "5",
+             "product_uom_qty": "10", "state": "done", "reference": "REF-A"},
+            {"picking_id": "OUT-1", "product_id": "P1", "location_id": "A",
+             "location_dest_id": "B", "product_uom": "uom_unit",
+             "product_uom_category_id": "unit", "quantity": "15",
+             "product_uom_qty": "10", "state": "done", "reference": "REF-A"},
+        ]
+        rows, _ = aggregate_moves(moves, UOMS)
+        self.assertEqual(len(rows), 1)
+        self.assertEqual(rows[0]["quantity"], "20")
+        self.assertEqual(rows[0]["demand_quantity"], "20")
+        self.assertFalse(rows[0]["partial"])
+
     def test_reference_variants_are_not_collapsed(self):
         moves = [
             {"picking_id": "OUT-1", "product_id": "P1", "location_id": "A",
@@ -146,6 +163,50 @@ class CounterpartTests(unittest.TestCase):
             })
         result = match_counterpart_receipts(self.shipment, receipts, UOMS)[0]
         self.assertEqual(result["state"], "ambiguous")
+        self.assertFalse(result["confirmed"])
+
+    def test_approximate_product_many2one_shape_is_supported(self):
+        receipts = [{
+            "counterpart_picking_id": "IN-91", "product_id": ["P1", "Product 1"],
+            "counterpart_qty": "30", "counterpart_uom_id": "uom_unit",
+            "product_uom_category_id": "unit", "counterpart_date": "2025-01-02",
+            "counterpart_system": "receiving_wms", "counterpart_source": "receipt_scan",
+            "recorded_at": "2025-01-02T10:00:00", "location_id": "B",
+        }]
+        result = match_counterpart_receipts(self.shipment, receipts, UOMS)[0]
+        self.assertEqual(result["state"], "approximate_unique")
+        self.assertFalse(result["confirmed"])
+
+    def test_exact_link_missing_destination_is_not_confirmed(self):
+        receipts = [{
+            "source_picking_id": "OUT-7", "counterpart_picking_id": "IN-91",
+            "product_id": "P1", "counterpart_qty": "24", "counterpart_uom_id": "uom_unit",
+            "product_uom_category_id": "unit", "counterpart_date": "2025-01-02",
+            "counterpart_system": "receiving_wms", "counterpart_source": "signed_receipt.pdf",
+            "recorded_at": "2025-01-02T10:00:00",
+        }]
+        result = match_counterpart_receipts(self.shipment, receipts, UOMS)[0]
+        self.assertEqual(result["state"], "ambiguous")
+        self.assertEqual(result["reason"], "explicit_link_conflict")
+        self.assertFalse(result["confirmed"])
+
+    def test_one_conflicting_explicit_receipt_invalidates_the_link_set(self):
+        receipts = [{
+            "source_picking_id": "OUT-7", "counterpart_picking_id": "IN-91",
+            "product_id": "P1", "counterpart_qty": "30", "counterpart_uom_id": "uom_unit",
+            "product_uom_category_id": "unit", "counterpart_date": "2025-01-02",
+            "counterpart_system": "receiving_wms", "counterpart_source": "receipt_scan",
+            "recorded_at": "2025-01-02T10:00:00", "location_id": "B",
+        }, {
+            "source_picking_id": "OUT-7", "counterpart_picking_id": "IN-92",
+            "product_id": "P1", "counterpart_qty": "30", "counterpart_uom_id": "uom_unit",
+            "product_uom_category_id": "unit", "counterpart_date": "2025-01-02",
+            "counterpart_system": "receiving_wms", "counterpart_source": "receipt_scan",
+            "recorded_at": "2025-01-02T11:00:00", "location_id": "OTHER",
+        }]
+        result = match_counterpart_receipts(self.shipment, receipts, UOMS)[0]
+        self.assertEqual(result["state"], "ambiguous")
+        self.assertEqual(result["reason"], "explicit_link_conflict")
         self.assertFalse(result["confirmed"])
 
     def test_explicit_link_with_conflicting_destination_is_ambiguous(self):
