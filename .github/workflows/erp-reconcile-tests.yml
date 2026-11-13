@@ -11,6 +11,7 @@ on:
   pull_request:
     paths:
       - "experiments/identity_lab/exp_j_erp/**"
+      - "experiments/identity_lab/exp_m_pr_curve_complexity/**"
       - ".github/workflows/erp-reconcile-tests.yml"
 
 jobs:
