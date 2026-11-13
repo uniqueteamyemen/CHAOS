@@ -1,0 +1,28 @@
+{
+  "products": 20,
+  "movements_reused": 600,
+  "transfers_derived": 68,
+  "injected_losses": 3,
+  "d1_alarms": 3,
+  "d1_expected": 3,
+  "d3_loss_events": 11,
+  "d3_expected": 11,
+  "d3_false_losses": 0,
+  "d1_detail": [
+    {
+      "product": "Wood screws 4x40 box",
+      "residual": 5.5,
+      "tolerance": 2.95
+    },
+    {
+      "product": "Cable ties 200 mm bag",
+      "residual": 8.5,
+      "tolerance": 2.85
+    },
+    {
+      "product": "Masking tape 50 m",
+      "residual": 11.5,
+      "tolerance": 2.0
+    }
+  ]
+}
