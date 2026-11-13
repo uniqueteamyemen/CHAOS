@@ -4,12 +4,13 @@ Deterministic synthetic labelled stress test. It is not operational validation a
 
 ## Metrics
 - Precision = TP / (TP + FP)
-- Recall = TP / (TP + FN)
+- Resolved recall = TP / (TP + FN); ambiguous and unmatched cases are unresolved false negatives
+- Candidate recall = fraction of shipments whose true receipt appears anywhere in the candidate set, including ambiguous sets
 - F1 = 2PR / (P + R)
 - Resolved coverage = (TP + FP) / N
 - Ambiguity rate = ambiguous / N
 
-Only uniquely resolved receipt IDs count as predictions. Ambiguous and unmatched outcomes are unresolved false negatives. A prediction is correct only when it equals the known fixture truth.
+Only uniquely resolved receipt IDs count as predictions. Ambiguous and unmatched outcomes are unresolved false negatives. Candidate recall separately measures retrieval before the matcher resolves one receipt. A prediction is correct only when it equals the known fixture truth.
 
 ## Scenarios
 1. Seventy labelled shipments across count and weight categories, receipt delays from 0 to 9 days, and 14 hard-negative receipts sharing product, destination and quantity.
