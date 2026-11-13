@@ -103,9 +103,17 @@ def generate(seed: int):
 
 def evaluate(seed: int, window: int):
     shipments, receipts, truth = generate(seed)
-    rows = match_counterpart_receipts(
-        shipments, receipts, UOMS, date_window_days=window, quantity_tolerance=QTY_TOL
-    )
+    # The DeepSeek protocol defines tolerance relatively (2% of each shipment).
+    # The hardened matcher API accepts an absolute Decimal tolerance, so evaluate
+    # each shipment separately with its mathematically equivalent absolute threshold.
+    rows = []
+    for shipment in shipments:
+        shipment_tolerance = Decimal(str(shipment["quantity"])) * QTY_TOL
+        rows.extend(match_counterpart_receipts(
+            [shipment], receipts, UOMS,
+            date_window_days=window,
+            quantity_tolerance=shipment_tolerance,
+        ))
     truth_by_id = {row["picking_id"]: row for row in truth}
     tp = fp = fn = 0
     candidate_hits = 0
@@ -183,7 +191,7 @@ def run():
         "classification": "synthetic_controlled_benchmark_not_operational_validation",
         "algorithm": "feat/erp-reconcile-hardening: match_counterpart_receipts",
         "dataset_protocol": {
-            "transfers_per_seed": TRANSFERS, "seeds": SEEDS, "quantity_tolerance": str(QTY_TOL),
+            "transfers_per_seed": TRANSFERS, "seeds": SEEDS, "quantity_tolerance_relative": str(QTY_TOL),
             "loss_rate": LOSS_RATE, "unkeyed_rate": 0.25, "windows_days": list(WINDOWS),
             "uom_pairs": ["unit/dozen", "kg/g"],
         },
@@ -199,6 +207,7 @@ def run():
         "limitations": [
             "Synthetic labels measure controlled behavior, not operational accuracy or prevalence.",
             "The hardened matcher requires explicit source_picking_id for confirmation; approximate matches remain unconfirmed.",
+            "The benchmark adapter translates the DeepSeek 2% relative tolerance into a per-shipment absolute Decimal threshold because the hardened matcher API accepts absolute tolerance.",
             "The DeepSeek generator's expected state is used only for state accuracy; loss metrics use independent has_loss labels.",
         ],
     }
@@ -211,7 +220,7 @@ def run():
         "",
         "> Synthetic controlled benchmark; not operational validation.",
         "",
-        "The DeepSeek 240-transfer generator and 12-seed protocol are retained. Only the matcher under test is replaced by the hardened independent-receipt matcher.",
+        "The DeepSeek 240-transfer generator and 12-seed protocol are retained. Its 2% relative quantity tolerance is translated into a per-shipment absolute threshold for the hardened matcher API. Only the matcher under test is replaced.",
         "",
         "| Window | Loss P | Loss R | F1 | Candidate R | State accuracy | Exact coverage | Ambiguous | Unmatched | FP loss |",
         "|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|",
@@ -231,6 +240,7 @@ def run():
         "- Candidate recall evaluates retrieval before resolution.",
         "- Exact coverage is limited to receipts carrying explicit source-picking provenance.",
         "- Approximate matches are intentionally never promoted or allowed to create loss claims.",
+        "- The original DeepSeek loss scorer hardcodes conversion to 'unit' for every product; weight-category losses are therefore not scored correctly by that baseline. This run uses category-aware normalization, so its loss recall must not be compared directly with the original reported recall until that scorer is corrected.",
         "- Per-seed results and standard deviations are in the JSON artifact.",
     ]
     (RESULTS / "deepseek_method_on_hardened_matcher.md").write_text(
