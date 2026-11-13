@@ -79,20 +79,20 @@ class Odoo17DemoShadowTests(unittest.TestCase):
         self.assertTrue(all(all(r.get(k) not in (None, "") for k in required)
                             for r in self.receipt_overlay["receipts"]))
 
-    def test_controlled_abc_comparison_exposes_b_threshold_coupling(self):
+    def test_controlled_abc_comparison_uses_separate_shared_loss_threshold(self):
         completed = completed_test_bundle(self.bundle, self.completion)
         scenario = {
             **completed,
             "receipts": self.receipt_overlay["receipts"],
         }
         report = run_shadow(scenario)
-        expected_losses = {"A": 2, "B": 0, "C": 2}
+        expected_losses = {"A": 2, "B": 2, "C": 2}
         for engine, expected in expected_losses.items():
             self.assertEqual(report["engine_summaries"][engine]["confirmed"], 4)
             self.assertEqual(report["engine_summaries"][engine]["loss_claims"], expected)
         self.assertEqual(report["pairwise_state_disagreements"],
                          {"A_vs_B": 0, "A_vs_C": 0, "B_vs_C": 0})
-        self.assertEqual(report["disagreement_count"], 2)
+        self.assertEqual(report["disagreement_count"], 0)
         self.assertEqual(report["pairwise_raw_state_label_differences"]["A_vs_B"], 4)
 
     def test_source_receipt_overlays_are_not_mislabelled_as_observed_data(self):
