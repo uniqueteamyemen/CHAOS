@@ -151,7 +151,9 @@ def run_shadow(bundle):
         "moves":len(snapshot["moves"]),"uom_rows":len(snapshot["uom_rows"]),"receipts":len(snapshot["receipts"])},
         "export_metadata":snapshot["export_metadata"],"movement_stats":movement_stats,
         "engine_summaries":{e:summarize(results[e]) for e in ("A","B","C")},
-        "engine_configuration":{"A":{"candidate_tolerance":"2% relative","loss_threshold":"0.5 category reference units"},\n            "B":{"quantity_tolerance":"2% relative, applied as absolute per shipment","loss_threshold":"same quantity_tolerance (coupled in B implementation)"},\n            "C":{"candidate_tolerance":"2% relative","reconciliation_tolerance":"0.01 absolute reference units","loss_threshold":"0.5 category reference units"}},
+        "engine_configuration":{"A":{"candidate_tolerance":"2% relative","loss_threshold":"0.5 category reference units"},
+            "B":{"quantity_tolerance":"2% relative, applied as absolute per shipment","loss_threshold":"same quantity_tolerance (coupled in B implementation)"},
+            "C":{"candidate_tolerance":"2% relative","reconciliation_tolerance":"0.01 absolute reference units","loss_threshold":"0.5 category reference units"}},
         "pairwise_state_disagreements":pairwise,"disagreement_count":len(disagreements),
         "disagreements":disagreements,"results":results,
         "guardrails":{"odoo_connection_used":False,"writes_to_odoo":False,
@@ -173,7 +175,9 @@ def write_run(report, output_root):
     md += ["","Total shipments with disagreement: "+str(report["disagreement_count"]),"",
            "Safety: no Odoo connection, no Odoo writes, no source mutation, no automated promotion."]
     files = {"shadow_report.json":json.dumps(report,indent=2,ensure_ascii=False),
-             "comparison.md":"\n".join(md)+"\n",
+             "comparison.md":"
+".join(md)+"
+",
              "manifest.json":json.dumps({"run_id":run_id,"mode":"shadow_read_only",
                "created_at_utc":datetime.now(timezone.utc).isoformat(),
                "input_sha256":report["snapshot"]["sha256"],"writes_to_odoo":False},indent=2)}
