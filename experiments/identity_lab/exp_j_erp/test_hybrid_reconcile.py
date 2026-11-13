@@ -35,6 +35,22 @@ class HybridReconcileTests(unittest.TestCase):
         self.assertTrue(row["qty_received"].startswith("24."))
         self.assertEqual(row["issues"], ["loss"])
 
+    def test_weight_units_kg_and_grams_normalize_to_reference(self):
+        s = shipment(qty="1")
+        s["reference_uom_id"] = "kg"
+        s["product_uom_category_id"] = "weight"
+        r = receipt(qty="400", uom="g")
+        r["product_uom_category_id"] = "weight"
+        row = self.run_match([s], [r])[0]
+        self.assertEqual(row["state"], "confirmed_exact")
+        self.assertEqual(row["qty_received"], "0.400")
+        self.assertEqual(row["issues"], ["loss"])
+
+    def test_subthreshold_variance_is_not_a_loss_claim(self):
+        row = self.run_match([shipment(qty="24")], [receipt(qty="1.98")])[0]
+        self.assertEqual(row["state"], "confirmed_exact")
+        self.assertFalse(row["issues"])
+
     def test_multiple_explicit_partial_receipts_are_summed(self):
         row = self.run_match([shipment()], [receipt("R1", qty="1"), receipt("R2", qty="1")])[0]
         self.assertEqual(row["state"], "confirmed_exact")
