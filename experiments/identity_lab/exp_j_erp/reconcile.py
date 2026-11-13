@@ -171,7 +171,7 @@ def aggregate_moves(
 def _receipt_evidence_complete(receipt: Mapping) -> bool:
     required = (
         "counterpart_picking_id", "counterpart_qty", "counterpart_uom_id",
-        "counterpart_date", "counterpart_source", "recorded_at",
+        "counterpart_date", "counterpart_system", "counterpart_source", "recorded_at",
     )
     return all(receipt.get(field) not in (None, "") for field in required)
 
@@ -303,6 +303,7 @@ def match_counterpart_receipts(
             "qty_received": str(received_qty),
             "delta": str(delta),
             "reference_uom_id": receipt_ref_id,
+            "counterpart_system": receipt.get("counterpart_system"),
             "counterpart_source": receipt.get("counterpart_source"),
             "recorded_at": receipt.get("recorded_at"),
             "counterpart_date": receipt.get("counterpart_date"),
