@@ -10,7 +10,7 @@ class ComparativeBenchmarkTests(unittest.TestCase):
         a = make_cases(7)
         b = make_cases(7)
         self.assertEqual(a, b)
-        self.assertEqual(len(a[0]), 16)
+        self.assertEqual(len(a[0]), 18)
 
     def test_all_three_engines_receive_same_seeded_input(self):
         shipments, receipts, truth = make_cases(3)
@@ -42,7 +42,7 @@ class ComparativeBenchmarkTests(unittest.TestCase):
     def test_report_generation(self):
         from experiments.identity_lab.exp_j_erp.benchmark_abc import run
         result = run()
-        self.assertEqual(result["total_shipment_cases"], 640)
+        self.assertEqual(result["total_shipment_cases"], 720)
         self.assertIn("A", result["summary"])
         self.assertIn("B", result["summary"])
         self.assertIn("C", result["summary"])
