@@ -1,7 +1,7 @@
 {
   "overlay_classification": "synthetic_controlled_counterpart_receipts_for_algorithm_test_only",
   "not_source_data": true,
-  "purpose": "Exercise exact-link confirmation, quantity-difference classification, and delay classification against complete Odoo-shaped movement rows. These receipt rows are not present in Odoo stock_demo2.xml.",
+  "purpose": "Four complete receipt records generated solely to test exact linking, quantity-delta thresholds and delay classification. Not present in Odoo source.",
   "receipts": [
     {
       "source_picking_id": "stock.outgoing_shipment_main_warehouse1",
@@ -14,7 +14,7 @@
       "product_uom_category_id": "uom.product_uom_categ_unit",
       "counterpart_date": "2026-11-14",
       "counterpart_system": "synthetic_controlled_receiver",
-      "counterpart_source": "generated_test_overlay_not_an_external_receipt",
+      "counterpart_source": "generated_test_overlay_not_external_receipt",
       "recorded_at": "2026-11-14T10:00:00.000Z",
       "test_case_label": "1-unit-short-on-100"
     },
@@ -29,7 +29,7 @@
       "product_uom_category_id": "uom.product_uom_categ_unit",
       "counterpart_date": "2026-10-27",
       "counterpart_system": "synthetic_controlled_receiver",
-      "counterpart_source": "generated_test_overlay_not_an_external_receipt",
+      "counterpart_source": "generated_test_overlay_not_external_receipt",
       "recorded_at": "2026-10-27T10:00:00.000Z",
       "test_case_label": "exact-quantity"
     },
@@ -44,54 +44,24 @@
       "product_uom_category_id": "uom.product_uom_categ_unit",
       "counterpart_date": "2026-11-07",
       "counterpart_system": "synthetic_controlled_receiver",
-      "counterpart_source": "generated_test_overlay_not_an_external_receipt",
+      "counterpart_source": "generated_test_overlay_not_external_receipt",
       "recorded_at": "2026-11-07T10:00:00.000Z",
       "test_case_label": "exact-quantity"
     },
     {
-      "source_picking_id": "stock.incomming_chicago_warehouse1",
-      "counterpart_picking_id": "TEST-RCV-004",
-      "product_id": "product.product_delivery_01",
-      "location_id": "stock.stock_location_shop0",
-      "from_entity": "stock.stock_location_suppliers",
-      "counterpart_qty": "98.5",
-      "counterpart_uom_id": "uom.product_uom_unit",
-      "product_uom_category_id": "uom.product_uom_categ_unit",
-      "counterpart_date": "2026-11-14",
-      "counterpart_system": "synthetic_controlled_receiver",
-      "counterpart_source": "generated_test_overlay_not_an_external_receipt",
-      "recorded_at": "2026-11-14T10:00:00.000Z",
-      "test_case_label": "1.5-unit-short-on-100"
-    },
-    {
       "source_picking_id": "stock.outgoing_chicago_warehouse1",
-      "counterpart_picking_id": "TEST-RCV-005",
+      "counterpart_picking_id": "TEST-RCV-004",
       "product_id": "product.product_product_6",
       "location_id": "stock.stock_location_customers",
       "from_entity": "stock.stock_location_shop0",
-      "counterpart_qty": "100",
-      "counterpart_uom_id": "uom.product_uom_unit",
-      "product_uom_category_id": "uom.product_uom_categ_unit",
-      "counterpart_date": "2026-11-14",
-      "counterpart_system": "synthetic_controlled_receiver",
-      "counterpart_source": "generated_test_overlay_not_an_external_receipt",
-      "recorded_at": "2026-11-14T10:00:00.000Z",
-      "test_case_label": "exact-quantity"
-    },
-    {
-      "source_picking_id": "stock.outgoing_chicago_warehouse2",
-      "counterpart_picking_id": "TEST-RCV-006",
-      "product_id": "product.product_delivery_02",
-      "location_id": "stock.stock_location_customers",
-      "from_entity": "stock.stock_location_shop0",
-      "counterpart_qty": "44",
+      "counterpart_qty": "98.5",
       "counterpart_uom_id": "uom.product_uom_unit",
       "product_uom_category_id": "uom.product_uom_categ_unit",
       "counterpart_date": "2026-11-19",
       "counterpart_system": "synthetic_controlled_receiver",
-      "counterpart_source": "generated_test_overlay_not_an_external_receipt",
+      "counterpart_source": "generated_test_overlay_not_external_receipt",
       "recorded_at": "2026-11-19T10:00:00.000Z",
-      "test_case_label": "1-unit-short-and-5-day-delay"
+      "test_case_label": "1.5-unit-short-and-5-day-delay"
     }
   ]
 }
