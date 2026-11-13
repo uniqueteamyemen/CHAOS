@@ -1,134 +1,86 @@
-"""Exercise UoM normalisation, multi-move aggregation and counterpart matching."""
+"""Synthetic plumbing fixture for the hardened Odoo reconciliation path; not real validation."""
 from __future__ import annotations
-
-import json
-import sys
+import json, sys
+from decimal import Decimal
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "exp_j_erp"))
-from reconcile import aggregate, classify, match  # noqa: E402
-from uom import convert  # noqa: E402
+from odoo_reader import reconcile_export
 
 RESULTS = ROOT / "results"
-
+UOM_ROWS = [
+    {"id":"unit","name":"Units","category_id":"count","factor":"1","uom_type":"reference"},
+    {"id":"dozen","name":"Dozen","category_id":"count","factor":"0.0833333333333333333333333333","uom_type":"bigger"},
+    {"id":"kg","name":"kg","category_id":"weight","factor":"1","uom_type":"reference"},
+    {"id":"g","name":"g","category_id":"weight","factor":"1000","uom_type":"smaller"},
+]
 MOVES = [
-    {"picking_id": "P1", "product_id": "pr-1", "quantity": 10, "product_uom": "unit", "state": "done",
-     "location_id": "WH", "location_dest_id": "SHOP-1", "reference": "P1", "product_uom_qty": 10},
-    {"picking_id": "P1", "product_id": "pr-1", "quantity": 1, "product_uom": "dozen", "state": "done",
-     "location_id": "WH", "location_dest_id": "SHOP-1", "reference": "P1", "product_uom_qty": 12},
-    {"picking_id": "P2", "product_id": "pr-2", "quantity": 5, "product_uom": "unit", "state": "done",
-     "location_id": "WH", "location_dest_id": "SHOP-2", "reference": "P2", "product_uom_qty": 5},
-    {"picking_id": "P2", "product_id": "pr-2", "quantity": 2, "product_uom": "kg", "state": "done",
-     "location_id": "WH", "location_dest_id": "SHOP-2", "reference": "P2", "product_uom_qty": 2},
-    {"picking_id": "P3", "product_id": "pr-3", "quantity": 4, "product_uom": "unit", "state": "draft",
-     "location_id": "WH", "location_dest_id": "SHOP-2", "reference": "P3", "product_uom_qty": 4},
+    {"id":1,"picking_id":"P1","product_id":"pr-1","quantity":"10","product_uom_qty":"10","product_uom":"unit","product_uom_category_id":"count","state":"done","location_id":"WH","location_dest_id":"SHOP-1","reference":"P1","date":"2025-09-05"},
+    {"id":2,"picking_id":"P1","product_id":"pr-1","quantity":"1","product_uom_qty":"1","product_uom":"dozen","product_uom_category_id":"count","state":"done","location_id":"WH","location_dest_id":"SHOP-1","reference":"P1","date":"2025-09-05"},
+    {"id":3,"picking_id":"P2","product_id":"pr-2","quantity":"2","product_uom_qty":"2","product_uom":"kg","product_uom_category_id":"weight","state":"done","location_id":"WH","location_dest_id":"SHOP-2","reference":"P2","date":"2025-09-06"},
+    {"id":4,"picking_id":"P2","product_id":"pr-2","quantity":"500","product_uom_qty":"500","product_uom":"g","product_uom_category_id":"weight","state":"done","location_id":"WH","location_dest_id":"SHOP-2","reference":"P2","date":"2025-09-06"},
+    {"id":5,"picking_id":"P3","product_id":"pr-3","quantity":"5","product_uom_qty":"5","product_uom":"unit","product_uom_category_id":"weight","state":"done","location_id":"WH","location_dest_id":"SHOP-3","reference":"P3","date":"2025-09-07"},
+    {"id":6,"picking_id":"P4","product_id":"pr-4","quantity":"4","product_uom_qty":"4","product_uom":"unit","product_uom_category_id":"count","state":"done","location_id":"WH","location_dest_id":"SHOP-4A","reference":"P4-A","date":"2025-09-08"},
+    {"id":7,"picking_id":"P4","product_id":"pr-4","quantity":"6","product_uom_qty":"6","product_uom":"unit","product_uom_category_id":"count","state":"done","location_id":"WH","location_dest_id":"SHOP-4B","reference":"P4-B","date":"2025-09-08"},
+    {"id":8,"picking_id":"P5","product_id":"pr-5","product_uom_qty":"99","product_uom":"unit","product_uom_category_id":"count","state":"done","location_id":"WH","location_dest_id":"SHOP-5","reference":"P5","date":"2025-09-09"},
+    {"id":9,"picking_id":"P6","product_id":"pr-6","quantity":"4","product_uom_qty":"4","product_uom":"unit","product_uom_category_id":"count","state":"draft","location_id":"WH","location_dest_id":"SHOP-6","reference":"P6","date":"2025-09-10"},
+    {"id":10,"picking_id":"P7","product_id":"pr-7","quantity":"10","product_uom_qty":"10","product_uom":"unit","product_uom_category_id":"count","state":"done","location_id":"WH","location_dest_id":"SHOP-7","reference":"P7","date":"2025-09-11"},
+    {"id":11,"picking_id":"P8","product_id":"pr-8","quantity":"10","product_uom_qty":"10","product_uom":"unit","product_uom_category_id":"count","state":"done","location_id":"WH","location_dest_id":"SHOP-8","reference":"P8","date":"2025-09-12"},
+    {"id":12,"picking_id":"P9","product_id":"pr-9","quantity":"10","product_uom_qty":"10","product_uom":"unit","product_uom_category_id":"count","state":"done","location_id":"WH","location_dest_id":"SHOP-9","reference":"P9","date":"2025-09-13"},
 ]
-
-EDGES = [
-    {"transfer_id": "P1", "product": "pr-1", "from_entity": "WH", "to_entity": "SHOP-1", "qty_out": 22.0},
-    {"transfer_id": "P4", "product": "pr-4", "from_entity": "WH", "to_entity": "SHOP-1", "qty_out": 10.0},
-    {"transfer_id": "P5", "product": "pr-5", "from_entity": "WH", "to_entity": "SHOP-2", "qty_out": 10.0},
-    {"transfer_id": "P6", "product": "pr-6", "from_entity": "WH", "to_entity": "SHOP-2", "qty_out": 10.0},
-]
-
 RECEIPTS = [
-    {"counterpart_picking_id": "P1", "product_id": "pr-1", "from_entity": "WH", "to_entity": "SHOP-1",
-     "counterpart_qty": 20, "counterpart_uom": "unit", "counterpart_source": "shop-receipt-app",
-     "recorded_at": "2025-09-06T10:00:00Z", "day_offset": 0},
-    {"counterpart_picking_id": "EXT-4", "product_id": "pr-4", "from_entity": "WH", "to_entity": "SHOP-1",
-     "counterpart_qty": 9.9, "counterpart_uom": "unit", "counterpart_source": "email-confirmation",
-     "recorded_at": "2025-09-11T09:00:00Z", "day_offset": 1},
-    {"counterpart_picking_id": "EXT-5a", "product_id": "pr-5", "from_entity": "WH", "to_entity": "SHOP-2",
-     "counterpart_qty": 10, "counterpart_uom": "unit", "counterpart_source": "paper-receipt",
-     "recorded_at": "2025-09-12T09:00:00Z", "day_offset": 0},
-    {"counterpart_picking_id": "EXT-5b", "product_id": "pr-5", "from_entity": "WH", "to_entity": "SHOP-2",
-     "counterpart_qty": 10, "counterpart_uom": "unit", "counterpart_source": "phone-note",
-     "recorded_at": "2025-09-12T15:00:00Z", "day_offset": 1},
+    {"source_picking_id":"P1","counterpart_picking_id":"RCV-1","product_id":"pr-1","counterpart_qty":"20","counterpart_uom_id":"unit","product_uom_category_id":"count","location_id":"SHOP-1","counterpart_date":"2025-09-06","counterpart_system":"receiving_wms","counterpart_source":"signed_receipt.pdf","recorded_at":"2025-09-06T10:00:00Z"},
+    {"counterpart_picking_id":"RCV-7","product_id":"pr-7","counterpart_qty":"10","counterpart_uom_id":"unit","product_uom_category_id":"count","location_id":"SHOP-7","counterpart_date":"2025-09-12","counterpart_system":"receiving_wms","counterpart_source":"receipt_scan","recorded_at":"2025-09-12T10:00:00Z"},
+    {"counterpart_picking_id":"RCV-8A","product_id":"pr-8","counterpart_qty":"10","counterpart_uom_id":"unit","product_uom_category_id":"count","location_id":"SHOP-8","counterpart_date":"2025-09-13","counterpart_system":"receiving_wms","counterpart_source":"receipt_scan","recorded_at":"2025-09-13T10:00:00Z"},
+    {"counterpart_picking_id":"RCV-8B","product_id":"pr-8","counterpart_qty":"10","counterpart_uom_id":"unit","product_uom_category_id":"count","location_id":"SHOP-8","counterpart_date":"2025-09-13","counterpart_system":"receiving_wms","counterpart_source":"receipt_scan","recorded_at":"2025-09-13T11:00:00Z"},
 ]
 
-
-def main() -> None:
-    groups, rejected = aggregate(MOVES)
-    results = match(EDGES, RECEIPTS)
-    summary = classify(results, EDGES)
-    conversions = [{"from": "1 kg", "to": convert(1, "kg", "g")},
-                   {"from": "1000 g", "to": convert(1000, "g", "kg")},
-                   {"from": "2 dozen", "to": convert(2, "dozen", "unit")},
-                   {"from": "5 unit", "to": convert(5, "unit", "kg")}]
-
+def main():
+    result = reconcile_export(MOVES, UOM_ROWS, RECEIPTS)
+    movements = result["movements"]
+    stats = result["movement_stats"]
+    matches = result["receipt_matches"]
+    states = {s: sum(1 for x in matches if x["state"] == s) for s in ("exact","approximate_unique","ambiguous","unmatched")}
+    losses = [x for x in matches if x.get("confirmed") and "loss" in x.get("issues", [])]
+    p1 = next(x for x in movements if x["picking_id"] == "P1")
+    p2 = next(x for x in movements if x["picking_id"] == "P2")
+    p4 = [x for x in movements if x["picking_id"] == "P4"]
+    p7 = next(x for x in matches if x["picking_id"] == "P7")
+    p8 = next(x for x in matches if x["picking_id"] == "P8")
+    p9 = next(x for x in matches if x["picking_id"] == "P9")
     checks = {
-        "P1 aggregated 10 unit + 1 dozen = 22": next(g for g in groups if g["picking_id"] == "P1")["executed"] == 22.0,
-        "P1 kept one location pair": next(g for g in groups if g["picking_id"] == "P1")["locations"] == ["WH->SHOP-1"],
-        "unit+kg rejected": any(r["picking"] == "P2" for r in rejected),
-        "draft ignored": not any(g["picking_id"] == "P3" for g in groups),
-        "exact key -> confirmed": next(r for r in results if r["edge"] == "P1")["state"] == "confirmed",
-        "approximate -> candidate": next(r for r in results if r["edge"] == "P4")["state"] == "candidate",
-        "two fits -> ambiguous": next(r for r in results if r["edge"] == "P5")["state"] == "ambiguous",
-        "none -> unmatched": next(r for r in results if r["edge"] == "P6")["state"] == "unmatched",
-        "only confirmed yields a loss": len(summary["confirmed_loss"]) == 1,
-        "loss value is 2": summary["confirmed_loss"][0]["missing"] == 2.0,
+        "dozen normalized before sum": abs(float(p1["quantity"]) - 22.0) < 1e-9,
+        "kg and g normalized before sum": p2["quantity"] == "2.5",
+        "product category mismatch rejected": any(x["reason"] == "product_uom_category_mismatch" for x in stats["rejected"]),
+        "location variants kept separate": len(p4) == 2 and all(x["heterogeneous_locations"] for x in p4),
+        "missing executed quantity rejected": any(x["reason"] == "missing_executed_quantity" for x in stats["rejected"]),
+        "draft move ignored": not any(x["picking_id"] == "P6" for x in movements),
+        "explicit source key is exact": next(x for x in matches if x["picking_id"] == "P1")["state"] == "exact",
+        "approximate unique is not confirmed": p7["state"] == "approximate_unique" and not p7["confirmed"],
+        "multiple approximate receipts are ambiguous": p8["state"] == "ambiguous",
+        "no candidate is unmatched": p9["state"] == "unmatched",
+        "only exact receipt can create loss": len(losses) == 1 and Decimal(losses[0]["delta"]) == Decimal("2"),
     }
-    failed = [k for k, v in checks.items() if not v]
-
-    payload = {"checks": checks, "failed": failed, "groups": groups, "rejected": rejected,
-               "match": results, "summary": summary}
-    (RESULTS / "uom_reconcile.json").write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
-
-    lines = [
-        "# Experiment K — units, aggregation, and the limits of matching",
-        "",
-        "## 1. Unit conversion",
-        "",
-        "| case | result |",
-        "|---|---|",
-    ]
-    for c in conversions:
-        value, reason = c["to"]
-        lines.append(f"| {c['from']} | {value if value is not None else reason} |")
-    lines += [
-        "",
-        "The kilogram case is refused with `uom_category_mismatch`: Units are *count*, Kilograms are",
-        "*weight*. No factor can bridge that unless the product declares its own unit weight, which is",
-        "a product fact, not a conversion.",
-        "",
-        "## 2. Aggregation across moves",
-        "",
-        "| picking | product | executed (ref unit) | moves | locations | note |",
-        "|---|---|---|---|---|---|",
-    ]
-    for g in groups:
-        lines.append(f"| {g['picking_id']} | {g['product_id']} | {g['executed']} | {g['moves']} | "
-                     f"{', '.join(g['locations'])} | {'mixed' if g['mixed_locations'] else 'single'} |")
-    lines += [
-        "",
-        f"Rejected rows: {len(rejected)} — " + ", ".join(f"{r['picking']}:{r['reason']}" for r in rejected),
-        "",
-        "The dozen is normalised to 12 units *before* summing, and the location pair is retained, not",
-        "collapsed. The unit+kg document is refused rather than added.",
-        "",
-        "## 3. Counterpart matching",
-        "",
-        "| edge | state | confidence | note |",
-        "|---|---|---|---|",
-    ]
-    for r in results:
-        lines.append(f"| {r['edge']} | {r['state']} | {r['confidence']} | {r['note']} |")
-    lines += [
-        "",
-        f"Confirmed: {summary['confirmed']}, candidates: {summary.get('candidate', 0)}, "
-        f"ambiguous: {summary.get('ambiguous', 0)}, unmatched: {summary.get('unmatched', 0)}.",
-        "",
-        "**Only a confirmed edge may produce a loss.** A receipt matched on quantity and a three-day",
-        "window is a candidate, and two receipts that both fit make the edge ambiguous — the system says",
-        "so instead of picking one.",
-        "",
-        f"Checks: {sum(checks.values())}/{len(checks)} passed" + (f"; failed: {failed}" if failed else "."),
-    ]
-    (RESULTS / "uom_reconcile_report.md").write_text("\n".join(lines) + "\n", encoding="utf-8")
-    print(json.dumps({"checks": f"{sum(checks.values())}/{len(checks)}", "failed": failed,
-                      "summary": summary}, ensure_ascii=False))
-
+    failed = [k for k,v in checks.items() if not v]
+    payload = {"fixture_classification":"synthetic_plumbing_only","checks":checks,"failed":failed,
+               "movement_stats":stats,"movements":movements,"receipt_match_states":states,
+               "receipt_matches":matches,"confirmed_loss_events":losses}
+    RESULTS.mkdir(exist_ok=True)
+    (RESULTS / "uom_reconcile.json").write_text(json.dumps(payload,ensure_ascii=False,indent=2),encoding="utf-8")
+    lines = ["# Experiment K — Odoo UoM metadata, safe aggregation and independent receipts","",
+             "**Classification:** synthetic plumbing fixture only; not operational validation.","",
+             "| Check | Result |","|---|---|"]
+    lines += [f"| {k} | {'PASS' if v else 'FAIL'} |" for k,v in checks.items()]
+    lines += ["",f"**{sum(checks.values())}/{len(checks)} checks passed.**","",
+              f"Movement rows: {stats['moves_total']}; completed: {stats['moves_done']}; aggregated: {stats['aggregated_movements']}; rejected: {stats['rejected_rows']}.",
+              f"Receipt states: {json.dumps(states)}. Confirmed losses: {len(losses)}.","",
+              "Only an explicit source_picking_id linking the receiver record to the sender can be exact.",
+              "counterpart_picking_id remains the receiver's own document ID. Approximate candidates never create loss events."]
+    (RESULTS / "uom_reconcile_report.md").write_text("\n".join(lines)+"\n",encoding="utf-8")
+    print(json.dumps({"checks":f"{sum(checks.values())}/{len(checks)}","failed":failed,"states":states}))
+    if failed:
+        raise SystemExit(1)
 
 if __name__ == "__main__":
     main()
