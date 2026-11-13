@@ -32,8 +32,11 @@ UOMS = {
 }
 
 
-def shipment(sid, qty="10", product="P", destination="D", sender="S", day="2025-01-01", uom="unit"):
+def shipment(sid, qty="10", product=None, destination=None, sender=None, day="2025-01-01", uom="unit"):
     category = "weight" if uom in ("kg", "g") else "count"
+    product = product or f"P-{sid}"
+    destination = destination or f"D-{sid}"
+    sender = sender or f"S-{sid}"
     return {
         "picking_id": sid, "product_id": product, "location_id": sender,
         "location_dest_id": destination, "from_entity": sender,
@@ -42,9 +45,15 @@ def shipment(sid, qty="10", product="P", destination="D", sender="S", day="2025-
     }
 
 
-def receipt(rid, source=None, qty="10", uom="unit", product="P", destination="D",
-            sender="S", day="2025-01-02", complete=True):
+def receipt(rid, source=None, qty="10", uom="unit", product="AUTO", destination="AUTO",
+            sender="AUTO", day="2025-01-02", complete=True):
     category = "weight" if uom in ("kg", "g") else "count"
+    if product == "AUTO":
+        product = f"P-{source}" if source else "P-UNLINKED"
+    if destination == "AUTO":
+        destination = f"D-{source}" if source else "D-UNLINKED"
+    if sender == "AUTO":
+        sender = f"S-{source}" if source else "S-UNLINKED"
     row = {
         "source_picking_id": source, "counterpart_picking_id": rid,
         "product_id": product, "location_id": destination, "from_entity": sender,
@@ -95,28 +104,41 @@ def make_cases(seed):
     ], False, note="explicit_product_conflict")
 
     # Approximate unique and ambiguous candidate cases.
-    cand = receipt(f"{seed}-RA", None, "10.1")
-    add(shipment(f"{seed}-APP"), [cand], False, candidate_id=f"{seed}-RA",
+    app_sid = f"{seed}-APP"
+    app = shipment(app_sid)
+    cand = receipt(f"{seed}-RA", None, "10.1", product=app["product_id"],
+                   destination=app["location_dest_id"], sender=app["from_entity"])
+    add(app, [cand], False, candidate_id=f"{seed}-RA",
         note="approximate_unique")
-    add(shipment(f"{seed}-MULTI"), [
-        receipt(f"{seed}-RM1", None, "10"),
-        receipt(f"{seed}-RM2", None, "10.05"),
+    multi = shipment(f"{seed}-MULTI")
+    add(multi, [
+        receipt(f"{seed}-RM1", None, "10", product=multi["product_id"],
+                destination=multi["location_dest_id"], sender=multi["from_entity"]),
+        receipt(f"{seed}-RM2", None, "10.05", product=multi["product_id"],
+                destination=multi["location_dest_id"], sender=multi["from_entity"]),
     ], False, note="multiple_candidates")
     truth[f"{seed}-MULTI"]["candidate_ids"] = [f"{seed}-RM1", f"{seed}-RM2"]
 
     # Same approximate receipt fits two shipments; it must not be assigned twice.
-    shared = receipt(f"{seed}-SHARED", None, "10", sender=None)
-    add(shipment(f"{seed}-SH1", sender="S1"), [shared], False,
-        candidate_id=f"{seed}-SHARED", note="shared_candidate")
-    add(shipment(f"{seed}-SH2", sender="S2"), [], False,
-        candidate_id=f"{seed}-SHARED", note="shared_candidate")
+    shared_product, shared_destination = f"P-{seed}-SHARED", f"D-{seed}-SHARED"
+    sh1 = shipment(f"{seed}-SH1", product=shared_product,
+                   destination=shared_destination, sender="S1")
+    sh2 = shipment(f"{seed}-SH2", product=shared_product,
+                   destination=shared_destination, sender="S2")
+    shared = receipt(f"{seed}-SHARED", None, "10", product=shared_product,
+                     destination=shared_destination, sender=None)
+    add(sh1, [shared], False, candidate_id=f"{seed}-SHARED", note="shared_candidate")
+    add(sh2, [], False, candidate_id=f"{seed}-SHARED", note="shared_candidate")
 
     # Odoo UoM conversion and out-of-window receipt.
     add(shipment(f"{seed}-DOZEN"), [
         receipt(f"{seed}-RD", f"{seed}-DOZEN", "0.75", "dozen")
     ], True, "9", note="dozen_conversion")
-    add(shipment(f"{seed}-LATE"), [
-        receipt(f"{seed}-RL", None, "10", day="2025-01-10")
+    late = shipment(f"{seed}-LATE")
+    add(late, [
+        receipt(f"{seed}-RL", None, "10", product=late["product_id"],
+                destination=late["location_dest_id"], sender=late["from_entity"],
+                day="2025-01-10")
     ], False, note="outside_date_window")
 
     # Duplicate receiver identity must never become a confirmed unique receipt.
@@ -124,16 +146,21 @@ def make_cases(seed):
     add(shipment(f"{seed}-DUPSHIP"), [dup, dict(dup)], False, note="duplicate_receipt_id")
 
     # A deliberately wrong product candidate and a location-conflicting explicit link.
-    add(shipment(f"{seed}-WRONGC"), [
-        receipt(f"{seed}-RWC", None, "10", product="OTHER")
+    wrong_candidate = shipment(f"{seed}-WRONGC")
+    add(wrong_candidate, [
+        receipt(f"{seed}-RWC", None, "10", product="OTHER",
+                destination=wrong_candidate["location_dest_id"],
+                sender=wrong_candidate["from_entity"])
     ], False, note="wrong_product_candidate")
     add(shipment(f"{seed}-WRONGL"), [
         receipt(f"{seed}-RWL", f"{seed}-WRONGL", "10", destination="OTHER")
     ], False, note="explicit_location_conflict")
 
     # Unkeyed but valid receipt: candidate evidence only.
-    add(shipment(f"{seed}-UNKEY"), [
-        receipt(f"{seed}-RUK", None, "10")
+    unkeyed = shipment(f"{seed}-UNKEY")
+    add(unkeyed, [
+        receipt(f"{seed}-RUK", None, "10", product=unkeyed["product_id"],
+                destination=unkeyed["location_dest_id"], sender=unkeyed["from_entity"])
     ], False, candidate_id=f"{seed}-RUK", note="unkeyed_reference")
 
     return ss, rr, truth
