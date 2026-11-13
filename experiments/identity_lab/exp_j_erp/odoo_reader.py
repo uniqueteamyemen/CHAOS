@@ -1,12 +1,16 @@
 """Read a movement export in Odoo's document model and turn it into edge transfers.
 
-The field names are taken from Odoo 17's own source, not invented:
+Field names are taken from Odoo 17's own source (`stock_move.py`), not invented:
   stock.move:  picking_id, location_id, location_dest_id, product_id,
-               product_uom_qty, state, reference, date
-  stock.picking: name, origin, state
+               product_uom_qty (DEMAND), quantity (EXECUTED), product_uom,
+               state, reference, date
 
-Only moves with state == 'done' are physical. Everything else is intent.
-A transfer edge exists when two done moves describe the same picking with opposite locations.
+The executed quantity is `quantity`. `product_uom_qty` is the demand: using it would turn every
+backorder into a phantom loss. If `quantity` is absent from the export, the reader refuses the
+row instead of falling back to demand — a loud failure beats a silent misclassification.
+
+UoM: every quantity is multiplied by `uom_factor` to reach one reference unit. If a row's factor
+is missing, the row is excluded from edges and counted as `uom_unresolved`.
 """
 from __future__ import annotations
 
@@ -27,35 +31,54 @@ def load_moves(path: Path) -> list[dict]:
         return list(csv.DictReader(fh))
 
 
+def executed(move: dict) -> tuple[float | None, str]:
+    """Executed quantity only. Demand is never a substitute."""
+    raw = move.get("quantity")
+    if raw in (None, ""):
+        raw = move.get("quantity_done")      # pre-17 exports
+    if raw in (None, ""):
+        return None, "missing_executed_quantity"
+    factor = move.get("uom_factor")
+    if factor in (None, ""):
+        return None, "uom_unresolved"
+    return float(raw) * float(factor), "ok"
+
+
 def to_edges(moves: list[dict]) -> tuple[list[dict], dict]:
-    """Pair the two records of one movement by picking, and keep every unmatched record visible."""
     done = [m for m in moves if str(m.get("state", "")).lower() == DONE]
-    by_picking = {}
+    by_picking: dict[str, list[dict]] = {}
     for m in done:
         by_picking.setdefault(str(m.get("picking_id") or m.get("reference") or ""), []).append(m)
 
-    edges, unmatched = [], []
+    edges, rejected = [], []
     for picking, group in by_picking.items():
-        outbound = [m for m in group if m.get("location_dest_id") and m.get("location_id")]
         if len(group) < 2:
-            unmatched.append({"picking": picking, "moves": len(group), "reason": "single_record"})
+            rejected.append({"picking": picking, "reason": "single_record"})
             continue
-        a, b = group[0], group[1]
-        # the same picking seen from both ends: A->B and B->A are the two declarations
+        sender, receiver = group[0], group[1]
+        q_out, reason_out = executed(sender)
+        q_in, reason_in = executed(receiver)
+        if q_out is None or q_in is None:
+            rejected.append({"picking": picking, "reason": reason_out if q_out is None else reason_in})
+            continue
+        demand = float(sender.get("product_uom_qty") or 0)
         edges.append({
-            "transfer_id": picking or a.get("reference"),
-            "from_entity": a.get("location_id"),
-            "to_entity": a.get("location_dest_id"),
-            "month_out": str(a.get("date", ""))[:7],
-            "month_in": str(b.get("date", ""))[:7],
-            "qty_out": float(a.get("product_uom_qty") or 0),
-            "qty_in": float(b.get("product_uom_qty") or 0),
-            "product": a.get("product_id"),
+            "transfer_id": picking,
+            "from_entity": sender.get("location_id"),
+            "to_entity": sender.get("location_dest_id"),
+            "month_out": str(sender.get("date", ""))[:7],
+            "month_in": str(receiver.get("date", ""))[:7],
+            "qty_out": q_out,
+            "qty_in": q_in,
+            "product": sender.get("product_id"),
+            "demand_out": demand * float(sender.get("uom_factor") or 1),
+            "partial": demand > float(sender.get("quantity") or 0),
         })
     stats = {"moves_total": len(moves), "moves_done": len(done), "pickings": len(by_picking),
-             "edges": len(edges), "unmatched": len(unmatched),
-             "locations": sorted({str(m.get('location_id')) for m in done} |
-                                 {str(m.get('location_dest_id')) for m in done})}
+             "edges": len(edges), "rejected": rejected,
+             "partial_executions": sum(1 for e in edges if e["partial"]),
+             "locations": sorted({str(m.get("location_id")) for m in done} |
+                                 {str(m.get("location_dest_id")) for m in done})}
     return edges, stats
 
 
@@ -63,8 +86,7 @@ def main(argv: list[str]) -> None:
     if len(argv) < 2:
         print("usage: odoo_reader.py <moves.csv|moves.json>")
         raise SystemExit(2)
-    path = Path(argv[1])
-    moves = load_moves(path)
+    moves = load_moves(Path(argv[1]))
     edges, stats = to_edges(moves)
     RESULTS.mkdir(exist_ok=True)
     (RESULTS / "odoo_edges.json").write_text(json.dumps({"stats": stats, "edges": edges},
