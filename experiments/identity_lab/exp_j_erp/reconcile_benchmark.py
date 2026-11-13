@@ -1,6 +1,6 @@
 """Benchmark-only DeepSeek scorer adapter.
 
-The production/original reconcile.py and matching algorithm are imported unchanged.
+The original reconcile.py and its matching algorithm remain untouched.
 Only loss classification's receipt quantity normalization is corrected here.
 """
 from __future__ import annotations
@@ -11,15 +11,15 @@ from uom import convert
 
 def classify(edge_results: list[dict], edges: list[dict],
              ref_uom: dict[str, str] | None = None) -> dict:
-    """Classify confirmed edges using each product's reference UoM category.
+    """Classify confirmed edges using each product's canonical UoM category.
 
     ref_uom maps product_id -> canonical unit (unit or kg in Experiment M).
-    Original receipt quantity and UoM are retained in audit fields.
+    Original quantity and unit are retained for every confirmed record.
     """
     ref_uom = ref_uom or {}
     by_edge = {str(e["transfer_id"]): e for e in edges}
     out = {"confirmed": 0, "confirmed_approx": 0, "confirmed_loss": [],
-           "candidate": 0, "ambiguous": 0, "unmatched": 0}
+           "candidate": 0, "ambiguous": 0, "unmatched": 0, "uom_audit": []}
     for result in edge_results:
         state = result["state"]
         out[state] = out.get(state, 0) + 1
@@ -32,32 +32,36 @@ def classify(edge_results: list[dict], edges: list[dict],
         target_uom = ref_uom.get(product, "unit")
         source_uom = str(receipt.get("counterpart_uom") or target_uom)
         source_qty_raw = receipt.get("counterpart_qty")
+        audit = {
+            "edge": str(result["edge"]), "product": product,
+            "quantity_original": source_qty_raw, "unit_original": source_uom,
+            "reference_unit": target_uom,
+        }
         try:
             source_qty = float(source_qty_raw or 0)
         except (TypeError, ValueError):
+            audit["normalization"] = "quantity_invalid"
+            out["uom_audit"].append(audit)
             out["ambiguous"] += 1
-            out["confirmed"] -= 1 if state == "confirmed" else 0
-            out["confirmed_approx"] -= 1 if state == "confirmed_approx" else 0
+            out[state] -= 1
             continue
 
         qty_in, reason = convert(source_qty, source_uom, target_uom)
         if qty_in is None:
+            audit["normalization"] = reason
+            out["uom_audit"].append(audit)
             out["ambiguous"] += 1
-            out["confirmed"] -= 1 if state == "confirmed" else 0
-            out["confirmed_approx"] -= 1 if state == "confirmed_approx" else 0
+            out[state] -= 1
             continue
 
+        audit["quantity_normalized"] = round(qty_in, 9)
+        audit["normalization"] = "ok"
+        out["uom_audit"].append(audit)
         gap = float(edge["qty_out"]) - qty_in
         if gap > 0.5:
             out["confirmed_loss"].append({
-                "edge": result["edge"],
-                "missing": round(gap, 3),
+                "edge": result["edge"], "missing": round(gap, 3),
                 "source": receipt.get("counterpart_source"),
-                "product": product,
-                "qty_out": edge["qty_out"],
-                "receipt_qty_original": source_qty_raw,
-                "receipt_uom_original": source_uom,
-                "receipt_qty_normalized": round(qty_in, 9),
-                "reference_uom": target_uom,
+                **audit,
             })
     return out
