@@ -175,9 +175,7 @@ def write_run(report, output_root):
     md += ["","Total shipments with disagreement: "+str(report["disagreement_count"]),"",
            "Safety: no Odoo connection, no Odoo writes, no source mutation, no automated promotion."]
     files = {"shadow_report.json":json.dumps(report,indent=2,ensure_ascii=False),
-             "comparison.md":"
-".join(md)+"
-",
+             "comparison.md":"\n".join(md)+"\n",
              "manifest.json":json.dumps({"run_id":run_id,"mode":"shadow_read_only",
                "created_at_utc":datetime.now(timezone.utc).isoformat(),
                "input_sha256":report["snapshot"]["sha256"],"writes_to_odoo":False},indent=2)}
