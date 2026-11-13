@@ -138,6 +138,53 @@ class CounterpartTests(unittest.TestCase):
         self.assertTrue(result["confirmed"])
         self.assertIn("loss", result["issues"])
 
+    def test_loss_classification_threshold_is_independent_of_candidate_tolerance(self):
+        receipts = [{
+            "source_picking_id": "OUT-7", "counterpart_picking_id": "IN-THRESHOLD",
+            "product_id": "P1", "counterpart_qty": "29.4", "counterpart_uom_id": "uom_unit",
+            "product_uom_category_id": "unit", "counterpart_date": "2025-01-02",
+            "counterpart_system": "receiving_wms", "counterpart_source": "signed_receipt.pdf",
+            "recorded_at": "2025-01-02T10:00:00", "location_id": "B",
+        }]
+        result = match_counterpart_receipts(
+            self.shipment, receipts, UOMS,
+            quantity_tolerance=Decimal("0.75"),
+            loss_classification_threshold=Decimal("0.5"),
+        )[0]
+        self.assertTrue(result["confirmed"])
+        self.assertIn("loss", result["issues"])
+
+    def test_loss_threshold_boundary_is_strict(self):
+        receipts = [{
+            "source_picking_id": "OUT-7", "counterpart_picking_id": "IN-BOUNDARY",
+            "product_id": "P1", "counterpart_qty": "29.5", "counterpart_uom_id": "uom_unit",
+            "product_uom_category_id": "unit", "counterpart_date": "2025-01-02",
+            "counterpart_system": "receiving_wms", "counterpart_source": "signed_receipt.pdf",
+            "recorded_at": "2025-01-02T10:00:00", "location_id": "B",
+        }]
+        result = match_counterpart_receipts(
+            self.shipment, receipts, UOMS,
+            quantity_tolerance=Decimal("0.75"),
+            loss_classification_threshold=Decimal("0.5"),
+        )[0]
+        self.assertTrue(result["confirmed"])
+        self.assertNotIn("loss", result["issues"])
+
+    def test_omitted_loss_threshold_preserves_legacy_single_tolerance_behavior(self):
+        receipts = [{
+            "source_picking_id": "OUT-7", "counterpart_picking_id": "IN-LEGACY",
+            "product_id": "P1", "counterpart_qty": "29.4", "counterpart_uom_id": "uom_unit",
+            "product_uom_category_id": "unit", "counterpart_date": "2025-01-02",
+            "counterpart_system": "receiving_wms", "counterpart_source": "signed_receipt.pdf",
+            "recorded_at": "2025-01-02T10:00:00", "location_id": "B",
+        }]
+        result = match_counterpart_receipts(
+            self.shipment, receipts, UOMS,
+            quantity_tolerance=Decimal("0.75"),
+        )[0]
+        self.assertTrue(result["confirmed"])
+        self.assertNotIn("loss", result["issues"])
+
     def test_approximate_unique_is_never_confirmed_or_loss(self):
         receipts = [{
             "counterpart_picking_id": "IN-91", "product_id": "P1",
