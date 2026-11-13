@@ -15,3 +15,6 @@ The experiment imports the production-candidate B and C functions directly from 
 
 ## Interpretation
 The report distinguishes exact-confirmation precision/recall, loss precision/recall, candidate discovery counts, and runtime. Runtime is an in-process microbenchmark, not a deployment or throughput claim. The dataset is synthetic and adversarial; passing this experiment is a necessary comparative gate, not proof of production suitability.
+
+### Candidate metric limitation
+A's historical return contract exposes a single receipt for a unique candidate and only a count for ambiguous candidates; it does not expose a stable candidate-ID list for the latter. Candidate precision/recall are therefore reported as **N/A for A**, rather than inventing identity-level metrics. B and C expose candidate receipt IDs, so their identity-level discovery metrics are scored against the same ground truth.
