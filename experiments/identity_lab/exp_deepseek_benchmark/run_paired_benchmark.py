@@ -115,6 +115,31 @@ def loss_counts(predicted, truth):
     }
 
 
+def _deepseek_common_metrics(matches, edges, receipts, ref_uom, window):
+    strict = [r for r in matches if r["state"] == "confirmed"]
+    strict_correct = sum(
+        1 for r in strict
+        if str((r.get("receipt") or {}).get("_owner") or "") == str(r["edge"])
+    )
+    approximate = [r for r in matches if r["state"] == "confirmed_approx"]
+    approximate_correct = sum(
+        1 for r in approximate
+        if str((r.get("receipt") or {}).get("_owner") or "") == str(r["edge"])
+    )
+    candidate_hits = sum(
+        1 for edge in edges
+        if any(str(r.get("_owner") or "") == str(edge["transfer_id"])
+               for r in deepseek_candidate_receipts(edge, receipts, ref_uom, window))
+    )
+    return {
+        "candidate_recall": candidate_hits / len(edges),
+        "strict_confirmation_precision": strict_correct / len(strict) if strict else 1.0,
+        "approximate_confirmation_precision": approximate_correct / len(approximate) if approximate else None,
+        "strict_confirmations": len(strict),
+        "approximate_confirmations": len(approximate),
+    }
+
+
 def score_deepseek(edges, receipts, truth, ref_uom, seed, window, promote):
     matches = deepseek_match(edges, receipts, date_window=window, qty_tolerance=REL_TOL,
                              ref_uom=ref_uom, promote_unique=promote)
@@ -182,7 +207,7 @@ def score_deepseek_legacy_uom(edges, receipts, truth, ref_uom, seed, window, pro
         "algorithm": "deepseek_legacy_uom_control",
         "policy": "promote" if promote else "strict",
         "seed": seed, "window": window, **loss, **common,
-        "ambiguity": summary["uom_rejections"],
+        "ambiguity": summary["uom_rejections"] + sum(1 for r in matches if r["state"] == "ambiguous"),
         "false_positives": loss["fp"],
         "unmatched": sum(1 for r in matches if r["state"] == "unmatched"),
         "candidate": sum(1 for r in matches if r["state"] == "candidate"),
@@ -281,6 +306,7 @@ def run():
     for window in WINDOWS:
         aggregate[str(window)] = {}
         for alg, policies in (("deepseek_corrected", ("strict", "promote")),
+                              ("deepseek_legacy_uom_control", ("strict", "promote")),
                               ("hardened_matcher", ("strict",))):
             for policy in policies:
                 key = f"{alg}:{policy}"
@@ -304,6 +330,15 @@ def run():
                 paired[str(window)][pair_key][metric] = paired_stats(
                     differences, 20261113 + window * 100 + index + (0 if policy == "strict" else 50)
                 )
+        legacy = {r["seed"]: r for r in per_seed if r["window"] == window
+                  and r["algorithm"] == "deepseek_legacy_uom_control" and r["policy"] == "strict"}
+        paired[str(window)]["uom_fix_vs_legacy_uom"] = {}
+        for index, metric in enumerate(metrics):
+            differences = [float(deepseek[s][metric]) - float(legacy[s][metric])
+                           for s in range(SEEDS)]
+            paired[str(window)]["uom_fix_vs_legacy_uom"][metric] = paired_stats(
+                differences, 20261113 + window * 100 + index + 50
+            )
 
     hard_commit = subprocess.check_output(
         ["git", "-C", str(HARDENED_ROOT.parents[1]), "rev-parse", "HEAD"], text=True
@@ -343,7 +378,7 @@ def run():
             "Synthetic benchmark only; it does not establish operational accuracy or prevalence.",
             "The hardened matcher receives an explicit schema adapter: the shared transfer key becomes source_picking_id while receiver document IDs remain distinct.",
             "The hardened matcher is evaluated only under its native strict-confirmation policy; DeepSeek strict and promote are each compared against it.",
-            "DeepSeek matching code is byte-for-byte copied from the baseline branch; only the isolated scorer normalizes by product UoM category and applies the common 2% relative loss threshold.",
+            "DeepSeek matching code is byte-for-byte copied from the baseline branch; only the isolated scorer's UoM normalization is corrected. Its original >0.5 loss threshold is preserved. The legacy-UoM control retains the old fixed unit target.",
         ],
     }
     RESULTS.mkdir(parents=True, exist_ok=True)
@@ -356,7 +391,22 @@ def run():
         "",
         "> 240 transfers × 12 seeds. Synthetic controlled benchmark; not operational validation.",
         "",
-        "Both matchers receive the same generated records, ground truth, seed and temporal window. The DeepSeek matching algorithm is unchanged; only its isolated scorer is corrected for product-specific UoM and the shared 2% relative loss threshold.",
+        "Both matchers receive identical generated records, labels, seeds, windows and 2% relative candidate-matching tolerance. The DeepSeek matcher is unchanged. Its isolated scorer changes only product-specific UoM normalization; the original >0.5 reference-unit loss threshold is retained. The hardened output is evaluated with that same loss threshold. The legacy-UoM control replays the old fixed-unit scorer on identical matcher outputs.",
+        "",
+        "## UoM correction effect: corrected scorer vs legacy fixed-unit scorer",
+        "",
+        "| Window | Legacy loss recall | Corrected loss recall | Improvement | paired p | 95% paired CI |",
+        "|---:|---:|---:|---:|---:|---:|",
+        *[
+            f"| {window} | "
+            f"{aggregate[str(window)]['deepseek_legacy_uom_control:strict']['loss_recall']['mean']:.4f} | "
+            f"{aggregate[str(window)]['deepseek_corrected:strict']['loss_recall']['mean']:.4f} | "
+            f"{paired[str(window)]['uom_fix_vs_legacy_uom']['loss_recall']['mean_difference_first_minus_second']:.4f} | "
+            f"{paired[str(window)]['uom_fix_vs_legacy_uom']['loss_recall']['paired_sign_flip_p_two_sided']:.4f} | "
+            f"[{paired[str(window)]['uom_fix_vs_legacy_uom']['loss_recall']['bootstrap_95_ci'][0]:.4f}, "
+            f"{paired[str(window)]['uom_fix_vs_legacy_uom']['loss_recall']['bootstrap_95_ci'][1]:.4f}] |"
+            for window in WINDOWS
+        ],
         "",
         "## DeepSeek strict vs hardened strict",
         "",
