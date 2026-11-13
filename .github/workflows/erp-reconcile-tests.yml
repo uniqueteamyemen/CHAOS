@@ -6,6 +6,7 @@ on:
       - feat/erp-reconcile-hardening
     paths:
       - "experiments/identity_lab/exp_j_erp/**"
+      - "experiments/identity_lab/exp_m_pr_curve_complexity/**"
       - ".github/workflows/erp-reconcile-tests.yml"
   pull_request:
     paths:
@@ -24,3 +25,7 @@ jobs:
         run: python -m unittest experiments.identity_lab.exp_j_erp.test_erp_reconcile -v
       - name: Run deterministic plumbing fixture
         run: python experiments/identity_lab/exp_j_erp/run_reconcile.py
+      - name: Run temporal precision-recall and concurrent UoM tests
+        run: python -m unittest experiments.identity_lab.exp_m_pr_curve_complexity.test_experiment -v
+      - name: Generate precision-recall curve and complexity report
+        run: python -m experiments.identity_lab.exp_m_pr_curve_complexity.experiment
