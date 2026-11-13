@@ -116,8 +116,8 @@ def aggregate_moves(
             row["has_demand"] = False
         else:
             row["demand_quantity"] += demand_normalized
-            if normalized < demand_normalized:
-                row["partial"] = True
+            # Partial status is computed from the aggregated executed and demand
+            # totals below; a single partial move must not mark a completed group.
         move_id = move.get("id")
         if move_id not in (None, ""):
             row["move_ids"].append(str(move_id))
@@ -129,6 +129,9 @@ def aggregate_moves(
 
     aggregated = []
     for row in groups.values():
+        row["partial"] = bool(
+            row["has_demand"] and row["quantity"] < row["demand_quantity"]
+        )
         row["quantity"] = str(row["quantity"])
         row["demand_quantity"] = str(row["demand_quantity"]) if row["has_demand"] else None
         row["references"] = sorted(row["references"])
@@ -170,8 +173,9 @@ def aggregate_moves(
 
 def _receipt_evidence_complete(receipt: Mapping) -> bool:
     required = (
-        "counterpart_picking_id", "counterpart_qty", "counterpart_uom_id",
-        "counterpart_date", "counterpart_system", "counterpart_source", "recorded_at",
+        "source_picking_id", "counterpart_picking_id", "product_id", "location_id",
+        "counterpart_qty", "counterpart_uom_id", "counterpart_date",
+        "counterpart_system", "counterpart_source", "recorded_at",
     )
     return all(receipt.get(field) not in (None, "") for field in required)
 
@@ -200,16 +204,24 @@ def match_counterpart_receipts(
             receipt for receipt in receipts
             if relation_id(receipt.get("source_picking_id")) == shipment_id
         ]
+        destination_id = relation_id(shipment.get("location_dest_id"))
         exact = [
             receipt for receipt in explicit_links
             if relation_id(receipt.get("product_id")) == product_id
-            and (not relation_id(receipt.get("location_id")) or relation_id(receipt.get("location_id")) == relation_id(shipment.get("location_dest_id")))
+            and relation_id(receipt.get("location_id")) == destination_id
         ]
-        if explicit_links and not exact:
+        # An explicit source link is evidence, not permission to ignore conflicting
+        # records carrying the same source key. Missing destination or a linked
+        # record for another product/location makes the shipment ambiguous.
+        explicit_conflict = bool(explicit_links) and len(exact) != len(explicit_links)
+        if explicit_conflict:
             results.append({
                 "picking_id": shipment_id, "product_id": product_id,
                 "state": "ambiguous", "confidence": 0.0, "confirmed": False,
                 "reason": "explicit_link_conflict",
+                "candidate_receipt_ids": [
+                    str(r.get("counterpart_picking_id") or "") for r in explicit_links
+                ],
             })
             continue
         if len(exact) == 1 and not _receipt_evidence_complete(exact[0]):
@@ -235,7 +247,7 @@ def match_counterpart_receipts(
             ship_qty = Decimal(str(shipment.get("quantity", "0")))
             candidates = []
             for receipt in receipts:
-                if str(receipt.get("product_id") or "") != product_id:
+                if relation_id(receipt.get("product_id")) != product_id:
                     continue
                 receipt_location = relation_id(receipt.get("location_id"))
                 if receipt_location and receipt_location != relation_id(shipment.get("location_dest_id")):
