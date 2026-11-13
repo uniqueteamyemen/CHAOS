@@ -295,11 +295,12 @@ def score(name, predicted, truth):
         if p.get("loss_claim") and t["loss"]: loss_tp += 1
         elif p.get("loss_claim") and not t["loss"]: loss_fp += 1
         elif not p.get("loss_claim") and t["loss"]: loss_fn += 1
-        expected_candidates = set(t.get("candidate_ids") or [])
-        actual_candidates = set(p.get("candidate_ids") or [])
-        candidate_tp += len(expected_candidates & actual_candidates)
-        candidate_fp += len(actual_candidates - expected_candidates)
-        candidate_fn += len(expected_candidates - actual_candidates)
+        if name != "A":
+            expected_candidates = set(t.get("candidate_ids") or [])
+            actual_candidates = set(p.get("candidate_ids") or [])
+            candidate_tp += len(expected_candidates & actual_candidates)
+            candidate_fp += len(actual_candidates - expected_candidates)
+            candidate_fn += len(expected_candidates - actual_candidates)
     precision = tp/(tp+fp) if tp+fp else 1.0
     recall = tp/(tp+fn) if tp+fn else 1.0
     loss_precision = loss_tp/(loss_tp+loss_fp) if loss_tp+loss_fp else 1.0
@@ -311,10 +312,11 @@ def score(name, predicted, truth):
         "false_loss_claims": loss_fp, "missed_losses": loss_fn,
         "loss_precision": round(loss_precision, 6),
         "loss_recall": round(loss_recall, 6),
-        "candidate_tp": candidate_tp, "candidate_fp": candidate_fp,
-        "candidate_fn": candidate_fn,
-        "candidate_precision": round(candidate_tp/(candidate_tp+candidate_fp), 6) if candidate_tp+candidate_fp else 1.0,
-        "candidate_recall": round(candidate_tp/(candidate_tp+candidate_fn), 6) if candidate_tp+candidate_fn else 1.0,
+        "candidate_tp": None if name == "A" else candidate_tp,
+        "candidate_fp": None if name == "A" else candidate_fp,
+        "candidate_fn": None if name == "A" else candidate_fn,
+        "candidate_precision": None if name == "A" else (round(candidate_tp/(candidate_tp+candidate_fp), 6) if candidate_tp+candidate_fp else 1.0),
+        "candidate_recall": None if name == "A" else (round(candidate_tp/(candidate_tp+candidate_fn), 6) if candidate_tp+candidate_fn else 1.0),
         "false_confirmation_ids": false_confirmations,
     }
 
@@ -347,12 +349,6 @@ def run():
         preds = {"A": legacy_a_normalized(a),
                  "B": normalize_b(b, unlinked_ids),
                  "C": normalize_c(c, unlinked_ids)}
-        if seed == 0:
-            print("CANDIDATE_DEBUG", json.dumps({
-                label: {sid: pred[sid]["candidate_ids"] for sid in truth
-                        if truth[sid].get("candidate_ids")}
-                for label, pred in preds.items()
-            }))
         for label, pred in preds.items():
             row = score(label, pred, truth)
             rows.append({"seed": seed, **row})
@@ -370,9 +366,15 @@ def run():
         ltp = sum(r["loss_tp"] for r in subset)
         lfp = sum(r["false_loss_claims"] for r in subset)
         lfn = sum(r["missed_losses"] for r in subset)
-        ctp = sum(r["candidate_tp"] for r in subset)
-        cfp = sum(r["candidate_fp"] for r in subset)
-        cfn = sum(r["candidate_fn"] for r in subset)
+        if label == "A":
+            ctp = cfp = cfn = None
+            candidate_precision = candidate_recall = None
+        else:
+            ctp = sum(r["candidate_tp"] for r in subset)
+            cfp = sum(r["candidate_fp"] for r in subset)
+            cfn = sum(r["candidate_fn"] for r in subset)
+            candidate_precision = round(ctp/(ctp+cfp), 6) if ctp+cfp else 1
+            candidate_recall = round(ctp/(ctp+cfn), 6) if ctp+cfn else 1
         summary[label] = {
             "exact_tp": exact_tp, "false_confirmations": exact_fp,
             "missed_exact": exact_fn,
@@ -382,8 +384,8 @@ def run():
             "loss_precision": round(ltp/(ltp+lfp), 6) if ltp+lfp else 1,
             "loss_recall": round(ltp/(ltp+lfn), 6) if ltp+lfn else 1,
             "candidate_tp": ctp, "candidate_fp": cfp, "candidate_fn": cfn,
-            "candidate_precision": round(ctp/(ctp+cfp), 6) if ctp+cfp else 1,
-            "candidate_recall": round(ctp/(ctp+cfn), 6) if ctp+cfn else 1,
+            "candidate_precision": candidate_precision,
+            "candidate_recall": candidate_recall,
             "mean_runtime_ms": round(statistics.mean(timings[label])*1000, 4),
             "p95_runtime_ms": round(sorted(timings[label])[int(.95*(len(timings[label])-1))]*1000, 4),
         }
