@@ -61,6 +61,16 @@ class HybridReconcileTests(unittest.TestCase):
         self.assertEqual(row["state"], "ambiguous")
         self.assertEqual(row["reason"], "explicit_link_conflict_or_receipt_reuse")
 
+    def test_explicit_sender_conflict_blocks_confirmation(self):
+        row = self.run_match([shipment()], [receipt(sender="OTHER")])[0]
+        self.assertEqual(row["state"], "ambiguous")
+        self.assertEqual(row["reason"], "explicit_link_conflict_or_receipt_reuse")
+
+    def test_invalid_shipment_quantity_is_ambiguous_not_a_crash(self):
+        row = self.run_match([shipment(qty="-4")], [receipt()])[0]
+        self.assertEqual(row["state"], "ambiguous")
+        self.assertEqual(row["reason"], "shipment_quantity_invalid")
+
     def test_incomplete_provenance_blocks_confirmation(self):
         r = receipt()
         r["counterpart_source"] = None
