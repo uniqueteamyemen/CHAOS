@@ -134,3 +134,44 @@ def reconcile_export(moves: list[dict], uom_rows: list[dict], receipts: list[dic
         "confirmed_loss_events": sum(1 for match in confirmed if "loss" in match.get("issues", [])),
         "approximate_matches_are_not_confirmed": True,
     }
+
+
+def reconcile_export_hybrid(
+    moves: list[dict], uom_rows: list[dict], receipts: list[dict], **match_options
+) -> dict:
+    """Integration adapter for evaluating the hybrid matcher on canonical Odoo exports.
+
+    This is an opt-in comparative path. reconcile_export() and the default runner
+    remain unchanged until production integration is separately approved.
+    """
+    try:
+        from .reconcile import aggregate_moves
+        from .hybrid_reconcile import match_hybrid
+        from .uom import index_uoms
+    except ImportError:
+        from reconcile import aggregate_moves
+        from hybrid_reconcile import match_hybrid
+        from uom import index_uoms
+
+    uoms = index_uoms(uom_rows)
+    movements, movement_stats = aggregate_moves(moves, uoms)
+    matches = match_hybrid(movements, receipts, uoms, **match_options)
+    states = {}
+    for match in matches:
+        state = match["state"]
+        states[state] = states.get(state, 0) + 1
+    confirmed = [match for match in matches if match.get("confirmed")]
+    return {
+        "engine": "hybrid",
+        "integration_path": "opt_in_comparative",
+        "movement_stats": movement_stats,
+        "movements": movements,
+        "receipt_match_stats": states,
+        "receipt_matches": matches,
+        "confirmed_edges": confirmed,
+        "confirmed_loss_events": sum(
+            1 for match in confirmed if "loss" in match.get("issues", [])
+        ),
+        "approximate_matches_are_not_confirmed": True,
+        "default_reconcile_export_unchanged": True,
+    }
