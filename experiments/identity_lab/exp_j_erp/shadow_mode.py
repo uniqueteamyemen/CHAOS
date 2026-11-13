@@ -165,9 +165,19 @@ def write_run(report, output_root):
     run_id = "shadow-"+stamp+"-"+report["snapshot"]["sha256"][:12]
     folder = output_root/run_id
     folder.mkdir(parents=True,exist_ok=False)
+    metadata = report.get("export_metadata", {})
+    independent = metadata.get("independent_counterparty_evidence") is True
+    receipt_label = ("Independent receipt records: " if independent
+                     else "Receipt/candidate rows (independence unverified): ")
+    source_class = str(metadata.get("source_classification", "unspecified"))
+    source_line = "Source classification: " + source_class
+    if metadata.get("is_odoo_export") is False:
+        source_line += " (not an Odoo export)"
     md = ["# ERP A/B/C Shadow Mode Report","","Classification: shadow observation; not ground-truth accuracy.","",
+          source_line,
           "Input SHA-256: "+report["snapshot"]["sha256"],"Moves: "+str(report["snapshot"]["moves"]),
-          "UoM rows: "+str(report["snapshot"]["uom_rows"]),"Independent receipts: "+str(report["snapshot"]["receipts"]),"",
+          "UoM rows: "+str(report["snapshot"]["uom_rows"]),
+          receipt_label+str(report["snapshot"]["receipts"]),"",
           "| Metric | A | B | C |","|---|---:|---:|---:|"]
     for k in ("shipments_scored","confirmed","loss_claims","candidate_cases","ambiguous","unmatched"):
         md.append("| "+k+" | "+" | ".join(str(report["engine_summaries"][e][k]) for e in ("A","B","C"))+" |")
