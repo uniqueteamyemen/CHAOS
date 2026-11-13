@@ -1,14 +1,16 @@
-"""Benchmark-only DeepSeek scorer; original matcher and source files remain unchanged."""
+"""Benchmark-only DeepSeek scorer with the UoM fix isolated.
+
+The original classify() uses a fixed 0.5-unit loss threshold. That threshold is preserved
+verbatim; only the erroneous assumption that every product is measured in 'unit' is fixed.
+The original matcher and its source files remain unchanged.
+"""
 from __future__ import annotations
 import math
 from uom import convert
 
 
 def classify(edge_results: list[dict], edges: list[dict],
-             ref_uom: dict[str, str] | None = None,
-             qty_tolerance_relative: float = 0.02) -> dict:
-    if not 0 <= qty_tolerance_relative < 1:
-        raise ValueError("qty_tolerance_relative must be in [0, 1)")
+             ref_uom: dict[str, str] | None = None) -> dict:
     ref_uom = ref_uom or {}
     by_edge = {str(e["transfer_id"]): e for e in edges}
     out = {"confirmed": 0, "confirmed_approx": 0, "confirmed_loss": [],
@@ -49,12 +51,11 @@ def classify(edge_results: list[dict], edges: list[dict],
         audit["quantity_normalized"] = round(normalized, 9)
         audit["normalization"] = "ok"
         out["uom_audit"].append(audit)
-        sent = float(edge["qty_out"])
-        gap = sent - normalized
-        if gap > abs(sent) * qty_tolerance_relative:
+        gap = float(edge["qty_out"]) - normalized
+        # Deliberately preserved from the original DeepSeek classify() implementation.
+        if gap > 0.5:
             out["confirmed_loss"].append({
                 "edge": str(result["edge"]), "missing": round(gap, 9),
-                "relative_gap": gap / sent if sent else None,
                 "source": receipt.get("counterpart_source"), **audit,
             })
     return out
