@@ -6,7 +6,7 @@
 - **C — Hybrid:** current `match_hybrid`, with candidate discovery separated from evidence-gated confirmation.
 
 ## Experimental controls
-All engines receive the same 16 scenarios for each of 40 deterministic seeds (640 shipment cases). Ground truth is generated before scoring. Cases cover exact receipt, loss, over-receipt, multiple linked partial receipts, incomplete provenance, product/location conflicts, approximate unique candidates, multiple candidates, shared candidates, Odoo dozen conversion, date-window exclusion, duplicate receipt identity, wrong-product candidates, and unkeyed references.
+All engines receive the same 18 scenarios for each of 40 deterministic seeds (720 shipment cases). Ground truth is generated before scoring. Cases cover exact receipt, loss, subthreshold and boundary-crossing deltas, over-receipt, multiple linked partial receipts, incomplete provenance, product/location conflicts, approximate unique candidates, multiple candidates, shared candidates, Odoo dozen conversion, date-window exclusion, duplicate receipt identity, wrong-product candidates, and unkeyed references.
 
 Candidate tolerance is aligned at 2% around the fixed 10-unit shipment quantity. The hardened engine's absolute tolerance is therefore configured to 0.2 units. All engines use a 3-day candidate window. Loss scoring uses a shared 0.5-unit threshold. A's historical float conversion and matching semantics are retained in its isolated adapter.
 
@@ -18,3 +18,5 @@ The report distinguishes exact-confirmation precision/recall, loss precision/rec
 
 ### Candidate metric limitation
 A's historical return contract exposes a single receipt for a unique candidate and only a count for ambiguous candidates; it does not expose a stable candidate-ID list for the latter. Candidate precision/recall are therefore reported as **N/A for A**, rather than inventing identity-level metrics. B and C expose candidate receipt IDs, so their identity-level discovery metrics are scored against the same ground truth.
+
+The dataset includes exact under-receipt gaps of 0.30 and 0.51 units. This deliberately tests the interaction between B's single `quantity_tolerance` parameter (used both for candidate matching and loss classification) and C's separately configured candidate, reconciliation, and loss thresholds.
