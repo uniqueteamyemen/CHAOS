@@ -39,19 +39,24 @@ def build_window_dataset():
 
 def score_window(ds,window):
  matches=match_counterpart_receipts(ds["shipments"],ds["receipts"],UOMS,date_window_days=window)
- tp=fp=fn=amb=unmatched=0
+ tp=fp=fn=amb=unmatched=true_in_ambiguous=ambiguous_without_truth=candidate_hits=0
  for row in matches:
   expected=ds["truth"][row["picking_id"]]
+  candidate_ids=set(row.get("candidate_receipt_ids") or [])
   predicted=row.get("counterpart_picking_id") if row["state"]=="approximate_unique" else None
+  if expected in candidate_ids or predicted==expected: candidate_hits+=1
   if predicted==expected: tp+=1
   elif predicted is not None: fp+=1; fn+=1
   else:
    fn+=1
-   if row["state"]=="ambiguous": amb+=1
+   if row["state"]=="ambiguous":
+    amb+=1
+    if expected in candidate_ids: true_in_ambiguous+=1
+    else: ambiguous_without_truth+=1
    else: unmatched+=1
  p=tp/(tp+fp) if tp+fp else 0.0; r=tp/(tp+fn) if tp+fn else 0.0
  f1=2*p*r/(p+r) if p+r else 0.0; n=len(ds["truth"])
- return {"window_days":window,"tp":tp,"fp":fp,"fn":fn,"ambiguous":amb,"unmatched":unmatched,"precision":round(p,6),"recall":round(r,6),"f1":round(f1,6),"resolved_coverage":round((tp+fp)/n,6),"ambiguity_rate":round(amb/n,6),"n":n}
+ return {"window_days":window,"tp":tp,"fp":fp,"fn":fn,"ambiguous":amb,"unmatched":unmatched,"precision":round(p,6),"resolved_recall":round(r,6),"candidate_recall":round(candidate_hits/n,6),"f1":round(f1,6),"resolved_coverage":round((tp+fp)/n,6),"ambiguity_rate":round(amb/n,6),"true_receipt_inside_ambiguous_set":true_in_ambiguous,"ambiguous_without_true_receipt":ambiguous_without_truth,"n":n}
 
 def build_complexity_case():
  moves=[
@@ -71,11 +76,11 @@ def build_complexity_case():
 
 def run():
  ds=build_window_dataset(); curve=[score_window(ds,w) for w in range(11)]; complex_case=build_complexity_case()
- result={"experiment":"M_precision_recall_window_and_concurrent_uom","classification":"synthetic_labelled_algorithm_stress_test_not_operational_validation","seed":SEED,"dataset":{"shipments":70,"true_receipts":70,"receipt_records":len(ds["receipts"]),"hard_negative_receipts":14},"curve":curve,"complexity_case":complex_case,"metric_definitions":{"precision":"TP/(TP+FP)","recall":"TP/(TP+FN); ambiguous and unmatched are unresolved FN","f1":"2*P*R/(P+R)","resolved_coverage":"(TP+FP)/N","ambiguity_rate":"ambiguous/N"},"limitations":["Synthetic labels score controlled matcher behavior only; no operational accuracy estimate.","Wider windows may increase candidate recall while increasing ambiguity and false matches.","Approximate candidates remain unconfirmed and cannot generate loss events."]}
+ result={"experiment":"M_precision_recall_window_and_concurrent_uom","classification":"synthetic_labelled_algorithm_stress_test_not_operational_validation","seed":SEED,"dataset":{"shipments":70,"true_receipts":70,"receipt_records":len(ds["receipts"]),"hard_negative_receipts":14},"curve":curve,"complexity_case":complex_case,"metric_definitions":{"precision":"TP/(TP+FP)","resolved_recall":"TP/(TP+FN); ambiguous and unmatched are unresolved FN","candidate_recall":"fraction where the true receipt is present in the candidate set, including ambiguous sets","f1":"2*P*R/(P+R)","resolved_coverage":"(TP+FP)/N","ambiguity_rate":"ambiguous/N"},"limitations":["Synthetic labels score controlled matcher behavior only; no operational accuracy estimate.","Wider windows may increase candidate recall while increasing ambiguity and false matches.","Approximate candidates remain unconfirmed and cannot generate loss events."]}
  RESULTS.mkdir(parents=True,exist_ok=True)
  (RESULTS/"precision_recall_curve.json").write_text(json.dumps(result,indent=2),encoding="utf-8")
- lines=["# Experiment M — Temporal precision/recall and concurrent UoM stress","","> Synthetic labelled algorithm stress test only; not operational validation.","","Precision = TP/(TP+FP); Recall = TP/(TP+FN). Ambiguous/unmatched records are unresolved FN.","F1 = 2PR/(P+R); coverage = (TP+FP)/N.","","| Window days | TP | FP | FN | Ambiguous | Unmatched | Precision | Recall | F1 | Coverage |","|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|"]
- for x in curve: lines.append(f"| {x['window_days']} | {x['tp']} | {x['fp']} | {x['fn']} | {x['ambiguous']} | {x['unmatched']} | {x['precision']:.3f} | {x['recall']:.3f} | {x['f1']:.3f} | {x['resolved_coverage']:.3f} |")
+ lines=["# Experiment M — Temporal precision/recall and concurrent UoM stress","","> Synthetic labelled algorithm stress test only; not operational validation.","","Precision = TP/(TP+FP); resolved recall = TP/(TP+FN). Ambiguous/unmatched records are unresolved FN. Candidate recall also counts true receipts inside ambiguous candidate sets.","F1 = 2PR/(P+R); coverage = (TP+FP)/N.","","| Window days | TP | FP | FN | Ambiguous | Unmatched | Precision | Resolved recall | Candidate recall | F1 | Coverage |","|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|"]
+ for x in curve: lines.append(f"| {x['window_days']} | {x['tp']} | {x['fp']} | {x['fn']} | {x['ambiguous']} | {x['unmatched']} | {x['precision']:.3f} | {x['resolved_recall']:.3f} | {x['candidate_recall']:.3f} | {x['f1']:.3f} | {x['resolved_coverage']:.3f} |")
  lines += ["","## Concurrent multi-shipment / heterogeneous-UoM case","",json.dumps(complex_case,indent=2),"","## Limitations"]+["- "+x for x in result["limitations"]]
  (RESULTS/"precision_recall_report.md").write_text("\n".join(lines)+"\n",encoding="utf-8")
  return result
