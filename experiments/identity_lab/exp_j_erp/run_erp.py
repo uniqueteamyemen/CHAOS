@@ -46,10 +46,26 @@ def main() -> None:
 | `location_id` | stock.move | الطرف المُرسِل |
 | `location_dest_id` | stock.move | الطرف المُستقبِل |
 | `product_id` | stock.move | الصنف |
-| `product_uom_qty` | stock.move | الكمية |
+| `product_uom_qty` | stock.move | **الكمية المطلوبة** — ليست المنفذة، ولا تُستخدم للحافة |
+| `quantity` | stock.move | **الكمية المنفذة** في Odoo 17 — هي المعتمدة وحدها |
+| `product_uom` | stock.move | وحدة القياس التي تُقرأ بها الكميات |
+| `uom_factor` | تصدير | معامل التحويل إلى وحدة مرجعية واحدة |
 | `state` | stock.move | `done` فقط هو حركة مادية؛ ما عداه نيّة |
 | `date` | stock.move | زمن الحركة |
 | `name` / `origin` | stock.picking | المرجع التجاري |
+
+## قاعدة الكمية المنفذة
+
+`product_uom_qty` في Odoo هو **الطلب**، و`quantity` هو **المنفذ**. استخدام الطلب يعني تحويل كل
+backorder إلى فاقد وهمي: طلبت 30، نفذت 24، وسجّل المستلم 24 — لا خسارة، بل تنفيذ جزئي.
+
+لذلك:
+
+- القارئ يقرأ `quantity`، ويسقط إلى `quantity_done` للتصديرات الأقدم.
+- إن غاب الحقل، **يرفض الصف** (`missing_executed_quantity`) ولا يستعمل الطلب بديلًا. رفض صريح
+  أفضل من تصنيف صامت خاطئ.
+- الكميات تُضرب في `uom_factor`؛ وإن غاب المعامل يُرفض الصف (`uom_unresolved`).
+- الحركة الجزئية تُوسم `partial`، والفرق بين الطلب والمنفذ **لا يُحسب فاقدًا أبدًا**.
 
 ## القيد الجوهري الذي كشفه Odoo
 
@@ -88,6 +104,14 @@ def main() -> None:
         f"| pickings | {stats['pickings']} |",
         f"| edges formed | {stats['edges']} |",
         f"| D3 loss events | **{summary['loss_events']}** |",
+        f"| partial executions (demand > executed) | {stats['partial_executions']} |",
+        "",
+        "## The quantity trap, and how it is closed",
+        "",
+        "The sample contains a backorder: demand 30, executed 24, receiver records 24. With",
+        "`product_uom_qty` this would have been classified as a 6-unit loss. The reader uses",
+        "`quantity`, so that case is silent — and only the real mismatch (30 shipped, 24 received)",
+        "is reported.",
         "",
         "## What this proves",
         "",
