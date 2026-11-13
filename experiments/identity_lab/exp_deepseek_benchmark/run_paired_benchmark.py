@@ -276,7 +276,7 @@ def paired_stats(differences, seed):
         for _ in range(10000)
     )
     return {
-        "mean_difference_deepseek_minus_hardened": observed,
+        "mean_difference_first_minus_second": observed,
         "paired_sign_flip_p_two_sided": extreme / (2 ** len(differences)),
         "bootstrap_95_ci": [boot[250], boot[9749]],
         "n_paired_seeds": len(differences),
@@ -330,11 +330,13 @@ def run():
                 paired[str(window)][pair_key][metric] = paired_stats(
                     differences, 20261113 + window * 100 + index + (0 if policy == "strict" else 50)
                 )
+        corrected_strict = {r["seed"]: r for r in per_seed if r["window"] == window
+                            and r["algorithm"] == "deepseek_corrected" and r["policy"] == "strict"}
         legacy = {r["seed"]: r for r in per_seed if r["window"] == window
                   and r["algorithm"] == "deepseek_legacy_uom_control" and r["policy"] == "strict"}
         paired[str(window)]["uom_fix_vs_legacy_uom"] = {}
         for index, metric in enumerate(metrics):
-            differences = [float(deepseek[s][metric]) - float(legacy[s][metric])
+            differences = [float(corrected_strict[s][metric]) - float(legacy[s][metric])
                            for s in range(SEEDS)]
             paired[str(window)]["uom_fix_vs_legacy_uom"][metric] = paired_stats(
                 differences, 20261113 + window * 100 + index + 50
