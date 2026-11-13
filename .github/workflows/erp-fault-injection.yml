@@ -1,0 +1,28 @@
+name: ERP fault injection stress tests
+
+on:
+  push:
+    branches:
+      - experiment/erp-fault-injection-v1
+    paths:
+      - "experiments/identity_lab/exp_k_fault_injection/**"
+      - "experiments/identity_lab/exp_j_erp/**"
+      - ".github/workflows/erp-fault-injection.yml"
+  pull_request:
+    paths:
+      - "experiments/identity_lab/exp_k_fault_injection/**"
+      - "experiments/identity_lab/exp_j_erp/**"
+      - ".github/workflows/erp-fault-injection.yml"
+
+jobs:
+  fault-injection:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Run fault-injection tests
+        run: python -m unittest experiments.identity_lab.exp_k_fault_injection.test_fault_injection -v
+      - name: Run deterministic experiment
+        run: python -m experiments.identity_lab.exp_k_fault_injection.run_experiment
