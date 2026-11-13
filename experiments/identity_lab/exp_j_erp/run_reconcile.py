@@ -1,6 +1,7 @@
 """Synthetic plumbing fixture for the hardened Odoo reconciliation path; not real validation."""
 from __future__ import annotations
 import json, sys
+from decimal import Decimal
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -59,7 +60,7 @@ def main():
         "approximate unique is not confirmed": p7["state"] == "approximate_unique" and not p7["confirmed"],
         "multiple approximate receipts are ambiguous": p8["state"] == "ambiguous",
         "no candidate is unmatched": p9["state"] == "unmatched",
-        "only exact receipt can create loss": len(losses) == 1 and losses[0]["delta"] == "2",
+        "only exact receipt can create loss": len(losses) == 1 and Decimal(losses[0]["delta"]) == Decimal("2"),
     }
     failed = [k for k,v in checks.items() if not v]
     payload = {"fixture_classification":"synthetic_plumbing_only","checks":checks,"failed":failed,
@@ -78,6 +79,8 @@ def main():
               "counterpart_picking_id remains the receiver's own document ID. Approximate candidates never create loss events."]
     (RESULTS / "uom_reconcile_report.md").write_text("\n".join(lines)+"\n",encoding="utf-8")
     print(json.dumps({"checks":f"{sum(checks.values())}/{len(checks)}","failed":failed,"states":states}))
+    if failed:
+        raise SystemExit(1)
 
 if __name__ == "__main__":
     main()
