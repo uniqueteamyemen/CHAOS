@@ -137,16 +137,36 @@ def run_shadow(bundle):
                            run_c(shipments,receipts,uoms))
         if digest(snapshot) != input_hash: raise RuntimeError("input_snapshot_mutated")
     ids = sorted(set().union(*(set(results[e]) for e in ("A","B","C"))))
-    disagreements, pairwise = [], {"A_vs_B":0,"A_vs_C":0,"B_vs_C":0}
+    disagreements = []
+    pairwise = {"A_vs_B":0,"A_vs_C":0,"B_vs_C":0}
+    raw_label_differences = {"A_vs_B":0,"A_vs_C":0,"B_vs_C":0}
+
+    def semantic_state(row):
+        if not row:
+            return "missing"
+        if row.get("confirmed"):
+            return "confirmed"
+        state = row.get("state", "unmatched")
+        if state in ("candidate", "candidate_approximate", "approximate_unique"):
+            return "candidate"
+        if state in ("ambiguous", "unmatched", "missing"):
+            return state
+        return state
+
     for sid in ids:
-        states = {e:results[e].get(sid,{}).get("state","missing") for e in ("A","B","C")}
+        rows = {e:results[e].get(sid,{}) for e in ("A","B","C")}
+        states = {e:rows[e].get("state","missing") for e in ("A","B","C")}
+        semantic_states = {e:semantic_state(rows[e]) for e in ("A","B","C")}
         for key,a,b in (("A_vs_B","A","B"),("A_vs_C","A","C"),("B_vs_C","B","C")):
-            pairwise[key] += int(states[a] != states[b])
-        confirmations = {e:bool(results[e].get(sid,{}).get("confirmed")) for e in ("A","B","C")}
-        losses = {e:bool(results[e].get(sid,{}).get("loss_claim")) for e in ("A","B","C")}
-        if len(set(states.values()))>1 or len(set(confirmations.values()))>1 or len(set(losses.values()))>1:
-            disagreements.append({"picking_id":sid,"states":states,"confirmed":confirmations,"loss_claims":losses,
-                "receipt_ids":{e:results[e].get(sid,{}).get("receipt_ids",[]) for e in ("A","B","C")}})
+            pairwise[key] += int(semantic_states[a] != semantic_states[b])
+            raw_label_differences[key] += int(states[a] != states[b])
+        confirmations = {e:bool(rows[e].get("confirmed")) for e in ("A","B","C")}
+        losses = {e:bool(rows[e].get("loss_claim")) for e in ("A","B","C")}
+        if (len(set(semantic_states.values()))>1 or len(set(confirmations.values()))>1
+                or len(set(losses.values()))>1):
+            disagreements.append({"picking_id":sid,"states":states,"semantic_states":semantic_states,
+                "confirmed":confirmations,"loss_claims":losses,
+                "receipt_ids":{e:rows[e].get("receipt_ids",[]) for e in ("A","B","C")}})
     return {"classification":"shadow_observation_not_ground_truth","snapshot":{"sha256":input_hash,
         "moves":len(snapshot["moves"]),"uom_rows":len(snapshot["uom_rows"]),"receipts":len(snapshot["receipts"])},
         "export_metadata":snapshot["export_metadata"],"movement_stats":movement_stats,
@@ -154,7 +174,9 @@ def run_shadow(bundle):
         "engine_configuration":{"A":{"candidate_tolerance":"2% relative","loss_threshold":"0.5 category reference units"},
             "B":{"quantity_tolerance":"2% relative, applied as absolute per shipment","loss_threshold":"same quantity_tolerance (coupled in B implementation)"},
             "C":{"candidate_tolerance":"2% relative","reconciliation_tolerance":"0.01 absolute reference units","loss_threshold":"0.5 category reference units"}},
-        "pairwise_state_disagreements":pairwise,"disagreement_count":len(disagreements),
+        "pairwise_state_disagreements":pairwise,
+        "pairwise_raw_state_label_differences":raw_label_differences,
+        "disagreement_count":len(disagreements),
         "disagreements":disagreements,"results":results,
         "guardrails":{"odoo_connection_used":False,"writes_to_odoo":False,
             "source_records_modified":False,"engine_outputs_feed_other_engines":False,
