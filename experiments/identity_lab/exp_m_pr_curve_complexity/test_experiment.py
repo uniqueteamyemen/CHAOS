@@ -1,6 +1,9 @@
 import unittest
 from .experiment import build_window_dataset, score_window, build_complexity_case, UOMS
-from ..exp_j_erp.reconcile import match_counterpart_receipts
+try:
+ from ..exp_j_erp.reconcile import match_counterpart_receipts
+except ImportError:
+ from exp_j_erp.reconcile import match_counterpart_receipts
 
 class TemporalCurveTests(unittest.TestCase):
  def test_dataset_and_determinism(self):
