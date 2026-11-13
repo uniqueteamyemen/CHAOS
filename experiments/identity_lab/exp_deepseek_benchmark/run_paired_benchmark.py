@@ -118,8 +118,7 @@ def loss_counts(predicted, truth):
 def score_deepseek(edges, receipts, truth, ref_uom, seed, window, promote):
     matches = deepseek_match(edges, receipts, date_window=window, qty_tolerance=REL_TOL,
                              ref_uom=ref_uom, promote_unique=promote)
-    summary = deepseek_classify(matches, edges, ref_uom=ref_uom,
-                                qty_tolerance_relative=REL_TOL)
+    summary = deepseek_classify(matches, edges, ref_uom=ref_uom)
     detected = {str(x["edge"]) for x in summary["confirmed_loss"]}
     loss = loss_counts(detected, truth)
     exact = [r for r in matches if r["state"] == "confirmed"]
@@ -146,6 +145,51 @@ def score_deepseek(edges, receipts, truth, ref_uom, seed, window, promote):
     }
 
 
+def legacy_uom_classify(edge_results, edges):
+    """Counterfactual reproducing the old scorer's hardcoded unit reference."""
+    from uom import convert
+    by_edge = {str(e["transfer_id"]): e for e in edges}
+    out = {"confirmed_loss": [], "uom_rejections": 0}
+    for result in edge_results:
+        if result["state"] not in ("confirmed", "confirmed_approx"):
+            continue
+        edge = by_edge[str(result["edge"])]
+        receipt = result["receipt"]
+        try:
+            qty, reason = convert(
+                float(receipt.get("counterpart_qty")),
+                str(receipt.get("counterpart_uom") or "unit"), "unit"
+            )
+        except (TypeError, ValueError):
+            qty, reason = None, "quantity_invalid"
+        if qty is None:
+            out["uom_rejections"] += 1
+            continue
+        gap = float(edge["qty_out"]) - qty
+        if gap > 0.5:
+            out["confirmed_loss"].append({"edge": str(result["edge"]), "missing": gap})
+    return out
+
+
+def score_deepseek_legacy_uom(edges, receipts, truth, ref_uom, seed, window, promote):
+    matches = deepseek_match(edges, receipts, date_window=window, qty_tolerance=REL_TOL,
+                             ref_uom=ref_uom, promote_unique=promote)
+    summary = legacy_uom_classify(matches, edges)
+    detected = {str(x["edge"]) for x in summary["confirmed_loss"]}
+    common = _deepseek_common_metrics(matches, edges, receipts, truth, ref_uom, window)
+    loss = loss_counts(detected, truth)
+    return {
+        "algorithm": "deepseek_legacy_uom_control",
+        "policy": "promote" if promote else "strict",
+        "seed": seed, "window": window, **loss, **common,
+        "ambiguity": summary["uom_rejections"],
+        "false_positives": loss["fp"],
+        "unmatched": sum(1 for r in matches if r["state"] == "unmatched"),
+        "candidate": sum(1 for r in matches if r["state"] == "candidate"),
+        "uom_audit_rows": summary["uom_rejections"],
+    }
+
+
 def score_hardened(edges, receipts, truth, ref_uom, seed, window):
     shipments, hard_receipts, id_owner = hard_inputs(edges, receipts, ref_uom)
     rows = []
@@ -155,8 +199,10 @@ def score_hardened(edges, receipts, truth, ref_uom, seed, window):
             [shipment], hard_receipts, UOMS,
             date_window_days=window, quantity_tolerance=tolerance,
         ))
-    detected = {str(r["picking_id"]) for r in rows
-                if r.get("confirmed") and "loss" in (r.get("issues") or [])}
+    detected = {
+        str(r["picking_id"]) for r in rows
+        if r.get("confirmed") and Decimal(str(r.get("delta", "0"))) > Decimal("0.5")
+    }
     loss = loss_counts(detected, truth)
     exact = [r for r in rows if r.get("state") == "exact" and r.get("confirmed")]
     exact_ok = sum(
@@ -225,6 +271,8 @@ def run():
         for window in WINDOWS:
             per_seed.append(score_deepseek(edges, receipts, truth, ref_uom, seed, window, False))
             per_seed.append(score_deepseek(edges, receipts, truth, ref_uom, seed, window, True))
+            per_seed.append(score_deepseek_legacy_uom(edges, receipts, truth, ref_uom, seed, window, False))
+            per_seed.append(score_deepseek_legacy_uom(edges, receipts, truth, ref_uom, seed, window, True))
             per_seed.append(score_hardened(edges, receipts, truth, ref_uom, seed, window))
 
     metrics = ("loss_precision", "loss_recall", "candidate_recall",
@@ -264,7 +312,8 @@ def run():
         "experiment": "paired_uom_corrected_deepseek_vs_hardened_matcher",
         "classification": "synthetic_controlled_benchmark_not_operational_validation",
         "parameters": {
-            "transfers_per_seed": TRANSFERS, "seeds": SEEDS, "relative_quantity_tolerance": REL_TOL,
+            "transfers_per_seed": TRANSFERS, "seeds": SEEDS, "relative_quantity_tolerance_for_candidate_matching": REL_TOL,
+            "loss_gap_threshold_reference_units": 0.5,
             "windows_days": list(WINDOWS), "uom_pairs": ["unit/dozen", "kg/g"],
             "policies": ["strict", "promote"],
             "faults": ["deleted", "duplicated", "delayed", "unkeyed", "loss", "no_loss"],
@@ -288,6 +337,7 @@ def run():
             "false_positives": "number of false loss claims per seed.",
             "paired_difference": "DeepSeek minus hardened matcher on the same seed and byte-identical generated dataset.",
             "statistics": "exact two-sided paired sign-flip permutation test (4096 assignments) and 10,000-resample paired bootstrap 95% percentile CI.",
+            "uom_fix_control": "legacy scorer keeps the original fixed unit reference; corrected scorer changes only the product-specific UoM normalization. Both use the original >0.5 loss threshold.",
         },
         "limitations": [
             "Synthetic benchmark only; it does not establish operational accuracy or prevalence.",
