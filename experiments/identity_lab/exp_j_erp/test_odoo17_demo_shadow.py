@@ -3,7 +3,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from experiments.identity_lab.exp_j_erp.odoo_reader import aggregate_moves
+from experiments.identity_lab.exp_j_erp.reconcile import aggregate_moves
 from experiments.identity_lab.exp_j_erp.shadow_mode import run_shadow
 from experiments.identity_lab.exp_j_erp.uom import index_uoms
 from experiments.identity_lab.exp_j_erp.run_odoo17_demo_shadow import load_inputs
