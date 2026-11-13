@@ -34,6 +34,10 @@ jobs:
         run: python -m unittest experiments.identity_lab.exp_j_erp.test_hybrid_odoo_integration -v
       - name: Run read-only A/B/C shadow mode tests
         run: python -m unittest experiments.identity_lab.exp_j_erp.test_shadow_mode -v
+      - name: Run public-ledger candidate-only shadow probe tests
+        run: python -m unittest experiments.identity_lab.exp_j_erp.test_public_ledger_shadow_probe -v
+      - name: Run public-ledger A/B/C candidate-only shadow probe
+        run: python -m experiments.identity_lab.exp_j_erp.run_public_ledger_shadow_probe
       - name: Run deterministic plumbing fixture
         run: python experiments/identity_lab/exp_j_erp/run_reconcile.py
       - name: Run temporal precision-recall and concurrent UoM tests
@@ -48,4 +52,11 @@ jobs:
           path: |
             experiments/identity_lab/results/erp_abc_benchmark.json
             experiments/identity_lab/results/erp_abc_benchmark.md
+          if-no-files-found: warn
+      - name: Upload public-ledger shadow probe artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: erp-public-ledger-shadow-probe
+          path: ${{ runner.temp }}/erp-public-ledger-shadow-probe/**
           if-no-files-found: warn
