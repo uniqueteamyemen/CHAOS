@@ -1,8 +1,12 @@
 from decimal import Decimal
 import unittest
 
-from reconcile import aggregate_moves, match_counterpart_receipts
-from uom import UomNormalizationError, normalize_quantity, normalize_to_reference
+try:
+    from .reconcile import aggregate_moves, match_counterpart_receipts
+    from .uom import UomNormalizationError, normalize_quantity, normalize_to_reference
+except ImportError:
+    from reconcile import aggregate_moves, match_counterpart_receipts
+    from uom import UomNormalizationError, normalize_quantity, normalize_to_reference
 
 
 UOMS = {
