@@ -81,6 +81,14 @@ def discover_candidates(
     excluded_receipt_ids: set[str] | None = None,
 ) -> list[dict]:
     """Return ranked approximate candidates; never confirms or classifies loss."""
+    if not isinstance(date_window_days, int) or date_window_days < 0:
+        raise ValueError("date_window_days must be a non-negative integer")
+    quantity_tolerance_absolute = _decimal(
+        quantity_tolerance_absolute, "candidate_absolute_tolerance_invalid"
+    )
+    quantity_tolerance_relative = _decimal(
+        quantity_tolerance_relative, "candidate_relative_tolerance_invalid"
+    )
     excluded = excluded_receipt_ids or set()
     product = relation_id(shipment.get("product_id"))
     destination = relation_id(shipment.get("location_dest_id"))
@@ -144,6 +152,20 @@ def match_hybrid(
     product/location evidence cannot confirm anything. Approximate matches never
     consume receipts and never emit financial/stock loss claims.
     """
+    if not isinstance(date_window_days, int) or date_window_days < 0:
+        raise ValueError("date_window_days must be a non-negative integer")
+    candidate_quantity_tolerance_absolute = _decimal(
+        candidate_quantity_tolerance_absolute, "candidate_absolute_tolerance_invalid"
+    )
+    candidate_quantity_tolerance_relative = _decimal(
+        candidate_quantity_tolerance_relative, "candidate_relative_tolerance_invalid"
+    )
+    reconciliation_quantity_tolerance = _decimal(
+        reconciliation_quantity_tolerance, "reconciliation_tolerance_invalid"
+    )
+    loss_classification_threshold = _decimal(
+        loss_classification_threshold, "loss_threshold_invalid"
+    )
     receipt_id_counts = Counter(
         relation_id(r.get("counterpart_picking_id")) for r in receipts
         if relation_id(r.get("counterpart_picking_id"))
