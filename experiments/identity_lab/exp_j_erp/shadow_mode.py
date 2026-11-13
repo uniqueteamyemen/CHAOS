@@ -90,8 +90,11 @@ def run_b(shipments, receipts, uoms):
     out = {}
     for s in shipments:
         tol = abs(Decimal(str(s.get("quantity","0"))))*REL_TOL
-        rows = match_counterpart_receipts([s], receipts, uoms, date_window_days=DATE_WINDOW,
-                                           quantity_tolerance=tol)
+        rows = match_counterpart_receipts(
+            [s], receipts, uoms, date_window_days=DATE_WINDOW,
+            quantity_tolerance=tol,
+            loss_classification_threshold=LOSS_THRESHOLD,
+        )
         r = rows[0] if rows else {}
         sid = relation_id(s.get("picking_id"))
         out[sid] = {"state":r.get("state","unmatched"),"confirmed":bool(r.get("confirmed")),
@@ -172,7 +175,7 @@ def run_shadow(bundle):
         "export_metadata":snapshot["export_metadata"],"movement_stats":movement_stats,
         "engine_summaries":{e:summarize(results[e]) for e in ("A","B","C")},
         "engine_configuration":{"A":{"candidate_tolerance":"2% relative","loss_threshold":"0.5 category reference units"},
-            "B":{"quantity_tolerance":"2% relative, applied as absolute per shipment","loss_threshold":"same quantity_tolerance (coupled in B implementation)"},
+            "B":{"candidate_tolerance":"2% relative, applied as absolute per shipment","loss_threshold":"0.5 category reference units (separate parameter)"},
             "C":{"candidate_tolerance":"2% relative","reconciliation_tolerance":"0.01 absolute reference units","loss_threshold":"0.5 category reference units"}},
         "pairwise_state_disagreements":pairwise,
         "pairwise_raw_state_label_differences":raw_label_differences,
@@ -203,7 +206,7 @@ def write_run(report, output_root):
           "| Metric | A | B | C |","|---|---:|---:|---:|"]
     for k in ("shipments_scored","confirmed","loss_claims","candidate_cases","ambiguous","unmatched"):
         md.append("| "+k+" | "+" | ".join(str(report["engine_summaries"][e][k]) for e in ("A","B","C"))+" |")
-    md += ["","Engine threshold configuration:","- A: 2% candidate tolerance; 0.5 category-reference-unit loss threshold.","- B: 2% per-shipment tolerance is passed to the shared quantity_tolerance parameter and therefore also controls loss classification.","- C: 2% candidate tolerance; 0.01 absolute reconciliation tolerance; 0.5 category-reference-unit loss threshold.","","Pairwise state disagreements:"] + ["- "+k+": "+str(v) for k,v in report["pairwise_state_disagreements"].items()]
+    md += ["","Engine threshold configuration:","- A: 2% candidate tolerance; 0.5 category-reference-unit loss threshold.","- B: 2% per-shipment candidate tolerance; separate 0.5 category-reference-unit loss threshold.","- C: 2% candidate tolerance; 0.01 absolute reconciliation tolerance; 0.5 category-reference-unit loss threshold.","","Pairwise state disagreements:"] + ["- "+k+": "+str(v) for k,v in report["pairwise_state_disagreements"].items()]
     md += ["","Total shipments with disagreement: "+str(report["disagreement_count"]),"",
            "Safety: no Odoo connection, no Odoo writes, no source mutation, no automated promotion."]
     files = {"shadow_report.json":json.dumps(report,indent=2,ensure_ascii=False),
