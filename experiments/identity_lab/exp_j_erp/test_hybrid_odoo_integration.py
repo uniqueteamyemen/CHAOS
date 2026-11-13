@@ -27,7 +27,7 @@ class HybridOdooIntegrationTests(unittest.TestCase):
         self.assertTrue(result["receipt_matches"][0]["evidence_complete"])
 
     def test_raw_odoo_export_keeps_approximate_as_candidate(self):
-        result = reconcile_export_hybrid([move()], UOMS, [receipt("IN-2", source=None, qty="9")])
+        result = reconcile_export_hybrid([move()], UOMS, [receipt("IN-2", source=None, qty="9.9")])
         row = result["receipt_matches"][0]
         self.assertEqual(row["state"], "candidate_approximate")
         self.assertFalse(row["confirmed"])
