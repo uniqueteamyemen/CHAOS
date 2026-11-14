@@ -6,6 +6,7 @@ import random
 import statistics
 from pathlib import Path
 
+from experiments.identity_lab.exp_p_engine.engine import DOMAINS
 from experiments.identity_lab.exp_p_engine.parallel_fusion import run_candidates
 
 
@@ -47,6 +48,7 @@ def scenario_spec(name: str, month: int) -> tuple[float, float, int]:
 def make_rows(seed: int, scenario: str):
     rng = random.Random(seed)
     balance = 2000.0
+    c = DOMAINS["stock"]
     rows, expected_residuals = [], []
     for month in range(1, MONTHS + 1):
         noise, shift, sign = scenario_spec(scenario, month)
@@ -54,8 +56,8 @@ def make_rows(seed: int, scenario: str):
         expected_closing = balance + 400.0 - 400.0 - 5.0
         closing = expected_closing - residual
         rows.append({
-            "opening": balance, "inflow": 400.0, "outflow": 400.0,
-            "other": 5.0, "closing": closing, "month": month,
+            c["opening"]: balance, c["inflow"]: 400.0, c["outflow"]: 400.0,
+            c["other"]: 5.0, c["closing"]: closing, "month": month,
         })
         expected_residuals.append(residual)
         balance = closing
