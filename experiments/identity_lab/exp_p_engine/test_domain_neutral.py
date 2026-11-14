@@ -1,7 +1,9 @@
 """Tests for the domain-neutral observation and detection layer."""
+import json
 import math
 import random
 import unittest
+from pathlib import Path
 from datetime import datetime, timedelta, timezone
 
 from experiments.identity_lab.exp_p_engine.domain_neutral import (
@@ -46,6 +48,17 @@ def ar1_series(count, *, rho, stationary_sigma, seed=17):
 
 
 class ObservationContractTests(unittest.TestCase):
+    def test_embedded_observation_schema_keeps_five_required_fields(self):
+        schema_path = Path(__file__).resolve().parents[1] / "schemas" / "residual_event_v1.schema.json"
+        schema = json.loads(schema_path.read_text(encoding="utf-8"))
+        definition = schema["definitions"]["observation"]
+        self.assertEqual(
+            definition["required"],
+            ["entity_id", "metric_id", "event_time", "value", "observation_status"],
+        )
+        self.assertIn("identity_version", schema["required"])
+        self.assertIn("attributed_term", schema["required"])
+
     def test_five_required_fields_are_enough(self):
         result = normalize_observations(
             [{"staff": "e1", "metric": "tickets", "period": "2024", "count": "12"}],
@@ -116,7 +129,7 @@ class ScaleEstimatorTests(unittest.TestCase):
         rho, target_sigma = 0.65, 2.5
         values = ar1_series(5000, rho=rho, stationary_sigma=target_sigma)[500:]
         rows = observations(values, unit="days")
-        result = first_difference_mad_scale(rows, time_unit="days")
+        result = first_difference_mad_scale(rows, time_unit="days", estimate_rho=True)
         self.assertEqual(result["status"], "ok")
         self.assertEqual(result["rho_source"], "estimated_from_unit_gaps")
         self.assertAlmostEqual(result["rho"], rho, delta=0.06)
@@ -134,7 +147,7 @@ class ScaleEstimatorTests(unittest.TestCase):
                 "event_time": (datetime(2000, 1, 1, tzinfo=timezone.utc) + timedelta(days=i)).isoformat(),
                 "value": values[i], "observation_status": "observed",
             })
-        result = first_difference_mad_scale(rows, time_unit="days")
+        result = first_difference_mad_scale(rows, time_unit="days", estimate_rho=True)
         self.assertEqual(result["status"], "ok")
         self.assertGreater(result["n_gap_adjusted"], 0)
         self.assertAlmostEqual(result["value"], target_sigma, delta=0.25)
@@ -143,7 +156,7 @@ class ScaleEstimatorTests(unittest.TestCase):
         values = ar1_series(25, rho=0.45, stationary_sigma=1.3, seed=41)
         rows = observations(values, unit="days")
         rows = [row for index, row in enumerate(rows) if index not in {4, 10, 18}]
-        result = first_difference_mad_scale(rows, time_unit="days")
+        result = first_difference_mad_scale(rows, time_unit="days", estimate_rho=True)
         self.assertEqual(result["status"], "ok")
         self.assertGreater(result["n_differences"], 8)
         self.assertGreater(result["n_gap_adjusted"], 0)
