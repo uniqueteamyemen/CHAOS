@@ -81,7 +81,6 @@ jobs:
           name: chaos-pqr-experiment-results
           path: |
             experiments/identity_lab/exp_p_engine/results/**
-            experiments/identity_lab/exp_r_grade4/results/parallel_fusion_500_seed_benchmark.json
             experiments/identity_lab/exp_q_precursor/results/**
             experiments/identity_lab/exp_r_grade4/results/**
           if-no-files-found: warn
