@@ -229,7 +229,7 @@ def first_difference_mad_scale(
     *,
     time_unit: str = "years",
     rho: float | None = None,
-    estimate_rho: bool = True,
+    estimate_rho: bool = False,
     min_adjacent_pairs_for_rho: int = 8,
     min_differences: int = 4,
 ) -> dict[str, Any]:
