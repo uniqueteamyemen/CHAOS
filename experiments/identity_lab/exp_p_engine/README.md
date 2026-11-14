@@ -60,3 +60,25 @@
 ```bash
 python -m unittest experiments.identity_lab.exp_p_engine.test_engine -v
 ```
+
+
+## Isolated parallel-fusion experiment (A/B/C)
+
+This experiment is isolated from the production engine.py; A remains the unchanged engine.run() result.
+
+- **A:** current production execution path, including the current alert manager.
+- **B:** P1 uses the capped 3-sigma / 3-run candidate rule; positive and negative CUSUM accumulators are independent; both accumulators are held (not erased) while the short/long variance-transition condition is active; CUSUM scale remains unbounded.
+- **C:** same independent detector tracks; CUSUM scale is capped at 2 times quiet sigma and transition updates are damped by 0.35 instead of being erased or paused.
+- **Fusion:** evidence is aggregated before event adjudication. A reversal or six consecutive calm observations opens a new event. Same-event directional cooldown marks a repeated notification but retains the underlying evidence.
+
+Each run creates an immutable configuration/input snapshot with a SHA-256 input fingerprint, frozen bias, quiet sigma, configuration, code revision, and time range. Out-of-order and duplicate timestamps fail closed.
+
+Run the experiment:
+
+```bash
+python -m unittest experiments.identity_lab.exp_p_engine.test_parallel_fusion -v
+python -m experiments.identity_lab.exp_p_engine.benchmark_parallel_fusion
+python -m experiments.identity_lab.exp_r_grade4.grade4_diagnostics
+```
+
+The benchmark runs 500 independent sequences in each declared condition and reports false-alert rates, sensitivity, direction errors, detection delay, and 95% Wilson intervals. It is an experiment, not a production approval: no B/C candidate replaces A unless the paired results justify that decision.
