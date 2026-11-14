@@ -1,4 +1,4 @@
-"""Grade-4 diagnostics — pre-declared comparison of five detector configurations on real EIA data.
+"""Grade-4 diagnostics — production P engine A versus parallel-fusion candidates B/C on real EIA data.
 
 The variants, fixed before running:
 
@@ -29,12 +29,10 @@ sys.path.insert(0, str(BASE / "exp_c_eia"))
 
 from oil import SERIES, QUIET, DETECT_START, fetch, parse  # noqa: E402
 from lib.identity import mad_sigma, stock_residuals  # noqa: E402
-from exp_p_engine.engine import rolling_sigma as engine_rolling_sigma  # noqa: E402
 from exp_p_engine.parallel_fusion import run_candidates  # noqa: E402
 
 W_ROLLING = 104
 K_SIGMA, H_SIGMA = 0.5, 5.0
-ENGINE_H_SIGMA = 8.5
 ENGINE_NOISE_GATE_FACTOR = 1.5
 SIGMA_CEILING_FACTOR = 2.0
 INJECT_AT_WEEK = 300
