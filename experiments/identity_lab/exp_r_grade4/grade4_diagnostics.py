@@ -29,7 +29,8 @@ sys.path.insert(0, str(BASE / "exp_c_eia"))
 
 from oil import SERIES, QUIET, DETECT_START, fetch, parse  # noqa: E402
 from lib.identity import mad_sigma, stock_residuals  # noqa: E402
-from exp_p_engine.engine import detect_sign_run, rolling_sigma as engine_rolling_sigma  # noqa: E402
+from exp_p_engine.engine import rolling_sigma as engine_rolling_sigma  # noqa: E402
+from exp_p_engine.parallel_fusion import run_candidates  # noqa: E402
 
 W_ROLLING = 104
 K_SIGMA, H_SIGMA = 0.5, 5.0
@@ -119,42 +120,43 @@ def _rolling_sigma(series, ceiling, window=W_ROLLING):
     return out
 
 
-def variant_p_engine(series, start_idx, bias, quiet_sigma):
-    # Mirror production P2: 52-point CUSUM scale, suspended/reset when the
-    # independent 12-point noise gate exceeds 1.5x the declared quiet sigma.
-    sig = _rolling_sigma(series, None, window=52)
-    noise = _rolling_sigma(series, None, window=12)
-    s, out = 0.0, []
-    for i in range(start_idx, len(series)):
-        sigma = sig[i]
-        if noise[i] is not None and sigma is not None and sigma > 0 and noise[i] > 1.2 * sigma:
-            s = 0.0
-            continue
-        if not sigma or sigma <= 0:
-            s = 0.0
-            continue
-        r = series[i]
-        s = max(0.0, s + (r["residual"] - bias) - K_SIGMA * sigma)
-        if s > ENGINE_H_SIGMA * sigma:
-            out.append(r["time"])
-            s = 0.0
-    return out
+def _engine_rows(series):
+    # The stored EIA residual is mapped losslessly onto the canonical identity:
+    # opening + inflow - outflow - other - closing == residual.
+    return [{
+        "opening": 0.0, "inflow": float(row["residual"]),
+        "outflow": 0.0, "other": 0.0, "closing": 0.0,
+        "month": row["time"],
+    } for row in series]
 
 
-def variant_p1_engine(series, start_idx, bias, quiet_sigma):
-    # Mirror production P1: capped 52-point sigma in nominal conditions; in a
-    # high-noise regime use 1 sigma and five same-sign observations.
-    cap = SIGMA_CEILING_FACTOR * quiet_sigma
-    gate = ENGINE_NOISE_GATE_FACTOR * quiet_sigma
-    engine_series = [{**r, "month": i} for i, r in enumerate(series)]
-    capped = engine_rolling_sigma(engine_series, window=52, ceiling=cap)
-    noise = engine_rolling_sigma(engine_series, window=12)
-    hits = detect_sign_run(
-        engine_series, capped, bias, k=3.0, run_len=3,
-        adaptive_sigmas=noise, ceiling=gate,
-        high_noise_k=0.0, high_noise_run=13,
+def run_live_engine(series):
+    # A always calls the actual engine.run(); B/C are independent candidates.
+    return run_candidates(
+        "stock", _engine_rows(series), quiet_range=QUIET, entity="US-CRUDE",
     )
-    return [series[h["index"]]["time"] for h in hits if h["index"] >= start_idx]
+
+
+def experiment_alarms(result, variant):
+    if variant == "P_engine_CUSUM_noise_gated":
+        return [a["time"] for a in result["A"]["alerts"] if a["detector"] == "cusum"]
+    if variant == "P_engine_sign_run":
+        return [a["time"] for a in result["A"]["alerts"] if a["detector"] == "sign_run"]
+    return [event["time"] for event in result[variant]["events"]]
+
+
+def directional_detection(result, variant, series, bias, cutoff, expected_sign):
+    by_time = {row["time"]: float(row["residual"]) - bias for row in series}
+    if variant == "A":
+        alarms = result["A"]["alerts"]
+        signed = [
+            (alarm["time"], 1 if by_time.get(alarm["time"], 0.0) > 0 else -1)
+            for alarm in alarms
+        ]
+    else:
+        signed = [(event["time"], event["sign"]) for event in result[variant]["events"]]
+    matches = [time for time, sign in signed if time >= cutoff and sign == expected_sign]
+    return {"detections_after_adaptation": len(matches), "first_detection": matches[0] if matches else None}
 
 
 def variant_diag(series, start_idx):
@@ -200,31 +202,37 @@ def main():
     detect = series[start_idx:]
     years = len(detect) / 52
 
+    # All P-engine A/B/C results are generated through the live execution path.
+    production_base = run_live_engine(series)
+    production_injected = run_live_engine(injected := inject(series, INJECT_AT_WEEK, INJECT_SIGMAS * sigma))
+    production_strong = run_live_engine(strong_injected := inject(series, INJECT_AT_WEEK, 6.0 * sigma))
+
     variants = {
         "R_frozen_bias_frozen_sigma": variant_r(detect, sigma, bias),
         "P_frozen_bias_rolling_sigma_capped": variant_p(series, start_idx, bias, ceiling),
-        "P_engine_CUSUM_noise_gated": variant_p_engine(series, start_idx, bias, sigma),
-        "P_engine_sign_run": variant_p1_engine(series, start_idx, bias, sigma),
+        "P_engine_CUSUM_noise_gated": experiment_alarms(production_base, "P_engine_CUSUM_noise_gated"),
+        "P_engine_sign_run": experiment_alarms(production_base, "P_engine_sign_run"),
+        "B_two_sided_hold_unbounded": experiment_alarms(production_base, "B"),
+        "C_two_sided_bounded_damped": experiment_alarms(production_base, "C"),
         "diagnostic_rolling_bias_rolling_sigma": variant_diag(series, max(start_idx, W_ROLLING)),
     }
 
-    # injected-leak test on a copy: a fixed-bias variant must keep seeing a known
-    # persistent leak AFTER the rolling variants have had time to absorb it.
-    injected = inject(series, INJECT_AT_WEEK, INJECT_SIGMAS * sigma)
-    strong_injected = inject(series, INJECT_AT_WEEK, 6.0 * sigma)
-    inj_detect = injected[start_idx:]
     injected_variants = {
-        "R_frozen_bias_frozen_sigma": variant_r(inj_detect, sigma, bias),
+        "R_frozen_bias_frozen_sigma": variant_r(injected[start_idx:], sigma, bias),
         "P_frozen_bias_rolling_sigma_capped": variant_p(injected, start_idx, bias, ceiling),
-        "P_engine_CUSUM_noise_gated": variant_p_engine(injected, start_idx, bias, sigma),
-        "P_engine_sign_run": variant_p1_engine(injected, start_idx, bias, sigma),
+        "P_engine_CUSUM_noise_gated": experiment_alarms(production_injected, "P_engine_CUSUM_noise_gated"),
+        "P_engine_sign_run": experiment_alarms(production_injected, "P_engine_sign_run"),
+        "B_two_sided_hold_unbounded": experiment_alarms(production_injected, "B"),
+        "C_two_sided_bounded_damped": experiment_alarms(production_injected, "C"),
         "diagnostic_rolling_bias_rolling_sigma": variant_diag(injected, max(start_idx, W_ROLLING)),
     }
     strong_injected_variants = {
         "R_frozen_bias_frozen_sigma": variant_r(strong_injected[start_idx:], sigma, bias),
         "P_frozen_bias_rolling_sigma_capped": variant_p(strong_injected, start_idx, bias, ceiling),
-        "P_engine_CUSUM_noise_gated": variant_p_engine(strong_injected, start_idx, bias, sigma),
-        "P_engine_sign_run": variant_p1_engine(strong_injected, start_idx, bias, sigma),
+        "P_engine_CUSUM_noise_gated": experiment_alarms(production_strong, "P_engine_CUSUM_noise_gated"),
+        "P_engine_sign_run": experiment_alarms(production_strong, "P_engine_sign_run"),
+        "B_two_sided_hold_unbounded": experiment_alarms(production_strong, "B"),
+        "C_two_sided_bounded_damped": experiment_alarms(production_strong, "C"),
         "diagnostic_rolling_bias_rolling_sigma": variant_diag(strong_injected, max(start_idx, W_ROLLING)),
     }
 
@@ -256,6 +264,13 @@ def main():
             "last_suspended_date": series[degraded_indices[-1]]["time"] if degraded_indices else None,
         },
         "variants": {},
+        "parallel_fusion": {
+            "snapshot": production_base["snapshot"],
+            "B_diagnostics": production_base["B"]["diagnostics"],
+            "C_diagnostics": production_base["C"]["diagnostics"],
+            "directional_injection": directional_checks,
+            "note": "A is the unchanged production engine.run(); B/C execute independent detector tracks and event-level fusion.",
+        },
     }
     for name, alarms in variants.items():
         inj_alarms = injected_variants[name]
@@ -267,9 +282,22 @@ def main():
             "injected_3sigma_seen_after_adaptation": len(after_adaptation(inj_alarms)),
             "injected_6sigma_seen_after_adaptation": len(after_adaptation(strong_alarms)),
         }
-    out["injection"] = {"at_week": INJECT_AT_WEEK, "tested_amount_sigmas": [3.0, 6.0],
+    out["injection"] = {"at_week": INJECT_AT_WEEK, "tested_amount_sigmas": [3.0, 6.0], "tested_directions": ["positive", "negative"],
                         "post_adaptation_weeks": POST_ADAPT_WEEKS,
                         "note": "injected into a copy; the source series is unchanged"}
+    cutoff = series[min(len(series) - 1, INJECT_AT_WEEK + POST_ADAPT_WEEKS)]["time"]
+    directional_checks = {}
+    for label, amount, expected_sign in (
+        ("positive_3sigma", 3.0, 1), ("negative_3sigma", -3.0, -1),
+        ("positive_6sigma", 6.0, 1), ("negative_6sigma", -6.0, -1),
+    ):
+        test_copy = inject(series, INJECT_AT_WEEK, amount * sigma)
+        result = run_live_engine(test_copy)
+        directional_checks[label] = {
+            "A": directional_detection(result, "A", test_copy, bias, cutoff, expected_sign),
+            "B": directional_detection(result, "B", test_copy, bias, cutoff, expected_sign),
+            "C": directional_detection(result, "C", test_copy, bias, cutoff, expected_sign),
+        }
     Path(__file__).resolve().parent.joinpath("results").mkdir(parents=True, exist_ok=True)
     p1_six_sigma_seen = out["variants"]["P_engine_sign_run"]["injected_6sigma_seen_after_adaptation"] > 0
     cusum_three_sigma_seen = out["variants"]["P_engine_CUSUM_noise_gated"]["injected_3sigma_seen_after_adaptation"] > 0
