@@ -35,6 +35,10 @@ def validate(bundle):
         raise ValueError("moves_and_uom_rows_must_not_be_empty")
     return bundle
 
+def group_key(row):
+    """Stable key for an aggregated movement group; picking_id only as a fallback."""
+    return row.get("movement_group_id") or relation_id(row.get("picking_id"))
+
 def legacy_a(shipments, receipts, uoms):
     """A's historical exact-key and candidate semantics with schema/UoM adaptation."""
     normalized = []
@@ -63,12 +67,12 @@ def legacy_a(shipments, receipts, uoms):
             r = exact[0]
             ok = (not r.get("_invalid") and relation_id(r.get("product_id")) == product
                   and relation_id(r.get("location_id")) == dest and r.get("_ref") == ref)
-            out[sid] = {"state": "confirmed" if ok else "ambiguous",
+            out[group_key(s)] = {"state": "confirmed" if ok else "ambiguous",
                         "confirmed": ok, "loss_claim": bool(ok and sent-r["_qty"] > LOSS_THRESHOLD),
                         "receipt_ids": [relation_id(r.get("counterpart_picking_id"))], "issues": []}
             continue
         if len(exact) > 1:
-            out[sid] = {"state":"ambiguous","confirmed":False,"loss_claim":False,"receipt_ids":[],"issues":[]}
+            out[group_key(s)] = {"state":"ambiguous","confirmed":False,"loss_claim":False,"receipt_ids":[],"issues":[]}
             continue
         candidates = []
         for r in normalized:
@@ -81,38 +85,51 @@ def legacy_a(shipments, receipts, uoms):
                 if sent_date is None or abs((rd-sent_date).days) > DATE_WINDOW: continue
             except (ValueError, TypeError): continue
             if abs(sent-r["_qty"]) <= abs(sent)*REL_TOL: candidates.append(r)
-        out[sid] = {"state":"candidate" if len(candidates)==1 else "ambiguous" if candidates else "unmatched",
+        out[group_key(s)] = {"state":"candidate" if len(candidates)==1 else "ambiguous" if candidates else "unmatched",
                     "confirmed":False,"loss_claim":False,
                     "receipt_ids":[relation_id(r.get("counterpart_picking_id")) for r in candidates],"issues":[]}
     return out
 
-def run_b(shipments, receipts, uoms):
+def _index_group_results(shipments, rows, engine):
+    if len(rows) != len(shipments):
+        raise RuntimeError(f"{engine}_result_cardinality_mismatch")
     out = {}
-    for s in shipments:
-        tol = abs(Decimal(str(s.get("quantity","0"))))*REL_TOL
-        rows = match_counterpart_receipts(
-            [s], receipts, uoms, date_window_days=DATE_WINDOW,
-            quantity_tolerance=tol,
-            loss_classification_threshold=LOSS_THRESHOLD,
-        )
-        r = rows[0] if rows else {}
-        sid = relation_id(s.get("picking_id"))
-        out[sid] = {"state":r.get("state","unmatched"),"confirmed":bool(r.get("confirmed")),
-                    "loss_claim":"loss" in (r.get("issues") or []),
-                    "receipt_ids":list(r.get("candidate_receipt_ids") or []),
-                    "issues":list(r.get("issues") or [])}
+    for shipment, result in zip(shipments, rows):
+        gid = shipment.get("movement_group_id")
+        if not gid or gid in out:
+            raise RuntimeError(f"{engine}_movement_group_identity_missing_or_duplicated")
+        if result.get("movement_group_id") != gid:
+            raise RuntimeError(f"{engine}_movement_group_identity_mismatch")
+        out[gid] = result
     return out
+
+
+def run_b(shipments, receipts, uoms):
+    # Full batch, not per shipment: per-shipment calls lose the picking's other
+    # product lines and any shared used-receipt state.
+    rows = match_counterpart_receipts(
+        shipments, receipts, uoms, date_window_days=DATE_WINDOW,
+        quantity_tolerance=Decimal("0"), quantity_tolerance_relative=REL_TOL,
+        loss_classification_threshold=LOSS_THRESHOLD,
+    )
+    indexed = _index_group_results(shipments, rows, "B")
+    return {gid: {"state":r.get("state","unmatched"),"confirmed":bool(r.get("confirmed")),
+                  "loss_claim":"loss" in (r.get("issues") or []),
+                  "receipt_ids":list(r.get("candidate_receipt_ids") or []),
+                  "issues":list(r.get("issues") or [])} for gid, r in indexed.items()}
+
 
 def run_c(shipments, receipts, uoms):
     rows = match_hybrid(shipments, receipts, uoms, date_window_days=DATE_WINDOW,
         candidate_quantity_tolerance_relative=REL_TOL,
         reconciliation_quantity_tolerance=Decimal("0.01"),
         loss_classification_threshold=LOSS_THRESHOLD)
-    return {relation_id(r.get("picking_id")):{
+    indexed = _index_group_results(shipments, rows, "C")
+    return {gid:{
         "state":r.get("state","unmatched"),"confirmed":bool(r.get("confirmed")),
         "loss_claim":bool(r.get("loss_claim")) or "loss" in (r.get("issues") or []),
         "receipt_ids":list(r.get("receipt_ids") or r.get("candidate_receipt_ids") or []),
-        "issues":list(r.get("issues") or [])} for r in rows}
+        "issues":list(r.get("issues") or [])} for gid, r in indexed.items()}
 
 def summarize(rows):
     states = {}
@@ -139,6 +156,13 @@ def run_shadow(bundle):
                            run_b(shipments,receipts,uoms) if engine=="B" else
                            run_c(shipments,receipts,uoms))
         if digest(snapshot) != input_hash: raise RuntimeError("input_snapshot_mutated")
+    # traceability: group id -> the picking/product it aggregates, so a report
+    # reader can map every result back without guessing.
+    sample_shipments, _ = aggregate_moves(copy.deepcopy(snapshot["moves"]),
+                                          index_uoms(copy.deepcopy(snapshot["uom_rows"])))
+    movement_groups = {s["movement_group_id"]: {"picking_id": s["picking_id"],
+                                                "product_id": s["product_id"]}
+                       for s in sample_shipments}
     ids = sorted(set().union(*(set(results[e]) for e in ("A","B","C"))))
     disagreements = []
     pairwise = {"A_vs_B":0,"A_vs_C":0,"B_vs_C":0}
@@ -167,7 +191,7 @@ def run_shadow(bundle):
         losses = {e:bool(rows[e].get("loss_claim")) for e in ("A","B","C")}
         if (len(set(semantic_states.values()))>1 or len(set(confirmations.values()))>1
                 or len(set(losses.values()))>1):
-            disagreements.append({"picking_id":sid,"states":states,"semantic_states":semantic_states,
+            disagreements.append({"movement_group_id":sid,"states":states,"semantic_states":semantic_states,
                 "confirmed":confirmations,"loss_claims":losses,
                 "receipt_ids":{e:rows[e].get("receipt_ids",[]) for e in ("A","B","C")}})
     return {"classification":"shadow_observation_not_ground_truth","snapshot":{"sha256":input_hash,
@@ -179,6 +203,7 @@ def run_shadow(bundle):
             "C":{"candidate_tolerance":"2% relative","reconciliation_tolerance":"0.01 absolute reference units","loss_threshold":"0.5 category reference units"}},
         "pairwise_state_disagreements":pairwise,
         "pairwise_raw_state_label_differences":raw_label_differences,
+        "movement_groups":movement_groups,
         "disagreement_count":len(disagreements),
         "disagreements":disagreements,"results":results,
         "guardrails":{"odoo_connection_used":False,"writes_to_odoo":False,

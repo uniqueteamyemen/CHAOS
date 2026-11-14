@@ -1,0 +1,21 @@
+{
+  "status": "supported",
+  "false_alarm_budget": 0.05,
+  "calibration_false_alarm_rate": 0.05,
+  "sigma_pooled": 2.0445,
+  "sign_run": {"k": 3.0, "run": 3},
+  "cusum": {"k_sigma": 0.5, "h_sigma": 6.25, "h_calibrated_on_control_target_fa": 0.05},
+  "false_alarm_rate_control": {"sign_run": 0.0, "cusum": 0.025},
+  "curve": [
+    {"leak_per_month": 0, "lost_in_100_months": 0, "sign_run_detect_rate": 0.0, "sign_run_delay_median": null, "cusum_detect_rate": 0.025, "cusum_delay_median": 89},
+    {"leak_per_month": 1, "lost_in_100_months": 100, "sign_run_detect_rate": 0.0, "sign_run_delay_median": null, "cusum_detect_rate": 0.95, "cusum_delay_median": 35.5},
+    {"leak_per_month": 2, "lost_in_100_months": 200, "sign_run_detect_rate": 0.0, "sign_run_delay_median": null, "cusum_detect_rate": 1.0, "cusum_delay_median": 10.5},
+    {"leak_per_month": 3, "lost_in_100_months": 300, "sign_run_detect_rate": 0.0, "sign_run_delay_median": null, "cusum_detect_rate": 1.0, "cusum_delay_median": 5.0},
+    {"leak_per_month": 4, "lost_in_100_months": 400, "sign_run_detect_rate": 0.2, "sign_run_delay_median": 74.0, "cusum_detect_rate": 1.0, "cusum_delay_median": 3.0},
+    {"leak_per_month": 5, "lost_in_100_months": 500, "sign_run_detect_rate": 0.975, "sign_run_delay_median": 56, "cusum_detect_rate": 1.0, "cusum_delay_median": 2.0},
+    {"leak_per_month": 6, "lost_in_100_months": 600, "sign_run_detect_rate": 1.0, "sign_run_delay_median": 11.0, "cusum_detect_rate": 1.0, "cusum_delay_median": 2.0},
+    {"leak_per_month": 8, "lost_in_100_months": 800, "sign_run_detect_rate": 1.0, "sign_run_delay_median": 4.0, "cusum_detect_rate": 1.0, "cusum_delay_median": 1.0},
+    {"leak_per_month": 10, "lost_in_100_months": 1000, "sign_run_detect_rate": 1.0, "sign_run_delay_median": 2.0, "cusum_detect_rate": 1.0, "cusum_delay_median": 1.0},
+    {"leak_per_month": 15, "lost_in_100_months": 1500, "sign_run_detect_rate": 1.0, "sign_run_delay_median": 2.0, "cusum_detect_rate": 1.0, "cusum_delay_median": 0.0}
+  ]
+}

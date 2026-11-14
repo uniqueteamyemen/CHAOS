@@ -294,5 +294,45 @@ class CounterpartTests(unittest.TestCase):
         self.assertFalse(result["confirmed"])
 
 
+class MovementGroupIdentityTests(unittest.TestCase):
+    """Regression for the duplicate-group defect: one picking, one product, two
+    source documents must stay two groups, and a picking-level receipt must not
+    arbitrarily confirm one of them."""
+
+    def moves(self):
+        base = {"product_id": "P1", "quantity": "12", "product_uom": "uom_unit",
+                "product_uom_category_id": "unit",
+                "state": "done", "location_id": "WH", "location_dest_id": "SHOP",
+                "date": "2025-01-01"}
+        return [dict(base, id=1, picking_id="OUT-1", reference="DOC-A"),
+                dict(base, id=2, picking_id="OUT-1", reference="DOC-B")]
+
+    def receipts(self):
+        return [{"source_picking_id": "OUT-1", "counterpart_picking_id": "IN-1",
+                 "product_id": "P1", "counterpart_qty": "12",
+                 "counterpart_uom_id": "uom_unit", "product_uom_category_id": "unit",
+                 "counterpart_date": "2025-01-02", "counterpart_system": "receiver",
+                 "counterpart_source": "receipt", "recorded_at": "2025-01-02T10:00:00",
+                 "location_id": "SHOP"}]
+
+    def test_two_references_produce_two_stable_group_ids(self):
+        aggregated, _ = aggregate_moves(self.moves(), UOMS)
+        self.assertEqual(len(aggregated), 2)
+        ids = {r["movement_group_id"] for r in aggregated}
+        self.assertEqual(len(ids), 2)
+        # stability: the same input yields the same ids
+        again, _ = aggregate_moves(self.moves(), UOMS)
+        self.assertEqual({r["movement_group_id"] for r in again}, ids)
+
+    def test_picking_level_receipt_cannot_pick_one_group(self):
+        aggregated, _ = aggregate_moves(self.moves(), UOMS)
+        results = match_counterpart_receipts(aggregated, self.receipts(), UOMS)
+        self.assertEqual(len(results), 2)
+        for r in results:
+            self.assertEqual(r["state"], "ambiguous")
+            self.assertFalse(r["confirmed"])
+            self.assertEqual(r["reason"], "duplicate_movement_group_identity")
+
+
 if __name__ == "__main__":
     unittest.main()
