@@ -177,26 +177,48 @@ def run_live_engine(series):
     return _restore_eia_times(result)
 
 
-def experiment_alarms(result, variant):
+def experiment_alarms(result, variant, include_span=False):
     if variant == "P_engine_CUSUM_noise_gated":
-        return [a["time"] for a in result["A"]["alerts"] if a["detector"] == "cusum"]
-    if variant == "P_engine_sign_run":
-        return [a["time"] for a in result["A"]["alerts"] if a["detector"] == "sign_run"]
-    return [event["time"] for event in result[variant]["events"]]
+        alarms = [a for a in result["A"]["alerts"] if a["detector"] == "cusum"]
+    elif variant == "P_engine_sign_run":
+        alarms = [a for a in result["A"]["alerts"] if a["detector"] == "sign_run"]
+    elif variant == "A":
+        alarms = result["A"]["alerts"]
+    else:
+        alarms = result[variant]["events"]
+    if include_span:
+        return [{
+            "time": alarm["time"],
+            "end_time": alarm.get("end_time", alarm["time"]),
+        } for alarm in alarms]
+    return [alarm["time"] for alarm in alarms]
 
 
 def directional_detection(result, variant, series, bias, cutoff, expected_sign):
     by_time = {row["time"]: float(row["residual"]) - bias for row in series}
     if variant == "A":
-        alarms = result["A"]["alerts"]
         signed = [
             (alarm["time"], 1 if by_time.get(alarm["time"], 0.0) > 0 else -1)
-            for alarm in alarms
+            for alarm in result["A"]["alerts"]
         ]
+        matches = [(time, sign) for time, sign in signed
+                   if time >= cutoff and sign == expected_sign]
     else:
-        signed = [(event["time"], event["sign"]) for event in result[variant]["events"]]
-    matches = [time for time, sign in signed if time >= cutoff and sign == expected_sign]
-    return {"detections_after_adaptation": len(matches), "first_detection": matches[0] if matches else None}
+        matching_events = []
+        for event in result[variant]["events"]:
+            if event["sign"] != expected_sign:
+                continue
+            later_evidence = [
+                item["time"] for item in event["evidence"]
+                if item["time"] >= cutoff
+            ]
+            if later_evidence:
+                matching_events.append(min(later_evidence))
+        matches = [(time, expected_sign) for time in matching_events]
+    return {
+        "detections_after_adaptation": len(matches),
+        "first_detection": min((time for time, _ in matches), default=None),
+    }
 
 
 def variant_diag(series, start_idx):
@@ -278,7 +300,7 @@ def main():
 
     def after_adaptation(alarms):
         cutoff = series[min(len(series) - 1, INJECT_AT_WEEK + POST_ADAPT_WEEKS)]["time"]
-        return [a for a in alarms if _date_ord(a) >= _date_ord(cutoff)]
+        return [a for a in alarms if _date_ord(a.get("end_time", a["time"]) if isinstance(a, dict) else a) >= _date_ord(cutoff)]
 
     noise_gate_threshold = ENGINE_NOISE_GATE_FACTOR * sigma
     noise_gate_values = _rolling_sigma(series, None, window=12)
