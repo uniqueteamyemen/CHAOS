@@ -29,6 +29,7 @@ sys.path.insert(0, str(BASE / "exp_c_eia"))
 
 from oil import SERIES, QUIET, DETECT_START, fetch, parse  # noqa: E402
 from lib.identity import mad_sigma, stock_residuals  # noqa: E402
+from exp_p_engine.engine import DOMAINS  # noqa: E402
 from exp_p_engine.parallel_fusion import run_candidates  # noqa: E402
 
 W_ROLLING = 104
@@ -121,9 +122,10 @@ def _rolling_sigma(series, ceiling, window=W_ROLLING):
 def _engine_rows(series):
     # The stored EIA residual is mapped losslessly onto the canonical identity:
     # opening + inflow - outflow - other - closing == residual.
+    columns = DOMAINS["stock"]
     return [{
-        "opening": 0.0, "inflow": float(row["residual"]),
-        "outflow": 0.0, "other": 0.0, "closing": 0.0,
+        columns["opening"]: 0.0, columns["inflow"]: float(row["residual"]),
+        columns["outflow"]: 0.0, columns["other"]: 0.0, columns["closing"]: 0.0,
         "month": row["time"],
     } for row in series]
 
