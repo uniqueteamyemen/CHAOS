@@ -6,6 +6,7 @@ from experiments.identity_lab.exp_p_engine.parallel_fusion import (
     fuse_events,
     run_candidates,
     validate_series,
+    _two_sided_cusum,
 )
 
 
@@ -106,6 +107,32 @@ class ParallelFusionTests(unittest.TestCase):
         self.assertEqual(len(events), 2)
         self.assertEqual([event["sign"] for event in events], [1, -1])
         self.assertEqual(suppressed, [])
+
+    def test_hold_policy_preserves_accumulator_through_variance_transition(self):
+        series = [{"month": i + 1, "residual": value}
+                  for i, value in enumerate([2.0, 2.0, 2.0, 2.0, 8.0])]
+        sigmas = [1.0] * len(series)
+        transitions = [False, True, True, True, False]
+        hits = _two_sided_cusum(
+            series, 0.0, sigmas, transitions, policy="hold_unbounded",
+            sigma_cap=2.0, k_sigma=0.5, h_sigma=8.5, transition_damping=0.35,
+        )
+        self.assertEqual([hit["time"] for hit in hits], [5])
+
+    def test_bounded_cusum_scale_is_an_explicit_experimental_arm(self):
+        series = [{"month": i + 1, "residual": 10.0} for i in range(10)]
+        sigmas = [10.0] * len(series)
+        transitions = [False] * len(series)
+        unbounded = _two_sided_cusum(
+            series, 0.0, sigmas, transitions, policy="hold_unbounded",
+            sigma_cap=2.0, k_sigma=0.5, h_sigma=8.5, transition_damping=0.35,
+        )
+        bounded = _two_sided_cusum(
+            series, 0.0, sigmas, transitions, policy="bounded_damped",
+            sigma_cap=2.0, k_sigma=0.5, h_sigma=8.5, transition_damping=0.35,
+        )
+        self.assertEqual(unbounded, [])
+        self.assertTrue(bounded)
 
     def test_same_event_cooldown_marks_but_retains_evidence(self):
         series = [{"month": i, "residual": 5.0} for i in range(1, 100)]
