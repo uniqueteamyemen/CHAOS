@@ -6,6 +6,9 @@ promoted to confirmed matches and never generate loss claims.
 """
 from __future__ import annotations
 
+import hashlib
+import json
+from collections import Counter
 from datetime import date
 from decimal import Decimal
 from typing import Mapping
@@ -96,7 +99,13 @@ def aggregate_moves(
         # intentionally not collapsed even when picking and product are identical.
         source_reference = str(move.get("reference") or move.get("name") or move.get("origin") or "")
         key = (picking, product, source, destination, ref_uom_id, source_reference)
+        # Stable identity of the aggregated movement group. Two groups may share
+        # (picking, product) and still be distinct; every downstream key uses this.
+        group_id = hashlib.sha256(
+            json.dumps(key, separators=(",", ":"), ensure_ascii=False).encode("utf-8")
+        ).hexdigest()
         row = groups.setdefault(key, {
+            "movement_group_id": group_id,
             "picking_id": picking,
             "product_id": product,
             "location_id": source,
@@ -187,6 +196,7 @@ def match_counterpart_receipts(
     date_window_days: int = 3,
     quantity_tolerance: Decimal = Decimal("0.01"),
     loss_classification_threshold: Decimal | None = None,
+    quantity_tolerance_relative: Decimal | None = None,
 ) -> list[dict]:
     """Match independent receipt records to outbound movements.
 
@@ -215,26 +225,64 @@ def match_counterpart_receipts(
         raise ValueError("quantity_tolerances_must_be_finite_and_non_negative")
 
     results: list[dict] = []
+    used_receipt_ids: set[str] = set()
+    products_in_picking: dict[str, set[str]] = {}
+    group_counts = Counter(
+        (relation_id(s.get("picking_id")), relation_id(s.get("product_id")))
+        for s in shipments
+    )
+    for s in shipments:
+        products_in_picking.setdefault(relation_id(s.get("picking_id")), set()).add(
+            relation_id(s.get("product_id")))
     for shipment in shipments:
         shipment_id = relation_id(shipment.get("picking_id"))
         product_id = relation_id(shipment.get("product_id"))
+        group_id = shipment.get("movement_group_id")
+        if group_counts[(shipment_id, product_id)] > 1:
+            # A picking-level receipt cannot identify one of several groups that
+            # share (picking, product). Refuse to pick one arbitrarily.
+            results.append({
+                "picking_id": shipment_id, "product_id": product_id,
+                "movement_group_id": group_id,
+                "state": "ambiguous", "confirmed": False, "loss_claim": False,
+                "reason": "duplicate_movement_group_identity",
+            })
+            continue
+        if quantity_tolerance_relative is not None:
+            rel = Decimal(str(quantity_tolerance_relative))
+            if not rel.is_finite() or rel < 0:
+                raise ValueError("quantity_tolerance_relative_must_be_finite_and_non_negative")
+            candidate_tolerance = abs(Decimal(str(shipment.get("quantity", "0")))) * rel
         explicit_links = [
             receipt for receipt in receipts
             if relation_id(receipt.get("source_picking_id")) == shipment_id
+            and relation_id(receipt.get("counterpart_picking_id")) not in used_receipt_ids
+        ]
+        # A picking may carry several product lines. A link for another product of
+        # this picking is that line's evidence, not a conflict for this line. A link
+        # for a product no line carries is a genuine conflict.
+        explicit_for_product = [
+            receipt for receipt in explicit_links
+            if relation_id(receipt.get("product_id")) == product_id
+        ]
+        foreign_links = [
+            receipt for receipt in explicit_links
+            if relation_id(receipt.get("product_id"))
+            not in products_in_picking.get(shipment_id, set())
         ]
         destination_id = relation_id(shipment.get("location_dest_id"))
         exact = [
-            receipt for receipt in explicit_links
-            if relation_id(receipt.get("product_id")) == product_id
-            and relation_id(receipt.get("location_id")) == destination_id
+            receipt for receipt in explicit_for_product
+            if relation_id(receipt.get("location_id")) == destination_id
         ]
-        # An explicit source link is evidence, not permission to ignore conflicting
-        # records carrying the same source key. Missing destination or a linked
-        # record for another product/location makes the shipment ambiguous.
-        explicit_conflict = bool(explicit_links) and len(exact) != len(explicit_links)
+        explicit_conflict = (
+            (bool(explicit_for_product) and len(exact) != len(explicit_for_product))
+            or bool(foreign_links)
+        )
         if explicit_conflict:
             results.append({
                 "picking_id": shipment_id, "product_id": product_id,
+                "movement_group_id": group_id,
                 "state": "ambiguous", "confidence": 0.0, "confirmed": False,
                 "reason": "explicit_link_conflict",
                 "candidate_receipt_ids": [
@@ -245,6 +293,7 @@ def match_counterpart_receipts(
         if len(exact) == 1 and not _receipt_evidence_complete(exact[0]):
             results.append({
                 "picking_id": shipment_id, "product_id": product_id,
+                "movement_group_id": group_id,
                 "state": "ambiguous", "confidence": 0.0, "confirmed": False,
                 "reason": "receipt_provenance_incomplete",
             })
@@ -252,6 +301,7 @@ def match_counterpart_receipts(
         if len(exact) > 1:
             results.append({
                 "picking_id": shipment_id, "product_id": product_id,
+                "movement_group_id": group_id,
                 "state": "ambiguous", "confidence": 0.0, "confirmed": False,
                 "reason": "multiple_exact_receipts",
                 "candidate_receipt_ids": [str(r.get("counterpart_picking_id") or "") for r in exact],
@@ -266,6 +316,8 @@ def match_counterpart_receipts(
             candidates = []
             for receipt in receipts:
                 if relation_id(receipt.get("product_id")) != product_id:
+                    continue
+                if relation_id(receipt.get("counterpart_picking_id")) in used_receipt_ids:
                     continue
                 receipt_location = relation_id(receipt.get("location_id"))
                 if receipt_location and receipt_location != relation_id(shipment.get("location_dest_id")):
@@ -298,6 +350,7 @@ def match_counterpart_receipts(
         if state in ("ambiguous", "unmatched"):
             results.append({
                 "picking_id": shipment_id, "product_id": product_id,
+                "movement_group_id": group_id,
                 "state": state, "confidence": 0.0, "confirmed": False,
                 "candidate_receipt_ids": [str(r.get("counterpart_picking_id") or "") for r in candidates],
             })
@@ -314,6 +367,7 @@ def match_counterpart_receipts(
         except (KeyError, UomNormalizationError) as exc:
             results.append({
                 "picking_id": shipment_id, "product_id": product_id,
+                "movement_group_id": group_id,
                 "state": "ambiguous", "confidence": 0.0, "confirmed": False,
                 "reason": getattr(exc, "code", "receipt_uom_unresolved"),
             })
@@ -335,6 +389,7 @@ def match_counterpart_receipts(
         results.append({
             "picking_id": shipment_id,
             "product_id": product_id,
+            "movement_group_id": group_id,
             "counterpart_picking_id": str(receipt.get("counterpart_picking_id") or ""),
             "candidate_receipt_ids": [str(receipt.get("counterpart_picking_id") or "")],
             "date_delta_days": (
@@ -356,4 +411,6 @@ def match_counterpart_receipts(
             "counterpart_date": receipt.get("counterpart_date"),
             "issues": issues,
         })
+        if confirmed:
+            used_receipt_ids.add(relation_id(receipt.get("counterpart_picking_id")))
     return results

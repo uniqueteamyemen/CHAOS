@@ -46,13 +46,50 @@ class ShadowModeTests(unittest.TestCase):
         self.assertEqual(report["guardrails"]["writes_to_odoo"], False)
         self.assertEqual(report["guardrails"]["odoo_connection_used"], False)
 
+    def group_for(self, report, picking):
+        for gid, meta in report["movement_groups"].items():
+            if meta["picking_id"] == picking:
+                return gid
+        self.fail("no movement group for " + picking)
+
+    def test_duplicate_picking_product_groups_survive_c_shadow_mode(self):
+        source = bundle()
+        first = copy.deepcopy(source["moves"][0])
+        second = copy.deepcopy(first)
+        first["id"] = 101
+        second["id"] = 102
+        first["reference"] = "OUT-1-A"
+        second["reference"] = "OUT-1-B"
+        first["name"] = "Move group A"
+        second["name"] = "Move group B"
+        source["moves"] = [first, second]
+
+        report = run_shadow(source)
+        groups = [
+            gid for gid, meta in report["movement_groups"].items()
+            if meta["picking_id"] == "OUT-1" and meta["product_id"] == "P1"
+        ]
+        self.assertEqual(len(groups), 2)
+        self.assertEqual(len(set(groups)), 2)
+        for engine in ("A", "B", "C"):
+            self.assertEqual(len(report["results"][engine]), 2, engine)
+        for engine in ("B", "C"):
+            for gid in groups:
+                self.assertIn(gid, report["results"][engine])
+                self.assertEqual(report["results"][engine][gid]["state"], "ambiguous")
+                self.assertFalse(report["results"][engine][gid]["confirmed"])
+        self.assertEqual(report["engine_summaries"]["C"]["shipments_scored"], 2)
+        self.assertEqual(report["engine_summaries"]["B"]["shipments_scored"], 2)
+
     def test_count_and_weight_categories_normalize_independently(self):
         report = run_shadow(bundle())
+        g1 = self.group_for(report, "OUT-1")
+        g2 = self.group_for(report, "OUT-2")
         for engine in ("A","B","C"):
-            self.assertTrue(report["results"][engine]["OUT-1"]["confirmed"], engine)
-            self.assertTrue(report["results"][engine]["OUT-2"]["confirmed"], engine)
-            self.assertEqual(report["results"][engine]["OUT-1"]["loss_claim"], False)
-            self.assertEqual(report["results"][engine]["OUT-2"]["loss_claim"], False)
+            self.assertTrue(report["results"][engine][g1]["confirmed"], engine)
+            self.assertTrue(report["results"][engine][g2]["confirmed"], engine)
+            self.assertEqual(report["results"][engine][g1]["loss_claim"], False)
+            self.assertEqual(report["results"][engine][g2]["loss_claim"], False)
 
     def test_snapshot_hash_is_deterministic(self):
         one = run_shadow(bundle())
