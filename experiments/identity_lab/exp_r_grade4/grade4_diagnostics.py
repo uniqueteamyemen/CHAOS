@@ -179,13 +179,16 @@ def run_live_engine(series):
 
 def experiment_alarms(result, variant, include_span=False):
     if variant == "P_engine_CUSUM_noise_gated":
-        alarms = [a for a in result["A"]["alerts"] if a["detector"] == "cusum"]
+        alarms = [a for a in result["A"]["alerts"]
+                  if a["detector"] == "cusum" and a["time"] >= DETECT_START]
     elif variant == "P_engine_sign_run":
-        alarms = [a for a in result["A"]["alerts"] if a["detector"] == "sign_run"]
+        alarms = [a for a in result["A"]["alerts"]
+                  if a["detector"] == "sign_run" and a["time"] >= DETECT_START]
     elif variant == "A":
-        alarms = result["A"]["alerts"]
+        alarms = [a for a in result["A"]["alerts"] if a["time"] >= DETECT_START]
     else:
-        alarms = result[variant]["events"]
+        alarms = [event for event in result[variant]["events"]
+                  if event["time"] >= DETECT_START]
     if include_span:
         return [{
             "time": alarm["time"],
@@ -282,19 +285,19 @@ def main():
     injected_variants = {
         "R_frozen_bias_frozen_sigma": variant_r(injected[start_idx:], sigma, bias),
         "P_frozen_bias_rolling_sigma_capped": variant_p(injected, start_idx, bias, ceiling),
-        "P_engine_CUSUM_noise_gated": experiment_alarms(production_injected, "P_engine_CUSUM_noise_gated"),
-        "P_engine_sign_run": experiment_alarms(production_injected, "P_engine_sign_run"),
-        "B_two_sided_hold_unbounded": experiment_alarms(production_injected, "B"),
-        "C_two_sided_bounded_damped": experiment_alarms(production_injected, "C"),
+        "P_engine_CUSUM_noise_gated": experiment_alarms(production_injected, "P_engine_CUSUM_noise_gated", include_span=True),
+        "P_engine_sign_run": experiment_alarms(production_injected, "P_engine_sign_run", include_span=True),
+        "B_two_sided_hold_unbounded": experiment_alarms(production_injected, "B", include_span=True),
+        "C_two_sided_bounded_damped": experiment_alarms(production_injected, "C", include_span=True),
         "diagnostic_rolling_bias_rolling_sigma": variant_diag(injected, max(start_idx, W_ROLLING)),
     }
     strong_injected_variants = {
         "R_frozen_bias_frozen_sigma": variant_r(strong_injected[start_idx:], sigma, bias),
         "P_frozen_bias_rolling_sigma_capped": variant_p(strong_injected, start_idx, bias, ceiling),
-        "P_engine_CUSUM_noise_gated": experiment_alarms(production_strong, "P_engine_CUSUM_noise_gated"),
-        "P_engine_sign_run": experiment_alarms(production_strong, "P_engine_sign_run"),
-        "B_two_sided_hold_unbounded": experiment_alarms(production_strong, "B"),
-        "C_two_sided_bounded_damped": experiment_alarms(production_strong, "C"),
+        "P_engine_CUSUM_noise_gated": experiment_alarms(production_strong, "P_engine_CUSUM_noise_gated", include_span=True),
+        "P_engine_sign_run": experiment_alarms(production_strong, "P_engine_sign_run", include_span=True),
+        "B_two_sided_hold_unbounded": experiment_alarms(production_strong, "B", include_span=True),
+        "C_two_sided_bounded_damped": experiment_alarms(production_strong, "C", include_span=True),
         "diagnostic_rolling_bias_rolling_sigma": variant_diag(strong_injected, max(start_idx, W_ROLLING)),
     }
 
