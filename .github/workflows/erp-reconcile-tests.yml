@@ -61,6 +61,10 @@ jobs:
         run: python -m experiments.identity_lab.exp_m_pr_curve_complexity.experiment
       - name: Run consolidated engine tests (exp P)
         run: python -m unittest experiments.identity_lab.exp_p_engine.test_engine -v
+      - name: Run parallel detector and event fusion tests (exp P)
+        run: python -m unittest experiments.identity_lab.exp_p_engine.test_parallel_fusion -v
+      - name: Run paired 500-seed A/B/C P-engine benchmark
+        run: python -m experiments.identity_lab.exp_p_engine.benchmark_parallel_fusion
       - name: Run precursor bridge, pulse counter and threshold study (exp Q)
         run: |
           python experiments/identity_lab/exp_q_precursor/precursor.py
@@ -77,6 +81,7 @@ jobs:
           name: chaos-pqr-experiment-results
           path: |
             experiments/identity_lab/exp_p_engine/results/**
+            experiments/identity_lab/exp_r_grade4/results/parallel_fusion_500_seed_benchmark.json
             experiments/identity_lab/exp_q_precursor/results/**
             experiments/identity_lab/exp_r_grade4/results/**
           if-no-files-found: warn
