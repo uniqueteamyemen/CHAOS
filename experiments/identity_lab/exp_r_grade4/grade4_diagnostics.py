@@ -251,6 +251,19 @@ def main():
         i for i, short in enumerate(noise_gate_values)
         if short is not None and short > noise_gate_threshold
     ]
+    cutoff = series[min(len(series) - 1, INJECT_AT_WEEK + POST_ADAPT_WEEKS)]["time"]
+    directional_checks = {}
+    for label, amount, expected_sign in (
+        ("positive_3sigma", 3.0, 1), ("negative_3sigma", -3.0, -1),
+        ("positive_6sigma", 6.0, 1), ("negative_6sigma", -6.0, -1),
+    ):
+        test_copy = inject(series, INJECT_AT_WEEK, amount * sigma)
+        result = run_live_engine(test_copy)
+        directional_checks[label] = {
+            "A": directional_detection(result, "A", test_copy, bias, cutoff, expected_sign),
+            "B": directional_detection(result, "B", test_copy, bias, cutoff, expected_sign),
+            "C": directional_detection(result, "C", test_copy, bias, cutoff, expected_sign),
+        }
     out = {
         "data": {"weeks": len(series), "detect_weeks": len(detect), "years": round(years, 1)},
         "seasonality": anova_by_month(detect),
@@ -285,19 +298,6 @@ def main():
     out["injection"] = {"at_week": INJECT_AT_WEEK, "tested_amount_sigmas": [3.0, 6.0], "tested_directions": ["positive", "negative"],
                         "post_adaptation_weeks": POST_ADAPT_WEEKS,
                         "note": "injected into a copy; the source series is unchanged"}
-    cutoff = series[min(len(series) - 1, INJECT_AT_WEEK + POST_ADAPT_WEEKS)]["time"]
-    directional_checks = {}
-    for label, amount, expected_sign in (
-        ("positive_3sigma", 3.0, 1), ("negative_3sigma", -3.0, -1),
-        ("positive_6sigma", 6.0, 1), ("negative_6sigma", -6.0, -1),
-    ):
-        test_copy = inject(series, INJECT_AT_WEEK, amount * sigma)
-        result = run_live_engine(test_copy)
-        directional_checks[label] = {
-            "A": directional_detection(result, "A", test_copy, bias, cutoff, expected_sign),
-            "B": directional_detection(result, "B", test_copy, bias, cutoff, expected_sign),
-            "C": directional_detection(result, "C", test_copy, bias, cutoff, expected_sign),
-        }
     Path(__file__).resolve().parent.joinpath("results").mkdir(parents=True, exist_ok=True)
     p1_six_sigma_seen = out["variants"]["P_engine_sign_run"]["injected_6sigma_seen_after_adaptation"] > 0
     cusum_three_sigma_seen = out["variants"]["P_engine_CUSUM_noise_gated"]["injected_3sigma_seen_after_adaptation"] > 0
