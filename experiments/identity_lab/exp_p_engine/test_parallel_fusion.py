@@ -2,6 +2,7 @@
 import random
 import unittest
 
+from experiments.identity_lab.exp_p_engine.engine import DOMAINS
 from experiments.identity_lab.exp_p_engine.parallel_fusion import (
     fuse_events,
     run_candidates,
@@ -13,6 +14,7 @@ from experiments.identity_lab.exp_p_engine.parallel_fusion import (
 def make_rows(sign=0, magnitude=0.0, onset=65, noise=1.5, seed=7, months=150):
     rng = random.Random(seed)
     balance = 2000.0
+    c = DOMAINS["stock"]
     rows = []
     for month in range(1, months + 1):
         expected = balance + 10.0 - 10.0 - 1.0
@@ -20,8 +22,8 @@ def make_rows(sign=0, magnitude=0.0, onset=65, noise=1.5, seed=7, months=150):
         residual = shift + rng.gauss(0.0, noise)
         closing = expected - residual
         rows.append({
-            "opening": balance, "inflow": 10.0, "outflow": 10.0,
-            "other": 1.0, "closing": closing, "month": month,
+            c["opening"]: balance, c["inflow"]: 10.0, c["outflow"]: 10.0,
+            c["other"]: 1.0, c["closing"]: closing, "month": month,
         })
         balance = closing
     return rows
