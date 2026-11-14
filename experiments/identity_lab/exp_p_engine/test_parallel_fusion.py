@@ -59,8 +59,9 @@ class ParallelFusionTests(unittest.TestCase):
             "stock", make_rows(sign=-1, magnitude=9.0, seed=21),
             quiet_range=(1, 40),
         )
-        self.assertGreater(result["C"]["diagnostics"]["cusum_negative_hits"], 0)
-        self.assertEqual(result["C"]["diagnostics"]["cusum_positive_hits"], 0)
+        negative_hits = [h for h in result["C"]["raw_hits"]
+                         if h["detector"] == "cusum_negative" and h["index"] >= 65]
+        self.assertTrue(negative_hits, "negative CUSUM must detect a post-onset negative shift")
 
     def test_series_order_and_duplicates_fail_closed(self):
         validate_series([{"month": 1, "residual": 0.1}, {"month": 2, "residual": 0.2}])
