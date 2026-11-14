@@ -119,22 +119,62 @@ def _rolling_sigma(series, ceiling, window=W_ROLLING):
     return out
 
 
+def _ordinal_day(value):
+    y, m, d = map(int, value[:10].split("-"))
+    return _date(y, m, d).toordinal()
+
+
+def _iso_day(value):
+    return _date.fromordinal(int(value)).isoformat()
+
+
 def _engine_rows(series):
-    # The stored EIA residual is mapped losslessly onto the canonical identity:
-    # opening + inflow - outflow - other - closing == residual.
+    # Preserve the residual exactly; use numeric ordinal time because the live
+    # production alert manager computes cooldown deadlines with time arithmetic.
     columns = DOMAINS["stock"]
     return [{
         columns["opening"]: 0.0, columns["inflow"]: float(row["residual"]),
         columns["outflow"]: 0.0, columns["other"]: 0.0, columns["closing"]: 0.0,
-        "month": row["time"],
+        "month": _ordinal_day(row["time"]),
     } for row in series]
 
 
+def _restore_eia_times(result):
+    baseline = result["A"]
+    for collection in ("alerts", "suppressed"):
+        for item in baseline.get(collection, []):
+            item["time"] = _iso_day(item["time"])
+    counter = baseline.get("sign_run_break_counter", {})
+    counter["months"] = [_iso_day(value) for value in counter.get("months", [])]
+    diagnostics = baseline.get("diagnostics", {})
+    for key in ("p1_high_noise_months", "cusum_suspended_months"):
+        diagnostics[key] = [_iso_day(value) for value in diagnostics.get(key, [])]
+    snapshot = result["snapshot"]
+    snapshot["first_time"] = _iso_day(snapshot["first_time"])
+    snapshot["last_time"] = _iso_day(snapshot["last_time"])
+    snapshot["quiet_range"] = [QUIET[0], QUIET[1]]
+    for variant in ("B", "C"):
+        candidate = result[variant]
+        for collection in ("alerts", "events", "raw_hits"):
+            for item in candidate.get(collection, []):
+                if "time" in item:
+                    item["time"] = _iso_day(item["time"])
+                if "end_time" in item:
+                    item["end_time"] = _iso_day(item["end_time"])
+        for event in candidate.get("events", []):
+            for evidence in event.get("evidence", []):
+                if "time" in evidence:
+                    evidence["time"] = _iso_day(evidence["time"])
+    return result
+
+
 def run_live_engine(series):
-    # A always calls the actual engine.run(); B/C are independent candidates.
-    return run_candidates(
-        "stock", _engine_rows(series), quiet_range=QUIET, entity="US-CRUDE",
+    # Convert the declared date quiet window to the same ordinal time axis.
+    quiet_ordinals = (_ordinal_day(QUIET[0]), _ordinal_day(QUIET[1]))
+    result = run_candidates(
+        "stock", _engine_rows(series), quiet_range=quiet_ordinals, entity="US-CRUDE",
     )
+    return _restore_eia_times(result)
 
 
 def experiment_alarms(result, variant):
