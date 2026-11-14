@@ -2,7 +2,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "CHAOS_RESIDUAL_EVENT_V1",
   "title": "CHAOS Residual Event V1",
-  "description": "The missing twin of TRANSITION_EVIDENCE. It records a break of a frozen identity, never a probability of a state. No event is actionable without an attributed term and an identity version.",
+  "description": "The missing twin of TRANSITION_EVIDENCE. It records a break of a frozen identity, never a probability of a state. No event is actionable without an attributed term and an identity version. This file also defines the minimal domain-neutral observation contract at #/definitions/observation; the legacy residual-event root contract remains unchanged.",
   "type": "object",
   "required": [
     "event_id",
@@ -142,6 +142,188 @@
       "items": {
         "type": "string"
       }
+    }
+  },
+  "definitions": {
+    "observation": {
+      "title": "CHAOS Observation Contract V1",
+      "description": "Minimal domain-neutral input record. The five required fields are sufficient; metadata remains optional and explicitly absent when unavailable.",
+      "type": "object",
+      "required": [
+        "entity_id",
+        "metric_id",
+        "event_time",
+        "value",
+        "observation_status"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "entity_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "metric_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "event_time": {
+          "type": "string",
+          "minLength": 4,
+          "description": "ISO 8601 date/time or native year/month label; interpreted using metric time semantics."
+        },
+        "value": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "observation_status": {
+          "enum": [
+            "observed",
+            "missing",
+            "not_applicable",
+            "pending",
+            "invalid"
+          ]
+        },
+        "unit": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "cohort_id": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Explicit time-valid cohort key; never inferred by the detector."
+        },
+        "source_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "source_version": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "time_support": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Instant, event, annual period, monthly period, or another declared support."
+        },
+        "quality_metadata": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "additionalProperties": true
+        },
+        "expected_value": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "residual": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "scale": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "exclusiveMinimum": 0
+        },
+        "uncertainty": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "baseline_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "baseline_method": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "support_count": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "coverage": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0,
+          "maximum": 1
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "observation_status": {
+                "const": "observed"
+              }
+            },
+            "required": [
+              "observation_status"
+            ]
+          },
+          "then": {
+            "properties": {
+              "value": {
+                "type": "number"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "observation_status": {
+                "enum": [
+                  "missing",
+                  "not_applicable",
+                  "pending",
+                  "invalid"
+                ]
+              }
+            },
+            "required": [
+              "observation_status"
+            ]
+          },
+          "then": {
+            "properties": {
+              "value": {
+                "type": "null"
+              }
+            }
+          }
+        }
+      ]
     }
   }
 }
