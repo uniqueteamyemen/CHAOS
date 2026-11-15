@@ -9,6 +9,7 @@ from __future__ import annotations
 import csv
 import json
 import random
+from datetime import datetime, timezone
 from collections import Counter, defaultdict
 from pathlib import Path
 from statistics import median
@@ -53,7 +54,7 @@ BASELINE_CONFIGS = (
         "min_adjacent_pairs_for_rho": 14,
     },
 )
-MAX_ACCEPTABLE_DETECTION_DELAY = 3
+MAX_ACCEPTABLE_DELAY_TIME_UNITS = 3.0
 CUSUM_GRID = (
     {"k": 0.25, "h": 8.5},
     {"k": 0.25, "h": 12.0},
@@ -73,6 +74,36 @@ P1_GRID = (
 )
 INJECTION_MAGNITUDES = (3.0, 6.0)
 INJECTION_DIRECTIONS = (-1, 1)
+
+
+def _time_position(value: str, time_unit: str) -> float:
+    raw = str(value).strip()
+    if time_unit == "years":
+        if len(raw) >= 4 and raw[:4].isdigit():
+            return float(int(raw[:4]))
+    if time_unit == "months":
+        if len(raw) >= 7 and raw[4] == "-" and raw[:4].isdigit():
+            year, month = int(raw[:4]), int(raw[5:7])
+            return float(year * 12 + month - 1)
+    normalized = raw.replace("Z", "+00:00")
+    parsed = datetime.fromisoformat(normalized)
+    if parsed.tzinfo is None:
+        parsed = parsed.replace(tzinfo=timezone.utc)
+    parsed = parsed.astimezone(timezone.utc)
+    if time_unit == "years":
+        year_start = datetime(parsed.year, 1, 1, tzinfo=timezone.utc)
+        next_year = datetime(parsed.year + 1, 1, 1, tzinfo=timezone.utc)
+        return parsed.year + (parsed - year_start).total_seconds() / (next_year - year_start).total_seconds()
+    if time_unit == "months":
+        month_start = datetime(parsed.year, parsed.month, 1, tzinfo=timezone.utc)
+        if parsed.month == 12:
+            next_month = datetime(parsed.year + 1, 1, 1, tzinfo=timezone.utc)
+        else:
+            next_month = datetime(parsed.year, parsed.month + 1, 1, tzinfo=timezone.utc)
+        return parsed.year * 12 + parsed.month - 1 + (
+            parsed - month_start
+        ).total_seconds() / (next_month - month_start).total_seconds()
+    raise ValueError("unsupported_delay_time_unit:" + time_unit)
 
 
 def read_csv(path: Path) -> list[dict[str, str]]:
@@ -263,6 +294,7 @@ def injection_response_for_series(
                 )
                 first = first_evidence_at_or_after(hits, onset)
                 delay = None
+                delay_time_units = None
                 if first is not None:
                     detected_index = next(
                         index for index, row in enumerate(residuals)
@@ -277,12 +309,17 @@ def injection_response_for_series(
                     )
                     if onset_residual_index is not None:
                         delay = detected_index - onset_residual_index
+                    delay_time_units = (
+                        _time_position(first["event_time"], time_unit)
+                        - _time_position(onset, time_unit)
+                    )
                 cusum_params_result.append({
                     **params,
                     "detected": first is not None,
                     "direction_detected": first["direction"] if first else None,
                     "first_evidence_time": first["event_time"] if first else None,
                     "delay_observations": delay,
+                    "delay_time_units": delay_time_units,
                 })
 
             p1_params_result: list[dict[str, Any]] = []
@@ -294,6 +331,7 @@ def injection_response_for_series(
                 )
                 first = first_evidence_at_or_after(hits, onset)
                 delay = None
+                delay_time_units = None
                 if first is not None:
                     detected_index = next(
                         index for index, row in enumerate(residuals)
@@ -308,12 +346,17 @@ def injection_response_for_series(
                     )
                     if onset_residual_index is not None:
                         delay = detected_index - onset_residual_index
+                    delay_time_units = (
+                        _time_position(first["event_time"], time_unit)
+                        - _time_position(onset, time_unit)
+                    )
                 p1_params_result.append({
                     **params,
                     "detected": first is not None,
                     "direction_detected": first["direction"] if first else None,
                     "first_evidence_time": first["event_time"] if first else None,
                     "delay_observations": delay,
+                    "delay_time_units": delay_time_units,
                 })
             responses[key] = {
                 "tested": True,
@@ -377,14 +420,14 @@ def summarize_injection_responses(
                 ]
                 detected = [row for row in matching if row["detected"]]
                 delays = [
-                    row["delay_observations"]
+                    row["delay_time_units"]
                     for row in detected
-                    if row["delay_observations"] is not None
+                    if row.get("delay_time_units") is not None
                 ]
                 fast_detected = [
                     row for row in detected
-                    if row["delay_observations"] is not None
-                    and row["delay_observations"] <= MAX_ACCEPTABLE_DETECTION_DELAY
+                    if row.get("delay_time_units") is not None
+                    and row["delay_time_units"] <= MAX_ACCEPTABLE_DELAY_TIME_UNITS
                 ]
                 ci_low, ci_high = wilson_interval(len(detected), len(matching))
                 fast_ci_low, fast_ci_high = wilson_interval(len(fast_detected), len(matching))
@@ -401,7 +444,7 @@ def summarize_injection_responses(
                         len(fast_detected) / len(matching) if matching else None
                     ),
                     "recall_within_delay_budget_wilson95": [fast_ci_low, fast_ci_high],
-                    "median_detection_delay_observations": (
+                    "median_detection_delay_time_units": (
                         median(delays) if delays else None
                     ),
                     "direction_matches_injection": sum(
@@ -574,7 +617,8 @@ def run_source(
             "historical_signal_profile": historical_detector_profile(historical_rows),
             "injection_response": summarize_injection_responses(injections),
             "per_entity_coverage": per_entity_signal,
-            "maximum_acceptable_detection_delay_observations": MAX_ACCEPTABLE_DETECTION_DELAY,
+            "maximum_acceptable_detection_delay_time_units": MAX_ACCEPTABLE_DELAY_TIME_UNITS,
+            "delay_time_unit": time_unit,
             "labeling": (
                 "Observed source signals are unlabelled. Injection recall is measured "
                 "against controlled persistent shifts added to copies of the real series."
@@ -593,7 +637,7 @@ def main() -> None:
         "threshold_grid": {
             "cusum": list(CUSUM_GRID),
             "sign_run": list(P1_GRID),
-            "max_acceptable_detection_delay_observations": MAX_ACCEPTABLE_DETECTION_DELAY,
+            "max_acceptable_detection_delay_time_units": MAX_ACCEPTABLE_DELAY_TIME_UNITS,
         },
         "scale_estimators": [
             {
