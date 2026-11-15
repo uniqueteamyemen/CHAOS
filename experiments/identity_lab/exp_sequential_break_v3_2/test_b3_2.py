@@ -12,6 +12,18 @@ from experiments.identity_lab.exp_sequential_break_v3_2.benchmark_b3_2 import (
 )
 
 
+def empty_lifecycle(opened=0, structural=0, transient=0, unresolved=0):
+    return {
+        "opened_count": opened,
+        "resolved_structural_count": structural,
+        "resolved_transient_count": transient,
+        "unresolved_count": unresolved,
+        "accounting_complete": (
+            opened == structural + transient + unresolved
+        ),
+    }
+
+
 class SequentialBreakEngineB32Tests(unittest.TestCase):
     def test_default_resolution_horizon_is_fourteen(self):
         self.assertEqual(CalibratedSequentialBreakEngineB32().resolution_horizon, 14)
@@ -66,9 +78,7 @@ class SequentialBreakEngineB32Tests(unittest.TestCase):
         rng = np.random.default_rng(43)
         series = np.zeros(85, dtype=float)
         series[:40] = rng.normal(0.0, 0.05, size=40)
-        # Alternating large deviations avoid a persistent directional level
-        # shift and never return to the baseline band during the horizon.
-        series[55:] = np.where(np.arange(85 - 55) % 2 == 0, 8.0, -8.0)
+        series[55:] = np.where(np.arange(30) % 2 == 0, 8.0, -8.0)
         result = CalibratedSequentialBreakEngineB32(
             anomaly_z_thresh=4.5,
             break_percent_thresh=100.0,
@@ -136,6 +146,9 @@ class SequentialBreakEngineB32Tests(unittest.TestCase):
             "structural_breaks": [{"detection_time": 70, "direction": -1}],
             "transient_anomalies": [],
             "unresolved_alerts": [{"time": 62}],
+            "pending_lifecycle": empty_lifecycle(
+                opened=1, unresolved=1
+            ),
         }
         metrics = classify_trial(result, shift_sigma=3.0, onset=65)
         self.assertTrue(metrics["combined_sequence"])
@@ -152,6 +165,7 @@ class SequentialBreakEngineB32Tests(unittest.TestCase):
             ],
             "transient_anomalies": [],
             "unresolved_alerts": [],
+            "pending_lifecycle": empty_lifecycle(),
         }
         metrics = classify_trial(result, shift_sigma=3.0, onset=65)
         self.assertEqual(metrics["detection_delay"], 4)
