@@ -605,7 +605,8 @@ def build_univariate_residuals(
     baseline_method: str = "rolling_median",
     estimate_rho: bool = False,
     scale_window: int | None = None,
-    min_adjacent_pairs_for_rho: int = 1500,
+    min_adjacent_pairs_for_rho: int = 14,
+    scale_rho: float | None = None,
 ) -> list[dict[str, Any]]:
     """Prequential baseline; current observation never trains itself."""
     if baseline_window < min_history or min_history < 4:
@@ -615,6 +616,10 @@ def build_univariate_residuals(
     effective_scale_window = baseline_window if scale_window is None else scale_window
     if effective_scale_window < min_history or min_adjacent_pairs_for_rho < 4:
         raise ValueError("scale_window_or_rho_support_invalid")
+    if estimate_rho and scale_rho is not None:
+        raise ValueError("provide_scale_rho_or_estimate_rho_not_both")
+    if scale_rho is not None and (not math.isfinite(scale_rho) or not -0.95 <= scale_rho <= 0.95):
+        raise ValueError("scale_rho_must_be_finite_and_between_-0.95_and_0.95")
     identities = {(row["entity_id"], row["metric_id"]) for row in observations}
     if len(identities) > 1:
         raise ValueError("build_univariate_residuals_requires_one_entity_metric")
@@ -631,6 +636,7 @@ def build_univariate_residuals(
             scale_history,
             time_unit=time_unit,
             estimate_rho=estimate_rho,
+            rho=scale_rho,
             min_adjacent_pairs_for_rho=min_adjacent_pairs_for_rho,
         )
         if baseline_method == "rolling_theil_sen":
@@ -660,6 +666,7 @@ def build_univariate_residuals(
                 str(series[index]["metric_id"]) + ":" + baseline_method
                 + ":w" + str(baseline_window)
                 + ":sw" + str(effective_scale_window)
+                + (":panel-rho-" + format(scale_rho, ".3f") if scale_rho is not None else "")
                 + ":" + scale["method"]
             ),
             "z_score": residual / scale["value"] if ready and not gap_unresolved else None,
@@ -674,6 +681,7 @@ def build_univariate_residuals(
             "support_count": len(history),
             "scale_method": scale["method"],
             "scale_rho_estimation": estimate_rho,
+            "scale_rho_external": scale_rho,
             "scale_rho_source": scale.get("rho_source"),
             "scale_n_unit_gaps": scale.get("n_unit_gaps"),
             "scale_n_gap_adjusted": scale.get("n_gap_adjusted"),
