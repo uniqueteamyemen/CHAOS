@@ -61,6 +61,8 @@ def validate_residual_contract(rows: Sequence[Mapping[str, Any]]) -> None:
             "peer_scale_unavailable",
             "relation_scale_unavailable",
             "relation_unidentifiable",
+            "innovation_gap_reset",
+            "innovation_warmup_or_gap",
         }
         if row["status"] not in allowed_statuses:
             raise ValueError("residual_contract_status_invalid")
