@@ -408,7 +408,11 @@ def lag1_summary(
 
 def summarize_detector_hits(
     rows: Sequence[Mapping[str, Any]],
+    *,
+    cusum_grid: Sequence[Mapping[str, Any]] = RAW_CUSUM_GRID,
+    p1_grid: Sequence[Mapping[str, Any]] = RAW_P1_GRID,
 ) -> dict[str, Any]:
+    """Summarize one residual stream using its own detector parameter grid."""
     ready_count = sum(1 for row in rows if row.get("status") == "ready")
     entities = {str(row["entity_id"]) for row in rows if row.get("status") == "ready"}
     output: dict[str, Any] = {
@@ -417,22 +421,24 @@ def summarize_detector_hits(
         "cusum": [],
         "sign_run": [],
     }
-    for params in RAW_CUSUM_GRID:
-        hits = detect_two_sided_cusum(rows, k=params["k"], h=params["h"])
+    for params in cusum_grid:
+        hits = detect_two_sided_cusum(rows, k=float(params["k"]), h=float(params["h"]))
         output["cusum"].append({
-            **params,
+            **dict(params),
             "raw_hits": len(hits),
             "entities_with_hit": len({hit["entity_id"] for hit in hits}),
             "signals_per_1000_ready_periods": (
                 1000.0 * len(hits) / ready_count if ready_count else None
             ),
         })
-    for params in RAW_P1_GRID:
+    for params in p1_grid:
         hits = detect_sign_runs(
-            rows, threshold=params["threshold"], run_length=params["run_length"]
+            rows,
+            threshold=float(params["threshold"]),
+            run_length=int(params["run_length"]),
         )
         output["sign_run"].append({
-            **params,
+            **dict(params),
             "raw_hits": len(hits),
             "entities_with_hit": len({hit["entity_id"] for hit in hits}),
             "signals_per_1000_ready_periods": (
@@ -453,11 +459,23 @@ def _first_hit_summary(
     detector: str,
     parameters: Mapping[str, Any],
 ) -> dict[str, Any]:
+    # The detector state must start at the labelled injection onset. Filtering
+    # only the returned hit timestamp is insufficient: CUSUM can carry a
+    # sub-threshold accumulator from pre-injection years into the injected run.
+    onset_year = year_number(onset)
+    post_onset_rows = [
+        row for row in rows
+        if year_number(row["event_time"]) >= onset_year
+    ]
     if detector == "cusum":
-        hits = detect_two_sided_cusum(rows, k=float(parameters["k"]), h=float(parameters["h"]))
+        hits = detect_two_sided_cusum(
+            post_onset_rows,
+            k=float(parameters["k"]),
+            h=float(parameters["h"]),
+        )
     elif detector == "sign_run":
         hits = detect_sign_runs(
-            rows,
+            post_onset_rows,
             threshold=float(parameters["threshold"]),
             run_length=int(parameters["run_length"]),
         )
@@ -722,7 +740,11 @@ def run_source() -> dict[str, Any]:
         raw_diag = lag1_summary(evaluation_rows)
         whitened_diag = lag1_summary(whitened)
         raw_signals = summarize_detector_hits(evaluation_rows)
-        whitened_signals = summarize_detector_hits(whitened)
+        whitened_signals = summarize_detector_hits(
+            whitened,
+            cusum_grid=INNOVATION_CUSUM_GRID,
+            p1_grid=INNOVATION_P1_GRID,
+        )
         injections = run_injection_experiment(
             entity_series,
             residual_by_entity,
