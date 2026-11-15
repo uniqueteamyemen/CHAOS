@@ -215,7 +215,7 @@ def run_benchmark():
             result = run_candidates(
                 "stock", rows, quiet_range=QUIET_RANGE,
                 entity=f"synthetic-{scenario_index}",
-                code_revision="p-engine-parallel-fusion-v1",
+                code_revision="p-engine-parallel-fusion-v5-holdout",
             )
             baseline_alerts = _variant_alerts(result, "A")
             baseline_null_false = any(
