@@ -40,6 +40,7 @@ SCALE_WINDOW = 12
 SUSPICION_Z = 2.0
 RELEASE_Z = 1.0
 RELEASE_RUN = 5
+SUSPICION_RUN = 2
 CUSUM_SETTINGS = (
     {"k": 0.50, "h": 8.5},
     {"k": 0.50, "h": 12.0},
@@ -159,7 +160,7 @@ def build_policy_residuals(
     suspicion_z: float = SUSPICION_Z,
     release_z: float = RELEASE_Z,
     release_run: int = RELEASE_RUN,
-    suspicion_run: int = 1,
+    suspicion_run: int = SUSPICION_RUN,
 ) -> tuple[list[dict[str, Any]], dict[str, Any]]:
     if policy not in POLICIES:
         raise ValueError("baseline_freeze_policy_unsupported")
@@ -182,7 +183,7 @@ def build_policy_residuals(
     entity_id, metric_id = next(iter(identities))
     baseline_id = (
         f"{metric_id}:{policy}:bw{baseline_window}:sw{scale_window}"
-        f":trigger{suspicion_z:g}:release{release_z:g}x{release_run}"
+        f":trigger{suspicion_z:g}x{suspicion_run}:release{release_z:g}x{release_run}"
     )
     output: list[dict[str, Any]] = []
     frozen_model: tuple[float, float] | None = None
@@ -807,6 +808,7 @@ def main() -> None:
             "suspicion_z": SUSPICION_Z,
             "release_z": RELEASE_Z,
             "release_run": RELEASE_RUN,
+            "suspicion_run": SUSPICION_RUN,
             "cusum_settings": list(CUSUM_SETTINGS),
             "p1_settings": list(P1_SETTINGS),
         },
