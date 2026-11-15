@@ -126,7 +126,7 @@ class BaselineFreezeTests(unittest.TestCase):
         self.assertGreaterEqual(len(pending), 1)
 
     def test_injection_freeze_is_disabled_before_labelled_onset(self):
-        series = make_series(shift_from=18, shift=2.0)
+        series = make_series(shift_from=24, shift=2.0)
         onset = "2024"
         rows, diagnostics = build_policy_residuals(
             series,
