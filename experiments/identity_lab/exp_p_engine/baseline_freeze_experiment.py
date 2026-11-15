@@ -159,11 +159,14 @@ def build_policy_residuals(
     suspicion_z: float = SUSPICION_Z,
     release_z: float = RELEASE_Z,
     release_run: int = RELEASE_RUN,
+    suspicion_run: int = 1,
 ) -> tuple[list[dict[str, Any]], dict[str, Any]]:
     if policy not in POLICIES:
         raise ValueError("baseline_freeze_policy_unsupported")
     if baseline_window < min_history or scale_window < min_history or min_history < 4:
         raise ValueError("baseline_freeze_window_invalid")
+    if suspicion_run < 1 or release_run < 1 or suspicion_z <= 0 or release_z <= 0:
+        raise ValueError("baseline_freeze_trigger_or_release_invalid")
     identities = {(str(row["entity_id"]), str(row["metric_id"])) for row in observations}
     if len(identities) != 1:
         raise ValueError("baseline_freeze_requires_one_entity_metric")
@@ -190,6 +193,14 @@ def build_policy_residuals(
     freeze_episodes: list[dict[str, Any]] = []
     calm_run = 0
     current_episode: dict[str, Any] | None = None
+    pending_model: tuple[float, float] | None = None
+    pending_scale: float | None = None
+    pending_support = 0
+    pending_start_time: str | None = None
+    pending_start_index: int | None = None
+    pending_sign = 0
+    pending_z: float | None = None
+    pending_count = 0
     previous_time: float | None = None
     fixed_model: tuple[float, float] | None = None
     fixed_scale: float | None = None
@@ -226,6 +237,14 @@ def build_policy_residuals(
                 frozen_at = None
                 current_episode = None
                 calm_run = 0
+            pending_model = None
+            pending_scale = None
+            pending_support = 0
+            pending_start_time = None
+            pending_start_index = None
+            pending_sign = 0
+            pending_z = None
+            pending_count = 0
             unresolved_gaps += 1
             output.append({
                 "entity_id": entity_id,
@@ -308,29 +327,79 @@ def build_policy_residuals(
         freeze_trigger = False
         freeze_released = False
 
-        if (
-            policy.startswith("suspicion_freeze")
-            and frozen_model is None
-            and z is not None
-            and abs(z) >= suspicion_z
-        ):
-            frozen_model = model
-            frozen_scale = float(scale) if scale is not None and float(scale) > 0 else None
-            frozen_support = support
-            frozen_at = str(event_time)
-            frozen_duration = 0
-            calm_run = 0
-            freeze_trigger = True
-            frozen_now = True
-            prequential_triggers += 1
-            current_episode = {
-                "start_time": str(event_time),
-                "start_index": index,
-                "trigger_z": z,
-                "frozen_scale": frozen_scale,
-                "support_count": support,
-                "policy": policy,
-            }
+        suspicion_pending = False
+        if policy.startswith("suspicion_freeze") and frozen_model is None:
+            current_sign = 1 if z is not None and z >= suspicion_z else (
+                -1 if z is not None and z <= -suspicion_z else 0
+            )
+            if current_sign == 0:
+                pending_model = None
+                pending_scale = None
+                pending_support = 0
+                pending_start_time = None
+                pending_start_index = None
+                pending_sign = 0
+                pending_z = None
+                pending_count = 0
+            elif (
+                pending_count > 0
+                and current_sign == pending_sign
+                and pending_start_index is not None
+                and index == pending_start_index + pending_count
+            ):
+                pending_count += 1
+                suspicion_pending = pending_count < suspicion_run
+            else:
+                pending_model = model
+                pending_scale = float(scale) if scale is not None and float(scale) > 0 else None
+                pending_support = support
+                pending_start_time = str(event_time)
+                pending_start_index = index
+                pending_sign = current_sign
+                pending_z = z
+                pending_count = 1
+                suspicion_pending = pending_count < suspicion_run
+
+            if pending_count >= suspicion_run and pending_model is not None:
+                frozen_model = pending_model
+                frozen_scale = pending_scale
+                frozen_support = pending_support
+                frozen_at = pending_start_time
+                frozen_duration = 0
+                calm_run = 0
+                freeze_trigger = True
+                frozen_now = True
+                model = frozen_model
+                support = frozen_support
+                if policy == "suspicion_freeze_baseline_and_scale":
+                    scale_result = {
+                        "value": frozen_scale,
+                        "method": "frozen_first_difference_mad",
+                    }
+                    scale = frozen_scale
+                expected = predict(model, event_time, time_unit)
+                residual = float(source["value"]) - expected
+                z = residual / float(scale) if scale is not None and float(scale) > 0 else None
+                prequential_triggers += 1
+                current_episode = {
+                    "start_time": frozen_at,
+                    "confirmation_time": str(event_time),
+                    "start_index": pending_start_index,
+                    "trigger_z": pending_z,
+                    "confirmation_z": z,
+                    "trigger_run": suspicion_run,
+                    "frozen_scale": frozen_scale,
+                    "support_count": frozen_support,
+                    "policy": policy,
+                }
+                pending_model = None
+                pending_scale = None
+                pending_support = 0
+                pending_start_time = None
+                pending_start_index = None
+                pending_sign = 0
+                pending_z = None
+                pending_count = 0
 
         if frozen_now:
             freeze_active_rows += 1
@@ -383,6 +452,8 @@ def build_policy_residuals(
                 "freeze_released": freeze_released,
                 "frozen_at": frozen_at if frozen_now else None,
                 "calm_run": calm_run,
+                "suspicion_pending": suspicion_pending,
+                "suspicion_run_required": suspicion_run,
             },
         )
         output.append(row)
@@ -403,6 +474,7 @@ def build_policy_residuals(
         "gap_unresolved_rows": unresolved_gaps,
         "freeze_trigger_count": prequential_triggers,
         "freeze_release_count": releases,
+        "suspicion_run_required": suspicion_run,
         "freeze_active_rows": freeze_active_rows,
         "freeze_active_fraction": freeze_active_rows / len(output) if output else 0.0,
         "freeze_episodes": freeze_episodes,
