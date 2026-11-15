@@ -4,6 +4,8 @@ import unittest
 from experiments.identity_lab.exp_p_engine.baseline_freeze_screen import (
     _first_cusum_alarm,
     _paired_post_trigger_metrics,
+    _synthetic_confirmation_controls,
+    _assess_candidate_operational_eligibility,
 )
 from experiments.identity_lab.exp_p_engine.baseline_freeze_experiment import (
     build_policy_residuals,
@@ -48,6 +50,64 @@ class ConfirmationFreezeScreenTests(unittest.TestCase):
             }
         }
         self.assertEqual(passing_confirmation_thresholds(calibration), [64.0, 96.0])
+
+    def test_candidate_requires_minimum_triggered_injection_support(self):
+        candidate = {
+            "passes_5pct_series_alarm_screen": True,
+            "injection_records": {
+                "negative_6.0sigma": [{"raw_injected_alarm": True}] * 5,
+                "positive_6.0sigma": [{"raw_injected_alarm": True}] * 5,
+                "negative_3.0sigma": [],
+                "positive_3.0sigma": [],
+            },
+            "injections": {
+                "negative_6.0sigma": {
+                    "injected_trigger_time_match_rate": 1.0,
+                    "confirmation_freeze_control_trigger_rate": 0.0,
+                    "injected_mean_abs_z_gain_ci95": [0.1, 1.0],
+                },
+                "positive_6.0sigma": {
+                    "injected_trigger_time_match_rate": 1.0,
+                    "confirmation_freeze_control_trigger_rate": 0.0,
+                    "injected_mean_abs_z_gain_ci95": [0.2, 1.2],
+                },
+            },
+            "synthetic_controls": {"gates": {"all_pass": True}},
+        }
+        assessment = _assess_candidate_operational_eligibility(candidate)
+        self.assertFalse(assessment["adequate_injection_support"])
+        self.assertFalse(assessment["eligible_for_further_operational_validation"])
+
+    def test_candidate_passes_only_with_bilateral_sufficient_support(self):
+        candidate = {
+            "passes_5pct_series_alarm_screen": True,
+            "injection_records": {
+                "negative_6.0sigma": [{"raw_injected_alarm": True}] * 12,
+                "positive_6.0sigma": [{"raw_injected_alarm": True}] * 11,
+            },
+            "injections": {
+                "negative_6.0sigma": {
+                    "injected_trigger_time_match_rate": 1.0,
+                    "confirmation_freeze_control_trigger_rate": 0.0,
+                    "injected_mean_abs_z_gain_ci95": [0.1, 1.0],
+                },
+                "positive_6.0sigma": {
+                    "injected_trigger_time_match_rate": 1.0,
+                    "confirmation_freeze_control_trigger_rate": 0.0,
+                    "injected_mean_abs_z_gain_ci95": [0.2, 1.2],
+                },
+            },
+            "synthetic_controls": {"gates": {"all_pass": True}},
+        }
+        assessment = _assess_candidate_operational_eligibility(candidate)
+        self.assertTrue(assessment["eligible_for_further_operational_validation"])
+
+    def test_synthetic_confirmation_controls_detect_transient_and_persistent_shifts(self):
+        result = _synthetic_confirmation_controls(64.0)
+        self.assertTrue(result["gates"]["no_freeze_on_stable_noise"])
+        self.assertTrue(result["gates"]["no_mean_freeze_on_variance_only"])
+        self.assertTrue(result["gates"]["transient_episode_released"])
+        self.assertTrue(result["gates"]["persistent_episode_remains_frozen"])
 
     def test_freeze_trigger_time_equals_the_rolling_cusum_alarm(self):
         onset = "2024"

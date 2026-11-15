@@ -42,6 +42,7 @@ DETECTION_END = 2024
 MIN_NULL_SEGMENT_LENGTH = 5
 MIN_POST_INJECTION_PERIODS = 4
 MIN_SERIES_FOR_NULL = 30
+MIN_TRIGGERED_SERIES_PER_6SIGMA_SCENARIO = 10
 BOOTSTRAP_REPLICATES = 500
 BOOTSTRAP_SEED = 20261115
 CUSUM_K = 0.5
@@ -301,6 +302,174 @@ def _summarize_scenario(
     }
 
 
+def _synthetic_confirmation_controls(confirmation_h: float) -> dict[str, Any]:
+    """Known-truth controls for stable noise, variance-only, transient, and persistent shifts."""
+    scenario_specs = (
+        "stable_noise_no_shift",
+        "variance_only_jump",
+        "transient_three_period_shift",
+        "persistent_level_shift",
+    )
+    output: dict[str, Any] = {
+        "seed": BOOTSTRAP_SEED,
+        "series_length": 120,
+        "onset_index": 60,
+        "mean_shift_magnitude": 3.0,
+        "confirmation_h": confirmation_h,
+        "scenarios": {},
+    }
+    for scenario in scenario_specs:
+        seed = BOOTSTRAP_SEED + sum(ord(ch) for ch in scenario)
+        rng = random.Random(seed)
+        rows = []
+        for index in range(120):
+            sigma = 0.12
+            if scenario == "variance_only_jump" and index >= 60:
+                sigma = 0.65
+            value = 40.0 + 0.18 * index + rng.gauss(0.0, sigma)
+            if scenario == "transient_three_period_shift" and 60 <= index < 63:
+                value += 3.0
+            elif scenario == "persistent_level_shift" and index >= 60:
+                value += 3.0
+            rows.append({
+                "entity_id": "synthetic-" + scenario,
+                "metric_id": "level",
+                "event_time": str(2000 + index),
+                "value": value,
+                "observation_status": "observed",
+                "unit": "units",
+            })
+        residuals, diagnostics = build_policy_residuals(
+            rows,
+            policy="confirmation_freeze_baseline_rolling_scale",
+            time_unit="years",
+            confirmation_k=CUSUM_K,
+            confirmation_h=confirmation_h,
+        )
+        return_episodes = [
+            episode for episode in diagnostics["freeze_episodes"]
+            if episode.get("ended_by") == "confirmed_return_to_frozen_baseline"
+        ]
+        trigger_times = [
+            str(row["event_time"]) for row in residuals if row.get("freeze_trigger")
+        ]
+        first_trigger = min(trigger_times, key=year_number) if trigger_times else None
+        truth = {
+            "mean_level_shift": scenario in {
+                "transient_three_period_shift", "persistent_level_shift"
+            },
+            "variance_regime_shift": scenario == "variance_only_jump",
+            "transient_only": scenario == "transient_three_period_shift",
+            "synthetic_ground_truth": True,
+        }
+        output["scenarios"][scenario] = {
+            **truth,
+            "freeze_trigger_count": diagnostics["freeze_trigger_count"],
+            "freeze_release_count": diagnostics["freeze_release_count"],
+            "freeze_active_fraction": diagnostics["freeze_active_fraction"],
+            "first_freeze_time": first_trigger,
+            "freeze_episodes": diagnostics["freeze_episodes"],
+            "episodes_ended_by_return": len(return_episodes),
+            "false_mean_break_freeze": (
+                bool(trigger_times)
+                if not truth["mean_level_shift"]
+                else None
+            ),
+        }
+
+    stable = output["scenarios"]["stable_noise_no_shift"]
+    variance = output["scenarios"]["variance_only_jump"]
+    transient = output["scenarios"]["transient_three_period_shift"]
+    persistent = output["scenarios"]["persistent_level_shift"]
+    output["gates"] = {
+        "no_freeze_on_stable_noise": stable["freeze_trigger_count"] == 0,
+        "no_mean_freeze_on_variance_only": variance["freeze_trigger_count"] == 0,
+        "transient_episode_released": (
+            transient["freeze_trigger_count"] > 0
+            and transient["episodes_ended_by_return"] >= transient["freeze_trigger_count"]
+        ),
+        "persistent_episode_remains_frozen": (
+            persistent["freeze_trigger_count"] > 0
+            and persistent["episodes_ended_by_return"] == 0
+        ),
+    }
+    output["gates"]["all_pass"] = all(output["gates"].values())
+    return output
+
+
+def _assess_candidate_operational_eligibility(candidate: Mapping[str, Any]) -> dict[str, Any]:
+    """Require meaningful injected support, a strict null pass, and known-truth controls."""
+    records = candidate.get("injection_records", {})
+    high_negative = sum(
+        1 for row in records.get("negative_6.0sigma", [])
+        if row.get("raw_injected_alarm")
+    )
+    high_positive = sum(
+        1 for row in records.get("positive_6.0sigma", [])
+        if row.get("raw_injected_alarm")
+    )
+    low_negative = sum(
+        1 for row in records.get("negative_3.0sigma", [])
+        if row.get("raw_injected_alarm")
+    )
+    low_positive = sum(
+        1 for row in records.get("positive_3.0sigma", [])
+        if row.get("raw_injected_alarm")
+    )
+    match_rates = [
+        value for scenario in candidate.get("injections", {}).values()
+        if (value := scenario.get("injected_trigger_time_match_rate")) is not None
+    ]
+    control_rates = [
+        scenario.get("confirmation_freeze_control_trigger_rate")
+        for scenario in candidate.get("injections", {}).values()
+        if scenario.get("confirmation_freeze_control_trigger_rate") is not None
+    ]
+    high_scenario_support = min(high_negative, high_positive)
+    adequate_support = (
+        high_scenario_support >= MIN_TRIGGERED_SERIES_PER_6SIGMA_SCENARIO
+    )
+    trigger_consistency = bool(match_rates) and all(
+        abs(float(rate) - 1.0) <= 1e-12 for rate in match_rates
+    )
+    controls_quiet = not control_rates or max(float(rate) for rate in control_rates) <= 0.05
+    high_negative_ci = candidate.get("injections", {}).get(
+        "negative_6.0sigma", {}
+    ).get("injected_mean_abs_z_gain_ci95")
+    high_positive_ci = candidate.get("injections", {}).get(
+        "positive_6.0sigma", {}
+    ).get("injected_mean_abs_z_gain_ci95")
+    persistence_supported = bool(
+        high_negative_ci and high_positive_ci
+        and high_negative_ci[0] > 0
+        and high_positive_ci[0] > 0
+    )
+    synthetic_gates = candidate.get("synthetic_controls", {}).get("gates", {})
+    synthetic_controls_pass = bool(synthetic_gates.get("all_pass"))
+    eligible = all((
+        candidate.get("passes_5pct_series_alarm_screen", False),
+        adequate_support,
+        trigger_consistency,
+        controls_quiet,
+        persistence_supported,
+        synthetic_controls_pass,
+    ))
+    return {
+        "triggered_series_negative_3sigma": low_negative,
+        "triggered_series_positive_3sigma": low_positive,
+        "triggered_series_negative_6sigma": high_negative,
+        "triggered_series_positive_6sigma": high_positive,
+        "minimum_6sigma_direction_support": high_scenario_support,
+        "minimum_required_6sigma_direction_support": MIN_TRIGGERED_SERIES_PER_6SIGMA_SCENARIO,
+        "adequate_injection_support": adequate_support,
+        "trigger_time_consistency": trigger_consistency,
+        "matched_controls_quiet": controls_quiet,
+        "positive_persistence_supported_both_6sigma_directions": persistence_supported,
+        "synthetic_controls_pass": synthetic_controls_pass,
+        "eligible_for_further_operational_validation": eligible,
+    }
+
+
 def _run_one_candidate(
     entity_series: Mapping[str, Sequence[Mapping[str, Any]]],
     rolling_by_entity: Mapping[str, Sequence[Mapping[str, Any]]],
@@ -510,7 +679,8 @@ def _run_one_candidate(
         "injection_records": {
             scenario: records for scenario, records in injections.items()
         },
-        "decision": "candidate_requires_screen_and_positive_persistence_evidence" if passes else "rejected_by_5pct_series_alarm_screen",
+        "synthetic_controls": _synthetic_confirmation_controls(confirmation_h),
+        "decision": "awaiting_support_and_known_truth_control_gates" if passes else "rejected_by_5pct_series_alarm_screen",
     }
 
 
@@ -562,32 +732,17 @@ def run_screen() -> dict[str, Any]:
 
     decisions = []
     for item in candidates:
-        scenario_deltas = [
-            scenario.get("injected_mean_abs_z_gain_frozen_minus_rolling")
-            for scenario in item["injections"].values()
-            if scenario.get("injected_mean_abs_z_gain_frozen_minus_rolling") is not None
-        ]
-        ci_lowers = [
-            scenario["injected_mean_abs_z_gain_ci95"][0]
-            for scenario in item["injections"].values()
-            if scenario.get("injected_mean_abs_z_gain_ci95") is not None
-        ]
-        positive_persistence = (
-            bool(scenario_deltas)
-            and statistics.mean(scenario_deltas) > 0
-            and bool(ci_lowers)
-            and statistics.mean(ci_lowers) > 0
-        )
-        item["positive_persistence_evidence"] = positive_persistence
+        assessment = _assess_candidate_operational_eligibility(item)
+        item["operational_assessment"] = assessment
         item["decision"] = (
             "eligible_for_further_operational_validation"
-            if item["passes_5pct_series_alarm_screen"] and positive_persistence
-            else "not_promoted"
+            if assessment["eligible_for_further_operational_validation"]
+            else "not_promoted_insufficient_injection_or_synthetic_support"
         )
         decisions.append({
             "confirmation_h": item["confirmation_h"],
             "passes_5pct_series_alarm_screen": item["passes_5pct_series_alarm_screen"],
-            "positive_persistence_evidence": positive_persistence,
+            **assessment,
             "decision": item["decision"],
         })
 
@@ -615,6 +770,7 @@ def run_screen() -> dict[str, Any]:
             "bootstrap_replicates": BOOTSTRAP_REPLICATES,
             "restart_probabilities": list(STATIONARY_BOOTSTRAP_P_GRID),
             "series_alarm_gate": "upper95 per-series alarm rate <= 5% at every restart probability",
+            "minimum_triggered_series_per_6sigma_direction": MIN_TRIGGERED_SERIES_PER_6SIGMA_SCENARIO,
             "null_interpretation": (
                 "The World Bank window is unlabelled empirical history. The screen is "
                 "a conservative candidate gate, not verified ground-truth false-alarm data."
@@ -628,7 +784,10 @@ def run_screen() -> dict[str, Any]:
             "CUSUM confirmation is the alarm; baseline freezing is only the post-alarm "
             "control action. A candidate requires a 5% empirical series-level screen "
             "and positive paired post-trigger persistence evidence before any further "
-            "operational validation. Detection recall is not attributed to freezing "
+            "operational validation. A threshold passing the null gate is not enough: "
+            "at least ten triggered examples in each 6-sigma direction, consistent "
+            "trigger timing, quiet matched controls, and known-truth synthetic controls "
+            "are required. Detection recall is not attributed to freezing "
             "because the trigger alarm precedes the freeze."
         ),
     }
