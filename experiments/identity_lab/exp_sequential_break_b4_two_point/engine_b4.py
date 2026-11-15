@@ -111,9 +111,7 @@ class TwoPointTransientWinsor18EngineB4:
         if not np.isfinite(rho_raw):
             rho_raw = 0.0
         rho_raw = float(np.clip(rho_raw, 0.0, 0.88))
-        # Requested small-sample heuristic; experimental, not a validated
-        # Kendall correction. Both raw and adjusted modes are benchmarked.
-        # B-v4 returns to the clipped B-v3.1 raw lag-1 estimate.
+        # Use the clipped B-v3.1 raw lag-1 estimate without upward correction.
         rho_adjusted = rho_raw
         rho = rho_raw
 
