@@ -1496,6 +1496,7 @@ def run_source() -> dict[str, Any]:
             if year_number(row["event_time"]) >= year_number(EVALUATION_START)
         ]
         matched_series_count = 0
+        matched_ready_periods = 0
         raw_diag = lag1_summary(evaluation_rows)
         whitened_diag = None
         raw_signals = summarize_detector_hits(evaluation_rows)
