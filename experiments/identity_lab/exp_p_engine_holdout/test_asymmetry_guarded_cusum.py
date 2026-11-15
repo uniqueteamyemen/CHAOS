@@ -24,5 +24,5 @@ class AsymmetryGuardedCusumTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError,"quiet_window_invalid"):
             asymmetry_guarded_bounded_cusum([1.0,2.0])
         with self.assertRaisesRegex(ValueError,"series_nonfinite"):
-            asymmetry_guarded_bounded_cusum([0.1,-0.1,0.2,float("nan"),0.1])
+            asymmetry_guarded_bounded_cusum([0.1,-0.1,0.2,float("nan"),0.1]*10)
 if __name__=="__main__": unittest.main()
