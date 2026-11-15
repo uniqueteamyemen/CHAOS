@@ -20,6 +20,7 @@ from experiments.identity_lab.exp_p_engine.domain_neutral import (
     detect_sign_runs,
     detect_two_sided_cusum,
     first_difference_mad_scale,
+    estimate_panel_ar1_rho,
     first_evidence_at_or_after,
     normalize_observations,
 )
@@ -224,6 +225,7 @@ def inject_persistent_level_shift(
     time_unit: str,
     estimate_rho: bool,
     min_adjacent_pairs_for_rho: int,
+    scale_rho: float | None = None,
 ) -> tuple[list[dict[str, Any]] | None, str | None, int | None, float | None]:
     observed = [
         row for row in series
@@ -238,6 +240,7 @@ def inject_persistent_level_shift(
         pre_onset,
         time_unit=time_unit,
         estimate_rho=estimate_rho,
+        rho=scale_rho,
         min_adjacent_pairs_for_rho=min_adjacent_pairs_for_rho,
     )
     if scale["status"] != "ok" or scale["value"] is None:
@@ -258,6 +261,7 @@ def injection_response_for_series(
     time_unit: str,
     estimate_rho: bool,
     min_adjacent_pairs_for_rho: int,
+    scale_rho: float | None = None,
 ) -> dict[str, Any]:
     responses: dict[str, dict[str, Any]] = {}
     for magnitude in INJECTION_MAGNITUDES:
@@ -270,6 +274,7 @@ def injection_response_for_series(
                 time_unit=time_unit,
                 estimate_rho=estimate_rho,
                 min_adjacent_pairs_for_rho=min_adjacent_pairs_for_rho,
+                scale_rho=scale_rho,
             )
             if injected is None or onset is None or onset_index is None or sigma is None:
                 responses[key] = {
@@ -284,25 +289,33 @@ def injection_response_for_series(
                 time_unit=time_unit,
                 baseline_method=baseline_method,
                 estimate_rho=estimate_rho,
-                scale_window=2048 if estimate_rho else 12,
+                scale_window=12,
                 min_adjacent_pairs_for_rho=min_adjacent_pairs_for_rho,
+                scale_rho=scale_rho,
             )
+            # The detector starts at the injection onset; pre-onset residuals
+            # cannot carry a partially accumulated CUSUM state into the test.
+            scored_residuals = [
+                row for row in residuals
+                if _time_position(row["event_time"], time_unit)
+                >= _time_position(onset, time_unit)
+            ]
             cusum_params_result: list[dict[str, Any]] = []
             for params in CUSUM_GRID:
                 hits = detect_two_sided_cusum(
-                    residuals, k=params["k"], h=params["h"]
+                    scored_residuals, k=params["k"], h=params["h"]
                 )
                 first = first_evidence_at_or_after(hits, onset)
                 delay = None
                 delay_time_units = None
                 if first is not None:
                     detected_index = next(
-                        index for index, row in enumerate(residuals)
+                        index for index, row in enumerate(scored_residuals)
                         if row["event_time"] == first["event_time"]
                     )
                     onset_residual_index = next(
                         (
-                            index for index, row in enumerate(residuals)
+                            index for index, row in enumerate(scored_residuals)
                             if row["event_time"] == onset
                         ),
                         None,
@@ -325,7 +338,7 @@ def injection_response_for_series(
             p1_params_result: list[dict[str, Any]] = []
             for params in P1_GRID:
                 hits = detect_sign_runs(
-                    residuals,
+                    scored_residuals,
                     threshold=params["threshold"],
                     run_length=params["run_length"],
                 )
@@ -334,12 +347,12 @@ def injection_response_for_series(
                 delay_time_units = None
                 if first is not None:
                     detected_index = next(
-                        index for index, row in enumerate(residuals)
+                        index for index, row in enumerate(scored_residuals)
                         if row["event_time"] == first["event_time"]
                     )
                     onset_residual_index = next(
                         (
-                            index for index, row in enumerate(residuals)
+                            index for index, row in enumerate(scored_residuals)
                             if row["event_time"] == onset
                         ),
                         None,
@@ -565,6 +578,8 @@ def run_source(
     entity_series: dict[str, list[dict[str, Any]]],
     *,
     time_unit: str,
+    scale_rho: float | None = None,
+    evaluation_start: str | None = None,
 ) -> dict[str, Any]:
     source_result: dict[str, Any] = {
         "source": name,
@@ -572,11 +587,22 @@ def run_source(
         "entity_count": len(entity_series),
         "baseline_methods": {},
     }
-    for baseline_config in BASELINE_CONFIGS:
+    baseline_configs = list(BASELINE_CONFIGS)
+    if scale_rho is not None:
+        baseline_configs.append({
+            "label": "rolling_theil_sen_frozen_panel_rho",
+            "baseline_method": "rolling_theil_sen",
+            "estimate_rho": False,
+            "scale_window": 12,
+            "min_adjacent_pairs_for_rho": 14,
+            "scale_rho": scale_rho,
+        })
+    for baseline_config in baseline_configs:
         baseline_method = baseline_config["baseline_method"]
         estimate_rho = baseline_config["estimate_rho"]
         scale_window = baseline_config["scale_window"]
         min_adjacent_pairs_for_rho = baseline_config["min_adjacent_pairs_for_rho"]
+        config_rho = baseline_config.get("scale_rho")
         baseline_label = baseline_config["label"]
         historical_rows: list[dict[str, Any]] = []
         injections: list[dict[str, Any]] = []
@@ -598,19 +624,26 @@ def run_source(
                 estimate_rho=estimate_rho,
                 scale_window=scale_window,
                 min_adjacent_pairs_for_rho=min_adjacent_pairs_for_rho,
+                scale_rho=config_rho,
             )
+            evaluation_rows = [
+                row for row in residuals
+                if evaluation_start is None
+                or _time_position(row["event_time"], time_unit)
+                >= _time_position(evaluation_start, time_unit)
+            ]
             series_count += 1
-            ready_count += ready_period_count(residuals)
-            historical_rows.extend(residuals)
+            ready_count += ready_period_count(evaluation_rows)
+            historical_rows.extend(evaluation_rows)
             per_entity_signal[entity_id] = {
                 "observation_count": len(observed),
-                "residual_count": len(residuals),
-                "ready_periods": ready_period_count(residuals),
-                "gap_unresolved": sum(1 for row in residuals if row["status"] == "gap_unresolved"),
-                "scale_unavailable": sum(1 for row in residuals if row["status"] == "scale_unavailable"),
-                "rho_estimated_rows": sum(1 for row in residuals if row.get("rho") is not None),
-                "rho_values": [float(row["rho"]) for row in residuals if row.get("rho") is not None],
-                "scale_method_counts": dict(Counter(row.get("scale_method") for row in residuals)),
+                "residual_count": len(evaluation_rows),
+                "ready_periods": ready_period_count(evaluation_rows),
+                "gap_unresolved": sum(1 for row in evaluation_rows if row["status"] == "gap_unresolved"),
+                "scale_unavailable": sum(1 for row in evaluation_rows if row["status"] == "scale_unavailable"),
+                "rho_estimated_rows": sum(1 for row in evaluation_rows if row.get("rho") is not None),
+                "rho_values": [float(row["rho"]) for row in evaluation_rows if row.get("rho") is not None],
+                "scale_method_counts": dict(Counter(row.get("scale_method") for row in evaluation_rows)),
             }
             injection = injection_response_for_series(
                 observed,
@@ -618,6 +651,7 @@ def run_source(
                 time_unit=time_unit,
                 estimate_rho=estimate_rho,
                 min_adjacent_pairs_for_rho=min_adjacent_pairs_for_rho,
+                scale_rho=config_rho,
             )
             if injection:
                 injections.append(injection)
@@ -625,7 +659,9 @@ def run_source(
         source_result["baseline_methods"][baseline_label] = {
             "baseline_method": baseline_method,
             "estimate_rho": estimate_rho,
+            "scale_rho": config_rho,
             "scale_window": scale_window,
+            "evaluation_start": evaluation_start,
             "min_adjacent_pairs_for_rho": min_adjacent_pairs_for_rho,
             "series_tested": series_count,
             "ready_periods": ready_count,
