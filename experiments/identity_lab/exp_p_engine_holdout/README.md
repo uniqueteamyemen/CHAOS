@@ -51,3 +51,20 @@ ablation contributions separately. A candidate is not promoted unless every
 null regime is <=5% and every shifted regime retains >=75% directional
 sensitivity. This is a test of the supplied implementation, not a claim that
 its moving-window denominator equals the Shao-Zhang self-normalized statistic.
+
+
+## Stage K — Asymmetry-Guarded Bounded CUSUM (AG-CUSUM)
+
+Gemini's revision is reproduced with its supplied defaults: psi=1.8, gamma=0.90,
+k=0.50, h=9.5, dwell=4, directional ratio=3.5, cooldown=6, quiet_end=40.
+The screen uses the exact H scenario generators and seed range for a paired
+comparison against H's C/E/F baseline results. No parameters are tuned here.
+
+The report measures sequence-level null alerts, pre-onset alerts, sensitivity,
+detection delay, raw alert multiplicity, and scale diagnostics.
+
+Mathematical note: for stationary AR(1),
+Var(X_t-X_(t-1)) = 2 sigma^2 (1-rho), so SD(diff)/sqrt(2) estimates
+sigma*sqrt(1-rho), not the marginal sigma. Positive autocorrelation therefore
+makes the proposed scale smaller than marginal sigma. The test reports this
+effect instead of assuming that differencing removes autocorrelation.
