@@ -5,8 +5,8 @@ on:
     branches:
       - experiment/p-engine-parallel-fusion-v1
     paths:
-      - "experiments/identity_lab/exp_p_engine_holdout/**"
-      - ".github/workflows/p-engine-robustness-holdout.yml"
+      - "experiments/identity_lab/exp_p_engine_holdout/robust_holdout.py"
+      - "experiments/identity_lab/exp_p_engine_holdout/test_robust_holdout.py"
 
 permissions:
   contents: read

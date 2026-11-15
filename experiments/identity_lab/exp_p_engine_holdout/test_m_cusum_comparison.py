@@ -29,7 +29,7 @@ class GeminiMcusumTests(unittest.TestCase):
         alerts = [
             {"time": 50, "direction": 1, "stat": 8.0},
             {"time": 66, "direction": -1, "stat": 9.0},
-            {"time": 68, "direction": 1, "stat": 8.0},
+            {"time": 67, "direction": 1, "stat": 8.0},
         ]
         score = _m_score(alerts, "positive_step_3sigma")
         self.assertTrue(score["pre_onset_false_alarm"])

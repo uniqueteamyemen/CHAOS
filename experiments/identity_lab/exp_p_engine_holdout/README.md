@@ -37,7 +37,7 @@ Candidate arms are A production, C default, C threshold selected from G, D adapt
 Positive and negative 3-sigma/6-sigma level shifts are injected into copies of the residual stream, never into source data. Detection is measured after 130 weeks of adaptation. No false-alarm-rate or production-approval claim is inferred from unlabeled EIA history.
 
 
-## Stage J — Gemini Self-Normalized M-CUSUM
+## Gemini Self-Normalized M-CUSUM candidate comparison
 
 The submitted M0 function is implemented verbatim at the equation/default
 level (Huber clip=2.0, rho estimate from the quiet 40, adaptive k,
