@@ -3,6 +3,10 @@ import random
 import unittest
 
 from experiments.identity_lab.exp_p_engine.engine import DOMAINS
+from experiments.identity_lab.exp_p_engine.benchmark_parallel_fusion import (
+    _variant_detection_hits,
+    exact_mcnemar_pvalue,
+)
 from experiments.identity_lab.exp_p_engine.parallel_fusion import (
     fuse_events,
     run_candidates,
@@ -214,11 +218,35 @@ class ParallelFusionTests(unittest.TestCase):
         self.assertLess(hits_105[0]["index"], hits_125[0]["index"])
 
     def test_exact_mcnemar_pvalue_is_symmetric_and_detects_directional_difference(self):
-        from experiments.identity_lab.exp_p_engine.benchmark_parallel_fusion import exact_mcnemar_pvalue
         self.assertEqual(exact_mcnemar_pvalue(0, 0), 1.0)
         self.assertEqual(exact_mcnemar_pvalue(8, 0), exact_mcnemar_pvalue(0, 8))
         self.assertLess(exact_mcnemar_pvalue(8, 0), 0.01)
         self.assertEqual(exact_mcnemar_pvalue(5, 5), 1.0)
+
+    def test_detection_scoring_uses_post_onset_evidence_not_event_start(self):
+        residuals = [0.0] * 100
+        result = {
+            "A": {
+                "alerts": [
+                    {"time": 70, "detector": "sign_run"},
+                    {"time": 72, "detector": "cusum"},
+                ]
+            },
+            "H": {
+                "events": [{
+                    "time": 41,
+                    "evidence": [
+                        {"index": 40, "time": 41, "sign": -1, "detector": "sign_run"},
+                        {"index": 69, "time": 70, "sign": -1, "detector": "cusum_negative"},
+                    ],
+                }]
+            },
+        }
+        candidate_hits = _variant_detection_hits(result, "H", residuals)
+        self.assertEqual(candidate_hits[-1]["time"], 70)
+        self.assertEqual(candidate_hits[-1]["sign"], -1)
+        production_hits = _variant_detection_hits(result, "A", residuals)
+        self.assertEqual([hit["time"] for hit in production_hits], [70, 72])
 
     def test_J_and_K_fill_hold_threshold_grid_with_same_adaptive_P1(self):
         rows = make_rows(sign=-1, magnitude=9.0, seed=55)

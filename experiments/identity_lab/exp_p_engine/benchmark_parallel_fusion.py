@@ -133,6 +133,40 @@ def _variant_detector_hits(result, variant, residual_values):
     return mapped
 
 
+def _variant_detection_hits(result, variant, residual_values):
+    """Return actual detector evidence times, not fused-event start times.
+
+    A production alert is emitted at its own timestamp. Experimental fused
+    events may have started before the injected onset and later acquire new
+    evidence; score those later evidence timestamps as detections.
+    """
+    if variant == "A":
+        source = result["A"].get("alerts", [])
+        mapped = []
+        for alert in source:
+            detector = alert.get("detector")
+            if detector == "sign_run":
+                month = int(alert["time"])
+                sign = 1 if residual_values[month - 1] >= 0 else -1
+            elif detector == "cusum":
+                month = int(alert["time"])
+                sign = 1  # unchanged production CUSUM is positive-only
+            else:
+                continue
+            mapped.append({"time": month, "sign": sign, "detector": detector})
+        return mapped
+
+    return [
+        {
+            "time": int(evidence["time"]),
+            "sign": int(evidence["sign"]),
+            "detector": evidence["detector"],
+        }
+        for event in result[variant]["events"]
+        for evidence in event.get("evidence", [])
+    ]
+
+
 def run_benchmark():
     scenarios = [
         "stable_null", "rising_noise_null", "elevated_noise_null",
@@ -224,15 +258,13 @@ def run_benchmark():
             baseline_pre_false = any(
                 QUIET_RANGE[1] < int(alert["time"]) < ONSET for alert in baseline_alerts
             )
-            baseline_detected = False
-            if has_break:
-                for alert in baseline_alerts:
-                    month = int(alert["time"])
-                    if month >= ONSET:
-                        direction = 1 if residual_values[month - 1] >= 0 else -1
-                        if direction == sign:
-                            baseline_detected = True
-                            break
+            baseline_detection_hits = _variant_detection_hits(
+                result, "A", residual_values
+            )
+            baseline_detected = has_break and any(
+                int(hit["time"]) >= ONSET and int(hit["sign"]) == sign
+                for hit in baseline_detection_hits
+            )
 
             for variant in variants:
                 alerts = _variant_alerts(result, variant)
@@ -281,24 +313,17 @@ def run_benchmark():
                     if pre_hits:
                         detector_stats[variant][detector]["pre_onset_false_trials"] += 1
 
-                matching = []
-                opposite = []
-                for alert in alerts:
-                    time_value = alert["time"]
-                    try:
-                        month = int(time_value)
-                    except (TypeError, ValueError):
-                        continue
-                    if month < ONSET:
-                        continue
-                    if variant == "A":
-                        observed_sign = 1 if residual_values[month - 1] >= 0 else -1
-                    else:
-                        observed_sign = int(alert["sign"])
-                    if observed_sign == sign:
-                        matching.append(month)
-                    else:
-                        opposite.append(month)
+                detection_hits = _variant_detection_hits(
+                    result, variant, residual_values
+                )
+                matching = [
+                    int(hit["time"]) for hit in detection_hits
+                    if int(hit["time"]) >= ONSET and int(hit["sign"]) == sign
+                ]
+                opposite = [
+                    int(hit["time"]) for hit in detection_hits
+                    if int(hit["time"]) >= ONSET and int(hit["sign"]) != sign
+                ]
                 if opposite:
                     wrong_direction[variant] += 1
                 candidate_detected = bool(matching)
