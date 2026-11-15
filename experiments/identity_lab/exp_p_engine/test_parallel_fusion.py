@@ -197,7 +197,7 @@ class ParallelFusionTests(unittest.TestCase):
         c_p1 = [hit for hit in result["C"]["raw_hits"] if hit["detector"] == "sign_run"]
         e_p1 = [hit for hit in result["E"]["raw_hits"] if hit["detector"] == "sign_run"]
         self.assertEqual(c_p1, e_p1)
-        self.assertEqual(result["E"]["diagnostics"]["policy"], "suspend_reset")
+        self.assertEqual(result["E"]["policy"], "suspend_reset")
 
     def test_same_event_cooldown_marks_but_retains_evidence(self):
         series = [{"month": i, "residual": 5.0} for i in range(1, 100)]
