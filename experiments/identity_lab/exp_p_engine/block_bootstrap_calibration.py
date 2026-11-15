@@ -1,0 +1,356 @@
+"""Block-bootstrap null calibration for CUSUM and P1 on real residual streams.
+
+This experiment preserves within-block temporal dependence. It does not claim
+that historical source periods are known anomaly-free; its null is the empirical
+source-history distribution with block order randomized.
+"""
+from __future__ import annotations
+
+import json
+import random
+from collections import defaultdict
+from pathlib import Path
+from statistics import mean
+from typing import Any, Sequence
+
+from experiments.identity_lab.exp_p_engine.calibration_sweep import read_world_bank
+from experiments.identity_lab.exp_p_engine.domain_neutral import build_univariate_residuals
+
+ROOT = Path(__file__).resolve().parents[3]
+OUTPUT = (
+    ROOT / "experiments" / "identity_lab" / "exp_p_engine"
+    / "results" / "domain_neutral_block_bootstrap_calibration.json"
+)
+BOOTSTRAP_REPLICATES = 300
+BOOTSTRAP_SEED = 20261115
+BLOCK_LENGTHS = (2, 3, 4, 6)
+MAX_ACCEPTABLE_SERIES_ALERT_RATE = 0.05
+
+CUSUM_GRID = (
+    {"k": 0.25, "h": 8.5},
+    {"k": 0.25, "h": 12.0},
+    {"k": 0.50, "h": 8.5},
+    {"k": 0.50, "h": 12.0},
+    {"k": 0.50, "h": 16.0},
+    {"k": 0.75, "h": 12.0},
+    {"k": 1.00, "h": 16.0},
+)
+P1_GRID = (
+    {"threshold": 3.0, "run_length": 3},
+    {"threshold": 3.0, "run_length": 4},
+    {"threshold": 3.5, "run_length": 3},
+    {"threshold": 3.5, "run_length": 4},
+    {"threshold": 4.0, "run_length": 3},
+    {"threshold": 4.0, "run_length": 4},
+)
+
+
+def contiguous_ready_segments(rows: Sequence[dict[str, Any]]) -> list[list[float]]:
+    """Split ready residuals at unresolved periods or nonconsecutive annual gaps."""
+    segments: list[list[float]] = []
+    current: list[float] = []
+    previous_year: int | None = None
+    for row in sorted(rows, key=lambda item: str(item["event_time"])):
+        if row.get("status") != "ready" or row.get("z_score") is None:
+            if current:
+                segments.append(current)
+                current = []
+            previous_year = None
+            continue
+        raw_time = str(row["event_time"])
+        try:
+            year = int(raw_time[:4])
+        except ValueError:
+            raise ValueError("block_bootstrap_requires_annual_year_labels")
+        if previous_year is not None and year != previous_year + 1:
+            if current:
+                segments.append(current)
+            current = []
+        current.append(float(row["z_score"]))
+        previous_year = year
+    if current:
+        segments.append(current)
+    return segments
+
+
+def moving_block_resample(
+    values: Sequence[float],
+    *,
+    block_length: int,
+    rng: random.Random,
+) -> list[float]:
+    """Circular moving-block bootstrap, returning exactly the source length."""
+    if not values or block_length < 1:
+        raise ValueError("bootstrap_series_or_block_invalid")
+    n = len(values)
+    width = min(block_length, n)
+    output: list[float] = []
+    while len(output) < n:
+        start = rng.randrange(n)
+        for offset in range(width):
+            output.append(float(values[(start + offset) % n]))
+            if len(output) == n:
+                break
+    return output
+
+
+def cusum_alarm_count(values: Sequence[float], *, k: float, h: float) -> int:
+    positive = negative = 0.0
+    alarms = 0
+    for z in values:
+        positive = max(0.0, positive + z - k)
+        negative = max(0.0, negative - z - k)
+        if positive >= h or negative >= h:
+            alarms += 1
+            positive = negative = 0.0
+    return alarms
+
+
+def sign_run_alarm_count(
+    values: Sequence[float],
+    *,
+    threshold: float,
+    run_length: int,
+) -> int:
+    sign = 0
+    streak = 0
+    alarms = 0
+    for z in values:
+        current_sign = 1 if z > 0 else -1 if z < 0 else 0
+        if current_sign == 0 or abs(z) < threshold:
+            sign, streak = 0, 0
+            continue
+        if current_sign != sign:
+            sign, streak = current_sign, 0
+        streak += 1
+        if streak >= run_length:
+            alarms += 1
+            sign, streak = 0, 0
+    return alarms
+
+
+def percentile(values: Sequence[float], q: float) -> float | None:
+    if not values:
+        return None
+    ordered = sorted(values)
+    index = min(len(ordered) - 1, max(0, int(q * (len(ordered) - 1))))
+    return float(ordered[index])
+
+
+def prepare_panel() -> dict[str, list[list[float]]]:
+    panel: dict[str, list[list[float]]] = {}
+    for entity_id, observations in read_world_bank().items():
+        if len(observations) < 12:
+            continue
+        residuals = build_univariate_residuals(
+            observations,
+            baseline_window=12,
+            min_history=8,
+            time_unit="years",
+            baseline_method="rolling_theil_sen",
+            estimate_rho=False,
+        )
+        segments = [
+            segment for segment in contiguous_ready_segments(residuals)
+            if len(segment) >= 8
+        ]
+        if segments:
+            panel[entity_id] = segments
+    return panel
+
+
+def run_bootstrap(
+    panel: dict[str, list[list[float]]],
+    *,
+    block_length: int,
+    replicates: int,
+) -> dict[str, Any]:
+    rng = random.Random(BOOTSTRAP_SEED + block_length)
+    entity_count = len(panel)
+    series_exposure = sum(
+        sum(len(segment) for segment in segments)
+        for segments in panel.values()
+    )
+    replicate_results = {
+        "cusum": {
+            (item["k"], item["h"]): {
+                "event_counts": [],
+                "entities_with_any_alarm": [],
+            }
+            for item in CUSUM_GRID
+        },
+        "sign_run": {
+            (item["threshold"], item["run_length"]): {
+                "event_counts": [],
+                "entities_with_any_alarm": [],
+            }
+            for item in P1_GRID
+        },
+    }
+
+    for _ in range(replicates):
+        per_rep_events = {
+            "cusum": {key: 0 for key in replicate_results["cusum"]},
+            "sign_run": {key: 0 for key in replicate_results["sign_run"]},
+        }
+        per_rep_entities = {
+            "cusum": {key: 0 for key in replicate_results["cusum"]},
+            "sign_run": {key: 0 for key in replicate_results["sign_run"]},
+        }
+        for segments in panel.values():
+            boot_segments = [
+                moving_block_resample(
+                    segment, block_length=block_length, rng=rng
+                )
+                for segment in segments
+            ]
+            for key in replicate_results["cusum"]:
+                k, h = key
+                count = sum(
+                    cusum_alarm_count(segment, k=k, h=h)
+                    for segment in boot_segments
+                )
+                per_rep_events["cusum"][key] += count
+                per_rep_entities["cusum"][key] += int(count > 0)
+            for key in replicate_results["sign_run"]:
+                threshold, run_length = key
+                count = sum(
+                    sign_run_alarm_count(
+                        segment, threshold=threshold, run_length=run_length
+                    )
+                    for segment in boot_segments
+                )
+                per_rep_events["sign_run"][key] += count
+                per_rep_entities["sign_run"][key] += int(count > 0)
+
+        for detector in ("cusum", "sign_run"):
+            for key in replicate_results[detector]:
+                replicate_results[detector][key]["event_counts"].append(
+                    per_rep_events[detector][key]
+                )
+                replicate_results[detector][key]["entities_with_any_alarm"].append(
+                    per_rep_entities[detector][key] / entity_count if entity_count else 0.0
+                )
+
+    output: dict[str, Any] = {
+        "block_length": block_length,
+        "bootstrap_replicates": replicates,
+        "entity_count": entity_count,
+        "ready_residual_exposure": series_exposure,
+        "detectors": {},
+    }
+    for detector, grid in (("cusum", CUSUM_GRID), ("sign_run", P1_GRID)):
+        rows = []
+        store = replicate_results[detector]
+        for item in grid:
+            key = (
+                (item["k"], item["h"])
+                if detector == "cusum"
+                else (item["threshold"], item["run_length"])
+            )
+            counts = store[key]["event_counts"]
+            rates = store[key]["entities_with_any_alarm"]
+            total_events = sum(counts)
+            mean_events = mean(counts) if counts else 0.0
+            mean_rate = mean(rates) if rates else 0.0
+            upper_rate = percentile(rates, 0.95)
+            rows.append({
+                **item,
+                "mean_bootstrap_events_per_1000_ready_periods": (
+                    1000.0 * total_events / (replicates * series_exposure)
+                    if series_exposure else None
+                ),
+                "mean_series_with_any_alarm_rate": mean_rate,
+                "upper95_bootstrap_series_alarm_rate": upper_rate,
+                "passes_5pct_series_alarm_screen": (
+                    upper_rate is not None
+                    and upper_rate <= MAX_ACCEPTABLE_SERIES_ALERT_RATE
+                ),
+                "mean_events_per_bootstrap_panel": mean_events,
+            })
+        output["detectors"][detector] = rows
+    return output
+
+
+def main() -> None:
+    panel = prepare_panel()
+    segment_lengths = [
+        len(segment)
+        for segments in panel.values()
+        for segment in segments
+    ]
+    report = {
+        "experiment": "domain_neutral_block_bootstrap_null_calibration_v1",
+        "source": "World Bank FS.AST.PRVT.GD.ZS",
+        "synthetic_data": False,
+        "null_definition": (
+            "Circular moving-block resampling of historical ready residual z-scores. "
+            "Temporal order is randomized only between blocks; dependence within each "
+            "block is preserved. The historical source is unlabelled and may contain "
+            "real breaks, so this is a conservative empirical null assumption, not "
+            "verified no-break ground truth."
+        ),
+        "baseline": "prequential_rolling_theil_sen_with_first_difference_iid_scale",
+        "entity_count": len(panel),
+        "segment_count": len(segment_lengths),
+        "ready_residual_exposure": sum(segment_lengths),
+        "segment_length_summary": {
+            "min": min(segment_lengths) if segment_lengths else None,
+            "median": (
+                percentile(segment_lengths, 0.5) if segment_lengths else None
+            ),
+            "max": max(segment_lengths) if segment_lengths else None,
+        },
+        "bootstrap_replicates": BOOTSTRAP_REPLICATES,
+        "bootstrap_seed": BOOTSTRAP_SEED,
+        "block_lengths": {},
+        "5pct_series_alarm_screen": (
+            "A candidate passes only when the 95th percentile across bootstrap panels "
+            "of the proportion of entities with at least one alarm is <= 5%. "
+            "This screen is not a production FPR guarantee."
+        ),
+        "threshold_promotion": "not_automatic",
+    }
+    for block_length in BLOCK_LENGTHS:
+        report["block_lengths"][str(block_length)] = run_bootstrap(
+            panel,
+            block_length=block_length,
+            replicates=BOOTSTRAP_REPLICATES,
+        )
+    OUTPUT.parent.mkdir(parents=True, exist_ok=True)
+    OUTPUT.write_text(json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8")
+    compact: dict[str, Any] = {}
+    for length, block in report["block_lengths"].items():
+        compact[length] = {
+            "cusum": [
+                {
+                    "k": item["k"], "h": item["h"],
+                    "mean_series_alarm_rate": round(item["mean_series_with_any_alarm_rate"], 4),
+                    "upper95_series_alarm_rate": round(item["upper95_bootstrap_series_alarm_rate"], 4),
+                    "pass_5pct_screen": item["passes_5pct_series_alarm_screen"],
+                }
+                for item in block["detectors"]["cusum"]
+            ],
+            "sign_run": [
+                {
+                    "threshold": item["threshold"], "run_length": item["run_length"],
+                    "mean_series_alarm_rate": round(item["mean_series_with_any_alarm_rate"], 4),
+                    "upper95_series_alarm_rate": round(item["upper95_bootstrap_series_alarm_rate"], 4),
+                    "pass_5pct_screen": item["passes_5pct_series_alarm_screen"],
+                }
+                for item in block["detectors"]["sign_run"]
+            ],
+        }
+    print(json.dumps({
+        "output": str(OUTPUT.relative_to(ROOT)),
+        "entities": len(panel),
+        "segments": len(segment_lengths),
+        "ready_residual_exposure": report["ready_residual_exposure"],
+        "segment_length_summary": report["segment_length_summary"],
+        "block_results": compact,
+        "promotion": "not_automatic",
+    }, ensure_ascii=False, indent=2))
+
+
+if __name__ == "__main__":
+    main()
