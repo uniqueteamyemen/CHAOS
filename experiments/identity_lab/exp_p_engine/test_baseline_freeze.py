@@ -190,6 +190,51 @@ class BaselineFreezeTests(unittest.TestCase):
         self.assertFalse(trigger_rows[0]["freeze_active"])
         self.assertTrue(rows[trigger_index + 1]["freeze_active"])
 
+    def test_confirmation_freeze_uses_explicit_cusum_threshold_and_gate(self):
+        series = make_series(shift_from=23, shift=2.0)
+        onset = "2024"
+        low, low_diag = build_policy_residuals(
+            series,
+            policy="confirmation_freeze_baseline_rolling_scale",
+            time_unit="years",
+            freeze_trigger_after_time=onset,
+            confirmation_k=0.5,
+            confirmation_h=8.5,
+        )
+        high, high_diag = build_policy_residuals(
+            series,
+            policy="confirmation_freeze_baseline_rolling_scale",
+            time_unit="years",
+            freeze_trigger_after_time=onset,
+            confirmation_k=0.5,
+            confirmation_h=100000.0,
+        )
+        self.assertEqual(low_diag["confirmation_cusum"], {"k": 0.5, "h": 8.5})
+        self.assertEqual(high_diag["confirmation_cusum"], {"k": 0.5, "h": 100000.0})
+        self.assertGreaterEqual(low_diag["freeze_trigger_count"], 1)
+        self.assertEqual(high_diag["freeze_trigger_count"], 0)
+        self.assertFalse(any(
+            row["freeze_trigger"] for row in low
+            if int(row["event_time"]) < int(onset)
+        ))
+        self.assertFalse(any(row["freeze_active"] for row in high))
+
+    def test_confirmation_freeze_rejects_invalid_cusum_parameters(self):
+        with self.assertRaisesRegex(ValueError, "confirmation_cusum_invalid"):
+            build_policy_residuals(
+                make_series(),
+                policy="confirmation_freeze_baseline_rolling_scale",
+                time_unit="years",
+                confirmation_k=-0.1,
+            )
+        with self.assertRaisesRegex(ValueError, "confirmation_cusum_invalid"):
+            build_policy_residuals(
+                make_series(),
+                policy="confirmation_freeze_baseline_rolling_scale",
+                time_unit="years",
+                confirmation_h=0.0,
+            )
+
     def test_confirmation_freeze_does_not_lock_on_one_isolated_spike(self):
         series = make_series(transient_at=18, shift=0.9)
         _, diagnostics = build_policy_residuals(

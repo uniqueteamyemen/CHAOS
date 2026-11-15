@@ -164,6 +164,8 @@ def build_policy_residuals(
     release_run: int = RELEASE_RUN,
     suspicion_run: int = SUSPICION_RUN,
     freeze_trigger_after_time: str | None = None,
+    confirmation_k: float = 0.5,
+    confirmation_h: float = 8.5,
 ) -> tuple[list[dict[str, Any]], dict[str, Any]]:
     if policy not in POLICIES:
         raise ValueError("baseline_freeze_policy_unsupported")
@@ -171,6 +173,13 @@ def build_policy_residuals(
         raise ValueError("baseline_freeze_window_invalid")
     if suspicion_run < 1 or release_run < 1 or suspicion_z <= 0 or release_z <= 0:
         raise ValueError("baseline_freeze_trigger_or_release_invalid")
+    if (
+        not math.isfinite(confirmation_k)
+        or confirmation_k < 0
+        or not math.isfinite(confirmation_h)
+        or confirmation_h <= 0
+    ):
+        raise ValueError("baseline_freeze_confirmation_cusum_invalid")
     freeze_policy = (
         policy.startswith("suspicion_freeze")
         or policy == "confirmation_freeze_baseline_rolling_scale"
@@ -215,8 +224,8 @@ def build_policy_residuals(
     pending_count = 0
     confirmation_cusum_positive = 0.0
     confirmation_cusum_negative = 0.0
-    confirmation_cusum_k = 0.5
-    confirmation_cusum_h = 8.5
+    confirmation_cusum_k = float(confirmation_k)
+    confirmation_cusum_h = float(confirmation_h)
     previous_time: float | None = None
     fixed_model: tuple[float, float] | None = None
     fixed_scale: float | None = None
@@ -587,6 +596,10 @@ def build_policy_residuals(
         "freeze_episodes": freeze_episodes,
         "first_freeze_time": freeze_episodes[0]["start_time"] if freeze_episodes else None,
         "baseline_id": baseline_id,
+        "confirmation_cusum": {
+            "k": confirmation_cusum_k,
+            "h": confirmation_cusum_h,
+        },
     }
     return output, diagnostics
 

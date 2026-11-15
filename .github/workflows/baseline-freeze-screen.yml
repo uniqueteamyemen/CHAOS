@@ -1,0 +1,34 @@
+name: CHAOS confirmation-freeze screen
+
+on:
+  push:
+    branches:
+      - experiment/residual-innovation-whitening-v1
+    paths:
+      - "experiments/identity_lab/exp_p_engine/baseline_freeze_experiment.py"
+      - "experiments/identity_lab/exp_p_engine/baseline_freeze_screen.py"
+      - "experiments/identity_lab/exp_p_engine/test_baseline_freeze.py"
+      - "experiments/identity_lab/exp_p_engine/test_baseline_freeze_screen.py"
+      - ".github/workflows/baseline-freeze-screen.yml"
+
+jobs:
+  confirmation-freeze:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Test existing baseline-freeze contracts
+        run: python -m unittest experiments.identity_lab.exp_p_engine.test_baseline_freeze -v
+      - name: Test confirmation-freeze comparison invariants
+        run: python -m unittest experiments.identity_lab.exp_p_engine.test_baseline_freeze_screen -v
+      - name: Screen CUSUM-confirmed baseline freezing on World Bank data
+        run: python -m experiments.identity_lab.exp_p_engine.baseline_freeze_screen
+      - name: Upload confirmation-freeze screen report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: chaos-confirmation-freeze-screen
+          path: experiments/identity_lab/exp_p_engine/results/domain_neutral_confirmation_freeze_screen.json
+          if-no-files-found: warn
