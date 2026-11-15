@@ -136,7 +136,7 @@ class ObservationContractTests(unittest.TestCase):
 
 
     def test_missingness_spike_is_reported_as_data_quality_not_behavior(self):
-        expected = [f"2024-{month:02d}" for month in range(1, 16)]
+        expected = [f"{2024 + (month - 1) // 12}-{(month - 1) % 12 + 1:02d}" for month in range(1, 16)]
         rows = [
             {
                 "entity_id": "branch-1",
