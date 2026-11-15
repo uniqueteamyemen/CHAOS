@@ -627,6 +627,11 @@ def build_partial_relation_residuals(
                 abs(value - residual_center) for value in historical_residuals
             )
             event_time, x_value, y_value, x_unit, y_unit = entity_pairs[index]
+            observation_gap = (
+                _time_number(event_time, time_unit)
+                - _time_number(history[-1][0], time_unit)
+            )
+            gap_unresolved = observation_gap > 1.02
             expected = intercept + slope * x_value
             residual = y_value - expected
             ready = math.isfinite(scale) and scale > 0
@@ -641,8 +646,13 @@ def build_partial_relation_residuals(
                 "y_expected": expected,
                 "residual": residual,
                 "scale": scale if ready else None,
-                "z_score": residual / scale if ready else None,
-                "status": "ready" if ready else "relation_scale_unavailable",
+                "z_score": residual / scale if ready and not gap_unresolved else None,
+                "status": (
+                    "gap_unresolved" if gap_unresolved
+                    else "ready" if ready
+                    else "relation_scale_unavailable"
+                ),
+                "observation_gap_units": observation_gap,
                 "baseline_method": "prequential_theil_sen_pairwise_relation",
                 "support_count": len(history),
                 "slope": slope,
