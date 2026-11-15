@@ -1,0 +1,36 @@
+name: CHAOS SequentialBreakEngine B-v3.2 Calibration
+
+on:
+  push:
+    branches:
+      - experiment/sequential-break-engine-v1
+    paths:
+      - "experiments/identity_lab/exp_sequential_break_v3_2/**"
+      - ".github/workflows/sequential-break-engine-v3-2.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  calibrate-b3-2:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install pinned numerical dependency
+        run: python -m pip install numpy==2.2.6
+      - name: Run B-v3.2 lifecycle and estimator tests
+        run: python -m unittest experiments.identity_lab.exp_sequential_break_v3_2.test_b3_2 -v
+      - name: Calibrate transient thresholds and compare raw versus adjusted rho
+        run: python -m experiments.identity_lab.exp_sequential_break_v3_2.benchmark_b3_2 --dev-trials 300 --holdout-trials 500
+      - name: Upload B-v3.2 calibration and holdout report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: chaos-sequential-break-engine-b3-2-calibration
+          path: experiments/identity_lab/exp_sequential_break_v3_2/results/sequential_break_engine_b3_2_calibration.json
+          if-no-files-found: warn
+          retention-days: 90
