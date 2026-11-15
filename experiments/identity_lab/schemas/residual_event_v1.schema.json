@@ -342,7 +342,7 @@
     },
     "residual": {
       "title": "CHAOS Domain-Neutral Residual V1",
-      "description": "Canonical baseline output shared by univariate, peer/cohort and explicitly declared partial-relation builders. One row represents one entity, metric, event time and baseline.",
+      "description": "Canonical baseline output shared by univariate, peer/cohort and explicitly declared partial-relation builders. One row represents one entity, metric, event time and baseline. Prewhitened innovation rows use standardized-innovation units and retain their source residual fields under raw_* metadata.",
       "type": "object",
       "required": [
         "entity_id",
@@ -407,7 +407,9 @@
             "scale_unavailable",
             "peer_scale_unavailable",
             "relation_scale_unavailable",
-            "relation_unidentifiable"
+            "relation_unidentifiable",
+            "innovation_gap_reset",
+            "innovation_warmup_or_gap"
           ]
         },
         "baseline_id": {
