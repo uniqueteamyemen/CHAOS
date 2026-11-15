@@ -8,6 +8,9 @@ from experiments.identity_lab.exp_p_engine.baseline_freeze_screen import (
 from experiments.identity_lab.exp_p_engine.baseline_freeze_experiment import (
     build_policy_residuals,
 )
+from experiments.identity_lab.exp_p_engine.baseline_freeze_screen import (
+    passing_confirmation_thresholds,
+)
 from experiments.identity_lab.exp_p_engine.domain_neutral import (
     detect_two_sided_cusum,
 )
@@ -33,6 +36,19 @@ def make_series(*, count=36, shift_from=None, shift=0.0):
 
 
 class ConfirmationFreezeScreenTests(unittest.TestCase):
+    def test_threshold_extraction_reads_nested_calibration_params(self):
+        calibration = {
+            "detectors": {
+                "cusum": [
+                    {"params": {"k": 0.5, "h": 48.0}, "passes_all_probabilities": False},
+                    {"params": {"k": 0.5, "h": 64.0}, "passes_all_probabilities": True},
+                    {"params": {"k": 0.5, "h": 96.0}, "passes_all_probabilities": True},
+                    {"params": {"k": 1.0, "h": 128.0}, "passes_all_probabilities": True},
+                ]
+            }
+        }
+        self.assertEqual(passing_confirmation_thresholds(calibration), [64.0, 96.0])
+
     def test_freeze_trigger_time_equals_the_rolling_cusum_alarm(self):
         onset = "2024"
         source = make_series(shift_from=24, shift=2.0)

@@ -78,6 +78,31 @@ def _slice_years(
     ]
 
 
+def passing_confirmation_thresholds(calibration: Mapping[str, Any]) -> list[float]:
+    """Read the calibration contract's nested params and retain only 5%-passing H values."""
+    thresholds = []
+    for item in calibration.get("detectors", {}).get("cusum", []):
+        params = item.get("params", item)
+        if (
+            params.get("k") == CUSUM_K
+            and params.get("h") is not None
+            and item.get("passes_all_probabilities")
+        ):
+            thresholds.append(float(params["h"]))
+    return sorted(set(thresholds))
+
+
+def _find_confirmation_setting(
+    calibration: Mapping[str, Any],
+    confirmation_h: float,
+) -> Mapping[str, Any] | None:
+    for item in calibration.get("detectors", {}).get("cusum", []):
+        params = item.get("params", item)
+        if params.get("k") == CUSUM_K and params.get("h") == confirmation_h:
+            return item
+    return None
+
+
 def _first_cusum_alarm(
     rows: Sequence[Mapping[str, Any]],
     *,
@@ -281,6 +306,7 @@ def _run_one_candidate(
     rolling_by_entity: Mapping[str, Sequence[Mapping[str, Any]]],
     *,
     confirmation_h: float,
+    null_calibration: Mapping[str, Any],
 ) -> dict[str, Any]:
     historical_confirmation: dict[str, list[dict[str, Any]]] = {}
     history_diagnostics: dict[str, dict[str, Any]] = {}
@@ -295,28 +321,7 @@ def _run_one_candidate(
         historical_confirmation[entity_id] = rows
         history_diagnostics[entity_id] = diagnostics
 
-    null_rows = [
-        row
-        for rows in rolling_by_entity.values()
-        for row in _slice_years(rows, NULL_START, NULL_END)
-    ]
-    null_screen = calibrate_prewhitened_null(
-        null_rows,
-        replicates=BOOTSTRAP_REPLICATES,
-        seed=BOOTSTRAP_SEED,
-        cusum_grid=({"k": CUSUM_K, "h": confirmation_h},),
-        p1_grid=(),
-        min_segment_length=MIN_NULL_SEGMENT_LENGTH,
-        min_series=MIN_SERIES_FOR_NULL,
-    )
-    gate_rows = null_screen.get("detectors", {}).get("cusum", [])
-    setting_gate = next(
-        (
-            item for item in gate_rows
-            if item.get("k") == CUSUM_K and item.get("h") == confirmation_h
-        ),
-        None,
-    )
+    setting_gate = _find_confirmation_setting(null_calibration, confirmation_h)
     passes = bool(setting_gate and setting_gate.get("passes_all_probabilities"))
 
     null_trigger_entities = 0
@@ -484,7 +489,8 @@ def _run_one_candidate(
     return {
         "confirmation_h": confirmation_h,
         "cusum_k": CUSUM_K,
-        "null_screen": null_screen,
+        "null_screen_status": null_calibration.get("status"),
+        "null_screen_setting": setting_gate,
         "passes_5pct_series_alarm_screen": passes,
         "null_screen_setting": setting_gate,
         "null_freeze_trigger_series_rate": (
@@ -543,16 +549,13 @@ def run_screen() -> dict[str, Any]:
         min_segment_length=MIN_NULL_SEGMENT_LENGTH,
         min_series=MIN_SERIES_FOR_NULL,
     )
-    passing_thresholds = {
-        float(item["h"])
-        for item in null_calibration.get("detectors", {}).get("cusum", [])
-        if item.get("k") == CUSUM_K and item.get("passes_all_probabilities")
-    }
+    passing_thresholds = passing_confirmation_thresholds(null_calibration)
     candidates = [
         _run_one_candidate(
             entity_series,
             rolling_by_entity,
             confirmation_h=h,
+            null_calibration=null_calibration,
         )
         for h in sorted(passing_thresholds)
     ]
