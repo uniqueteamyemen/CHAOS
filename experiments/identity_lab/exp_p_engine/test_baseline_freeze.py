@@ -125,8 +125,10 @@ class BaselineFreezeTests(unittest.TestCase):
         self.assertTrue(all(row["suspicion_run_required"] == 2 for row in rows))
         self.assertGreaterEqual(len(pending), 1)
 
-    def test_injection_freeze_is_disabled_before_labelled_onset(self):
-        series = make_series(shift_from=24, shift=2.0)
+    def test_freeze_trigger_gate_ignores_prior_suspicion_until_labelled_onset(self):
+        # The pre-onset history contains a sustained same-direction excursion.
+        # The explicit gate must prevent that history freezing the injected run.
+        series = make_series(shift_from=18, shift=2.0)
         onset = "2024"
         rows, diagnostics = build_policy_residuals(
             series,
