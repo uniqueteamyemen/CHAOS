@@ -47,7 +47,7 @@ BASELINE_CONFIGS = (
         "min_adjacent_pairs_for_rho": 16,
     },
     {
-        "label": "rolling_theil_sen_detrended_ar1_scale",
+        "label": "rolling_theil_sen_first_difference_acf_ar1_scale",
         "baseline_method": "rolling_theil_sen",
         "estimate_rho": True,
         "scale_window": 24,
@@ -541,7 +541,9 @@ def monte_carlo_ar1_scale_validation(
         "rho_values": list(rho_values),
         "target_level_sigma": target_sigma,
         "min_adjacent_pairs_for_rho": 14,
-        "trend_removed_before_rho_estimation": True,
+        "rho_estimator": "rho = 1 + 2 * lag1_acf(first_differences)",
+        "linear_drift_handling": "first-difference autocorrelation is centered; no level-series trend fit",
+        "ar1_mode_fails_closed_without_supported_lagged_differences": True,
         "results": results,
     }
 
