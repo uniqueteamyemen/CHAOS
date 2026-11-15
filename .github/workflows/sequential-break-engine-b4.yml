@@ -1,0 +1,33 @@
+name: CHAOS B-v4 Two-Point Transient + Winsor 1.8
+on:
+  push:
+    branches:
+      - experiment/b4-two-point-transient-winsor18
+    paths:
+      - "experiments/identity_lab/exp_sequential_break_b4_two_point/**"
+      - ".github/workflows/sequential-break-engine-b4.yml"
+permissions:
+  contents: read
+jobs:
+  paired-b4-comparison:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install pinned numerical dependency
+        run: python -m pip install numpy==2.2.6
+      - name: Run B-v4 specification and lifecycle tests
+        run: python -m unittest experiments.identity_lab.exp_sequential_break_b4_two_point.test_b4 -v
+      - name: Run paired B-v3.1 B-v3.2 B-v4 development and holdout replay
+        run: python -m experiments.identity_lab.exp_sequential_break_b4_two_point.benchmark_b4 --dev-trials 500 --holdout-trials 500
+      - name: Upload complete three-version comparison report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: chaos-b3-1-b3-2-b4-paired-comparison
+          path: experiments/identity_lab/exp_sequential_break_b4_two_point/results/sequential_break_engine_b3_1_b3_2_b4_comparison.json
+          if-no-files-found: error
+          retention-days: 90
