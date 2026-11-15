@@ -257,7 +257,7 @@ class ScaleEstimatorTests(unittest.TestCase):
         rows = observations(values, unit="days")
         result = first_difference_mad_scale(rows, time_unit="days", estimate_rho=True)
         self.assertEqual(result["status"], "ok")
-        self.assertEqual(result["rho_source"], "estimated_after_theil_sen_detrend")
+        self.assertEqual(result["rho_source"], "estimated_from_first_difference_acf")
         self.assertAlmostEqual(result["rho"], rho, delta=0.06)
         self.assertAlmostEqual(result["value"], target_sigma, delta=0.22)
 
@@ -282,10 +282,14 @@ class ScaleEstimatorTests(unittest.TestCase):
         values = ar1_series(25, rho=0.45, stationary_sigma=1.3, seed=41)
         rows = observations(values, unit="days")
         rows = [row for index, row in enumerate(rows) if index not in {4, 10, 18}]
-        result = first_difference_mad_scale(rows, time_unit="days", estimate_rho=True)
+        result = first_difference_mad_scale(
+            rows, time_unit="days", estimate_rho=True,
+            min_adjacent_pairs_for_rho=12,
+        )
         self.assertEqual(result["status"], "ok")
         self.assertGreater(result["n_differences"], 8)
         self.assertGreater(result["n_gap_adjusted"], 0)
+        self.assertEqual(result["rho_source"], "estimated_from_first_difference_acf")
 
 
     def test_ar1_estimation_removes_linear_trend_before_correlation(self):
@@ -297,7 +301,7 @@ class ScaleEstimatorTests(unittest.TestCase):
             rows, time_unit="days", estimate_rho=True,
         )
         self.assertEqual(result["status"], "ok")
-        self.assertEqual(result["rho_source"], "estimated_after_theil_sen_detrend")
+        self.assertEqual(result["rho_source"], "estimated_from_first_difference_acf")
         self.assertAlmostEqual(result["rho"], rho, delta=0.08)
         self.assertAlmostEqual(result["value"], target_sigma, delta=0.25)
 
@@ -321,6 +325,18 @@ class ScaleEstimatorTests(unittest.TestCase):
         self.assertTrue(all(row["scale_method"] in row["baseline_id"] for row in ar1))
         self.assertTrue(any("ar1" in row["baseline_id"] for row in ar1))
         self.assertTrue(all(row["scale_method"] in row["baseline_id"] for row in ar1))
+
+    def test_ar1_mode_fails_closed_when_lagged_difference_support_is_insufficient(self):
+        values = ar1_series(12, rho=0.65, stationary_sigma=2.0, seed=88)
+        rows = observations(values, unit="days")
+        result = first_difference_mad_scale(
+            rows, time_unit="days", estimate_rho=True,
+            min_adjacent_pairs_for_rho=14,
+        )
+        self.assertIsNone(result["value"])
+        self.assertEqual(result["status"], "rho_estimation_unavailable")
+        self.assertEqual(result["method"], "first_difference_mad_ar1_unavailable")
+        self.assertEqual(result["rho_source"], "unavailable")
 
     def test_sparse_nonunit_gaps_without_rho_do_not_invent_scale(self):
         rows = [
