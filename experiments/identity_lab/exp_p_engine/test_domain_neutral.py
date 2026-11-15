@@ -284,7 +284,7 @@ class ScaleEstimatorTests(unittest.TestCase):
         rows = [row for index, row in enumerate(rows) if index not in {4, 10, 18}]
         ar1_result = first_difference_mad_scale(
             rows, time_unit="days", estimate_rho=True,
-            min_adjacent_pairs_for_rho=40,
+            min_adjacent_pairs_for_rho=1500,
         )
         self.assertIsNone(ar1_result["value"])
         self.assertEqual(ar1_result["status"], "rho_estimation_unavailable")
@@ -323,7 +323,7 @@ class ScaleEstimatorTests(unittest.TestCase):
             rows, baseline_window=12, min_history=8,
             time_unit="days", baseline_method="rolling_theil_sen",
             estimate_rho=True, scale_window=64,
-            min_adjacent_pairs_for_rho=32,
+            min_adjacent_pairs_for_rho=40,
         )
         self.assertTrue(iid)
         self.assertTrue(ar1)
@@ -338,7 +338,7 @@ class ScaleEstimatorTests(unittest.TestCase):
         rows = observations(values, unit="days")
         result = first_difference_mad_scale(
             rows, time_unit="days", estimate_rho=True,
-            min_adjacent_pairs_for_rho=14,
+            min_adjacent_pairs_for_rho=1500,
         )
         self.assertIsNone(result["value"])
         self.assertEqual(result["status"], "rho_estimation_unavailable")
