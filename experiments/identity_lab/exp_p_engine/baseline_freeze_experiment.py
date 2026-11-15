@@ -203,13 +203,18 @@ def build_policy_residuals(
         source = series[index]
         event_time = source["event_time"]
         current_time = times[index]
-        history = list(series[max(0, index - baseline_window):index])
-        scale_history = list(series[max(0, index - scale_window):index])
-        observation_gap = (
-            current_time - times[index - 1] if index > 0 else 1.0
-        )
+        observation_gap = current_time - times[index - 1] if index > 0 else 1.0
+        contiguous_start = index - 1
+        while (
+            contiguous_start > 0
+            and times[contiguous_start] - times[contiguous_start - 1] <= 1.02
+        ):
+            contiguous_start -= 1
+        contiguous_history = list(series[contiguous_start:index])
+        history = contiguous_history[-baseline_window:]
+        scale_history = contiguous_history[-scale_window:]
 
-        if previous_time is not None and current_time - previous_time > 1.02:
+        if observation_gap > 1.02:
             if frozen_model is not None:
                 if current_episode is not None:
                     current_episode["ended_by"] = "unresolved_time_gap"
@@ -244,9 +249,33 @@ def build_policy_residuals(
             previous_time = current_time
             continue
 
+        if len(history) < min_history:
+            output.append({
+                "entity_id": entity_id,
+                "metric_id": metric_id,
+                "event_time": event_time,
+                "observed_value": float(source["value"]),
+                "expected_value": None,
+                "residual": None,
+                "scale": None,
+                "z_score": None,
+                "status": "scale_unavailable",
+                "baseline_id": baseline_id,
+                "baseline_method": policy,
+                "support_count": len(history),
+                "unit": source.get("unit"),
+                "observation_gap_units": observation_gap,
+                "freeze_active": False,
+                "freeze_trigger": False,
+                "freeze_released": False,
+                "reason": "insufficient_contiguous_history_after_gap",
+            })
+            previous_time = current_time
+            continue
+
         if policy == "fixed_initial_baseline_fixed_scale":
             if fixed_model is None:
-                anchor = list(series[:min_history])
+                anchor = list(history[:min_history])
                 fixed_model = fit_theil_sen(anchor, time_unit)
                 fixed_scale_result = scale_from(anchor, time_unit)
                 fixed_scale = fixed_scale_result["value"]
