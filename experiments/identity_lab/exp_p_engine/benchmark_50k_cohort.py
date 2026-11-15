@@ -10,7 +10,10 @@ import random
 import time
 from pathlib import Path
 
-from experiments.identity_lab.exp_p_engine.domain_neutral import cohort_peer_residuals
+from experiments.identity_lab.exp_p_engine.domain_neutral import (
+    cohort_peer_residuals,
+    false_alerts_per_1000_entity_year,
+)
 
 ENTITY_COUNT = 50_000
 PERIODS = 10
@@ -24,7 +27,8 @@ PEER_RATE_RESIDUAL_THRESHOLD = 0.20
 def main() -> None:
     rng = random.Random(731)
     started = time.perf_counter()
-    observations_processed = peer_residuals = injected = detected = rate_false_flags = raw_count_false_flags = 0
+    observations_processed = peer_residuals = injected = detected = rate_false_flags = raw_count_detected = raw_count_false_flags = 0
+    period_metrics = []
 
     for period in range(PERIODS):
         event_time = str(2020 + period)
@@ -54,18 +58,44 @@ def main() -> None:
         observations_processed += len(rows)
         peer_residuals += len(results)
         injected_ids = {"staff-" + str(i) for i in range(COHORT_COUNT)}
+        period_rate_detected = period_rate_false = period_raw_detected = period_raw_false = 0
         for row in results:
             flagged = abs(row["peer_residual"]) >= PEER_RATE_RESIDUAL_THRESHOLD
             if row["entity_id"] in injected_ids:
                 detected += int(flagged)
+                period_rate_detected += int(flagged)
             else:
                 rate_false_flags += int(flagged)
+                period_rate_false += int(flagged)
         for row in raw_results:
             flagged = abs(row["peer_residual"]) >= RAW_COUNT_RESIDUAL_THRESHOLD
-            if row["entity_id"] not in injected_ids:
+            if row["entity_id"] in injected_ids:
+                raw_count_detected += int(flagged)
+                period_raw_detected += int(flagged)
+            else:
                 raw_count_false_flags += int(flagged)
+                period_raw_false += int(flagged)
+        period_metrics.append({
+            "period": event_time,
+            "tested_entities": len(results),
+            "known_injections": len(injected_ids),
+            "exposure_adjusted": {
+                "true_flags": period_rate_detected,
+                "false_flags": period_rate_false,
+                "empirical_false_discovery_proportion": period_rate_false / (period_rate_detected + period_rate_false) if period_rate_detected + period_rate_false else 0.0,
+            },
+            "raw_count": {
+                "true_flags": period_raw_detected,
+                "false_flags": period_raw_false,
+                "empirical_false_discovery_proportion": period_raw_false / (period_raw_detected + period_raw_false) if period_raw_detected + period_raw_false else 0.0,
+            },
+        })
 
     elapsed = time.perf_counter() - started
+    total_entity_years = ENTITY_COUNT * PERIODS
+    null_entity_years = total_entity_years - injected
+    exposure_fdr_denominator = detected + rate_false_flags
+    raw_fdr_denominator = raw_count_detected + raw_count_false_flags
     report = {
         "benchmark": "synthetic_50k_entities_10_periods_peer_cohort",
         "synthetic_data": True,
@@ -78,9 +108,15 @@ def main() -> None:
         "known_injections": injected,
         "known_injections_flagged": detected,
         "injection_recall": detected / injected if injected else None,
-        "null_entity_periods": (ENTITY_COUNT - INJECTION_PER_COHORT) * PERIODS,
+        "total_entity_years": total_entity_years,
+        "null_entity_years": null_entity_years,
         "exposure_adjusted_null_peer_flags": rate_false_flags,
         "raw_count_null_peer_flags": raw_count_false_flags,
+        "exposure_adjusted_false_alerts_per_1000_null_entity_years": false_alerts_per_1000_entity_year(rate_false_flags, null_entity_years),
+        "raw_count_false_alerts_per_1000_null_entity_years": false_alerts_per_1000_entity_year(raw_count_false_flags, null_entity_years),
+        "exposure_adjusted_empirical_fdr": rate_false_flags / exposure_fdr_denominator if exposure_fdr_denominator else 0.0,
+        "raw_count_empirical_fdr": raw_count_false_flags / raw_fdr_denominator if raw_fdr_denominator else 0.0,
+        "cross_sectional_metrics_by_period": period_metrics,
         "raw_count_threshold": RAW_COUNT_RESIDUAL_THRESHOLD,
         "exposure_rate_threshold": PEER_RATE_RESIDUAL_THRESHOLD,
         "exposure_normalization": "completed_cases_per_hour",
