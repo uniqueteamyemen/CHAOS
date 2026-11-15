@@ -16,6 +16,7 @@ from experiments.identity_lab.exp_p_engine.domain_neutral import (
     false_alerts_per_1000_entity_year,
     first_difference_mad_scale,
     estimate_panel_ar1_rho,
+    second_difference_mad_scale,
     first_evidence_at_or_after,
     missing_periods,
     normalize_observations,
@@ -601,6 +602,85 @@ class PanelScaleEstimatorTests(unittest.TestCase):
         self.assertTrue(all(row["scale_rho_external"] == 0.45 for row in residuals))
         self.assertTrue(all("panel-rho-0.450" in row["baseline_id"] for row in residuals))
 
+
+
+
+
+class SecondDifferenceScaleTests(unittest.TestCase):
+    def test_second_difference_scale_recovers_iid_noise_under_linear_trend(self):
+        rng = random.Random(20261115)
+        sigma = 2.0
+        rows = observations(
+            [8.0 + 0.35 * index + rng.gauss(0.0, sigma) for index in range(4000)],
+            unit="days",
+        )
+        result = second_difference_mad_scale(rows, time_unit="days")
+        self.assertEqual(result["status"], "ok")
+        self.assertAlmostEqual(result["value"], sigma, delta=0.18)
+        self.assertEqual(result["method"], "second_difference_mad_iid_consecutive_only")
+
+    def test_second_difference_scale_removes_quadratic_drift_component(self):
+        rng = random.Random(20261116)
+        sigma = 1.5
+        rows = observations(
+            [
+                40.0 + 0.15 * index + 0.003 * index * index
+                + rng.gauss(0.0, sigma)
+                for index in range(3500)
+            ],
+            unit="days",
+        )
+        result = second_difference_mad_scale(rows, time_unit="days")
+        self.assertEqual(result["status"], "ok")
+        self.assertAlmostEqual(result["value"], sigma, delta=0.20)
+
+    def test_second_difference_scale_skips_gaps_without_interpolation(self):
+        rng = random.Random(222)
+        all_rows = observations(
+            [rng.gauss(0.0, 1.8) for _ in range(30)],
+            start_year=2000,
+        )
+        rows = [row for index, row in enumerate(all_rows) if index not in {4, 11, 20}]
+        result = second_difference_mad_scale(rows, time_unit="years")
+        self.assertEqual(result["status"], "ok")
+        self.assertGreater(result["n_skipped_triples"], 0)
+        self.assertGreaterEqual(result["n_differences"], 15)
+
+    def test_univariate_builder_can_use_second_difference_scale(self):
+        rng = random.Random(311)
+        rows = observations(
+            [5.0 + 0.2 * index + rng.gauss(0.0, 0.5) for index in range(40)],
+            start_year=1980,
+        )
+        residuals = build_univariate_residuals(
+            rows,
+            baseline_window=12,
+            min_history=8,
+            time_unit="years",
+            baseline_method="rolling_theil_sen",
+            scale_estimator="second_difference_mad",
+        )
+        self.assertTrue(residuals)
+        self.assertTrue(all(
+            row["scale_estimator"] == "second_difference_mad"
+            for row in residuals
+        ))
+        self.assertTrue(all(
+            "second_difference_mad" in row["baseline_id"]
+            for row in residuals
+        ))
+
+    def test_second_difference_scale_rejects_ar1_parameter_combination(self):
+        rows = observations([float(index) for index in range(20)])
+        with self.assertRaisesRegex(ValueError, "does_not_accept_ar1_adjustment"):
+            build_univariate_residuals(
+                rows,
+                baseline_window=8,
+                min_history=8,
+                baseline_method="rolling_theil_sen",
+                scale_estimator="second_difference_mad",
+                scale_rho=0.4,
+            )
 
 
 class DetectorAndFleetTests(unittest.TestCase):
