@@ -8,6 +8,10 @@ from experiments.identity_lab.exp_p_engine.residual_dependence_experiment import
     lag1_summary,
     prewhiten_evaluation_rows,
 )
+from experiments.identity_lab.exp_p_engine.domain_neutral import (
+    detect_two_sided_cusum,
+    validate_residual_contract,
+)
 
 
 def make_ar1_rows(
@@ -88,6 +92,28 @@ class ResidualDependenceTests(unittest.TestCase):
         whitened = prewhiten_evaluation_rows(
             rows, calibration, evaluation_start="2024"
         )
+        # The transformed stream must remain contract-valid and consumable by
+        # the existing detector API. Raw metric-space values remain auditable.
+        validate_residual_contract(whitened)
+        detect_two_sided_cusum(whitened, k=0.5, h=3.0)
+        source_by_key = {
+            (row["entity_id"], row["event_time"]): row for row in rows
+        }
+        for row in whitened:
+            if row["status"] == "ready":
+                self.assertAlmostEqual(row["observed_value"] - row["expected_value"], row["residual"])
+                self.assertAlmostEqual(row["residual"] / row["scale"], row["z_score"])
+                self.assertEqual(row["baseline_method"], "frozen_panel_ar1_residual_prewhitening")
+                self.assertEqual(row["unit"], "standardized_innovation")
+                source = source_by_key[(row["entity_id"], row["event_time"])]
+                self.assertEqual(row["raw_residual"], source["residual"])
+                self.assertEqual(row["raw_expected_value"], source["expected_value"])
+            else:
+                self.assertIn(row["status"], {
+                    "innovation_gap_reset", "innovation_warmup_or_gap"
+                })
+                self.assertIsNone(row["residual"])
+                self.assertIsNone(row["z_score"])
         raw_lag = lag1_summary(raw_eval)["median_entity_lag1"]
         white_lag = lag1_summary(whitened)["median_entity_lag1"]
         self.assertIsNotNone(raw_lag)
