@@ -12,10 +12,10 @@ def make_series(*, count=36, shift_from=None, shift=0.0, transient_at=None, gap_
     rows = []
     pattern = (0.10, -0.10, 0.05, -0.05)
     years = []
-    year = 2000
     for index in range(count):
+        year = 2000 + index
         if gap_at is not None and index >= gap_at:
-            year += 3 if index == gap_at else 1
+            year += 2
         years.append(year)
         value = 20.0 + 0.2 * index + pattern[index % len(pattern)]
         if shift_from is not None and index >= shift_from:
