@@ -10,6 +10,7 @@ from experiments.identity_lab.exp_p_engine.residual_dependence_experiment import
     run_injection_experiment,
     summarize_detector_hits,
     calibrate_prewhitened_null,
+    stationary_bootstrap_sample,
     _first_hit_summary,
 )
 from experiments.identity_lab.exp_p_engine.domain_neutral import (
@@ -162,7 +163,45 @@ class ResidualDependenceTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "not_approved"):
             prewhiten_evaluation_rows(rows, calibration, evaluation_start="2012")
 
-    def test_prewhitened_empirical_null_screen_uses_contiguous_ready_segments(self):
+    def test_stationary_bootstrap_never_wraps_or_crosses_source_gaps(self):
+        segments = [list(range(8)), list(range(20, 26))]
+        blocks = stationary_bootstrap_sample(
+            segments,
+            target_length=80,
+            restart_probability=0.01,
+            rng=random.Random(19),
+        )
+        self.assertEqual(sum(len(block) for block in blocks), 80)
+        for block in blocks:
+            self.assertTrue(
+                any(
+                    block == segment[start:start + len(block)]
+                    for segment in segments
+                    for start in range(len(segment) - len(block) + 1)
+                ),
+                msg=f"block crossed a source boundary: {block}",
+            )
+
+    def test_stationary_bootstrap_start_sampling_is_length_weighted(self):
+        short_segment = [0, 1]
+        long_segment = list(range(10, 30))
+        rng = random.Random(31)
+        short_starts = 0
+        long_starts = 0
+        for _ in range(5000):
+            block = stationary_bootstrap_sample(
+                [short_segment, long_segment],
+                target_length=1,
+                restart_probability=1.0,
+                rng=rng,
+            )
+            if block[0][0] < 10:
+                short_starts += 1
+            else:
+                long_starts += 1
+        self.assertGreater(long_starts, short_starts * 5)
+
+    def test_stationary_bootstrap_calibration_reports_5pct_gate(self):
         rows = make_ar1_rows(
             entities=50, training_count=24, evaluation_count=8,
             rho=0.6, seed=115,
@@ -181,17 +220,38 @@ class ResidualDependenceTests(unittest.TestCase):
         report = calibrate_prewhitened_null(
             whitened,
             replicates=25,
-            block_lengths=(2, 3),
+            restart_probabilities=(0.25, 0.35),
             cusum_grid=({"k": 0.5, "h": 8.5},),
             p1_grid=({"threshold": 3.0, "run_length": 3},),
+            min_segment_length=2,
         )
         self.assertEqual(report["status"], "ok")
-        self.assertGreaterEqual(report["series_count"], 30)
-        self.assertGreater(report["ready_evaluation_exposure"], 0)
-        self.assertEqual(report["block_lengths"], [2, 3])
-        self.assertIn("passes_all_block_lengths", report["detectors"]["cusum"][0])
-        self.assertIn("2", report["detectors"]["cusum"][0]["by_block_length"])
-        self.assertIn("3", report["detectors"]["cusum"][0]["by_block_length"])
+        self.assertEqual(report["restart_probabilities"], [0.25, 0.35])
+        self.assertAlmostEqual(
+            report["expected_geometric_block_lengths"]["0.25"], 4.0
+        )
+        self.assertAlmostEqual(
+            report["expected_geometric_block_lengths"]["0.35"], 1.0 / 0.35
+        )
+        self.assertEqual(
+            report["series_alarm_screen"]["maximum_upper95_series_alarm_rate"],
+            0.05,
+        )
+        self.assertIn("0.25", report["detectors"]["cusum"][0]["by_probability"])
+        self.assertIn("0.35", report["detectors"]["cusum"][0]["by_probability"])
+
+
+    def test_stationary_sampler_observed_mean_length_tracks_geometric_mean(self):
+        segments = [list(range(10000))]
+        for probability, expected in ((0.25, 4.0), (0.35, 1.0 / 0.35)):
+            blocks = stationary_bootstrap_sample(
+                segments,
+                target_length=30000,
+                restart_probability=probability,
+                rng=random.Random(101),
+            )
+            observed = sum(len(block) for block in blocks) / len(blocks)
+            self.assertAlmostEqual(observed, expected, delta=0.20)
 
     def test_injection_experiment_skips_entities_without_residual_history(self):
         short_series = make_ar1_rows(

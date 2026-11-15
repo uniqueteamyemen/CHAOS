@@ -56,17 +56,12 @@ MAX_RHO_CI_WIDTH = 0.50
 INJECTION_SIGMAS = (3.0, 6.0)
 INJECTION_DIRECTIONS = (-1, 1)
 
-RAW_CUSUM_GRID = (
-    {"k": 0.5, "h": 8.5},
-    {"k": 1.0, "h": 16.0},
-)
+RAW_CUSUM_GRID = tuple(dict(item) for item in NULL_CUSUM_GRID)
 # Use the established empirical-null grid for transformed standardized
 # innovations. Each candidate is screened on the held-out innovation stream.
 INNOVATION_CUSUM_GRID = tuple(dict(item) for item in NULL_CUSUM_GRID)
-RAW_P1_GRID = (
-    {"threshold": 3.0, "run_length": 3},
-    {"threshold": 4.0, "run_length": 4},
-)
+RAW_P1_GRID = tuple(dict(item) for item in NULL_P1_GRID)
+STATIONARY_BOOTSTRAP_P_GRID = (0.25, 0.30, 0.35)
 INNOVATION_P1_GRID = tuple(dict(item) for item in NULL_P1_GRID)
 
 
@@ -452,28 +447,92 @@ def summarize_detector_hits(
     return output
 
 
+def stationary_bootstrap_sample(
+    segments: Sequence[Sequence[float]],
+    *,
+    target_length: int,
+    restart_probability: float,
+    rng: random.Random,
+) -> list[list[float]]:
+    """Sample stationary-bootstrap blocks without crossing source gaps.
+
+    Block starts are uniform over all valid observations, so segment selection
+    is length-weighted. A block stops on a geometric restart or at its source
+    segment end. No circular wrap is allowed at any source boundary.
+    """
+    if target_length < 1:
+        raise ValueError("stationary_bootstrap_target_length_invalid")
+    if (
+        not math.isfinite(restart_probability)
+        or not 0.0 < restart_probability <= 1.0
+    ):
+        raise ValueError("stationary_bootstrap_restart_probability_invalid")
+
+    clean_segments: list[list[float]] = []
+    for segment in segments:
+        values = [float(value) for value in segment]
+        if any(not math.isfinite(value) for value in values):
+            raise ValueError("stationary_bootstrap_non_finite_value")
+        if values:
+            clean_segments.append(values)
+    if not clean_segments:
+        raise ValueError("stationary_bootstrap_no_valid_observations")
+
+    # Every valid time point is one equally likely start position.
+    start_positions = [
+        (segment_index, offset)
+        for segment_index, segment in enumerate(clean_segments)
+        for offset in range(len(segment))
+    ]
+    blocks: list[list[float]] = []
+    sampled = 0
+    while sampled < target_length:
+        segment_index, offset = start_positions[
+            rng.randrange(len(start_positions))
+        ]
+        segment = clean_segments[segment_index]
+        block: list[float] = []
+        while sampled < target_length:
+            block.append(segment[offset])
+            sampled += 1
+            offset += 1
+            if sampled >= target_length or offset >= len(segment):
+                break
+            if rng.random() < restart_probability:
+                break
+        blocks.append(block)
+    return blocks
+
+
 def calibrate_prewhitened_null(
     rows: Sequence[Mapping[str, Any]],
     *,
     replicates: int = NULL_BOOTSTRAP_REPLICATES,
     seed: int = NULL_BOOTSTRAP_SEED,
-    block_lengths: Sequence[int] = NULL_BLOCK_LENGTHS,
+    restart_probabilities: Sequence[float] = STATIONARY_BOOTSTRAP_P_GRID,
     cusum_grid: Sequence[Mapping[str, Any]] = INNOVATION_CUSUM_GRID,
     p1_grid: Sequence[Mapping[str, Any]] = INNOVATION_P1_GRID,
-    min_segment_length: int = 6,
+    min_segment_length: int = 2,
     min_series: int = 30,
 ) -> dict[str, Any]:
-    """Block-bootstrap screen of held-out standardized innovations.
+    """Stationary-bootstrap empirical-null screen on a standardized stream.
 
-    The resampled input is evaluation-only. Gaps and unavailable observations
-    split segments; training rows are never bootstrapped into the evaluation
-    period. Because World Bank history is unlabelled, this is an empirical
-    reference screen, not a verified false-positive-rate guarantee.
+    The caller supplies only held-out rows. Missing observations and gaps split
+    contiguous segments. Block restarts select uniformly among valid points;
+    source segment ends truncate blocks. The 5% screen is a candidate filter,
+    not a production false-alarm guarantee.
     """
-    if replicates < 1 or min_segment_length < 2 or min_series < 1:
-        raise ValueError("innovation_bootstrap_parameters_invalid")
-    if not block_lengths or any(int(length) < 1 for length in block_lengths):
-        raise ValueError("innovation_bootstrap_block_length_invalid")
+    if replicates < 1 or min_segment_length < 1 or min_series < 1:
+        raise ValueError("stationary_bootstrap_parameters_invalid")
+    if (
+        not restart_probabilities
+        or any(
+            not math.isfinite(float(probability))
+            or not 0.0 < float(probability) <= 1.0
+            for probability in restart_probabilities
+        )
+    ):
+        raise ValueError("stationary_bootstrap_restart_probabilities_invalid")
 
     grouped: dict[tuple[str, str, str], list[dict[str, Any]]] = defaultdict(list)
     for row in rows:
@@ -488,19 +547,23 @@ def calibrate_prewhitened_null(
     dropped_short_segments = 0
     for key, series_rows in grouped.items():
         segments = contiguous_ready_segments(series_rows)
-        usable = [
+        retained = [
             segment for segment in segments
             if len(segment) >= min_segment_length
         ]
-        dropped_short_segments += len(segments) - len(usable)
-        if usable:
-            panel["::".join(key)] = usable
+        dropped_short_segments += len(segments) - len(retained)
+        if retained:
+            panel["::".join(key)] = retained
 
     series_count = len(panel)
-    exposure = sum(sum(len(segment) for segment in segments) for segments in panel.values())
+    exposure_by_series = {
+        key: sum(len(segment) for segment in segments)
+        for key, segments in panel.items()
+    }
+    exposure = sum(exposure_by_series.values())
     if series_count < min_series or exposure == 0:
         return {
-            "status": "insufficient_prewhitened_evaluation_support",
+            "status": "insufficient_evaluation_support",
             "series_count": series_count,
             "ready_evaluation_exposure": exposure,
             "minimum_series": min_series,
@@ -510,11 +573,19 @@ def calibrate_prewhitened_null(
 
     output: dict[str, Any] = {
         "status": "ok",
-        "method": "circular_moving_block_bootstrap_of_held_out_prewhitened_innovations",
-        "null_interpretation": (
-            "Empirical reference generated from historical held-out innovations. "
-            "The source is unlabelled and may contain real breaks; rates are not "
-            "verified false-positive rates or production guarantees."
+        "method": "stationary_bootstrap_on_contiguous_evaluation_segments",
+        "restart_probabilities": [float(p) for p in restart_probabilities],
+        "expected_geometric_block_lengths": {
+            str(float(p)): 1.0 / float(p)
+            for p in restart_probabilities
+        },
+        "boundary_policy": (
+            "A block ends at a geometric restart or at its source contiguous "
+            "segment boundary; no circular wrap or cross-gap continuation."
+        ),
+        "start_sampling": (
+            "Uniform over every valid point in each series; segment selection "
+            "is proportional to segment length."
         ),
         "series_count": series_count,
         "ready_evaluation_exposure": exposure,
@@ -523,79 +594,142 @@ def calibrate_prewhitened_null(
         "dropped_short_segments": dropped_short_segments,
         "bootstrap_replicates": replicates,
         "seed": seed,
-        "block_lengths": list(block_lengths),
         "series_alarm_screen": {
             "maximum_upper95_series_alarm_rate": MAX_ACCEPTABLE_SERIES_ALERT_RATE,
-            "criterion": "upper95_series_alarm_rate <= 0.05 at every tested block length",
-            "purpose": "candidate screen only; not a production FPR guarantee",
+            "criterion": (
+                "upper95_series_alarm_rate <= 0.05 for every tested "
+                "restart probability"
+            ),
+            "purpose": "candidate screen only; not a production false-alarm guarantee",
         },
         "detectors": {"cusum": [], "sign_run": []},
+        "sampling_diagnostics": {},
     }
 
-    specs = (
-        ("cusum", list(cusum_grid), lambda values, p: cusum_alarm_count(
-            values, k=float(p["k"]), h=float(p["h"])
-        )),
-        ("sign_run", list(p1_grid), lambda values, p: sign_run_alarm_count(
-            values, threshold=float(p["threshold"]), run_length=int(p["run_length"])
-        )),
-    )
-    for detector_name, settings, count_alarms in specs:
-        for params in settings:
-            by_block: dict[str, Any] = {}
-            passes_all = True
-            worst_upper = 0.0
-            for block_length in block_lengths:
-                # Identical seed per parameter means every candidate sees the
-                # same bootstrap panels for each block length (paired comparison).
-                rng = random.Random(seed + int(block_length))
-                event_counts: list[int] = []
-                series_alarm_rates: list[float] = []
-                for _ in range(replicates):
-                    total_events = 0
-                    series_with_alarm = 0
-                    for segments in panel.values():
-                        sampled = [
-                            moving_block_resample(
-                                segment,
-                                block_length=int(block_length),
-                                rng=rng,
-                            )
-                            for segment in segments
-                        ]
-                        count = sum(count_alarms(segment, params) for segment in sampled)
-                        total_events += count
-                        series_with_alarm += int(count > 0)
-                    event_counts.append(total_events)
-                    series_alarm_rates.append(series_with_alarm / series_count)
+    detector_settings = {
+        "cusum": [
+            (dict(params), lambda values, p: cusum_alarm_count(
+                values, k=float(p["k"]), h=float(p["h"])
+            ))
+            for params in cusum_grid
+        ],
+        "sign_run": [
+            (dict(params), lambda values, p: sign_run_alarm_count(
+                values,
+                threshold=float(p["threshold"]),
+                run_length=int(p["run_length"]),
+            ))
+            for params in p1_grid
+        ],
+    }
+    stored: dict[str, list[dict[str, Any]]] = {
+        detector: [
+            {
+                "params": params,
+                "by_probability": {},
+                "passes_all_probabilities": True,
+                "worst_upper95_series_alarm_rate": 0.0,
+            }
+            for params, _ in settings
+        ]
+        for detector, settings in detector_settings.items()
+    }
 
-                upper95 = percentile(series_alarm_rates, 0.95)
-                mean_series_rate = (
-                    statistics.mean(series_alarm_rates) if series_alarm_rates else None
+    for probability_index, probability in enumerate(restart_probabilities):
+        p = float(probability)
+        rng = random.Random(
+            seed + probability_index * 100_003 + int(round(p * 10_000))
+        )
+        event_totals = {
+            detector: [[] for _ in settings]
+            for detector, settings in detector_settings.items()
+        }
+        alarm_rates = {
+            detector: [[] for _ in settings]
+            for detector, settings in detector_settings.items()
+        }
+        sampled_block_count = 0
+        sampled_point_count = 0
+
+        for _ in range(replicates):
+            replicate_events = {
+                detector: [0 for _ in settings]
+                for detector, settings in detector_settings.items()
+            }
+            replicate_alarm_series = {
+                detector: [0 for _ in settings]
+                for detector, settings in detector_settings.items()
+            }
+            for key, segments in panel.items():
+                blocks = stationary_bootstrap_sample(
+                    segments,
+                    target_length=exposure_by_series[key],
+                    restart_probability=p,
+                    rng=rng,
                 )
-                mean_event_rate = (
-                    1000.0 * sum(event_counts) / (replicates * exposure)
-                    if exposure else None
+                sampled_block_count += len(blocks)
+                sampled_point_count += sum(len(block) for block in blocks)
+                synthetic_path = [
+                    value for block in blocks for value in block
+                ]
+                for detector, settings in detector_settings.items():
+                    for index, (params, alarm_counter) in enumerate(settings):
+                        alarms = alarm_counter(synthetic_path, params)
+                        replicate_events[detector][index] += alarms
+                        replicate_alarm_series[detector][index] += int(alarms > 0)
+
+            for detector, settings in detector_settings.items():
+                for index in range(len(settings)):
+                    event_totals[detector][index].append(
+                        replicate_events[detector][index]
+                    )
+                    alarm_rates[detector][index].append(
+                        replicate_alarm_series[detector][index] / series_count
+                    )
+
+        output["sampling_diagnostics"][str(p)] = {
+            "expected_geometric_block_length": 1.0 / p,
+            "observed_mean_sampled_block_length": (
+                sampled_point_count / sampled_block_count
+                if sampled_block_count else None
+            ),
+            "sampled_block_count": sampled_block_count,
+            "sampled_point_count": sampled_point_count,
+        }
+
+        for detector, settings in detector_settings.items():
+            for index, (params, _) in enumerate(settings):
+                rates = alarm_rates[detector][index]
+                upper95 = percentile(rates, 0.95)
+                mean_rate = statistics.mean(rates) if rates else None
+                mean_events_per_1000 = (
+                    1000.0 * sum(event_totals[detector][index])
+                    / (replicates * exposure)
                 )
                 passed = (
                     upper95 is not None
                     and upper95 <= MAX_ACCEPTABLE_SERIES_ALERT_RATE
                 )
-                passes_all = passes_all and passed
-                worst_upper = max(worst_upper, upper95 if upper95 is not None else 1.0)
-                by_block[str(block_length)] = {
-                    "mean_series_alarm_rate": mean_series_rate,
+                record = stored[detector][index]
+                record["by_probability"][str(p)] = {
+                    "expected_block_length": 1.0 / p,
+                    "mean_series_alarm_rate": mean_rate,
                     "upper95_series_alarm_rate": upper95,
-                    "mean_events_per_1000_ready_innovations": mean_event_rate,
+                    "mean_events_per_1000_ready_periods": mean_events_per_1000,
                     "passes_5pct_series_screen": passed,
                 }
-            output["detectors"][detector_name].append({
-                **dict(params),
-                "passes_all_block_lengths": passes_all,
-                "worst_upper95_series_alarm_rate": worst_upper,
-                "by_block_length": by_block,
-            })
+                record["passes_all_probabilities"] = (
+                    record["passes_all_probabilities"] and passed
+                )
+                record["worst_upper95_series_alarm_rate"] = max(
+                    record["worst_upper95_series_alarm_rate"],
+                    upper95 if upper95 is not None else 1.0,
+                )
+
+    for detector in detector_settings:
+        output["detectors"][detector] = stored[detector]
     return output
+
 
 
 def _time_delta(first: str, second: str) -> float:
@@ -860,6 +994,140 @@ def summarize_injection_response(rows: Sequence[Mapping[str, Any]]) -> dict[str,
     return output
 
 
+
+def _matched_evaluation_streams(
+    raw_rows: Sequence[Mapping[str, Any]],
+    innovation_rows: Sequence[Mapping[str, Any]],
+    *,
+    min_segment_length: int = 2,
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]], int]:
+    """Restrict raw and innovation streams to exactly the same series cohort."""
+    def group(rows: Sequence[Mapping[str, Any]]) -> dict[tuple[str, str], list[dict[str, Any]]]:
+        result: dict[tuple[str, str], list[dict[str, Any]]] = defaultdict(list)
+        for row in rows:
+            result[(str(row["entity_id"]), str(row["metric_id"]))].append(dict(row))
+        return result
+
+    raw_grouped = group(raw_rows)
+    innovation_grouped = group(innovation_rows)
+
+    def eligible(grouped: Mapping[tuple[str, str], Sequence[Mapping[str, Any]]]) -> set[tuple[str, str]]:
+        return {
+            key for key, series_rows in grouped.items()
+            if any(
+                len(segment) >= min_segment_length
+                for segment in contiguous_ready_segments(series_rows)
+            )
+        }
+
+    common = eligible(raw_grouped) & eligible(innovation_grouped)
+    raw_matched = [
+        row for key in sorted(common) for row in raw_grouped[key]
+    ]
+    innovation_matched = [
+        row for key in sorted(common) for row in innovation_grouped[key]
+    ]
+    return raw_matched, innovation_matched, len(common)
+
+
+def compare_screened_injection_recall(
+    raw_null: Mapping[str, Any],
+    innovation_null: Mapping[str, Any],
+    injection_summaries: Mapping[str, Any],
+) -> dict[str, Any]:
+    """Compare recall only for identical detector settings passing both gates."""
+    if raw_null.get("status") != "ok" or innovation_null.get("status") != "ok":
+        return {"status": "skipped_null_calibration_unavailable"}
+
+    def passing(calibration: Mapping[str, Any], detector: str) -> dict[tuple[tuple[str, Any], ...], dict[str, Any]]:
+        allowed: dict[tuple[tuple[str, Any], ...], dict[str, Any]] = {}
+        for item in calibration.get("detectors", {}).get(detector, []):
+            if item.get("passes_all_probabilities"):
+                params = dict(item["params"])
+                allowed[tuple(sorted(params.items()))] = params
+        return allowed
+
+    raw_summary = injection_summaries.get("raw_residuals", {})
+    white_summary = injection_summaries.get("prewhitened_innovations", {})
+    scenarios = sorted(set(raw_summary) & set(white_summary))
+    result: dict[str, Any] = {
+        "status": "ok",
+        "comparison_rule": (
+            "Paired comparison only: a detector setting is eligible if it passes "
+            "the 5% upper-95% series-alarm screen for every stationary-bootstrap "
+            "restart probability in both streams."
+        ),
+        "common_passing_settings": {},
+        "scenario_comparisons": {},
+    }
+
+    for detector in ("cusum", "sign_run"):
+        common = set(passing(raw_null, detector)) & set(passing(innovation_null, detector))
+        result["common_passing_settings"][detector] = [
+            dict(params) for params in sorted(common)
+        ]
+
+    for scenario in scenarios:
+        result["scenario_comparisons"][scenario] = {}
+        for detector in ("cusum", "sign_run"):
+            common = set(passing(raw_null, detector)) & set(passing(innovation_null, detector))
+            raw_rows = raw_summary[scenario].get(detector, [])
+            white_rows = white_summary[scenario].get(detector, [])
+            paired = []
+            for key in sorted(common):
+                params = dict(key)
+                raw_hit = next(
+                    (row for row in raw_rows if all(row.get(k) == v for k, v in params.items())),
+                    None,
+                )
+                white_hit = next(
+                    (row for row in white_rows if all(row.get(k) == v for k, v in params.items())),
+                    None,
+                )
+                if raw_hit is None or white_hit is None:
+                    continue
+                raw_recall = raw_hit.get("injected_detection_rate")
+                white_recall = white_hit.get("injected_detection_rate")
+                paired.append({
+                    "parameters": params,
+                    "raw": dict(raw_hit),
+                    "prewhitened": dict(white_hit),
+                    "recall_difference_innovation_minus_raw": (
+                        float(white_recall) - float(raw_recall)
+                        if white_recall is not None and raw_recall is not None
+                        else None
+                    ),
+                    "net_detection_gain_difference_innovation_minus_raw": (
+                        float(white_hit["net_detection_rate_delta"])
+                        - float(raw_hit["net_detection_rate_delta"])
+                        if white_hit.get("net_detection_rate_delta") is not None
+                        and raw_hit.get("net_detection_rate_delta") is not None
+                        else None
+                    ),
+                })
+            result["scenario_comparisons"][scenario][detector] = {
+                "paired_passing_setting_count": len(paired),
+                "paired_settings": paired,
+                "conclusion": (
+                    "prewhitened_innovations_higher_recall"
+                    if paired and statistics.mean(
+                        item["recall_difference_innovation_minus_raw"]
+                        for item in paired
+                        if item["recall_difference_innovation_minus_raw"] is not None
+                    ) > 0
+                    else "raw_residuals_higher_recall"
+                    if paired and statistics.mean(
+                        item["recall_difference_innovation_minus_raw"]
+                        for item in paired
+                        if item["recall_difference_innovation_minus_raw"] is not None
+                    ) < 0
+                    else "tie_or_no_complete_paired_recall"
+                ),
+            }
+    return result
+
+
+
 def run_source() -> dict[str, Any]:
     entity_series = read_world_bank()
     residual_by_entity: dict[str, list[dict[str, Any]]] = {}
@@ -876,52 +1144,93 @@ def run_source() -> dict[str, Any]:
             estimate_rho=False,
         )
 
-    all_residuals = [row for rows in residual_by_entity.values() for row in rows]
+    all_residuals = [
+        row for rows in residual_by_entity.values() for row in rows
+    ]
     calibration = estimate_panel_residual_rho(
         all_residuals,
         training_end=TRAINING_END,
     )
+
+    raw_null = None
+    innovation_null = None
+    screened_comparison: dict[str, Any] = {
+        "status": "skipped_panel_rho_not_approved"
+    }
+
     if calibration["status"] == "ok":
         evaluation_rows = [
             row for row in all_residuals
             if year_number(row["event_time"]) >= year_number(EVALUATION_START)
         ]
         whitened = prewhiten_evaluation_rows(all_residuals, calibration)
-        raw_diag = lag1_summary(evaluation_rows)
-        whitened_diag = lag1_summary(whitened)
-        innovation_null = calibrate_prewhitened_null(whitened)
-        raw_signals = summarize_detector_hits(evaluation_rows)
-        whitened_signals = summarize_detector_hits(
+        matched_raw, matched_white, matched_series_count = _matched_evaluation_streams(
+            evaluation_rows,
             whitened,
+            min_segment_length=2,
+        )
+
+        raw_diag = lag1_summary(matched_raw)
+        whitened_diag = lag1_summary(matched_white)
+
+        # Both streams use identical detector grids, sample support, restart
+        # probabilities and upper-95% per-series alarm gate.
+        raw_null = calibrate_prewhitened_null(
+            matched_raw,
+            cusum_grid=RAW_CUSUM_GRID,
+            p1_grid=RAW_P1_GRID,
+            min_segment_length=2,
+        )
+        innovation_null = calibrate_prewhitened_null(
+            matched_white,
+            cusum_grid=INNOVATION_CUSUM_GRID,
+            p1_grid=INNOVATION_P1_GRID,
+            min_segment_length=2,
+        )
+
+        raw_signals = summarize_detector_hits(
+            matched_raw,
+            cusum_grid=RAW_CUSUM_GRID,
+            p1_grid=RAW_P1_GRID,
+        )
+        whitened_signals = summarize_detector_hits(
+            matched_white,
             cusum_grid=INNOVATION_CUSUM_GRID,
             p1_grid=INNOVATION_P1_GRID,
         )
+
         injections = run_injection_experiment(
             entity_series,
             residual_by_entity,
             calibration,
         )
         summarized_injections: dict[str, Any] = {}
-        for stream_name, rows in injections.get("responses", {}).items():
-            for row in rows:
+        for stream_name, stream_rows in injections.get("responses", {}).items():
+            for row in stream_rows:
                 row["stream_name"] = stream_name
-            summarized_injections[stream_name] = summarize_injection_response(rows)
+            summarized_injections[stream_name] = summarize_injection_response(
+                stream_rows
+            )
         injection_status = {
             "status": injections["status"],
             "eligible_entities": injections["eligible_entities"],
             "skipped_entities": injections["skipped_entities"],
             "summaries": summarized_injections,
         }
+        screened_comparison = compare_screened_injection_recall(
+            raw_null,
+            innovation_null,
+            summarized_injections,
+        )
     else:
-        raw_diag = lag1_summary([
+        evaluation_rows = [
             row for row in all_residuals
             if year_number(row["event_time"]) >= year_number(EVALUATION_START)
-        ])
+        ]
+        matched_series_count = 0
+        raw_diag = lag1_summary(evaluation_rows)
         whitened_diag = None
-        raw_signals = summarize_detector_hits([
-            row for row in all_residuals
-            if year_number(row["event_time"]) >= year_number(EVALUATION_START)
-        ])
+        raw_signals = summarize_detector_hits(evaluation_rows)
         whitened_signals = None
         injection_status = {"status": "skipped_panel_rho_not_approved"}
 
@@ -934,24 +1243,32 @@ def run_source() -> dict[str, Any]:
             "window": BASELINE_WINDOW,
             "scale": "first_difference_mad_iid_unit_gap_only",
         },
-        "dependence_calibration": calibration,
-        "evaluation_residual_dependence": {
-            "raw": raw_diag,
-            "prewhitened": whitened_diag,
+        "dependence_calibration": {
+            key: value
+            for key, value in calibration.items()
+            if key not in ("entity_centers", "entity_pair_counts")
         },
+        "evaluation_residual_dependence": {
+            "raw_matched": raw_diag,
+            "prewhitened_matched": whitened_diag,
+        },
+        "matched_series_count": matched_series_count,
         "historical_signal_profile": {
             "raw_residuals": raw_signals,
             "prewhitened_innovations": whitened_signals,
         },
-        "prewhitened_empirical_null_calibration": (
-            innovation_null if calibration["status"] == "ok" else None
-        ),
+        "stationary_bootstrap_null_calibration": {
+            "raw_residuals": raw_null,
+            "prewhitened_innovations": innovation_null,
+        },
         "controlled_persistent_shift_injections": injection_status,
+        "screened_injection_recall_comparison": screened_comparison,
         "interpretation": (
-            "Prewhitening is a diagnostic candidate only. The panel rho is estimated "
-            "and frozen before evaluation. Matched injection/control response and "
-            "held-out residual autocorrelation must both be acceptable before any use. "
-            "No source-history hits are labelled true or false without ground truth."
+            "Raw residuals and prewhitened innovations are evaluated on the same "
+            "entity/metric cohort with identical detector grids, stationary-bootstrap "
+            "restart probabilities and upper-95% 5% series-alarm screen. This is an "
+            "empirical candidate screen, not a verified production false-alarm "
+            "guarantee. Persistent-shift injections are controlled simulations."
         ),
     }
 
@@ -980,8 +1297,8 @@ def main() -> None:
         "whitened_eval_autocorrelation": result["evaluation_residual_dependence"]["prewhitened"],
         "raw_signal_profile": result["historical_signal_profile"]["raw_residuals"],
         "whitened_signal_profile": result["historical_signal_profile"]["prewhitened_innovations"],
-        "whitened_empirical_null": result["prewhitened_empirical_null_calibration"],
-        "injections": result["controlled_persistent_shift_injections"]["summaries"],
+        "stationary_bootstrap_null": result["stationary_bootstrap_null_calibration"],
+        "screened_injection_comparison": result["screened_injection_recall_comparison"],
     }, ensure_ascii=False, indent=2))
 
 
