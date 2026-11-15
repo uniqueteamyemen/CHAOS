@@ -24,6 +24,19 @@ from experiments.identity_lab.exp_p_engine.domain_neutral import (
     first_evidence_at_or_after,
     validate_residual_contract,
 )
+from experiments.identity_lab.exp_p_engine.block_bootstrap_calibration import (
+    BOOTSTRAP_REPLICATES as NULL_BOOTSTRAP_REPLICATES,
+    BOOTSTRAP_SEED as NULL_BOOTSTRAP_SEED,
+    BLOCK_LENGTHS as NULL_BLOCK_LENGTHS,
+    CUSUM_GRID as NULL_CUSUM_GRID,
+    MAX_ACCEPTABLE_SERIES_ALERT_RATE,
+    P1_GRID as NULL_P1_GRID,
+    contiguous_ready_segments,
+    cusum_alarm_count,
+    moving_block_resample,
+    percentile,
+    sign_run_alarm_count,
+)
 
 ROOT = Path(__file__).resolve().parents[3]
 OUTPUT = (
@@ -47,23 +60,14 @@ RAW_CUSUM_GRID = (
     {"k": 0.5, "h": 8.5},
     {"k": 1.0, "h": 16.0},
 )
-INNOVATION_CUSUM_GRID = (
-    {"k": 0.25, "h": 2.0},
-    {"k": 0.25, "h": 3.0},
-    {"k": 0.25, "h": 4.0},
-    {"k": 0.50, "h": 4.0},
-    {"k": 0.50, "h": 6.0},
-)
+# Use the established empirical-null grid for transformed standardized
+# innovations. Each candidate is screened on the held-out innovation stream.
+INNOVATION_CUSUM_GRID = tuple(dict(item) for item in NULL_CUSUM_GRID)
 RAW_P1_GRID = (
     {"threshold": 3.0, "run_length": 3},
     {"threshold": 4.0, "run_length": 4},
 )
-INNOVATION_P1_GRID = (
-    {"threshold": 3.0, "run_length": 1},
-    {"threshold": 3.5, "run_length": 1},
-    {"threshold": 4.0, "run_length": 1},
-    {"threshold": 3.0, "run_length": 3},
-)
+INNOVATION_P1_GRID = tuple(dict(item) for item in NULL_P1_GRID)
 
 
 def year_number(value: Any) -> int:
@@ -448,6 +452,152 @@ def summarize_detector_hits(
     return output
 
 
+def calibrate_prewhitened_null(
+    rows: Sequence[Mapping[str, Any]],
+    *,
+    replicates: int = NULL_BOOTSTRAP_REPLICATES,
+    seed: int = NULL_BOOTSTRAP_SEED,
+    block_lengths: Sequence[int] = NULL_BLOCK_LENGTHS,
+    cusum_grid: Sequence[Mapping[str, Any]] = INNOVATION_CUSUM_GRID,
+    p1_grid: Sequence[Mapping[str, Any]] = INNOVATION_P1_GRID,
+    min_segment_length: int = 6,
+    min_series: int = 30,
+) -> dict[str, Any]:
+    """Block-bootstrap screen of held-out standardized innovations.
+
+    The resampled input is evaluation-only. Gaps and unavailable observations
+    split segments; training rows are never bootstrapped into the evaluation
+    period. Because World Bank history is unlabelled, this is an empirical
+    reference screen, not a verified false-positive-rate guarantee.
+    """
+    if replicates < 1 or min_segment_length < 2 or min_series < 1:
+        raise ValueError("innovation_bootstrap_parameters_invalid")
+    if not block_lengths or any(int(length) < 1 for length in block_lengths):
+        raise ValueError("innovation_bootstrap_block_length_invalid")
+
+    grouped: dict[tuple[str, str, str], list[dict[str, Any]]] = defaultdict(list)
+    for row in rows:
+        key = (
+            str(row["entity_id"]),
+            str(row["metric_id"]),
+            str(row["baseline_id"]),
+        )
+        grouped[key].append(dict(row))
+
+    panel: dict[str, list[list[float]]] = {}
+    dropped_short_segments = 0
+    for key, series_rows in grouped.items():
+        segments = contiguous_ready_segments(series_rows)
+        usable = [
+            segment for segment in segments
+            if len(segment) >= min_segment_length
+        ]
+        dropped_short_segments += len(segments) - len(usable)
+        if usable:
+            panel["::".join(key)] = usable
+
+    series_count = len(panel)
+    exposure = sum(sum(len(segment) for segment in segments) for segments in panel.values())
+    if series_count < min_series or exposure == 0:
+        return {
+            "status": "insufficient_prewhitened_evaluation_support",
+            "series_count": series_count,
+            "ready_evaluation_exposure": exposure,
+            "minimum_series": min_series,
+            "minimum_segment_length": min_segment_length,
+            "dropped_short_segments": dropped_short_segments,
+        }
+
+    output: dict[str, Any] = {
+        "status": "ok",
+        "method": "circular_moving_block_bootstrap_of_held_out_prewhitened_innovations",
+        "null_interpretation": (
+            "Empirical reference generated from historical held-out innovations. "
+            "The source is unlabelled and may contain real breaks; rates are not "
+            "verified false-positive rates or production guarantees."
+        ),
+        "series_count": series_count,
+        "ready_evaluation_exposure": exposure,
+        "segment_count": sum(len(segments) for segments in panel.values()),
+        "minimum_segment_length": min_segment_length,
+        "dropped_short_segments": dropped_short_segments,
+        "bootstrap_replicates": replicates,
+        "seed": seed,
+        "block_lengths": list(block_lengths),
+        "series_alarm_screen": {
+            "maximum_upper95_series_alarm_rate": MAX_ACCEPTABLE_SERIES_ALERT_RATE,
+            "criterion": "upper95_series_alarm_rate <= 0.05 at every tested block length",
+            "purpose": "candidate screen only; not a production FPR guarantee",
+        },
+        "detectors": {"cusum": [], "sign_run": []},
+    }
+
+    specs = (
+        ("cusum", list(cusum_grid), lambda values, p: cusum_alarm_count(
+            values, k=float(p["k"]), h=float(p["h"])
+        )),
+        ("sign_run", list(p1_grid), lambda values, p: sign_run_alarm_count(
+            values, threshold=float(p["threshold"]), run_length=int(p["run_length"])
+        )),
+    )
+    for detector_name, settings, count_alarms in specs:
+        for params in settings:
+            by_block: dict[str, Any] = {}
+            passes_all = True
+            worst_upper = 0.0
+            for block_length in block_lengths:
+                # Identical seed per parameter means every candidate sees the
+                # same bootstrap panels for each block length (paired comparison).
+                rng = random.Random(seed + int(block_length))
+                event_counts: list[int] = []
+                series_alarm_rates: list[float] = []
+                for _ in range(replicates):
+                    total_events = 0
+                    series_with_alarm = 0
+                    for segments in panel.values():
+                        sampled = [
+                            moving_block_resample(
+                                segment,
+                                block_length=int(block_length),
+                                rng=rng,
+                            )
+                            for segment in segments
+                        ]
+                        count = sum(count_alarms(segment, params) for segment in sampled)
+                        total_events += count
+                        series_with_alarm += int(count > 0)
+                    event_counts.append(total_events)
+                    series_alarm_rates.append(series_with_alarm / series_count)
+
+                upper95 = percentile(series_alarm_rates, 0.95)
+                mean_series_rate = (
+                    statistics.mean(series_alarm_rates) if series_alarm_rates else None
+                )
+                mean_event_rate = (
+                    1000.0 * sum(event_counts) / (replicates * exposure)
+                    if exposure else None
+                )
+                passed = (
+                    upper95 is not None
+                    and upper95 <= MAX_ACCEPTABLE_SERIES_ALERT_RATE
+                )
+                passes_all = passes_all and passed
+                worst_upper = max(worst_upper, upper95 if upper95 is not None else 1.0)
+                by_block[str(block_length)] = {
+                    "mean_series_alarm_rate": mean_series_rate,
+                    "upper95_series_alarm_rate": upper95,
+                    "mean_events_per_1000_ready_innovations": mean_event_rate,
+                    "passes_5pct_series_screen": passed,
+                }
+            output["detectors"][detector_name].append({
+                **dict(params),
+                "passes_all_block_lengths": passes_all,
+                "worst_upper95_series_alarm_rate": worst_upper,
+                "by_block_length": by_block,
+            })
+    return output
+
+
 def _time_delta(first: str, second: str) -> float:
     return float(year_number(second) - year_number(first))
 
@@ -739,6 +889,7 @@ def run_source() -> dict[str, Any]:
         whitened = prewhiten_evaluation_rows(all_residuals, calibration)
         raw_diag = lag1_summary(evaluation_rows)
         whitened_diag = lag1_summary(whitened)
+        innovation_null = calibrate_prewhitened_null(whitened)
         raw_signals = summarize_detector_hits(evaluation_rows)
         whitened_signals = summarize_detector_hits(
             whitened,
@@ -792,6 +943,9 @@ def run_source() -> dict[str, Any]:
             "raw_residuals": raw_signals,
             "prewhitened_innovations": whitened_signals,
         },
+        "prewhitened_empirical_null_calibration": (
+            innovation_null if calibration["status"] == "ok" else None
+        ),
         "controlled_persistent_shift_injections": injection_status,
         "interpretation": (
             "Prewhitening is a diagnostic candidate only. The panel rho is estimated "
@@ -826,6 +980,7 @@ def main() -> None:
         "whitened_eval_autocorrelation": result["evaluation_residual_dependence"]["prewhitened"],
         "raw_signal_profile": result["historical_signal_profile"]["raw_residuals"],
         "whitened_signal_profile": result["historical_signal_profile"]["prewhitened_innovations"],
+        "whitened_empirical_null": result["prewhitened_empirical_null_calibration"],
         "injections": result["controlled_persistent_shift_injections"]["summaries"],
     }, ensure_ascii=False, indent=2))
 

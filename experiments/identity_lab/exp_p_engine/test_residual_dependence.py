@@ -9,6 +9,7 @@ from experiments.identity_lab.exp_p_engine.residual_dependence_experiment import
     prewhiten_evaluation_rows,
     run_injection_experiment,
     summarize_detector_hits,
+    calibrate_prewhitened_null,
     _first_hit_summary,
 )
 from experiments.identity_lab.exp_p_engine.domain_neutral import (
@@ -160,6 +161,37 @@ class ResidualDependenceTests(unittest.TestCase):
         self.assertEqual(calibration["status"], "insufficient_panel_residual_support")
         with self.assertRaisesRegex(ValueError, "not_approved"):
             prewhiten_evaluation_rows(rows, calibration, evaluation_start="2012")
+
+    def test_prewhitened_empirical_null_screen_uses_contiguous_ready_segments(self):
+        rows = make_ar1_rows(
+            entities=50, training_count=24, evaluation_count=8,
+            rho=0.6, seed=115,
+        )
+        calibration = estimate_panel_residual_rho(
+            rows,
+            training_end="2023",
+            min_series=30,
+            min_lag_pairs_per_series=8,
+            bootstrap_replicates=100,
+        )
+        self.assertEqual(calibration["status"], "ok")
+        whitened = prewhiten_evaluation_rows(
+            rows, calibration, evaluation_start="2024"
+        )
+        report = calibrate_prewhitened_null(
+            whitened,
+            replicates=25,
+            block_lengths=(2, 3),
+            cusum_grid=({"k": 0.5, "h": 8.5},),
+            p1_grid=({"threshold": 3.0, "run_length": 3},),
+        )
+        self.assertEqual(report["status"], "ok")
+        self.assertGreaterEqual(report["series_count"], 30)
+        self.assertGreater(report["ready_evaluation_exposure"], 0)
+        self.assertEqual(report["block_lengths"], [2, 3])
+        self.assertIn("passes_all_block_lengths", report["detectors"]["cusum"][0])
+        self.assertIn("2", report["detectors"]["cusum"][0]["by_block_length"])
+        self.assertIn("3", report["detectors"]["cusum"][0]["by_block_length"])
 
     def test_injection_experiment_skips_entities_without_residual_history(self):
         short_series = make_ar1_rows(
