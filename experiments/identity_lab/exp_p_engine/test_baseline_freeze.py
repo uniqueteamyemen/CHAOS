@@ -10,6 +10,7 @@ from experiments.identity_lab.exp_p_engine.baseline_freeze_experiment import (
 
 def make_series(*, count=36, shift_from=None, shift=0.0, transient_at=None, gap_at=None):
     rows = []
+    rng = random.Random(2026)
     pattern = (0.10, -0.10, 0.05, -0.05)
     years = []
     for index in range(count):
@@ -17,7 +18,7 @@ def make_series(*, count=36, shift_from=None, shift=0.0, transient_at=None, gap_
         if gap_at is not None and index >= gap_at:
             year += 2
         years.append(year)
-        value = 20.0 + 0.2 * index + pattern[index % len(pattern)]
+        value = 20.0 + 0.2 * index + pattern[index % len(pattern)] + rng.gauss(0.0, 0.03)
         if shift_from is not None and index >= shift_from:
             value += shift
         if transient_at is not None and index == transient_at:
@@ -102,8 +103,9 @@ class BaselineFreezeTests(unittest.TestCase):
         gap_row = next(row for row in rows if row["event_time"] == gap_time)
         self.assertEqual(gap_row["status"], "gap_unresolved")
         post_gap = [row for row in rows if int(row["event_time"]) >= int(gap_time)]
-        self.assertTrue(all(row["z_score"] is None for row in post_gap[:-1]))
-        self.assertEqual(post_gap[-1]["status"], "ready")
+        self.assertEqual(post_gap[0]["status"], "gap_unresolved")
+        self.assertTrue(all(row["status"] == "scale_unavailable" for row in post_gap[1:8]))
+        self.assertTrue(all(row["status"] == "ready" for row in post_gap[8:]))
 
     def test_builder_rejects_multiple_entities(self):
         rows = make_series()
