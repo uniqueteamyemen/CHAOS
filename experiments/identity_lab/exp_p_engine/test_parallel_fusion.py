@@ -191,7 +191,7 @@ class ParallelFusionTests(unittest.TestCase):
         self.assertEqual(reset, [])
 
     def test_E_is_same_as_C_for_P1(self):
-        residuals = [0.2] * 40 + [15.0, -15.0] * 30 + [2.0] * 40
+        residuals = [value for _ in range(10) for value in (0.2, -0.2, 0.1, -0.1)] + [15.0, -15.0] * 30 + [2.0] * 40
         rows = rows_from_residuals(residuals)
         result = run_candidates("stock", rows, quiet_range=(1, 40))
         c_p1 = [hit for hit in result["C"]["raw_hits"] if hit["detector"] == "sign_run"]
