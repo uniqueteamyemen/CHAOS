@@ -22,6 +22,7 @@ from experiments.identity_lab.exp_p_engine.domain_neutral import (
     detect_sign_runs,
     detect_two_sided_cusum,
     first_evidence_at_or_after,
+    validate_residual_contract,
 )
 
 ROOT = Path(__file__).resolve().parents[3]
@@ -235,10 +236,17 @@ def prewhiten_evaluation_rows(
     *,
     evaluation_start: str = EVALUATION_START,
 ) -> list[dict[str, Any]]:
-    """Apply a frozen panel AR(1) innovation filter only to evaluation rows.
+    """Build a contract-valid standardized innovation stream for evaluation.
 
-    A gap resets state. The first ready observation after a gap is not scored.
-    The first evaluation innovation may use the last contiguous training residual.
+    The original residual observation is preserved in raw_* fields. The
+    transformed stream has its own explicit semantics:
+      observed_value = innovation, expected_value = 0, residual = innovation,
+      scale = 1, z_score = innovation.
+    This keeps the shared residual arithmetic invariant valid without
+    pretending that an innovation is the original metric's raw residual.
+
+    A gap resets state. The first ready observation after a gap is unscored.
+    The first evaluation innovation may use the last contiguous training row.
     """
     if calibration.get("status") != "ok" or calibration.get("rho") is None:
         raise ValueError("panel_residual_rho_not_approved")
@@ -248,6 +256,55 @@ def prewhiten_evaluation_rows(
     centers = calibration.get("entity_centers", {})
     start_year = year_number(evaluation_start)
     output: list[dict[str, Any]] = []
+
+    def innovation_row(
+        source: Mapping[str, Any],
+        *,
+        status: str,
+        innovation: float | None = None,
+        center: float | None = None,
+    ) -> dict[str, Any]:
+        item = dict(source)
+        item.update({
+            "raw_observed_value": source.get("observed_value"),
+            "raw_expected_value": source.get("expected_value"),
+            "raw_residual": source.get("residual"),
+            "raw_scale": source.get("scale"),
+            "raw_z_score": source.get("z_score"),
+            "raw_status": source.get("status"),
+            "raw_baseline_id": source.get("baseline_id"),
+            "raw_baseline_method": source.get("baseline_method"),
+            "residual_dependence_rho": rho,
+            "innovation_method": "frozen_panel_ar1_residual_prewhitening",
+            "baseline_id": str(source["baseline_id"]) + ":panel-residual-rho",
+            "baseline_method": "frozen_panel_ar1_residual_prewhitening",
+            "unit": "standardized_innovation",
+            "status": status,
+        })
+        if innovation is None:
+            item.update({
+                "observed_value": None,
+                "expected_value": None,
+                "residual": None,
+                "scale": None,
+                "z_score": None,
+                "innovation_z_score": None,
+            })
+        else:
+            if not math.isfinite(innovation):
+                raise ValueError("prewhitened_innovation_not_finite")
+            # Canonical contract for the transformed stream: innovation under
+            # its null expectation of zero, in standard-deviation units.
+            item.update({
+                "observed_value": innovation,
+                "expected_value": 0.0,
+                "residual": innovation,
+                "scale": 1.0,
+                "z_score": innovation,
+                "innovation_z_score": innovation,
+                "innovation_center": center,
+            })
+        return item
 
     for (entity_id, metric_id), rows in _series_map(residual_rows).items():
         key = entity_id + "::" + metric_id
@@ -261,12 +318,12 @@ def prewhiten_evaluation_rows(
             is_ready = row.get("status") == "ready" and row.get("z_score") is not None
             if not is_ready:
                 if current_year >= start_year:
-                    item = dict(row)
-                    item["raw_z_score"] = row.get("z_score")
-                    item["innovation_z_score"] = None
-                    item["status"] = "innovation_gap_reset"
-                    item["baseline_id"] = str(row["baseline_id"]) + ":panel-residual-rho"
-                    output.append(item)
+                    status = (
+                        "innovation_gap_reset"
+                        if row.get("status") == "gap_unresolved"
+                        else "innovation_warmup_or_gap"
+                    )
+                    output.append(innovation_row(row, status=status))
                 previous_year = None
                 previous_z = None
                 continue
@@ -277,23 +334,26 @@ def prewhiten_evaluation_rows(
                 previous_z = current_z
                 continue
 
-            item = dict(row)
-            item["raw_z_score"] = current_z
-            item["residual_dependence_rho"] = rho
-            item["innovation_method"] = "frozen_panel_ar1_residual_prewhitening"
-            item["baseline_id"] = str(row["baseline_id"]) + ":panel-residual-rho"
-            if previous_year is None or previous_year != current_year - 1 or previous_z is None:
-                item["innovation_z_score"] = None
-                item["z_score"] = None
-                item["status"] = "innovation_warmup_or_gap"
+            if (
+                previous_year is None
+                or previous_year != current_year - 1
+                or previous_z is None
+            ):
+                item = innovation_row(
+                    row,
+                    status="innovation_warmup_or_gap",
+                    center=center,
+                )
             else:
                 innovation = (
                     (current_z - center) - rho * (previous_z - center)
                 ) / math.sqrt(1.0 - rho * rho)
-                item["innovation_z_score"] = innovation
-                item["z_score"] = innovation
-                item["status"] = "ready"
-                item["residual"] = innovation * float(row["scale"])
+                item = innovation_row(
+                    row,
+                    status="ready",
+                    innovation=innovation,
+                    center=center,
+                )
             output.append(item)
             previous_year = current_year
             previous_z = current_z
@@ -301,8 +361,8 @@ def prewhiten_evaluation_rows(
     output.sort(key=lambda row: (
         year_number(row["event_time"]), str(row["entity_id"]), str(row["metric_id"])
     ))
+    validate_residual_contract(output)
     return output
-
 
 def lag1_summary(
     residual_rows: Sequence[Mapping[str, Any]],
