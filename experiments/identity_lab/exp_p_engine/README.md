@@ -138,7 +138,8 @@ This experiment is isolated from the production engine.py; A remains the unchang
 - **Fusion:** evidence is aggregated before event adjudication. A reversal or six consecutive calm observations opens a new event. Same-event directional cooldown marks a repeated notification but retains the underlying evidence.
 - **D (isolated high-noise P1 arm):** uses exactly C's two-sided CUSUM and changes only P1's high-noise behavior to the production engine's adaptive-scale, 13-consecutive-direction rule. C vs D therefore isolates the P1 contribution while the CUSUM evidence is held identical.
 - **E/F/G (CUSUM reset sweep):** retain adaptive P1, use unbounded two-sided CUSUM with both accumulators reset during variance transitions, and compare h=8.5, 10.5 and 12.5.
-- **H/I (CUSUM hold sweep):** retain the same adaptive P1 and unbounded two-sided CUSUM, but preserve accumulators through variance transitions. H uses h=12.5 to compare directly with G (same threshold, reset vs hold); I uses h=16.5 to test a stricter hold policy.
+- **H–K (CUSUM hold sweep):** retain the same adaptive P1 and unbounded two-sided CUSUM, but preserve accumulators through variance transitions. G/H compare reset vs hold at h=12.5; J/K fill h=14.5/15.5; I tests h=16.5.
+- **Independent paired confirmation:** this run uses a new seed range (2,000,000+) and reports exact two-sided McNemar tests versus A for false alarms, detection, and pre-onset false alerts on identical trial seeds.
 - **EIA replay:** replays all nine arms over the archived 617-week five-series EIA identity residual and compares persistent +3σ/+6σ test-copy injections after a fixed 130-week adaptation horizon. Post-adaptation event counts now include events that began earlier but carry detector evidence after the cutoff. Historical counts are descriptive only; the EIA residual has no adjudicated anomaly labels.
 
 Each run creates an immutable configuration/input snapshot with a SHA-256 input fingerprint, frozen bias, quiet sigma, configuration, code revision, and time range. Out-of-order and duplicate timestamps fail closed.
@@ -151,4 +152,4 @@ python -m experiments.identity_lab.exp_p_engine.benchmark_parallel_fusion
 python -m experiments.identity_lab.exp_r_grade4.grade4_diagnostics
 ```
 
-The benchmark runs 500 independent sequences in each declared condition and scores false alerts in null scenarios and in the pre-onset interval. It reports fused outcomes plus detector-isolated P1/CUSUM false-alert rates, sensitivity, direction errors, detection delay, and 95% Wilson intervals. C-vs-D isolates P1; E/F/G isolate the CUSUM threshold under one reset policy. No candidate replaces A unless the paired results justify that decision.
+The benchmark runs 500 independent sequences per condition on a fresh seed range and scores false alerts in null scenarios and in the pre-onset interval. It reports detector-isolated P1/CUSUM rates, sensitivity, direction errors, delay, Wilson intervals, and exact paired McNemar p-values versus A. G/H isolate reset vs hold at h=12.5; J/K/I refine the hold threshold. No candidate replaces A unless paired results justify that decision.

@@ -1,4 +1,4 @@
-"""A/B/C/D/E/F/G/H/I replay on the archived official EIA weekly balance residuals.
+"""A/B/C/D/E/F/G/H/I/J/K replay on the archived official EIA weekly balance residuals.
 
 Historical event counts are descriptive only: EIA residuals do not carry an
 adjudicated anomaly ground truth. Controlled +3σ/+6σ injections are applied to
@@ -23,7 +23,7 @@ from oil import QUIET, DETECT_START  # type: ignore  # noqa: E402
 
 INJECT_AT_INDEX = 300
 POST_ADAPT_WEEKS = 130
-VARIANTS = ("A", "B", "C", "D", "E", "F", "G", "H", "I")
+VARIANTS = ("A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K")
 DETECTORS = ("P1", "CUSUM")
 
 

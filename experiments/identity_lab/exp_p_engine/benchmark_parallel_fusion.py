@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import json
+import math
 import random
 import statistics
 from pathlib import Path
@@ -14,6 +15,19 @@ TRIALS = 500
 MONTHS = 140
 QUIET_RANGE = (1, 40)
 ONSET = 65
+SEED_OFFSET = 2_000_000
+
+
+def exact_mcnemar_pvalue(candidate_only: int, baseline_only: int) -> float:
+    """Two-sided exact McNemar/binomial p-value for paired binary outcomes."""
+    if candidate_only < 0 or baseline_only < 0:
+        raise ValueError("discordant_counts_must_be_nonnegative")
+    discordant = candidate_only + baseline_only
+    if discordant == 0:
+        return 1.0
+    tail_n = min(candidate_only, baseline_only)
+    tail = sum(math.comb(discordant, k) for k in range(tail_n + 1)) / (2 ** discordant)
+    return min(1.0, 2.0 * tail)
 
 
 def scenario_spec(name: str, month: int) -> tuple[float, float, int]:
@@ -130,6 +144,9 @@ def run_benchmark():
     report = {
         "protocol": {
             "trials_per_condition": TRIALS,
+            "seed_offset": SEED_OFFSET,
+            "seed_ranges_independent_from_prior_A_to_I_benchmark": True,
+            "paired_comparison_test": "two-sided exact McNemar test versus A on paired trial-level binary outcomes",
             "months_per_sequence": MONTHS,
             "quiet_calibration_range": list(QUIET_RANGE),
             "evaluation_onset": ONSET,
@@ -149,12 +166,14 @@ def run_benchmark():
                 "G": "same as E with h=12.5",
                 "H": "two-sided unbounded CUSUM; hold both tracks through variance transitions; adaptive P1; h=12.5",
                 "I": "same as H with h=16.5",
+                "J": "same as H with h=14.5",
+                "K": "same as H with h=15.5",
             },
         },
         "results": {},
     }
 
-    variants = ("A", "B", "C", "D", "E", "F", "G", "H", "I")
+    variants = ("A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K")
     for scenario_index, scenario in enumerate(scenarios):
         sign = -1 if "negative" in scenario else (1 if "positive" in scenario else 0)
         has_break = sign != 0
@@ -165,6 +184,17 @@ def run_benchmark():
         delays = {variant: [] for variant in variants}
         pre_onset_false_trials = {variant: 0 for variant in variants}
         pre_onset_false_events = {variant: 0 for variant in variants}
+        paired = {
+            variant: {
+                "null_candidate_only_false": 0,
+                "null_baseline_only_false": 0,
+                "detection_candidate_only": 0,
+                "detection_baseline_only": 0,
+                "pre_onset_candidate_only_false": 0,
+                "pre_onset_baseline_only_false": 0,
+            }
+            for variant in variants
+        }
         detector_stats = {
             variant: {
                 detector: {
@@ -180,13 +210,30 @@ def run_benchmark():
         }
 
         for trial in range(TRIALS):
-            seed = 100_000 + scenario_index * 10_000 + trial
+            seed = SEED_OFFSET + scenario_index * 10_000 + trial
             rows, residual_values = make_rows(seed, scenario)
             result = run_candidates(
                 "stock", rows, quiet_range=QUIET_RANGE,
                 entity=f"synthetic-{scenario_index}",
                 code_revision="p-engine-parallel-fusion-v1",
             )
+            baseline_alerts = _variant_alerts(result, "A")
+            baseline_null_false = any(
+                int(alert["time"]) > QUIET_RANGE[1] for alert in baseline_alerts
+            )
+            baseline_pre_false = any(
+                QUIET_RANGE[1] < int(alert["time"]) < ONSET for alert in baseline_alerts
+            )
+            baseline_detected = False
+            if has_break:
+                for alert in baseline_alerts:
+                    month = int(alert["time"])
+                    if month >= ONSET:
+                        direction = 1 if residual_values[month - 1] >= 0 else -1
+                        if direction == sign:
+                            baseline_detected = True
+                            break
+
             for variant in variants:
                 alerts = _variant_alerts(result, variant)
                 detector_hits = _variant_detector_hits(result, variant, residual_values)
@@ -195,9 +242,15 @@ def run_benchmark():
                         alert for alert in alerts
                         if int(alert.get("index", alert.get("time", 0))) > QUIET_RANGE[1]
                     ]
-                    if false_events:
+                    candidate_null_false = bool(false_events)
+                    if candidate_null_false:
                         null_trials[variant] += 1
                         null_event_counts[variant] += len(false_events)
+                    if variant != "A":
+                        if candidate_null_false and not baseline_null_false:
+                            paired[variant]["null_candidate_only_false"] += 1
+                        elif baseline_null_false and not candidate_null_false:
+                            paired[variant]["null_baseline_only_false"] += 1
                     for detector in ("P1", "CUSUM"):
                         if any(hit["time"] > QUIET_RANGE[1] and hit["detector"] == detector
                                for hit in detector_hits):
@@ -210,9 +263,15 @@ def run_benchmark():
                     alert for alert in alerts
                     if QUIET_RANGE[1] < int(alert["time"]) < ONSET
                 ]
-                if pre_onset_alerts:
+                candidate_pre_false = bool(pre_onset_alerts)
+                if candidate_pre_false:
                     pre_onset_false_trials[variant] += 1
                     pre_onset_false_events[variant] += len(pre_onset_alerts)
+                if variant != "A":
+                    if candidate_pre_false and not baseline_pre_false:
+                        paired[variant]["pre_onset_candidate_only_false"] += 1
+                    elif baseline_pre_false and not candidate_pre_false:
+                        paired[variant]["pre_onset_baseline_only_false"] += 1
                 for detector in ("P1", "CUSUM"):
                     pre_hits = [
                         hit for hit in detector_hits
@@ -242,10 +301,16 @@ def run_benchmark():
                         opposite.append(month)
                 if opposite:
                     wrong_direction[variant] += 1
-                if matching:
+                candidate_detected = bool(matching)
+                if candidate_detected:
                     first = min(matching)
                     detected[variant] += 1
                     delays[variant].append(first - ONSET)
+                if variant != "A":
+                    if candidate_detected and not baseline_detected:
+                        paired[variant]["detection_candidate_only"] += 1
+                    elif baseline_detected and not candidate_detected:
+                        paired[variant]["detection_baseline_only"] += 1
 
                 for detector in ("P1", "CUSUM"):
                     selected = [
@@ -324,6 +389,22 @@ def run_benchmark():
                     }
                     for detector in ("P1", "CUSUM")
                 }
+        for variant in variants:
+            if variant == "A":
+                continue
+            p = paired[variant]
+            if has_break:
+                p["detection_exact_mcnemar_p"] = exact_mcnemar_pvalue(
+                    p["detection_candidate_only"], p["detection_baseline_only"]
+                )
+                p["pre_onset_false_exact_mcnemar_p"] = exact_mcnemar_pvalue(
+                    p["pre_onset_candidate_only_false"], p["pre_onset_baseline_only_false"]
+                )
+            else:
+                p["null_false_exact_mcnemar_p"] = exact_mcnemar_pvalue(
+                    p["null_candidate_only_false"], p["null_baseline_only_false"]
+                )
+            scenario_result["variants"][variant]["paired_vs_A"] = p
         report["results"][scenario] = scenario_result
     return report
 

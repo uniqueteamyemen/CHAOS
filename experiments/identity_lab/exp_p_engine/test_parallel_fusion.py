@@ -213,6 +213,35 @@ class ParallelFusionTests(unittest.TestCase):
         self.assertLess(hits_85[0]["index"], hits_105[0]["index"])
         self.assertLess(hits_105[0]["index"], hits_125[0]["index"])
 
+    def test_exact_mcnemar_pvalue_is_symmetric_and_detects_directional_difference(self):
+        from experiments.identity_lab.exp_p_engine.benchmark_parallel_fusion import exact_mcnemar_pvalue
+        self.assertEqual(exact_mcnemar_pvalue(0, 0), 1.0)
+        self.assertEqual(exact_mcnemar_pvalue(8, 0), exact_mcnemar_pvalue(0, 8))
+        self.assertLess(exact_mcnemar_pvalue(8, 0), 0.01)
+        self.assertEqual(exact_mcnemar_pvalue(5, 5), 1.0)
+
+    def test_J_and_K_fill_hold_threshold_grid_with_same_adaptive_P1(self):
+        rows = make_rows(sign=-1, magnitude=9.0, seed=55)
+        result = run_candidates("stock", rows, quiet_range=(1, 40))
+        g_p1 = [
+            hit for hit in result["G"]["raw_hits"]
+            if hit["detector"] == "sign_run"
+        ]
+        for variant in ("H", "J", "K", "I"):
+            p1 = [
+                hit for hit in result[variant]["raw_hits"]
+                if hit["detector"] == "sign_run"
+            ]
+            self.assertEqual(p1, g_p1)
+            self.assertEqual(
+                result[variant]["diagnostics"]["sigma_cusum_policy"],
+                "unbounded_hold",
+            )
+            self.assertEqual(
+                result[variant]["diagnostics"]["p1_mode"],
+                "production_adaptive_13_run",
+            )
+
     def test_H_and_I_keep_production_adaptive_P1_with_hold_policy(self):
         rows = make_rows(sign=-1, magnitude=9.0, seed=41)
         result = run_candidates("stock", rows, quiet_range=(1, 40))
