@@ -1,0 +1,36 @@
+name: CHAOS ImprovedSequentialBreakEngine isolated benchmark
+
+on:
+  push:
+    branches:
+      - experiment/sequential-break-engine-v1
+    paths:
+      - "experiments/identity_lab/exp_sequential_break/**"
+      - ".github/workflows/sequential-break-engine.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  sequential-break:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install pinned numerical dependency
+        run: python -m pip install numpy==2.2.6
+      - name: Test detector and timing contract
+        run: python -m unittest experiments.identity_lab.exp_sequential_break.test_engine -v
+      - name: Run 500 paths per supplied scenario with paired AG-CUSUM baseline
+        run: python -m experiments.identity_lab.exp_sequential_break.benchmark --trials 500
+      - name: Upload six-scenario benchmark
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: chaos-sequential-break-engine-six-scenario
+          path: experiments/identity_lab/exp_sequential_break/results/sequential_break_engine_500_seed_benchmark.json
+          if-no-files-found: warn
+          retention-days: 90
