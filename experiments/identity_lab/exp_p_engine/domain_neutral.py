@@ -28,6 +28,78 @@ OBSERVATION_STATUSES = {
     "invalid",
 }
 
+RESIDUAL_REQUIRED_FIELDS = (
+    "entity_id",
+    "metric_id",
+    "event_time",
+    "observed_value",
+    "expected_value",
+    "residual",
+    "status",
+    "baseline_id",
+    "baseline_method",
+    "support_count",
+)
+
+
+def validate_residual_contract(rows: Sequence[Mapping[str, Any]]) -> None:
+    """Validate the shared output contract emitted by every baseline builder."""
+    for index, row in enumerate(rows):
+        missing = [field for field in RESIDUAL_REQUIRED_FIELDS if field not in row]
+        if missing:
+            raise ValueError(
+                "residual_contract_fields_missing_at_row_" + str(index) + ":" + ",".join(missing)
+            )
+        _parse_time(row["event_time"])
+        if not str(row["entity_id"]).strip() or not str(row["metric_id"]).strip():
+            raise ValueError("residual_contract_identity_empty")
+        allowed_statuses = {
+            "ready",
+            "gap_unresolved",
+            "scale_unavailable",
+            "peer_scale_unavailable",
+            "relation_scale_unavailable",
+            "relation_unidentifiable",
+        }
+        if row["status"] not in allowed_statuses:
+            raise ValueError("residual_contract_status_invalid")
+        if not isinstance(row["entity_id"], str) or not row["entity_id"].strip():
+            raise ValueError("residual_contract_entity_id_invalid")
+        if not isinstance(row["metric_id"], str) or not row["metric_id"].strip():
+            raise ValueError("residual_contract_metric_id_invalid")
+        if not isinstance(row["baseline_id"], str) or not row["baseline_id"].strip():
+            raise ValueError("residual_contract_baseline_id_invalid")
+        if not isinstance(row["baseline_method"], str) or not row["baseline_method"].strip():
+            raise ValueError("residual_contract_baseline_method_invalid")
+        support = row["support_count"]
+        if isinstance(support, bool) or not isinstance(support, int) or support < 0:
+            raise ValueError("residual_contract_support_count_invalid")
+        for field in ("observed_value", "expected_value", "residual", "scale", "z_score"):
+            value = row.get(field)
+            if value is not None and (
+                isinstance(value, bool) or not math.isfinite(float(value))
+            ):
+                raise ValueError("residual_contract_numeric_value_invalid:" + field)
+        if row.get("scale") is not None and float(row["scale"]) <= 0:
+            raise ValueError("residual_contract_scale_not_positive")
+        if row["status"] == "ready":
+            for field in ("observed_value", "expected_value", "residual", "scale", "z_score"):
+                if row.get(field) is None:
+                    raise ValueError("residual_contract_ready_value_missing:" + field)
+            if float(row["scale"]) <= 0:
+                raise ValueError("residual_contract_scale_not_positive")
+        if (
+            row.get("observed_value") is not None
+            and row.get("expected_value") is not None
+            and row.get("residual") is not None
+        ):
+            expected_residual = float(row["observed_value"]) - float(row["expected_value"])
+            if not math.isclose(
+                float(row["residual"]), expected_residual,
+                rel_tol=1e-9, abs_tol=1e-9,
+            ):
+                raise ValueError("residual_contract_observed_expected_mismatch")
+
 
 def _mapped(row: Mapping[str, Any], spec: Any) -> Any:
     if isinstance(spec, Mapping) and "constant" in spec:
@@ -198,7 +270,7 @@ def missing_periods(
 ) -> dict[str, Any]:
     """Report explicit missing observations and absent expected periods separately."""
     identities = {(row.get("entity_id"), row.get("metric_id")) for row in observations}
-    if len(identities) > 1:
+    if len(identities) != 1:
         raise ValueError("missing_periods_requires_one_entity_metric")
     observed_times = {
         _parse_time(row["event_time"]).isoformat()
@@ -249,7 +321,7 @@ def detect_missingness_spikes(
         raise ValueError("minimum_window_coverage_invalid")
 
     identities = {(row.get("entity_id"), row.get("metric_id")) for row in observations}
-    if len(identities) > 1:
+    if len(identities) != 1:
         raise ValueError("missingness_spike_requires_one_entity_metric")
 
     by_time: dict[str, str] = {}
@@ -296,7 +368,10 @@ def detect_missingness_spikes(
             and recent_rate - baseline_rate >= minimum_increase
         )
         if triggered and not active:
+            entity_id, metric_id = next(iter(identities))
             signals.append({
+                "entity_id": entity_id,
+                "metric_id": metric_id,
                 "signal_type": "data_quality_missingness_spike",
                 "event_time": recent_slice[-1],
                 "baseline_missing_rate": baseline_rate,
@@ -505,8 +580,15 @@ def build_univariate_residuals(
             "event_time": series[index]["event_time"],
             "observed": observed,
             "expected": expected,
+            "observed_value": observed,
+            "expected_value": expected,
             "residual": residual,
             "scale": scale["value"],
+            "unit": series[index].get("unit"),
+            "baseline_id": (
+                str(series[index]["metric_id"]) + ":" + baseline_method
+                + ":w" + str(baseline_window)
+            ),
             "z_score": residual / scale["value"] if ready and not gap_unresolved else None,
             "status": (
                 "gap_unresolved" if gap_unresolved
@@ -516,6 +598,7 @@ def build_univariate_residuals(
             "observation_gap_units": observation_gap,
             "baseline_method": "prequential_" + baseline_method,
             "baseline_support": len(history),
+            "support_count": len(history),
             "scale_method": scale["method"],
             "scale_support": scale["n_differences"],
             "rho": scale.get("rho"),
@@ -606,15 +689,28 @@ def build_partial_relation_residuals(
         entity_pairs.sort(key=lambda item: _parse_time(item[0]))
         for index in range(min_pairs, len(entity_pairs)):
             history = entity_pairs[max(0, index - baseline_window):index]
+            event_time, x_value, y_value, x_unit, y_unit = entity_pairs[index]
             fit_pairs = [(item[1], item[2]) for item in history]
             fitted = _theil_sen_relation(fit_pairs)
             if fitted is None:
                 output.append({
                     "entity_id": entity_id,
+                    "metric_id": y_metric_id,
                     "relationship_id": relationship_id,
-                    "event_time": entity_pairs[index][0],
+                    "event_time": event_time,
+                    "observed_value": y_value,
+                    "expected_value": None,
+                    "residual": None,
+                    "scale": None,
+                    "z_score": None,
                     "status": "relation_unidentifiable",
+                    "baseline_id": relationship_id,
+                    "baseline_method": "prequential_theil_sen_pairwise_relation",
                     "support_count": len(history),
+                    "unit": y_unit,
+                    "x_metric_id": x_metric_id,
+                    "x_value": x_value,
+                    "relationship_semantics": "explicit_statistical_relation_not_causal_or_conservation_proof",
                 })
                 continue
             intercept, slope = fitted
@@ -626,7 +722,6 @@ def build_partial_relation_residuals(
             scale = 1.4826 * statistics.median(
                 abs(value - residual_center) for value in historical_residuals
             )
-            event_time, x_value, y_value, x_unit, y_unit = entity_pairs[index]
             observation_gap = (
                 _time_number(event_time, time_unit)
                 - _time_number(history[-1][0], time_unit)
@@ -637,14 +732,22 @@ def build_partial_relation_residuals(
             ready = math.isfinite(scale) and scale > 0
             output.append({
                 "entity_id": entity_id,
+                "metric_id": y_metric_id,
                 "relationship_id": relationship_id,
                 "event_time": event_time,
+                "observed_value": y_value,
+                "expected_value": expected,
+                "baseline_id": relationship_id,
+                "baseline_method": "prequential_theil_sen_pairwise_relation",
+                "unit": y_unit,
                 "x_metric_id": x_metric_id,
                 "y_metric_id": y_metric_id,
                 "x_value": x_value,
                 "y_observed": y_value,
                 "y_expected": expected,
                 "residual": residual,
+                "observed": y_value,
+                "expected": expected,
                 "scale": scale if ready else None,
                 "z_score": residual / scale if ready and not gap_unresolved else None,
                 "status": (
@@ -653,7 +756,6 @@ def build_partial_relation_residuals(
                     else "relation_scale_unavailable"
                 ),
                 "observation_gap_units": observation_gap,
-                "baseline_method": "prequential_theil_sen_pairwise_relation",
                 "support_count": len(history),
                 "slope": slope,
                 "intercept": intercept,
@@ -662,6 +764,35 @@ def build_partial_relation_residuals(
                 "relationship_semantics": "explicit_statistical_relation_not_causal_or_conservation_proof",
             })
     output.sort(key=lambda row: (row["entity_id"], row["event_time"]))
+    return output
+
+
+def _group_residual_series(
+    residual_rows: Sequence[Mapping[str, Any]],
+) -> list[list[Mapping[str, Any]]]:
+    """Validate and split rows so detector state never leaks across entities."""
+    validate_residual_contract(residual_rows)
+    grouped: dict[tuple[str, str, str], list[Mapping[str, Any]]] = defaultdict(list)
+    for row in residual_rows:
+        key = (
+            str(row["entity_id"]),
+            str(row["metric_id"]),
+            str(row["baseline_id"]),
+        )
+        grouped[key].append(row)
+
+    output: list[list[Mapping[str, Any]]] = []
+    for key, rows in grouped.items():
+        rows.sort(key=lambda row: _parse_time(row["event_time"]))
+        times = [_parse_time(row["event_time"]) for row in rows]
+        if len(set(times)) != len(times):
+            raise ValueError("residual_series_duplicate_event_time:" + "|".join(key))
+        output.append(rows)
+    output.sort(key=lambda rows: (
+        str(rows[0]["entity_id"]),
+        str(rows[0]["metric_id"]),
+        str(rows[0]["baseline_id"]),
+    ))
     return output
 
 
@@ -674,24 +805,45 @@ def detect_two_sided_cusum(
     """Candidate two-sided CUSUM; thresholds require domain calibration."""
     if k < 0 or h <= 0:
         raise ValueError("cusum_thresholds_invalid")
-    positive = negative = 0.0
     hits: list[dict[str, Any]] = []
-    for index, row in enumerate(residual_rows):
-        if row.get("status") != "ready" or row.get("z_score") is None:
-            positive = negative = 0.0
-            continue
-        z = float(row["z_score"])
-        positive = max(0.0, positive + z - k)
-        negative = max(0.0, negative - z - k)
-        if positive >= h:
-            hits.append({"detector": "cusum", "direction": "positive", "index": index,
-                         "event_time": row["event_time"], "z_score": z, "accumulator": positive})
-            positive = negative = 0.0
-        elif negative >= h:
-            hits.append({"detector": "cusum", "direction": "negative", "index": index,
-                         "event_time": row["event_time"], "z_score": z, "accumulator": negative})
-            positive = negative = 0.0
-    return hits
+    for series in _group_residual_series(residual_rows):
+        positive = negative = 0.0
+        for index, row in enumerate(series):
+            if row.get("status") != "ready" or row.get("z_score") is None:
+                positive = negative = 0.0
+                continue
+            z = float(row["z_score"])
+            positive = max(0.0, positive + z - k)
+            negative = max(0.0, negative - z - k)
+            if positive >= h:
+                hits.append({
+                    "detector": "cusum",
+                    "direction": "positive",
+                    "index": index,
+                    "entity_id": row["entity_id"],
+                    "metric_id": row["metric_id"],
+                    "baseline_id": row["baseline_id"],
+                    "event_time": row["event_time"],
+                    "z_score": z,
+                    "accumulator": positive,
+                })
+                positive = negative = 0.0
+            elif negative >= h:
+                hits.append({
+                    "detector": "cusum",
+                    "direction": "negative",
+                    "index": index,
+                    "entity_id": row["entity_id"],
+                    "metric_id": row["metric_id"],
+                    "baseline_id": row["baseline_id"],
+                    "event_time": row["event_time"],
+                    "z_score": z,
+                    "accumulator": negative,
+                })
+                positive = negative = 0.0
+    return sorted(hits, key=lambda hit: (
+        _parse_time(hit["event_time"]), hit["entity_id"], hit["metric_id"]
+    ))
 
 
 def detect_sign_runs(
@@ -703,28 +855,39 @@ def detect_sign_runs(
     """Candidate P1-style sign-run detector, kept independent from CUSUM."""
     if threshold <= 0 or run_length < 1:
         raise ValueError("sign_run_parameters_invalid")
-    sign = 0
-    streak: list[tuple[int, Mapping[str, Any]]] = []
     hits: list[dict[str, Any]] = []
-    for index, row in enumerate(residual_rows):
-        if row.get("status") != "ready" or row.get("z_score") is None:
-            sign, streak = 0, []
-            continue
-        z = float(row["z_score"])
-        current_sign = 1 if z > 0 else -1 if z < 0 else 0
-        if current_sign == 0 or abs(z) < threshold:
-            sign, streak = 0, []
-            continue
-        if sign != current_sign:
-            sign, streak = current_sign, []
-        streak.append((index, row))
-        if len(streak) >= run_length:
-            hit_index, hit_row = streak[-1]
-            hits.append({"detector": "sign_run", "direction": "positive" if sign > 0 else "negative",
-                         "index": hit_index, "event_time": hit_row["event_time"],
-                         "z_score": float(hit_row["z_score"]), "run_length": run_length})
-            sign, streak = 0, []
-    return hits
+    for series in _group_residual_series(residual_rows):
+        sign = 0
+        streak: list[tuple[int, Mapping[str, Any]]] = []
+        for index, row in enumerate(series):
+            if row.get("status") != "ready" or row.get("z_score") is None:
+                sign, streak = 0, []
+                continue
+            z = float(row["z_score"])
+            current_sign = 1 if z > 0 else -1 if z < 0 else 0
+            if current_sign == 0 or abs(z) < threshold:
+                sign, streak = 0, []
+                continue
+            if sign != current_sign:
+                sign, streak = current_sign, []
+            streak.append((index, row))
+            if len(streak) >= run_length:
+                hit_index, hit_row = streak[-1]
+                hits.append({
+                    "detector": "sign_run",
+                    "direction": "positive" if sign > 0 else "negative",
+                    "index": hit_index,
+                    "entity_id": hit_row["entity_id"],
+                    "metric_id": hit_row["metric_id"],
+                    "baseline_id": hit_row["baseline_id"],
+                    "event_time": hit_row["event_time"],
+                    "z_score": float(hit_row["z_score"]),
+                    "run_length": run_length,
+                })
+                sign, streak = 0, []
+    return sorted(hits, key=lambda hit: (
+        _parse_time(hit["event_time"]), hit["entity_id"], hit["metric_id"]
+    ))
 
 
 def first_evidence_at_or_after(
@@ -755,29 +918,30 @@ def cohort_peer_residuals(
     buckets: dict[tuple[str, str, str, str, str], list[tuple[float, str]]] = defaultdict(list)
     seen_entity_period: set[tuple[str, str, str, str]] = set()
     for row in observations:
-        if row.get("observation_status") != "observed" or row.get("value") is None:
-            continue
         cohort = row.get("cohort_id")
         if cohort in (None, ""):
             continue
-        peer_value = float(row["value"])
-        metric_unit = str(row.get("unit") or "")
-        exposure_unit = ""
-        if use_exposure:
-            exposure = row.get("exposure")
-            exposure_unit = str(row.get("exposure_unit") or "")
-            if exposure is None or not exposure_unit:
-                continue
-            exposure = float(exposure)
-            if not math.isfinite(exposure) or exposure <= 0:
-                continue
-            peer_value = peer_value / exposure
         canonical_time = _parse_time(row["event_time"]).isoformat()
         entity_id = str(row["entity_id"])
         unique_key = (str(row["metric_id"]), canonical_time, str(cohort), entity_id)
         if unique_key in seen_entity_period:
             raise ValueError("duplicate_entity_metric_time_in_cohort")
         seen_entity_period.add(unique_key)
+        if row.get("observation_status") != "observed" or row.get("value") is None:
+            continue
+        raw_observed_value = float(row["value"])
+        peer_value = raw_observed_value
+        metric_unit = str(row.get("unit") or "")
+        exposure_unit = ""
+        if use_exposure:
+            exposure = row.get("exposure")
+            exposure_unit = str(row.get("exposure_unit") or "")
+            if exposure is None or not exposure_unit or not metric_unit:
+                continue
+            exposure = float(exposure)
+            if not math.isfinite(exposure) or exposure <= 0:
+                continue
+            peer_value = peer_value / exposure
         key = (str(row["metric_id"]), canonical_time, str(cohort), metric_unit, exposure_unit)
         buckets[key].append((peer_value, entity_id))
 
@@ -785,6 +949,9 @@ def cohort_peer_residuals(
     for (metric_id, event_time, cohort, metric_unit, exposure_unit), members in buckets.items():
         members.sort(key=lambda pair: (pair[0], pair[1]))
         values = [pair[0] for pair in members]
+        cohort_center = statistics.median(values)
+        cohort_mad = statistics.median(abs(value - cohort_center) for value in values)
+        cohort_scale = 1.4826 * cohort_mad
         for index, (value, entity_id) in enumerate(members):
             peer_count = len(values) - 1
             if peer_count < min_peers:
@@ -797,19 +964,41 @@ def cohort_peer_residuals(
                 return values[position] if position < index else values[position + 1]
 
             peer_median = (without_self(lower) + without_self(upper)) / 2.0
+            peer_scale = cohort_scale
+            comparable_unit = (
+                metric_unit + "/" + exposure_unit
+                if use_exposure else metric_unit or None
+            )
+            baseline_id = (
+                "peer:" + metric_id + ":" + cohort + ":"
+                + (metric_unit or "unit-unspecified") + ":"
+                + (exposure_unit or "raw")
+            )
+            peer_residual = value - peer_median
+            scale_ready = math.isfinite(peer_scale) and peer_scale > 0
             output.append({
                 "entity_id": entity_id,
                 "metric_id": metric_id,
                 "event_time": event_time,
                 "cohort_id": cohort,
-                "unit": metric_unit or None,
+                "unit": comparable_unit,
                 "exposure_unit": exposure_unit or None,
                 "observed": value,
-                "peer_expected": peer_median,
-                "peer_residual": value - peer_median,
-                "peer_count": peer_count,
-                "value_basis": "value_per_exposure" if use_exposure else "raw_value",
+                "expected": peer_median,
+                "observed_value": value,
+                "expected_value": peer_median,
+                "residual": peer_residual,
+                "scale": peer_scale if scale_ready else None,
+                "z_score": peer_residual / peer_scale if scale_ready else None,
+                "status": "ready" if scale_ready else "peer_scale_unavailable",
+                "baseline_id": baseline_id,
                 "baseline_method": "same_period_peer_median",
+                "support_count": peer_count,
+                "peer_expected": peer_median,
+                "peer_residual": peer_residual,
+                "peer_count": peer_count,
+                "raw_observed_value": raw_observed_value,
+                "value_basis": "value_per_exposure" if use_exposure else "raw_value",
             })
     output.sort(key=lambda row: (row["metric_id"], row["event_time"], row["cohort_id"], row["entity_id"]))
     return output

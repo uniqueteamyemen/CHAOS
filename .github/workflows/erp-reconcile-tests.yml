@@ -7,6 +7,7 @@ on:
       - feat/erp-hybrid-reconciliation
       - feat/erp-shadow-mode
       - feat/domain-neutral-observation-kernel-v1
+      - feat/domain-neutral-residual-contract-v1
       - review/abc-adversarial
     paths:
       - "experiments/identity_lab/exp_j_erp/**"

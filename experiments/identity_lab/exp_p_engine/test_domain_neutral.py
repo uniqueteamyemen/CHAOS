@@ -19,6 +19,7 @@ from experiments.identity_lab.exp_p_engine.domain_neutral import (
     missing_periods,
     normalize_observations,
     run_candidate_detectors,
+    validate_residual_contract,
 )
 
 
@@ -37,6 +38,23 @@ def observations(values, *, start_year=2000, unit="years", entity="E", metric="m
             "observation_status": "observed",
         })
     return rows
+
+
+def residual_row(entity, metric, time, z, *, baseline="test-baseline", status="ready"):
+    return {
+        "entity_id": entity,
+        "metric_id": metric,
+        "event_time": time,
+        "observed_value": float(z),
+        "expected_value": 0.0,
+        "residual": float(z),
+        "scale": 1.0,
+        "z_score": float(z) if status == "ready" else None,
+        "status": status,
+        "baseline_id": baseline,
+        "baseline_method": "unit-test",
+        "support_count": 12,
+    }
 
 
 def ar1_series(count, *, rho, stationary_sigma, seed=17):
@@ -63,6 +81,24 @@ class ObservationContractTests(unittest.TestCase):
         self.assertIn("attributed_term", schema["required"])
         self.assertIn("exposure", definition["properties"])
         self.assertIn("exposure_unit", definition["properties"])
+        residual_definition = schema["definitions"]["residual"]
+        self.assertEqual(
+            residual_definition["required"],
+            [
+                "entity_id", "metric_id", "event_time", "observed_value",
+                "expected_value", "residual", "status", "baseline_id",
+                "baseline_method", "support_count",
+            ],
+        )
+        residual_definition = schema["definitions"]["residual"]
+        self.assertEqual(
+            residual_definition["required"],
+            [
+                "entity_id", "metric_id", "event_time", "observed_value",
+                "expected_value", "residual", "status", "baseline_id",
+                "baseline_method", "support_count",
+            ],
+        )
 
     def test_five_required_fields_are_enough(self):
         result = normalize_observations(
@@ -165,6 +201,10 @@ class ObservationContractTests(unittest.TestCase):
         self.assertEqual(result["signal_count"], 1)
         self.assertEqual(result["signals"][0]["signal_type"], "data_quality_missingness_spike")
         self.assertIn("not an entity behavior", result["signals"][0]["interpretation"])
+
+    def test_missingness_requires_series_identity_even_when_all_periods_absent(self):
+        with self.assertRaisesRegex(ValueError, "one_entity_metric"):
+            detect_missingness_spikes([], ["2024", "2025"])
 
     def test_pending_and_not_applicable_are_not_counted_as_missing(self):
         expected = [f"2024-{month:02d}" for month in range(1, 11)]
@@ -335,6 +375,11 @@ class PartialRelationTests(unittest.TestCase):
             last["relationship_semantics"],
             "explicit_statistical_relation_not_causal_or_conservation_proof",
         )
+        validate_residual_contract(results)
+        result = run_candidate_detectors(results, cusum_k=0.5, cusum_h=4.0)
+        self.assertTrue(
+            any(hit["entity_id"] == "team-1" for hit in result["raw_hits"]["cusum"])
+        )
 
     def test_unpaired_or_missing_observations_are_not_imputed(self):
         rows = []
@@ -419,11 +464,10 @@ class PartialRelationTests(unittest.TestCase):
 
 class DetectorAndFleetTests(unittest.TestCase):
     def test_both_cusum_directions_are_retained(self):
-        residuals = []
-        for index, z in enumerate([0, 0, 3, 3, 3, 0, -3, -3, -3]):
-            residuals.append({
-                "event_time": str(2020 + index), "status": "ready", "z_score": float(z)
-            })
+        residuals = [
+            residual_row("entity-1", "metric-1", str(2020 + index), z)
+            for index, z in enumerate([0, 0, 3, 3, 3, 0, -3, -3, -3])
+        ]
         result = run_candidate_detectors(
             residuals, cusum_k=0.5, cusum_h=4.0, p1_threshold=2.0, p1_run_length=3
         )
@@ -431,6 +475,74 @@ class DetectorAndFleetTests(unittest.TestCase):
         self.assertEqual(directions, {"positive", "negative"})
         self.assertEqual(result["event_fusion"], "not_applied")
         self.assertEqual(result["alert_suppression"], "not_applied")
+
+    def test_detector_state_never_accumulates_across_entities(self):
+        residuals = [
+            residual_row("A", "m", "2020", 3.0),
+            residual_row("B", "m", "2020", 3.0),
+            residual_row("C", "m", "2020", 3.0),
+        ]
+        result = run_candidate_detectors(
+            residuals, cusum_k=0.5, cusum_h=5.0,
+            p1_threshold=2.0, p1_run_length=3,
+        )
+        self.assertEqual(result["raw_hits"]["cusum"], [])
+        self.assertEqual(result["raw_hits"]["sign_run"], [])
+
+    def test_detector_state_isolated_by_baseline_and_metric(self):
+        residuals = [
+            residual_row("A", "m1", "2020", 3.0, baseline="baseline-1"),
+            residual_row("A", "m2", "2020", 3.0, baseline="baseline-2"),
+        ]
+        result = run_candidate_detectors(
+            residuals, cusum_k=0.5, cusum_h=5.0,
+            p1_threshold=2.0, p1_run_length=3,
+        )
+        self.assertEqual(result["raw_hits"]["cusum"], [])
+        self.assertEqual(result["raw_hits"]["sign_run"], [])
+
+    def test_detector_rejects_noncanonical_residual_rows(self):
+        with self.assertRaisesRegex(ValueError, "residual_contract_fields_missing"):
+            run_candidate_detectors([{"event_time": "2024", "status": "ready", "z_score": 4.0}])
+
+    def test_residual_contract_rejects_unknown_status_and_nonpositive_scale(self):
+        invalid_status = residual_row("E", "m", "2024", 1.0, status="unknown")
+        with self.assertRaisesRegex(ValueError, "residual_contract_status_invalid"):
+            validate_residual_contract([invalid_status])
+        invalid_scale = residual_row("E", "m", "2024", 1.0, status="gap_unresolved")
+        invalid_scale["scale"] = 0.0
+        with self.assertRaisesRegex(ValueError, "residual_contract_scale_not_positive"):
+            validate_residual_contract([invalid_scale])
+
+    def test_shared_contract_accepts_all_baseline_builder_outputs(self):
+        univariate = build_univariate_residuals(
+            observations([float(i * i) + (0.3 if i % 2 else -0.3) for i in range(18)]),
+            baseline_window=8, min_history=8,
+        )
+        validate_residual_contract(univariate)
+
+        peer_input = [{
+            "entity_id": f"e{i}", "metric_id": "output", "event_time": "2024",
+            "value": float(value), "unit": "cases", "observation_status": "observed",
+            "cohort_id": "branch-role",
+        } for i, value in enumerate([10, 12, 14, 16, 18, 40])]
+        peer_rows = cohort_peer_residuals(peer_input, min_peers=5)
+        validate_residual_contract(peer_rows)
+
+        relation_input = []
+        for i in range(12):
+            relation_input.extend([
+                {"entity_id": "team", "metric_id": "hours", "event_time": str(2000+i),
+                 "value": float(i+1), "unit": "hours", "observation_status": "observed"},
+                {"entity_id": "team", "metric_id": "cases", "event_time": str(2000+i),
+                 "value": float(2*(i+1) + (0.1 if i%2 else -0.1)), "unit": "cases",
+                 "observation_status": "observed"},
+            ])
+        relation_rows = build_partial_relation_residuals(
+            relation_input, x_metric_id="hours", y_metric_id="cases",
+            relationship_id="team-output-v1", min_pairs=8,
+        )
+        validate_residual_contract(relation_rows)
 
     def test_pre_onset_event_start_does_not_hide_post_onset_evidence(self):
         hits = [
@@ -470,7 +582,34 @@ class CohortTests(unittest.TestCase):
         self.assertEqual(outlier["peer_expected"], 120.0)
         self.assertEqual(outlier["peer_residual"], 80.0)
         self.assertEqual(outlier["peer_count"], 5)
+        validate_residual_contract(output)
 
+
+
+    def test_peer_residuals_feed_detectors_without_cross_cohort_state(self):
+        rows = []
+        for period in range(4):
+            event_time = str(2020 + period)
+            values = [10, 11, 9, 10, 10, 11, 9, 10 if period < 2 else 20]
+            for index, value in enumerate(values):
+                rows.append({
+                    "entity_id": f"staff-{index}",
+                    "metric_id": "cases_per_period",
+                    "event_time": event_time,
+                    "value": float(value),
+                    "unit": "cases",
+                    "observation_status": "observed",
+                    "cohort_id": "branch-A:role-B:season-C",
+                })
+        peer_rows = cohort_peer_residuals(rows, min_peers=5)
+        validate_residual_contract(peer_rows)
+        result = run_candidate_detectors(peer_rows, cusum_k=0.5, cusum_h=8.5)
+        target_hits = [
+            hit for hit in result["raw_hits"]["cusum"]
+            if hit["entity_id"] == "staff-7"
+        ]
+        self.assertTrue(target_hits)
+        self.assertEqual(target_hits[0]["direction"], "positive")
 
     def test_exposure_adjusted_peer_comparison_uses_rate_not_raw_count(self):
         values = [10, 20, 30, 40, 50, 90]
@@ -493,6 +632,7 @@ class CohortTests(unittest.TestCase):
         self.assertEqual(outlier["value_basis"], "value_per_exposure")
         self.assertEqual(outlier["peer_expected"], 10.0)
         self.assertEqual(outlier["peer_residual"], 20.0)
+        validate_residual_contract(result)
 
 
     def test_exposure_normalization_requires_a_declared_unit(self):
