@@ -14,7 +14,6 @@ from pathlib import Path
 
 from experiments.identity_lab.exp_p_engine.domain_neutral import (
     build_univariate_residuals,
-    detect_missingness_spikes,
     missing_periods,
     normalize_observations,
     run_candidate_detectors,
@@ -79,17 +78,11 @@ def probe_world_bank() -> dict:
     per_series = []
     total_cusum = total_p1 = tested_entities = scale_ready = 0
     trend_cusum = trend_p1 = trend_scale_ready = 0
-    missingness_signals = 0
     lengths = []
     for entity_id, series in grouped.items():
         coverage = missing_periods(series, years)
         lengths.append(coverage["observed_periods"])
-        quality = detect_missingness_spikes(
-            series, years, window_size=5,
-            minimum_recent_rate=0.30, minimum_increase=0.20,
-            minimum_window_coverage=0.80,
-        )
-        missingness_signals += quality["signal_count"]
+        # Per-entity observation schedules are not present in this snapshot.
         if coverage["observed_periods"] >= 8:
             tested_entities += 1
             median_result = candidate_summary(
@@ -109,7 +102,7 @@ def probe_world_bank() -> dict:
             per_series.append({
                 "entity_id": entity_id,
                 "coverage": coverage,
-                "missingness_quality_signals": quality["signals"],
+                "missingness_probe": "not_run_entity_specific_expected_schedule_absent",
                 "rolling_median": median_result,
                 "rolling_theil_sen": trend_result,
             })
@@ -138,7 +131,8 @@ def probe_world_bank() -> dict:
         "scale_ready_residual_rows_rolling_theil_sen": trend_scale_ready,
         "cusum_raw_hits_rolling_theil_sen": trend_cusum,
         "sign_run_raw_hits_rolling_theil_sen": trend_p1,
-        "missingness_quality_signals": missingness_signals,
+        "missingness_quality_signals": None,
+        "missingness_execution": "not_run_entity_specific_expected_schedule_absent",
         "rejected_source_rows": normalized["rejected_rows"],
         "sample_entity_diagnostics": per_series[:10],
         "interpretation": (
@@ -254,7 +248,7 @@ def main() -> None:
             "rolling_median_sign_run_raw_hits": report["world_bank"]["sign_run_raw_hits_rolling_median"],
             "rolling_theil_sen_cusum_raw_hits": report["world_bank"]["cusum_raw_hits_rolling_theil_sen"],
             "rolling_theil_sen_sign_run_raw_hits": report["world_bank"]["sign_run_raw_hits_rolling_theil_sen"],
-            "missingness_quality_signals": report["world_bank"]["missingness_quality_signals"],
+            "missingness_execution": report["world_bank"]["missingness_execution"],
         },
         "usgs": {
             "events": report["usgs"]["csv_event_rows"],
