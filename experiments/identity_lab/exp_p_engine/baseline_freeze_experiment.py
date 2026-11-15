@@ -715,6 +715,8 @@ def run_experiment(
                         value for value in freeze_times
                         if time_position(value, time_unit) >= time_position(onset, time_unit)
                     ]
+                    if freeze_before:
+                        raise RuntimeError("baseline_freeze_triggered_before_labelled_injection_onset")
                     key = (
                         f"{'positive' if direction > 0 else 'negative'}_"
                         f"{magnitude:g}sigma"
