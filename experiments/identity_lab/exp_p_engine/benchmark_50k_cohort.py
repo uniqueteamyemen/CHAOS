@@ -16,7 +16,7 @@ ENTITY_COUNT = 50_000
 PERIODS = 10
 COHORT_COUNT = 500
 INJECTION_PER_COHORT = 1
-INJECTION_SIZE = 25.0
+INJECTION_SIZE = 0.5
 RAW_COUNT_RESIDUAL_THRESHOLD = 15.0
 PEER_RATE_RESIDUAL_THRESHOLD = 0.20
 
@@ -34,7 +34,7 @@ def main() -> None:
             is_injected = staff_index < COHORT_COUNT
             base_rate = 1.2 + (cohort_index % 17) * 0.01
             exposure = float(80 + 20 * ((staff_index // COHORT_COUNT) % 5))
-            rate = base_rate + rng.gauss(0.0, 0.03) + (0.5 if is_injected else 0.0)
+            rate = base_rate + rng.gauss(0.0, 0.03) + (INJECTION_SIZE if is_injected else 0.0)
             value = rate * exposure
             rows.append({
                 "entity_id": "staff-" + str(staff_index),
