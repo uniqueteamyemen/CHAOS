@@ -2,6 +2,7 @@
 import json
 import math
 import random
+import statistics
 import unittest
 from pathlib import Path
 from datetime import datetime, timedelta, timezone
@@ -10,6 +11,7 @@ from experiments.identity_lab.exp_p_engine.domain_neutral import (
     benjamini_hochberg,
     build_univariate_residuals,
     cohort_peer_residuals,
+    detect_missingness_spikes,
     false_alerts_per_1000_entity_year,
     first_difference_mad_scale,
     first_evidence_at_or_after,
@@ -104,6 +106,42 @@ class ObservationContractTests(unittest.TestCase):
         self.assertEqual(report["explicit_missing_or_invalid"], 1)
         self.assertEqual(report["absent_records"], 1)
 
+
+    def test_missingness_spike_is_reported_as_data_quality_not_behavior(self):
+        expected = [f"2024-{month:02d}" for month in range(1, 16)]
+        rows = [
+            {
+                "entity_id": "branch-1",
+                "metric_id": "daily_output",
+                "event_time": expected[index],
+                "value": float(100 + index),
+                "observation_status": "observed",
+            }
+            for index in range(10)
+        ]
+        result = detect_missingness_spikes(
+            rows, expected, window_size=5,
+            minimum_recent_rate=0.8, minimum_increase=0.5,
+        )
+        self.assertEqual(result["signal_count"], 1)
+        self.assertEqual(result["signals"][0]["signal_type"], "data_quality_missingness_spike")
+        self.assertIn("not an entity behavior", result["signals"][0]["interpretation"])
+
+    def test_pending_and_not_applicable_are_not_counted_as_missing(self):
+        expected = [f"2024-{month:02d}" for month in range(1, 11)]
+        rows = [
+            {
+                "entity_id": "e1", "metric_id": "m", "event_time": expected[index],
+                "value": None, "observation_status": "not_applicable",
+            }
+            for index in range(5, 10)
+        ]
+        result = detect_missingness_spikes(
+            rows, expected, window_size=5,
+            minimum_recent_rate=0.5, minimum_increase=0.3,
+        )
+        self.assertEqual(result["signal_count"], 0)
+
     def test_duplicate_entity_metric_time_is_rejected(self):
         rows = [
             {"id": "e1", "metric": "m", "year": "2024", "value": "1"},
@@ -172,6 +210,30 @@ class ScaleEstimatorTests(unittest.TestCase):
         self.assertEqual(result["status"], "insufficient_supported_differences")
 
 
+
+
+class BaselineTests(unittest.TestCase):
+    def test_theil_sen_baseline_tracks_a_smooth_trend_better_than_rolling_median(self):
+        rng = random.Random(92)
+        rows = observations(
+            [5.0 * index + rng.gauss(0.0, 0.4) for index in range(36)],
+            start_year=1980,
+        )
+        median_rows = build_univariate_residuals(
+            rows, baseline_window=12, min_history=8, time_unit="years",
+            baseline_method="rolling_median",
+        )
+        trend_rows = build_univariate_residuals(
+            rows, baseline_window=12, min_history=8, time_unit="years",
+            baseline_method="rolling_theil_sen",
+        )
+        median_scores = [abs(row["z_score"]) for row in median_rows if row["z_score"] is not None]
+        trend_scores = [abs(row["z_score"]) for row in trend_rows if row["z_score"] is not None]
+        self.assertGreater(len(median_scores), 10)
+        self.assertGreater(len(trend_scores), 10)
+        self.assertLess(statistics.median(trend_scores), statistics.median(median_scores) * 0.25)
+        self.assertTrue(all(row["baseline_method"] == "prequential_rolling_theil_sen" for row in trend_rows))
+
 class DetectorAndFleetTests(unittest.TestCase):
     def test_both_cusum_directions_are_retained(self):
         residuals = []
@@ -225,6 +287,27 @@ class CohortTests(unittest.TestCase):
         self.assertEqual(outlier["peer_expected"], 120.0)
         self.assertEqual(outlier["peer_residual"], 80.0)
         self.assertEqual(outlier["peer_count"], 5)
+
+
+    def test_exposure_adjusted_peer_comparison_uses_rate_not_raw_count(self):
+        values = [10, 20, 30, 40, 50, 90]
+        exposures = [1, 2, 3, 4, 5, 3]
+        rows = []
+        for index, (value, exposure) in enumerate(zip(values, exposures)):
+            rows.append({
+                "entity_id": f"staff-{index}",
+                "metric_id": "completed_cases",
+                "event_time": "2025-01",
+                "value": value,
+                "exposure": exposure,
+                "observation_status": "observed",
+                "cohort_id": "branch-role-season",
+            })
+        result = cohort_peer_residuals(rows, min_peers=5, use_exposure=True)
+        outlier = next(row for row in result if row["entity_id"] == "staff-5")
+        self.assertEqual(outlier["value_basis"], "value_per_exposure")
+        self.assertEqual(outlier["peer_expected"], 10.0)
+        self.assertEqual(outlier["peer_residual"], 20.0)
 
     def test_missing_cohort_does_not_trigger_guessed_peer_group(self):
         rows = [{
