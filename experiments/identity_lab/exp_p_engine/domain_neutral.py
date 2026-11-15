@@ -425,26 +425,62 @@ def first_difference_mad_scale(
         return {"value": None, "status": "insufficient_history", "method": "first_difference_mad", "n_differences": 0}
 
     numbers = [_time_number(row["event_time"], time_unit) for row in usable]
-    adjacent_x, adjacent_y = [], []
+    unit_gap_indices: list[tuple[int, int]] = []
     pairs: list[tuple[float, float, float]] = []
     for i in range(1, len(usable)):
         gap = numbers[i] - numbers[i - 1]
         if gap <= 0:
             raise ValueError("event_time_not_strictly_increasing")
-        pairs.append((float(usable[i]["value"]) - float(usable[i - 1]["value"]), gap, float(usable[i - 1]["value"])))
+        pairs.append((
+            float(usable[i]["value"]) - float(usable[i - 1]["value"]),
+            gap,
+            float(usable[i - 1]["value"]),
+        ))
         if abs(gap - 1.0) <= 0.02:
-            adjacent_x.append(float(usable[i - 1]["value"]))
-            adjacent_y.append(float(usable[i]["value"]))
+            unit_gap_indices.append((i - 1, i))
 
-    rho_source = "provided" if rho is not None else "unavailable"
-    if rho is None and estimate_rho and len(adjacent_x) >= min_adjacent_pairs_for_rho:
-        rho = _pearson_rho(adjacent_x, adjacent_y)
-        if rho is not None:
-            rho_source = "estimated_from_unit_gaps"
+    rho_was_provided = rho is not None
+    rho_source = "provided" if rho_was_provided else "unavailable"
+    if rho is None and estimate_rho and len(unit_gap_indices) >= min_adjacent_pairs_for_rho:
+        # Remove a robust linear trend before estimating lag-1 dependence.
+        # Correlating raw levels would mistake a persistent trend for AR(1) noise.
+        origin = numbers[0]
+        x_values = [value - origin for value in numbers]
+        y_values = [float(row["value"]) for row in usable]
+        slopes = [
+            (y_values[j] - y_values[i]) / (x_values[j] - x_values[i])
+            for i in range(len(x_values))
+            for j in range(i + 1, len(x_values))
+            if x_values[j] > x_values[i]
+        ]
+        if slopes:
+            trend_slope = statistics.median(slopes)
+            trend_intercept = statistics.median(
+                y_values[i] - trend_slope * x_values[i]
+                for i in range(len(x_values))
+            )
+            detrended = [
+                y_values[i] - (trend_intercept + trend_slope * x_values[i])
+                for i in range(len(y_values))
+            ]
+            rho_x = [detrended[left] for left, _ in unit_gap_indices]
+            rho_y = [detrended[right] for _, right in unit_gap_indices]
+            estimated_rho = _pearson_rho(rho_x, rho_y)
+            if estimated_rho is not None and -0.95 <= estimated_rho <= 0.95:
+                rho = estimated_rho
+                rho_source = "estimated_after_theil_sen_detrend"
+            elif estimated_rho is not None:
+                rho_source = "estimate_outside_supported_range"
+        else:
+            rho_source = "estimate_unidentifiable"
+
     if rho is not None:
         rho = float(rho)
         if not math.isfinite(rho) or not -0.95 <= rho <= 0.95:
-            raise ValueError("rho_must_be_finite_and_between_-0.95_and_0.95")
+            if rho_was_provided:
+                raise ValueError("rho_must_be_finite_and_between_-0.95_and_0.95")
+            rho = None
+            rho_source = "estimate_outside_supported_range"
 
     normalized_differences: list[float] = []
     adjusted_gaps = 0
