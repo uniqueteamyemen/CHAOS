@@ -7,6 +7,7 @@ from experiments.identity_lab.exp_p_engine.residual_dependence_experiment import
     estimate_panel_residual_rho,
     lag1_summary,
     prewhiten_evaluation_rows,
+    run_injection_experiment,
 )
 from experiments.identity_lab.exp_p_engine.domain_neutral import (
     detect_two_sided_cusum,
@@ -157,6 +158,26 @@ class ResidualDependenceTests(unittest.TestCase):
         self.assertEqual(calibration["status"], "insufficient_panel_residual_support")
         with self.assertRaisesRegex(ValueError, "not_approved"):
             prewhiten_evaluation_rows(rows, calibration, evaluation_start="2012")
+
+    def test_injection_experiment_skips_entities_without_residual_history(self):
+        short_series = make_ar1_rows(
+            entities=1, training_count=6, evaluation_count=3, seed=7
+        )
+        short_series = [
+            {**row, "entity_id": "short-entity"}
+            for row in short_series
+        ]
+        result = run_injection_experiment(
+            {"short-entity": short_series},
+            {},
+            {"status": "ok", "rho": 0.5, "entity_centers": {}},
+        )
+        self.assertEqual(result["status"], "ok")
+        self.assertEqual(result["eligible_entities"], 0)
+        self.assertEqual(
+            result["skipped_entities"].get("insufficient_baseline_history"), 1
+        )
+        self.assertEqual(result["responses"], {})
 
     def test_evaluation_observations_do_not_change_frozen_rho(self):
         rows = make_ar1_rows(rho=0.55, seed=101)
