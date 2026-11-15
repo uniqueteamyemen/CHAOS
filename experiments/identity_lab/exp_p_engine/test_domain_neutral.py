@@ -9,6 +9,7 @@ from datetime import datetime, timedelta, timezone
 
 from experiments.identity_lab.exp_p_engine.domain_neutral import (
     benjamini_hochberg,
+    build_partial_relation_residuals,
     build_univariate_residuals,
     cohort_peer_residuals,
     detect_missingness_spikes,
@@ -270,6 +271,108 @@ class BaselineTests(unittest.TestCase):
         self.assertGreater(len(trend_scores), 10)
         self.assertLess(statistics.median(trend_scores), statistics.median(median_scores) * 0.25)
         self.assertTrue(all(row["baseline_method"] == "prequential_rolling_theil_sen" for row in trend_rows))
+
+
+
+class PartialRelationTests(unittest.TestCase):
+    def test_explicit_pairwise_relation_detects_a_new_y_break_prequentially(self):
+        rng = random.Random(431)
+        rows = []
+        for index in range(26):
+            x = 10.0 + index * 2.0 + rng.gauss(0.0, 0.1)
+            y = 4.0 + 3.0 * x + rng.gauss(0.0, 0.35)
+            if index == 25:
+                y += 12.0
+            for metric_id, value, unit in (
+                ("hours", x, "hours"),
+                ("completed_cases", y, "cases"),
+            ):
+                rows.append({
+                    "entity_id": "team-1",
+                    "metric_id": metric_id,
+                    "event_time": str(2000 + index),
+                    "value": value,
+                    "unit": unit,
+                    "observation_status": "observed",
+                })
+        results = build_partial_relation_residuals(
+            rows,
+            x_metric_id="hours",
+            y_metric_id="completed_cases",
+            relationship_id="cases-per-hour-v1",
+            baseline_window=20,
+            min_pairs=8,
+        )
+        last = results[-1]
+        self.assertEqual(last["status"], "ready")
+        self.assertEqual(last["relationship_id"], "cases-per-hour-v1")
+        self.assertEqual(last["x_unit"], "hours")
+        self.assertEqual(last["y_unit"], "cases")
+        self.assertGreater(last["z_score"], 5.0)
+        self.assertEqual(
+            last["relationship_semantics"],
+            "explicit_statistical_relation_not_causal_or_conservation_proof",
+        )
+
+    def test_unpaired_or_missing_observations_are_not_imputed(self):
+        rows = []
+        for index in range(12):
+            rows.append({
+                "entity_id": "team-1", "metric_id": "hours",
+                "event_time": str(2010 + index), "value": 100 + index,
+                "observation_status": "observed",
+            })
+            rows.append({
+                "entity_id": "team-1", "metric_id": "completed_cases",
+                "event_time": str(2010 + index),
+                "value": None if index == 5 else 200 + 2 * index,
+                "observation_status": "missing" if index == 5 else "observed",
+            })
+        results = build_partial_relation_residuals(
+            rows, x_metric_id="hours", y_metric_id="completed_cases",
+            relationship_id="work-output", min_pairs=8,
+        )
+        self.assertTrue(all(row["event_time"] != "2015-01-01T00:00:00+00:00" for row in results))
+        self.assertEqual(len(results), 3)
+
+    def test_relation_rejects_metric_unit_drift(self):
+        rows = []
+        for index in range(10):
+            rows.append({
+                "entity_id": "e1", "metric_id": "x", "event_time": str(2020 + index),
+                "value": index + 1, "unit": "hours" if index < 8 else "minutes",
+                "observation_status": "observed",
+            })
+            rows.append({
+                "entity_id": "e1", "metric_id": "y", "event_time": str(2020 + index),
+                "value": (index + 1) * 2, "unit": "cases",
+                "observation_status": "observed",
+            })
+        with self.assertRaisesRegex(ValueError, "unit_changed"):
+            build_partial_relation_residuals(
+                rows, x_metric_id="x", y_metric_id="y",
+                relationship_id="x-y", min_pairs=8,
+            )
+
+    def test_constant_x_makes_relation_unidentifiable(self):
+        rows = []
+        for index in range(10):
+            rows.extend([
+                {
+                    "entity_id": "e1", "metric_id": "x", "event_time": str(2020 + index),
+                    "value": 5, "observation_status": "observed",
+                },
+                {
+                    "entity_id": "e1", "metric_id": "y", "event_time": str(2020 + index),
+                    "value": 10 + index, "observation_status": "observed",
+                },
+            ])
+        results = build_partial_relation_residuals(
+            rows, x_metric_id="x", y_metric_id="y",
+            relationship_id="flat-x", min_pairs=8,
+        )
+        self.assertEqual(results[-1]["status"], "relation_unidentifiable")
+
 
 class DetectorAndFleetTests(unittest.TestCase):
     def test_both_cusum_directions_are_retained(self):
