@@ -154,3 +154,17 @@ python -m experiments.identity_lab.exp_r_grade4.grade4_diagnostics
 ```
 
 The benchmark runs 500 independent sequences per condition on a fresh seed range and scores false alerts in null scenarios and in the pre-onset interval. It reports detector-isolated P1/CUSUM rates, sensitivity, direction errors, delay, Wilson intervals, and exact paired McNemar p-values versus A. G/H isolate reset vs hold at h=12.5; J/K/I refine the hold threshold. No candidate replaces A unless paired results justify that decision.
+
+
+## Robustness holdout — المرحلة التالية
+
+تُنفّذ هذه الحزمة مستقلة عن المقارنة الغاوسية السابقة، ولا تعيد تشغيل A–K أو إعادة تشغيل EIA.
+
+- الأذرع: A وG وH وJ وI فقط.
+- ست بيئات ضجيج: AR(1) بارتباط 0.4 و0.7، Student-t(4)، Laplace، تلوث 5% بقيم متطرفة، واندفاع ضجيج قصير.
+- ثلاث حالات لكل بيئة: عدم وجود كسر، كسر موجب 3σ، وكسر سالب 3σ.
+- 300 بذرة مقترنة لكل بيئة/حالة، في نطاق بذور مستقل يبدأ من 3,000,000.
+- تُحسب الحساسية من توقيت الدليل داخل الحدث المدمج، ويُحسب الإنذار قبل بداية الكسر مستقلاً.
+- تُحفظ النتيجة في `results/parallel_fusion_robustness_300_seed.json` كـGitHub Actions artifact.
+
+هذه مرحلة متانة وليست تغييراً للمحرك الإنتاجي.

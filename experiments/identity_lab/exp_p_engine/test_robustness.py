@@ -76,7 +76,7 @@ class RobustnessBenchmarkTests(unittest.TestCase):
     def test_condition_sign_and_onset_are_applied_exactly(self):
         rows, residuals = make_robust_rows(12, "ar1_phi_04", "negative_3sigma")
         self.assertEqual(len(rows), MONTHS)
-        self.assertNotEqual(residuals[ONSET_INDEX := 64], residuals[63])
+        self.assertEqual(rows[64]["month"], 65)
         # The injected component is exactly -6 after onset; compare same-seed null.
         _, null_residuals = make_robust_rows(12, "ar1_phi_04", "null")
         for index in range(64, MONTHS):
