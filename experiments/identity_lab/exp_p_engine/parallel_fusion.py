@@ -10,6 +10,7 @@ import hashlib
 import json
 import math
 import os
+import statistics
 from typing import Any
 
 from . import engine as production_engine
@@ -54,6 +55,44 @@ def validate_series(series: list[dict[str, Any]]) -> None:
         if not math.isfinite(value):
             raise ValueError("series_residual_not_finite")
         previous = current
+
+
+def estimate_positive_lag1_autocorrelation(
+    values: list[float], *, maximum: float = 0.8
+) -> float:
+    """Estimate positive lag-1 dependence from a quiet sample using winsorized values.
+
+    This changes only the CUSUM threshold in the experiment; it does not transform
+    residuals or pre-whiten the stream. Negative estimates are conservatively
+    treated as zero, and the estimate is capped to avoid explosive corrections.
+    """
+    if len(values) < 8:
+        return 0.0
+    if not math.isfinite(maximum) or not 0.0 < maximum < 1.0:
+        raise ValueError("autocorrelation_cap_must_be_between_zero_and_one")
+    numeric = [float(value) for value in values]
+    if not all(math.isfinite(value) for value in numeric):
+        raise ValueError("autocorrelation_values_must_be_finite")
+    centre = statistics.median(numeric)
+    absolute_deviations = [abs(value - centre) for value in numeric]
+    mad = statistics.median(absolute_deviations)
+    robust_scale = 1.4826 * mad
+    if robust_scale <= 1e-12:
+        return 0.0
+    lower = centre - 3.0 * robust_scale
+    upper = centre + 3.0 * robust_scale
+    clipped = [min(upper, max(lower, value)) - centre for value in numeric]
+    denominator = sum(value * value for value in clipped[:-1])
+    if denominator <= 1e-12:
+        return 0.0
+    numerator = sum(
+        clipped[index] * clipped[index - 1]
+        for index in range(1, len(clipped))
+    )
+    estimate = numerator / denominator
+    if not math.isfinite(estimate):
+        return 0.0
+    return min(maximum, max(0.0, estimate))
 
 
 def _snapshot(
@@ -407,6 +446,11 @@ def run_candidates(
     sigma_quiet = production_engine.mad_sigma(quiet_values)
     if not math.isfinite(sigma_quiet) or sigma_quiet <= 0:
         raise ValueError("quiet_sigma_must_be_positive")
+    rho_hat = estimate_positive_lag1_autocorrelation(quiet_values)
+    h_cusum_linear_adjusted = h_cusum_g * (1.0 + rho_hat)
+    h_cusum_long_run_adjusted = h_cusum_g * math.sqrt(
+        (1.0 + rho_hat) / (1.0 - rho_hat)
+    )
 
     config = {
         "window": window, "noise_gate_window": noise_gate_window,
@@ -417,6 +461,9 @@ def run_candidates(
         "h_cusum_f": h_cusum_f, "h_cusum_g": h_cusum_g,
         "h_cusum_j": h_cusum_j, "h_cusum_k": h_cusum_k,
         "h_cusum_i": h_cusum_i,
+        "rho_hat_quiet": rho_hat,
+        "h_cusum_linear_adjusted": h_cusum_linear_adjusted,
+        "h_cusum_long_run_adjusted": h_cusum_long_run_adjusted,
         "transition_damping": transition_damping,
         "calm_k": calm_k, "calm_periods": calm_periods, "cooldown": cooldown,
         "p1_high_noise_factor": p1_high_noise_factor,
@@ -431,6 +478,8 @@ def run_candidates(
         "J": "same as H with h=14.5",
         "K": "same as H with h=15.5",
         "I": "same as H with h=16.5",
+        "L": "same as H; h=12.5*(1+positive robust quiet lag-1 rho)",
+        "M": "same as H; h=12.5*sqrt((1+rho)/(1-rho)) using robust quiet lag-1 rho",
         "fusion": "same direction until reversal or confirmed calm",
     }
     snapshot = _snapshot(
@@ -540,6 +589,33 @@ def run_candidates(
         p1_high_noise_handling=True, p1_high_noise_factor=p1_high_noise_factor,
         p1_high_noise_run=p1_high_noise_run,
     )
+
+    candidate_l = _candidate(
+        series, bias=bias, sigma_quiet=sigma_quiet, window=window,
+        noise_gate_window=noise_gate_window, transition_ratio=transition_ratio,
+        sigma_ceiling_factor=sigma_ceiling_factor, k_sign=k_sign, run_sign=run_sign,
+        k_cusum=k_cusum, h_cusum=h_cusum_linear_adjusted,
+        transition_damping=transition_damping,
+        calm_k=calm_k, calm_periods=calm_periods, cooldown=cooldown,
+        entity=entity, policy="hold_unbounded",
+        p1_high_noise_handling=True, p1_high_noise_factor=p1_high_noise_factor,
+        p1_high_noise_run=p1_high_noise_run,
+    )
+    candidate_m = _candidate(
+        series, bias=bias, sigma_quiet=sigma_quiet, window=window,
+        noise_gate_window=noise_gate_window, transition_ratio=transition_ratio,
+        sigma_ceiling_factor=sigma_ceiling_factor, k_sign=k_sign, run_sign=run_sign,
+        k_cusum=k_cusum, h_cusum=h_cusum_long_run_adjusted,
+        transition_damping=transition_damping,
+        calm_k=calm_k, calm_periods=calm_periods, cooldown=cooldown,
+        entity=entity, policy="hold_unbounded",
+        p1_high_noise_handling=True, p1_high_noise_factor=p1_high_noise_factor,
+        p1_high_noise_run=p1_high_noise_run,
+    )
+    candidate_l["diagnostics"]["rho_hat_quiet"] = rho_hat
+    candidate_l["diagnostics"]["h_cusum_effective"] = h_cusum_linear_adjusted
+    candidate_m["diagnostics"]["rho_hat_quiet"] = rho_hat
+    candidate_m["diagnostics"]["h_cusum_effective"] = h_cusum_long_run_adjusted
     return {
         "snapshot": snapshot.to_dict(),
         "A": baseline,
@@ -553,4 +629,6 @@ def run_candidates(
         "J": candidate_j,
         "K": candidate_k,
         "I": candidate_i,
+        "L": candidate_l,
+        "M": candidate_m,
     }

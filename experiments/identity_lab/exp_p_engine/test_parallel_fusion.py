@@ -1,4 +1,5 @@
 """Unit tests for the isolated P parallel-detector and event-fusion experiment."""
+import math
 import random
 import unittest
 
@@ -12,6 +13,7 @@ from experiments.identity_lab.exp_p_engine.parallel_fusion import (
     run_candidates,
     validate_series,
     _two_sided_cusum,
+    estimate_positive_lag1_autocorrelation,
 )
 
 
@@ -290,6 +292,52 @@ class ParallelFusionTests(unittest.TestCase):
             self.assertEqual(
                 result[variant]["diagnostics"]["p1_mode"],
                 "production_adaptive_13_run",
+            )
+
+    def test_robust_positive_lag1_estimator_tracks_ar1_and_ignores_one_extreme_value(self):
+        rng = random.Random(701)
+        independent = [rng.gauss(0.0, 1.0) for _ in range(4000)]
+        previous = 0.0
+        correlated = []
+        for _ in range(4000):
+            previous = 0.7 * previous + rng.gauss(0.0, math.sqrt(1.0 - 0.7 ** 2))
+            correlated.append(previous)
+        rho_iid = estimate_positive_lag1_autocorrelation(independent)
+        rho_ar1 = estimate_positive_lag1_autocorrelation(correlated)
+        spiked = list(correlated)
+        spiked[900] = 1_000_000.0
+        rho_spiked = estimate_positive_lag1_autocorrelation(spiked)
+        self.assertLess(rho_iid, 0.08)
+        self.assertGreater(rho_ar1, 0.55)
+        self.assertLessEqual(rho_ar1, 0.8)
+        self.assertAlmostEqual(rho_ar1, rho_spiked, delta=0.03)
+
+    def test_correlation_adjusted_L_M_keep_H_P1_and_hold_policy(self):
+        residuals = []
+        rng = random.Random(811)
+        previous = 0.0
+        for month in range(1, 141):
+            previous = 0.7 * previous + rng.gauss(0.0, 1.0)
+            residuals.append(previous)
+        rows = rows_from_residuals(residuals)
+        result = run_candidates("stock", rows, quiet_range=(1, 40))
+        h_p1 = [
+            hit for hit in result["H"]["raw_hits"]
+            if hit["detector"] == "sign_run"
+        ]
+        for variant in ("L", "M"):
+            p1 = [
+                hit for hit in result[variant]["raw_hits"]
+                if hit["detector"] == "sign_run"
+            ]
+            self.assertEqual(p1, h_p1)
+            self.assertEqual(
+                result[variant]["diagnostics"]["sigma_cusum_policy"],
+                "unbounded_hold",
+            )
+            self.assertGreater(
+                result[variant]["diagnostics"]["h_cusum_effective"],
+                12.5,
             )
 
     def test_same_event_cooldown_marks_but_retains_evidence(self):
