@@ -15,6 +15,7 @@ from experiments.identity_lab.exp_p_engine.domain_neutral import (
     detect_missingness_spikes,
     false_alerts_per_1000_entity_year,
     first_difference_mad_scale,
+    estimate_panel_ar1_rho,
     first_evidence_at_or_after,
     missing_periods,
     normalize_observations,
@@ -518,6 +519,88 @@ class PartialRelationTests(unittest.TestCase):
             relationship_id="flat-x", min_pairs=8,
         )
         self.assertEqual(results[-1]["status"], "relation_unidentifiable")
+
+
+
+
+class PanelScaleEstimatorTests(unittest.TestCase):
+    def make_panel(self, rho, *, seed=77, post_cutoff_shift=0.0):
+        rng = random.Random(seed)
+        panel = []
+        count = 160
+        start_year = 2000
+        training_count = 15  # 2000..2014 inclusive
+        for entity_index in range(count):
+            sigma = 0.7 + (entity_index % 11) * 0.35
+            innovation_sigma = sigma * math.sqrt(1.0 - rho * rho)
+            state = rng.gauss(0.0, sigma)
+            drift = (entity_index % 7 - 3) * 0.04
+            for time_index in range(25):
+                state = rho * state + rng.gauss(0.0, innovation_sigma)
+                value = 20.0 + drift * time_index + state
+                if time_index >= training_count:
+                    value += post_cutoff_shift * (time_index - training_count + 1)
+                panel.append({
+                    "entity_id": f"country-{entity_index}",
+                    "metric_id": "indicator-X",
+                    "event_time": str(start_year + time_index),
+                    "value": value,
+                    "observation_status": "observed",
+                })
+        return panel
+
+    def test_panel_rho_recovers_shared_dependence_across_short_series(self):
+        expected_rho = 0.60
+        result = estimate_panel_ar1_rho(
+            self.make_panel(expected_rho),
+            training_end="2014",
+            time_unit="years",
+            min_series=50,
+            min_lag_pairs=500,
+            bootstrap_replicates=300,
+            seed=991,
+        )
+        self.assertEqual(result["status"], "ok")
+        self.assertEqual(result["series_count"], 160)
+        self.assertGreater(result["lag_pair_count"], 1500)
+        self.assertAlmostEqual(result["rho"], expected_rho, delta=0.12)
+        self.assertLess(result["ci_width"], 0.30)
+
+    def test_panel_rho_is_frozen_before_evaluation_period(self):
+        base = self.make_panel(0.55, seed=101, post_cutoff_shift=0.0)
+        altered = self.make_panel(0.55, seed=101, post_cutoff_shift=500.0)
+        first = estimate_panel_ar1_rho(
+            base, training_end="2014", min_series=50, min_lag_pairs=500,
+            bootstrap_replicates=200, seed=123,
+        )
+        second = estimate_panel_ar1_rho(
+            altered, training_end="2014", min_series=50, min_lag_pairs=500,
+            bootstrap_replicates=200, seed=123,
+        )
+        self.assertEqual(first["status"], "ok")
+        self.assertEqual(second["status"], "ok")
+        self.assertAlmostEqual(first["rho"], second["rho"], places=12)
+        self.assertEqual(first["rho_ci95"], second["rho_ci95"])
+
+    def test_panel_rho_fails_closed_when_panel_support_is_insufficient(self):
+        panel = self.make_panel(0.5)[:10 * 25]
+        result = estimate_panel_ar1_rho(
+            panel, training_end="2014", min_series=20, min_lag_pairs=100,
+            bootstrap_replicates=100,
+        )
+        self.assertEqual(result["status"], "insufficient_panel_support")
+        self.assertIsNone(result["rho"])
+
+    def test_panel_rho_is_accepted_as_external_scale_input(self):
+        rows = observations([float(index) + math.sin(index) for index in range(18)])
+        residuals = build_univariate_residuals(
+            rows, baseline_window=8, min_history=8,
+            baseline_method="rolling_theil_sen", scale_rho=0.45,
+        )
+        self.assertTrue(residuals)
+        self.assertTrue(all(row["scale_rho_external"] == 0.45 for row in residuals))
+        self.assertTrue(all("panel-rho-0.450" in row["baseline_id"] for row in residuals))
+
 
 
 class DetectorAndFleetTests(unittest.TestCase):
