@@ -5,13 +5,8 @@ on:
     branches:
       - experiment/p-engine-parallel-fusion-v7
     paths:
-      - "experiments/identity_lab/exp_p_engine/engine.py"
-      - "experiments/identity_lab/exp_p_engine/parallel_fusion.py"
-      - "experiments/identity_lab/exp_p_engine/benchmark_parallel_fusion.py"
       - "experiments/identity_lab/exp_p_engine/benchmark_robustness.py"
       - "experiments/identity_lab/exp_p_engine/test_robustness.py"
-      - "experiments/identity_lab/exp_p_engine/test_parallel_fusion.py"
-      - ".github/workflows/p-engine-robustness.yml"
   workflow_dispatch:
 
 permissions:
