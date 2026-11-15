@@ -302,7 +302,7 @@ def build_policy_residuals(
             continue
 
         if policy == "fixed_initial_baseline_fixed_scale":
-            if index < baseline_window:
+            if len(history) < baseline_window:
                 output.append({
                     "entity_id": entity_id,
                     "metric_id": metric_id,
