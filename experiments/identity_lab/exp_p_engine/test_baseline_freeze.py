@@ -6,6 +6,7 @@ from experiments.identity_lab.exp_p_engine.baseline_freeze_experiment import (
     POLICIES,
     build_policy_residuals,
 )
+from experiments.identity_lab.exp_p_engine.domain_neutral import detect_two_sided_cusum
 
 
 def make_series(*, count=36, shift_from=None, shift=0.0, transient_at=None, gap_at=None):
@@ -171,6 +172,33 @@ class BaselineFreezeTests(unittest.TestCase):
             row for row in after_gap if row["status"] == "ready"
         )
         self.assertGreaterEqual(first_ready_after_gap["support_count"], 12)
+
+    def test_confirmation_freeze_starts_only_after_two_sided_cusum_alarm(self):
+        series = make_series(shift_from=23, shift=2.0)
+        rows, diagnostics = build_policy_residuals(
+            series,
+            policy="confirmation_freeze_baseline_rolling_scale",
+            time_unit="years",
+        )
+        trigger_rows = [row for row in rows if row["freeze_trigger"]]
+        self.assertEqual(len(trigger_rows), diagnostics["freeze_trigger_count"])
+        self.assertGreaterEqual(len(trigger_rows), 1)
+        first_cusum = detect_two_sided_cusum(rows, k=0.5, h=8.5)
+        self.assertTrue(first_cusum)
+        self.assertEqual(trigger_rows[0]["event_time"], first_cusum[0]["event_time"])
+        trigger_index = rows.index(trigger_rows[0])
+        self.assertFalse(trigger_rows[0]["freeze_active"])
+        self.assertTrue(rows[trigger_index + 1]["freeze_active"])
+
+    def test_confirmation_freeze_does_not_lock_on_one_isolated_spike(self):
+        series = make_series(transient_at=18, shift=0.9)
+        _, diagnostics = build_policy_residuals(
+            series,
+            policy="confirmation_freeze_baseline_rolling_scale",
+            time_unit="years",
+        )
+        self.assertEqual(diagnostics["freeze_trigger_count"], 0)
+        self.assertEqual(diagnostics["freeze_active_rows"], 0)
 
     def test_builder_rejects_multiple_entities(self):
         rows = make_series()
