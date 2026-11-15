@@ -343,7 +343,7 @@ class ScaleEstimatorTests(unittest.TestCase):
         self.assertIsNone(result["value"])
         self.assertEqual(result["status"], "rho_estimation_unavailable")
         self.assertEqual(result["method"], "first_difference_mad_ar1_unavailable")
-        self.assertEqual(result["rho_source"], "unavailable")
+        self.assertEqual(result["rho_source"], "insufficient_consecutive_difference_pairs")
 
     def test_sparse_nonunit_gaps_without_rho_do_not_invent_scale(self):
         rows = [
