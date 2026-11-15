@@ -462,9 +462,6 @@ def first_difference_mad_scale(
     if rho is None and estimate_rho and len(rho_lag_pairs) < min_adjacent_pairs_for_rho:
         rho_source = "insufficient_consecutive_difference_pairs"
 
-    if rho is None and estimate_rho and len(rho_lag_pairs) < min_adjacent_pairs_for_rho:
-        rho_source = "insufficient_consecutive_difference_pairs"
-
     if rho is None and estimate_rho and len(rho_lag_pairs) >= min_adjacent_pairs_for_rho:
         # For a stationary AR(1) level process, lag-1 autocorrelation of
         # first differences is -(1-rho)/2. Correlation-centering removes a
