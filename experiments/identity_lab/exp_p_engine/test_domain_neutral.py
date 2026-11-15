@@ -257,7 +257,7 @@ class ScaleEstimatorTests(unittest.TestCase):
         rows = observations(values, unit="days")
         result = first_difference_mad_scale(rows, time_unit="days", estimate_rho=True)
         self.assertEqual(result["status"], "ok")
-        self.assertEqual(result["rho_source"], "estimated_from_unit_gaps")
+        self.assertEqual(result["rho_source"], "estimated_after_theil_sen_detrend")
         self.assertAlmostEqual(result["rho"], rho, delta=0.06)
         self.assertAlmostEqual(result["value"], target_sigma, delta=0.22)
 
@@ -286,6 +286,38 @@ class ScaleEstimatorTests(unittest.TestCase):
         self.assertEqual(result["status"], "ok")
         self.assertGreater(result["n_differences"], 8)
         self.assertGreater(result["n_gap_adjusted"], 0)
+
+
+    def test_ar1_estimation_removes_linear_trend_before_correlation(self):
+        rho, target_sigma = 0.55, 1.9
+        noise = ar1_series(5000, rho=rho, stationary_sigma=target_sigma, seed=712)
+        values = [25.0 + 0.035 * index + value for index, value in enumerate(noise)]
+        rows = observations(values, unit="days")
+        result = first_difference_mad_scale(
+            rows, time_unit="days", estimate_rho=True,
+        )
+        self.assertEqual(result["status"], "ok")
+        self.assertEqual(result["rho_source"], "estimated_after_theil_sen_detrend")
+        self.assertAlmostEqual(result["rho"], rho, delta=0.08)
+        self.assertAlmostEqual(result["value"], target_sigma, delta=0.25)
+
+    def test_univariate_builder_keeps_iid_and_ar1_scale_lanes_distinct(self):
+        values = ar1_series(60, rho=0.4, stationary_sigma=1.7, seed=718)
+        rows = observations(values, unit="days")
+        iid = build_univariate_residuals(
+            rows, baseline_window=12, min_history=8,
+            time_unit="days", baseline_method="rolling_theil_sen",
+            estimate_rho=False,
+        )
+        ar1 = build_univariate_residuals(
+            rows, baseline_window=12, min_history=8,
+            time_unit="days", baseline_method="rolling_theil_sen",
+            estimate_rho=True,
+        )
+        self.assertTrue(iid)
+        self.assertTrue(ar1)
+        self.assertTrue(all(":iid-unit-gap" in row["baseline_id"] for row in iid))
+        self.assertTrue(all(":ar1-adjusted" in row["baseline_id"] for row in ar1))
 
     def test_sparse_nonunit_gaps_without_rho_do_not_invent_scale(self):
         rows = [
