@@ -422,57 +422,58 @@ def first_difference_mad_scale(
     ]
     usable.sort(key=lambda x: _parse_time(x["event_time"]))
     if len(usable) < min_differences + 1:
-        return {"value": None, "status": "insufficient_history", "method": "first_difference_mad", "n_differences": 0}
+        return {
+            "value": None,
+            "status": "insufficient_history",
+            "method": "first_difference_mad",
+            "n_differences": 0,
+            "n_unit_gaps": 0,
+            "n_rho_lag_pairs": 0,
+            "n_gap_adjusted": 0,
+            "n_skipped_gaps": 0,
+        }
+    if min_adjacent_pairs_for_rho < 1 or min_differences < 1:
+        raise ValueError("scale_support_parameters_invalid")
 
     numbers = [_time_number(row["event_time"], time_unit) for row in usable]
-    unit_gap_indices: list[tuple[int, int]] = []
-    pairs: list[tuple[float, float, float]] = []
+    unit_gap_differences: list[tuple[int, float]] = []
+    pairs: list[tuple[float, float]] = []
     for i in range(1, len(usable)):
         gap = numbers[i] - numbers[i - 1]
         if gap <= 0:
             raise ValueError("event_time_not_strictly_increasing")
-        pairs.append((
-            float(usable[i]["value"]) - float(usable[i - 1]["value"]),
-            gap,
-            float(usable[i - 1]["value"]),
-        ))
+        difference = float(usable[i]["value"]) - float(usable[i - 1]["value"])
+        pairs.append((difference, gap))
         if abs(gap - 1.0) <= 0.02:
-            unit_gap_indices.append((i - 1, i))
+            unit_gap_differences.append((i, difference))
 
     rho_was_provided = rho is not None
     rho_source = "provided" if rho_was_provided else "unavailable"
-    if rho is None and estimate_rho and len(unit_gap_indices) >= min_adjacent_pairs_for_rho:
-        # Remove a robust linear trend before estimating lag-1 dependence.
-        # Correlating raw levels would mistake a persistent trend for AR(1) noise.
-        origin = numbers[0]
-        x_values = [value - origin for value in numbers]
-        y_values = [float(row["value"]) for row in usable]
-        slopes = [
-            (y_values[j] - y_values[i]) / (x_values[j] - x_values[i])
-            for i in range(len(x_values))
-            for j in range(i + 1, len(x_values))
-            if x_values[j] > x_values[i]
-        ]
-        if slopes:
-            trend_slope = statistics.median(slopes)
-            trend_intercept = statistics.median(
-                y_values[i] - trend_slope * x_values[i]
-                for i in range(len(x_values))
-            )
-            detrended = [
-                y_values[i] - (trend_intercept + trend_slope * x_values[i])
-                for i in range(len(y_values))
-            ]
-            rho_x = [detrended[left] for left, _ in unit_gap_indices]
-            rho_y = [detrended[right] for _, right in unit_gap_indices]
-            estimated_rho = _pearson_rho(rho_x, rho_y)
-            if estimated_rho is not None and -0.95 <= estimated_rho <= 0.95:
+    rho_lag_pairs: list[tuple[float, float]] = []
+    for index in range(1, len(unit_gap_differences)):
+        previous_index, previous_difference = unit_gap_differences[index - 1]
+        current_index, current_difference = unit_gap_differences[index]
+        if current_index == previous_index + 1:
+            rho_lag_pairs.append((previous_difference, current_difference))
+
+    if rho is None and estimate_rho and len(rho_lag_pairs) >= min_adjacent_pairs_for_rho:
+        # For a stationary AR(1) level process, lag-1 autocorrelation of
+        # first differences is -(1-rho)/2. Correlation-centering removes a
+        # constant linear drift without fitting and subtracting a noisy level
+        # trend, which can absorb the low-frequency AR(1) component.
+        rho_difference_acf = _pearson_rho(
+            [left for left, _ in rho_lag_pairs],
+            [right for _, right in rho_lag_pairs],
+        )
+        if rho_difference_acf is not None:
+            estimated_rho = 1.0 + 2.0 * rho_difference_acf
+            if math.isfinite(estimated_rho) and -0.95 <= estimated_rho <= 0.95:
                 rho = estimated_rho
-                rho_source = "estimated_after_theil_sen_detrend"
-            elif estimated_rho is not None:
+                rho_source = "estimated_from_first_difference_acf"
+            else:
                 rho_source = "estimate_outside_supported_range"
         else:
-            rho_source = "estimate_unidentifiable"
+            rho_source = "difference_acf_unidentifiable"
 
     if rho is not None:
         rho = float(rho)
@@ -482,11 +483,25 @@ def first_difference_mad_scale(
             rho = None
             rho_source = "estimate_outside_supported_range"
 
+    if estimate_rho and rho is None:
+        return {
+            "value": None,
+            "status": "rho_estimation_unavailable",
+            "method": "first_difference_mad_ar1_unavailable",
+            "rho": None,
+            "rho_source": rho_source,
+            "n_differences": 0,
+            "n_unit_gaps": len(unit_gap_differences),
+            "n_rho_lag_pairs": len(rho_lag_pairs),
+            "n_gap_adjusted": 0,
+            "n_skipped_gaps": len(pairs) - len(unit_gap_differences),
+        }
+
     normalized_differences: list[float] = []
     adjusted_gaps = 0
     unit_gaps = 0
     skipped_gaps = 0
-    for difference, gap, _ in pairs:
+    for difference, gap in pairs:
         nearest = round(gap)
         if abs(gap - nearest) > 0.02 or nearest < 1:
             skipped_gaps += 1
@@ -517,6 +532,7 @@ def first_difference_mad_scale(
             "rho_source": rho_source,
             "n_differences": len(normalized_differences),
             "n_unit_gaps": unit_gaps,
+            "n_rho_lag_pairs": len(rho_lag_pairs),
             "n_gap_adjusted": adjusted_gaps,
             "n_skipped_gaps": skipped_gaps,
         }
@@ -545,6 +561,7 @@ def first_difference_mad_scale(
         "rho_source": rho_source,
         "n_differences": len(normalized_differences),
         "n_unit_gaps": unit_gaps,
+        "n_rho_lag_pairs": len(rho_lag_pairs),
         "n_gap_adjusted": adjusted_gaps,
         "n_skipped_gaps": skipped_gaps,
     }
