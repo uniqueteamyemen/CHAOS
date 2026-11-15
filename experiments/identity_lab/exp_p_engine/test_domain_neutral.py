@@ -81,6 +81,15 @@ class ObservationContractTests(unittest.TestCase):
         self.assertIn("attributed_term", schema["required"])
         self.assertIn("exposure", definition["properties"])
         self.assertIn("exposure_unit", definition["properties"])
+        residual_definition = schema["definitions"]["residual"]
+        self.assertEqual(
+            residual_definition["required"],
+            [
+                "entity_id", "metric_id", "event_time", "observed_value",
+                "expected_value", "residual", "status", "baseline_id",
+                "baseline_method", "support_count",
+            ],
+        )
 
     def test_five_required_fields_are_enough(self):
         result = normalize_observations(
@@ -183,6 +192,10 @@ class ObservationContractTests(unittest.TestCase):
         self.assertEqual(result["signal_count"], 1)
         self.assertEqual(result["signals"][0]["signal_type"], "data_quality_missingness_spike")
         self.assertIn("not an entity behavior", result["signals"][0]["interpretation"])
+
+    def test_missingness_requires_series_identity_even_when_all_periods_absent(self):
+        with self.assertRaisesRegex(ValueError, "one_entity_metric"):
+            detect_missingness_spikes([], ["2024", "2025"])
 
     def test_pending_and_not_applicable_are_not_counted_as_missing(self):
         expected = [f"2024-{month:02d}" for month in range(1, 11)]
@@ -548,6 +561,7 @@ class CohortTests(unittest.TestCase):
         self.assertEqual(outlier["peer_expected"], 120.0)
         self.assertEqual(outlier["peer_residual"], 80.0)
         self.assertEqual(outlier["peer_count"], 5)
+        validate_residual_contract(output)
 
 
     def test_exposure_adjusted_peer_comparison_uses_rate_not_raw_count(self):
@@ -571,6 +585,7 @@ class CohortTests(unittest.TestCase):
         self.assertEqual(outlier["value_basis"], "value_per_exposure")
         self.assertEqual(outlier["peer_expected"], 10.0)
         self.assertEqual(outlier["peer_residual"], 20.0)
+        validate_residual_contract(result)
 
 
     def test_exposure_normalization_requires_a_declared_unit(self):
