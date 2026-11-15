@@ -410,10 +410,13 @@ def first_difference_mad_scale(
     """Estimate level-noise scale from actual first differences.
 
     For a stationary AR(1) level process, a gap of d base units has
-    Var(X[t]-X[t-d]) = 2*sigma^2*(1-rho^d). Long gaps are adjusted only when
-    rho is available. Without a supported rho estimate, only unit-gap pairs
-    are used; no sqrt(delta_t) assumption is applied to a different process.
-    This remains a candidate estimator, not a universal noise model.
+    Var(X[t]-X[t-d]) = 2*sigma^2*(1-rho^d). The lag-1 autocorrelation of
+    unit first differences is -(1-rho)/2, so rho = 1 + 2*acf1(diff).
+    Correlation-centering removes constant linear drift without fitting the
+    noisy level series. If AR(1) estimation is requested but lacks sufficient
+    consecutive unit-gap differences, this function fails closed and emits no
+    scale; it never silently substitutes an IID estimate. This is still a
+    candidate estimator, not a universal noise model.
     """
     usable = [
         row for row in observations
