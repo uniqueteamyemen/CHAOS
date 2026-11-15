@@ -1041,6 +1041,8 @@ def synthetic_control_suite() -> dict[str, Any]:
                 "freeze_trigger_count": diagnostics["freeze_trigger_count"],
                 "freeze_release_count": diagnostics["freeze_release_count"],
                 "freeze_active_fraction": diagnostics["freeze_active_fraction"],
+                "first_freeze_time": diagnostics["first_freeze_time"],
+                "freeze_episode_records": diagnostics["freeze_episodes"],
                 "freeze_episodes_ended_by_return": len(returned_episodes),
                 "historical_cusum_hits_total": len(cusum_hits),
                 "historical_sign_run_hits_total": len(sign_hits),
@@ -1102,6 +1104,7 @@ def main() -> None:
             "suspicion_run": SUSPICION_RUN,
             "cusum_settings": list(CUSUM_SETTINGS),
             "p1_settings": list(P1_SETTINGS),
+            "confirmation_freeze_cusum": {"k": 0.5, "h": 8.5},
         },
         "world_bank": run_experiment(
             "World Bank domestic credit to private sector (% GDP)",
