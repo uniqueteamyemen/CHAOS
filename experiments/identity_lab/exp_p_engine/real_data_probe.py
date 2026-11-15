@@ -47,6 +47,7 @@ def candidate_summary(observations: list[dict], *, time_unit: str, min_history: 
         "residual_rows": len(residuals),
         "scale_ready_rows": scale_status.get("ready", 0),
         "scale_unavailable_rows": scale_status.get("scale_unavailable", 0),
+        "gap_unresolved_rows": scale_status.get("gap_unresolved", 0),
         "cusum_raw_hits": len(cusum_hits),
         "sign_run_raw_hits": len(p1_hits),
         "calibration_status": detectors["calibration_status"],
