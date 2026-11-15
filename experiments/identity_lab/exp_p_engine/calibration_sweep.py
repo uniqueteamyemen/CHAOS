@@ -29,7 +29,24 @@ OUTPUT = (
     / "results" / "domain_neutral_threshold_sweep.json"
 )
 
-BASELINES = ("rolling_median", "rolling_theil_sen")
+BASELINE_CONFIGS = (
+    {
+        "label": "rolling_median_iid_scale",
+        "baseline_method": "rolling_median",
+        "estimate_rho": False,
+    },
+    {
+        "label": "rolling_theil_sen_iid_scale",
+        "baseline_method": "rolling_theil_sen",
+        "estimate_rho": False,
+    },
+    {
+        "label": "rolling_theil_sen_detrended_ar1_scale",
+        "baseline_method": "rolling_theil_sen",
+        "estimate_rho": True,
+    },
+)
+MAX_ACCEPTABLE_DETECTION_DELAY = 3
 CUSUM_GRID = (
     {"k": 0.25, "h": 8.5},
     {"k": 0.25, "h": 12.0},
@@ -167,6 +184,7 @@ def inject_persistent_level_shift(
     magnitude_sigma: float,
     direction: int,
     time_unit: str,
+    estimate_rho: bool,
 ) -> tuple[list[dict[str, Any]] | None, str | None, int | None, float | None]:
     observed = [
         row for row in series
@@ -177,7 +195,9 @@ def inject_persistent_level_shift(
         return None, None, None, None
     onset_index = min(max(8, int(len(observed) * 0.65)), len(observed) - 3)
     pre_onset = observed[:onset_index]
-    scale = first_difference_mad_scale(pre_onset, time_unit=time_unit)
+    scale = first_difference_mad_scale(
+        pre_onset, time_unit=time_unit, estimate_rho=estimate_rho
+    )
     if scale["status"] != "ok" or scale["value"] is None:
         return None, None, None, None
     shift = direction * magnitude_sigma * float(scale["value"])
@@ -192,6 +212,7 @@ def injection_response_for_series(
     *,
     baseline_method: str,
     time_unit: str,
+    estimate_rho: bool,
 ) -> dict[str, Any]:
     responses: dict[str, list[dict[str, Any]]] = {}
     for magnitude in INJECTION_MAGNITUDES:
@@ -202,6 +223,7 @@ def injection_response_for_series(
                 magnitude_sigma=magnitude,
                 direction=direction,
                 time_unit=time_unit,
+                estimate_rho=estimate_rho,
             )
             if injected is None or onset is None or onset_index is None or sigma is None:
                 continue
@@ -211,6 +233,7 @@ def injection_response_for_series(
                 min_history=8,
                 time_unit=time_unit,
                 baseline_method=baseline_method,
+                estimate_rho=estimate_rho,
             )
             cusum_params_result: list[dict[str, Any]] = []
             for params in CUSUM_GRID:
@@ -346,7 +369,10 @@ def run_source(
         "entity_count": len(entity_series),
         "baseline_methods": {},
     }
-    for baseline_method in BASELINES:
+    for baseline_config in BASELINE_CONFIGS:
+        baseline_method = baseline_config["baseline_method"]
+        estimate_rho = baseline_config["estimate_rho"]
+        baseline_label = baseline_config["label"]
         historical_rows: list[dict[str, Any]] = []
         injections: list[dict[str, Any]] = []
         series_count = ready_count = 0
@@ -364,6 +390,7 @@ def run_source(
                 min_history=8,
                 time_unit=time_unit,
                 baseline_method=baseline_method,
+                estimate_rho=estimate_rho,
             )
             series_count += 1
             ready_count += ready_period_count(residuals)
@@ -374,21 +401,30 @@ def run_source(
                 "ready_periods": ready_period_count(residuals),
                 "gap_unresolved": sum(1 for row in residuals if row["status"] == "gap_unresolved"),
                 "scale_unavailable": sum(1 for row in residuals if row["status"] == "scale_unavailable"),
+                "rho_estimated_rows": sum(
+                    1 for row in residuals
+                    if row.get("rho") is not None
+                    and row.get("scale_method", "").find("ar1") >= 0
+                ),
             }
             injection = injection_response_for_series(
                 observed,
                 baseline_method=baseline_method,
                 time_unit=time_unit,
+                estimate_rho=estimate_rho,
             )
             if injection:
                 injections.append(injection)
 
-        source_result["baseline_methods"][baseline_method] = {
+        source_result["baseline_methods"][baseline_label] = {
+            "baseline_method": baseline_method,
+            "estimate_rho": estimate_rho,
             "series_tested": series_count,
             "ready_periods": ready_count,
             "historical_signal_profile": historical_detector_profile(historical_rows),
             "injection_response": summarize_injection_responses(injections),
             "per_entity_coverage": per_entity_signal,
+            "maximum_acceptable_detection_delay_observations": MAX_ACCEPTABLE_DETECTION_DELAY,
             "labeling": (
                 "Observed source signals are unlabelled. Injection recall is measured "
                 "against controlled persistent shifts added to copies of the real series."
@@ -407,7 +443,16 @@ def main() -> None:
         "threshold_grid": {
             "cusum": list(CUSUM_GRID),
             "sign_run": list(P1_GRID),
+            "max_acceptable_detection_delay_observations": MAX_ACCEPTABLE_DETECTION_DELAY,
         },
+        "scale_estimators": [
+            {
+                "label": item["label"],
+                "baseline_method": item["baseline_method"],
+                "estimate_rho": item["estimate_rho"],
+            }
+            for item in BASELINE_CONFIGS
+        ],
         "sources": {
             "world_bank": run_source(
                 "World Bank domestic credit to private sector (% GDP)",
