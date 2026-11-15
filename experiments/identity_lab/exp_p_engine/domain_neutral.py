@@ -53,10 +53,24 @@ def validate_residual_contract(rows: Sequence[Mapping[str, Any]]) -> None:
         _parse_time(row["event_time"])
         if not str(row["entity_id"]).strip() or not str(row["metric_id"]).strip():
             raise ValueError("residual_contract_identity_empty")
-        if not str(row["status"]).strip() or not str(row["baseline_id"]).strip():
-            raise ValueError("residual_contract_status_or_baseline_id_empty")
-        if not str(row["baseline_method"]).strip():
-            raise ValueError("residual_contract_baseline_method_empty")
+        allowed_statuses = {
+            "ready",
+            "gap_unresolved",
+            "scale_unavailable",
+            "peer_scale_unavailable",
+            "relation_scale_unavailable",
+            "relation_unidentifiable",
+        }
+        if row["status"] not in allowed_statuses:
+            raise ValueError("residual_contract_status_invalid")
+        if not isinstance(row["entity_id"], str) or not row["entity_id"].strip():
+            raise ValueError("residual_contract_entity_id_invalid")
+        if not isinstance(row["metric_id"], str) or not row["metric_id"].strip():
+            raise ValueError("residual_contract_metric_id_invalid")
+        if not isinstance(row["baseline_id"], str) or not row["baseline_id"].strip():
+            raise ValueError("residual_contract_baseline_id_invalid")
+        if not isinstance(row["baseline_method"], str) or not row["baseline_method"].strip():
+            raise ValueError("residual_contract_baseline_method_invalid")
         support = row["support_count"]
         if isinstance(support, bool) or not isinstance(support, int) or support < 0:
             raise ValueError("residual_contract_support_count_invalid")
@@ -66,6 +80,8 @@ def validate_residual_contract(rows: Sequence[Mapping[str, Any]]) -> None:
                 isinstance(value, bool) or not math.isfinite(float(value))
             ):
                 raise ValueError("residual_contract_numeric_value_invalid:" + field)
+        if row.get("scale") is not None and float(row["scale"]) <= 0:
+            raise ValueError("residual_contract_scale_not_positive")
         if row["status"] == "ready":
             for field in ("observed_value", "expected_value", "residual", "scale", "z_score"):
                 if row.get(field) is None:
