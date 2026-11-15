@@ -50,8 +50,8 @@ BASELINE_CONFIGS = (
         "label": "rolling_theil_sen_first_difference_acf_ar1_scale",
         "baseline_method": "rolling_theil_sen",
         "estimate_rho": True,
-        "scale_window": 24,
-        "min_adjacent_pairs_for_rho": 14,
+        "scale_window": 64,
+        "min_adjacent_pairs_for_rho": 40,
     },
 )
 MAX_ACCEPTABLE_DELAY_TIME_UNITS = 3.0
@@ -284,7 +284,7 @@ def injection_response_for_series(
                 time_unit=time_unit,
                 baseline_method=baseline_method,
                 estimate_rho=estimate_rho,
-                scale_window=24 if estimate_rho else 12,
+                scale_window=64 if estimate_rho else 12,
                 min_adjacent_pairs_for_rho=min_adjacent_pairs_for_rho,
             )
             cusum_params_result: list[dict[str, Any]] = []
@@ -470,7 +470,7 @@ def summarize_injection_responses(
 def monte_carlo_ar1_scale_validation(
     *,
     repetitions: int = 200,
-    sample_lengths: tuple[int, ...] = (12, 16, 24, 40),
+    sample_lengths: tuple[int, ...] = (12, 16, 24, 40, 64, 100),
     rho_values: tuple[float, ...] = (0.30, 0.60, 0.85),
     target_sigma: float = 2.0,
 ) -> dict[str, Any]:
@@ -501,7 +501,7 @@ def monte_carlo_ar1_scale_validation(
                     series,
                     time_unit="years",
                     estimate_rho=True,
-                    min_adjacent_pairs_for_rho=14,
+                    min_adjacent_pairs_for_rho=40,
                 )
                 method_counts[estimate["method"]] += 1
                 if estimate.get("rho") is not None:
@@ -540,7 +540,7 @@ def monte_carlo_ar1_scale_validation(
         "sample_lengths": list(sample_lengths),
         "rho_values": list(rho_values),
         "target_level_sigma": target_sigma,
-        "min_adjacent_pairs_for_rho": 14,
+        "min_adjacent_pairs_for_rho": 40,
         "rho_estimator": "rho = 1 + 2 * lag1_acf(first_differences)",
         "linear_drift_handling": "first-difference autocorrelation is centered; no level-series trend fit",
         "ar1_mode_fails_closed_without_supported_lagged_differences": True,
