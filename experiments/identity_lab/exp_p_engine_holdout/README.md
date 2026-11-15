@@ -35,3 +35,19 @@ A separate replay reads the five already-committed EIA HTML snapshots under expe
 Candidate arms are A production, C default, C threshold selected from G, D adaptive high-noise P1, E reset-at-transition with capped scale, and F reset-at-transition with uncapped scale. The report separates raw P1 hits, raw CUSUM hits, fused event counts, and timing proximity to declared historical dates. Historical date alignment is descriptive, not ground truth.
 
 Positive and negative 3-sigma/6-sigma level shifts are injected into copies of the residual stream, never into source data. Detection is measured after 130 weeks of adaptation. No false-alarm-rate or production-approval claim is inferred from unlabeled EIA history.
+
+
+## Stage J — Gemini Self-Normalized M-CUSUM
+
+The submitted M0 function is implemented verbatim at the equation/default
+level (Huber clip=2.0, rho estimate from the quiet 40, adaptive k,
+25-observation partial-sum window, v-floor=0.85, h=7.5, min-run=3).
+The workflow compares M0 with three component ablations and the prior CHAOS
+C/E/F candidates using fresh seeds disjoint from G and H.
+
+The M0 result intentionally retains the submitted no-reset/no-cooldown
+behavior; repeated raw alerts are reported. The run also reports the
+ablation contributions separately. A candidate is not promoted unless every
+null regime is <=5% and every shifted regime retains >=75% directional
+sensitivity. This is a test of the supplied implementation, not a claim that
+its moving-window denominator equals the Shao-Zhang self-normalized statistic.
