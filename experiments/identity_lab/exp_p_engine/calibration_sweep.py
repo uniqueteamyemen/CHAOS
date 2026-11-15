@@ -303,6 +303,23 @@ def injection_response_for_series(
     return responses
 
 
+def wilson_interval(successes: int, total: int, *, z: float = 1.96) -> tuple[float | None, float | None]:
+    if total <= 0:
+        return None, None
+    p = successes / total
+    denominator = 1.0 + (z * z / total)
+    center = (p + z * z / (2.0 * total)) / denominator
+    margin = (
+        z
+        * (
+            p * (1.0 - p) / total
+            + z * z / (4.0 * total * total)
+        ) ** 0.5
+        / denominator
+    )
+    return max(0.0, center - margin), min(1.0, center + margin)
+
+
 def summarize_injection_responses(
     all_responses: list[dict[str, Any]],
 ) -> dict[str, Any]:
@@ -336,6 +353,13 @@ def summarize_injection_responses(
                     for row in detected
                     if row["delay_observations"] is not None
                 ]
+                fast_detected = [
+                    row for row in detected
+                    if row["delay_observations"] is not None
+                    and row["delay_observations"] <= MAX_ACCEPTABLE_DETECTION_DELAY
+                ]
+                ci_low, ci_high = wilson_interval(len(detected), len(matching))
+                fast_ci_low, fast_ci_high = wilson_interval(len(fast_detected), len(matching))
                 candidate_rows.append({
                     **params,
                     "tested_injections": len(matching),
@@ -343,6 +367,12 @@ def summarize_injection_responses(
                     "injection_recall": (
                         len(detected) / len(matching) if matching else None
                     ),
+                    "injection_recall_wilson95": [ci_low, ci_high],
+                    "detected_within_delay_budget": len(fast_detected),
+                    "recall_within_delay_budget": (
+                        len(fast_detected) / len(matching) if matching else None
+                    ),
+                    "recall_within_delay_budget_wilson95": [fast_ci_low, fast_ci_high],
                     "median_detection_delay_observations": (
                         median(delays) if delays else None
                     ),
