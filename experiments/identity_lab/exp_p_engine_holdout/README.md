@@ -68,3 +68,21 @@ Var(X_t-X_(t-1)) = 2 sigma^2 (1-rho), so SD(diff)/sqrt(2) estimates
 sigma*sqrt(1-rho), not the marginal sigma. Positive autocorrelation therefore
 makes the proposed scale smaller than marginal sigma. The test reports this
 effect instead of assuming that differencing removes autocorrelation.
+
+
+## Stage K2 — untouched-seed confirmation of AG-CUSUM
+
+The candidate parameters were frozen at the values submitted by Gemini and
+tested on a new seed range, 7,300,000, with 1,000 trials per scenario.
+No tuning was performed after the K paired screen.
+
+The confirmation repeated the near-threshold failure:
+- Worst null sequence false-alarm rate: 6.0%.
+- Worst 95% Wilson upper bound: 7.65%.
+- Minimum directional sensitivity: 95.8%.
+- Minimum sensitivity lower 95% bound: 94.37%.
+- Worst pre-onset false-alarm rate: 1.0%.
+
+AG-CUSUM remains a promising experimental candidate but does not pass the
+strict 5% null gate. It is not approved for production; the parameters remain
+frozen for this confirmation result.
