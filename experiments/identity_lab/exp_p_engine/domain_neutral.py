@@ -159,13 +159,24 @@ def normalize_observations(
             "value": value,
             "observation_status": status,
         }
-        for key_name in ("unit", "cohort_id", "source_version", "time_support"):
+        for key_name in ("unit", "cohort_id", "source_version", "time_support", "exposure_unit"):
             mapped_value = _mapped(row, mapping[key_name]) if key_name in mapping else None
             if mapped_value not in (None, ""):
                 item[key_name] = str(mapped_value)
         mapped_source = _mapped(row, mapping["source_id"]) if "source_id" in mapping else source_id
         if mapped_source not in (None, ""):
             item["source_id"] = str(mapped_source)
+
+        if "exposure" in mapping:
+            raw_exposure = _mapped(row, mapping["exposure"])
+            if raw_exposure not in (None, ""):
+                try:
+                    exposure_value = float(raw_exposure)
+                    if isinstance(raw_exposure, bool) or not math.isfinite(exposure_value) or exposure_value < 0:
+                        raise ValueError
+                    item["exposure"] = exposure_value
+                except (TypeError, ValueError):
+                    quality["exposure_invalid"] = True
         if quality:
             item["quality_metadata"] = quality
         accepted.append(item)
@@ -210,6 +221,87 @@ def missing_periods(
         "absent_records": len(absent),
         "absent_times": sorted(absent),
     }
+
+
+def detect_missingness_spikes(
+    observations: Sequence[Mapping[str, Any]],
+    expected_times: Sequence[str],
+    *,
+    window_size: int = 5,
+    minimum_recent_rate: float = 0.30,
+    minimum_increase: float = 0.20,
+    minimum_window_coverage: float = 0.80,
+) -> dict[str, Any]:
+    """Detect missingness changes from an explicit expected schedule.
+
+    An absent record is missing only because expected_times declares that a
+    measurement was due. pending and not_applicable are excluded from the
+    denominator. Signals describe source/collection quality, not entity behavior.
+    """
+    if window_size < 2:
+        raise ValueError("window_size_must_be_at_least_2")
+    if not 0 <= minimum_recent_rate <= 1 or not 0 <= minimum_increase <= 1:
+        raise ValueError("missingness_threshold_invalid")
+    if not 0 < minimum_window_coverage <= 1:
+        raise ValueError("minimum_window_coverage_invalid")
+
+    by_time: dict[str, str] = {}
+    for row in observations:
+        key = _parse_time(row["event_time"]).isoformat()
+        if key in by_time:
+            raise ValueError("duplicate_missingness_period")
+        by_time[key] = str(row["observation_status"])
+
+    expected = [_parse_time(value).isoformat() for value in expected_times]
+    if len(set(expected)) != len(expected):
+        raise ValueError("duplicate_expected_period")
+    if expected != sorted(expected):
+        raise ValueError("expected_times_must_be_ascending")
+
+    def window_rate(window: Sequence[str]) -> tuple[float | None, int, int]:
+        missing = denominator = 0
+        for event_time in window:
+            status = by_time.get(event_time)
+            if status in {"pending", "not_applicable"}:
+                continue
+            denominator += 1
+            if status in {None, "missing", "invalid"}:
+                missing += 1
+        coverage = denominator / len(window) if window else 0.0
+        if coverage < minimum_window_coverage or denominator == 0:
+            return None, missing, denominator
+        return missing / denominator, missing, denominator
+
+    signals: list[dict[str, Any]] = []
+    checks = 0
+    active = False
+    for end in range(2 * window_size, len(expected) + 1):
+        baseline_slice = expected[end - 2 * window_size:end - window_size]
+        recent_slice = expected[end - window_size:end]
+        baseline_rate, baseline_missing, baseline_count = window_rate(baseline_slice)
+        recent_rate, recent_missing, recent_count = window_rate(recent_slice)
+        if baseline_rate is None or recent_rate is None:
+            active = False
+            continue
+        checks += 1
+        triggered = (
+            recent_rate >= minimum_recent_rate
+            and recent_rate - baseline_rate >= minimum_increase
+        )
+        if triggered and not active:
+            signals.append({
+                "signal_type": "data_quality_missingness_spike",
+                "event_time": recent_slice[-1],
+                "baseline_missing_rate": baseline_rate,
+                "recent_missing_rate": recent_rate,
+                "baseline_missing_count": baseline_missing,
+                "baseline_expected_count": baseline_count,
+                "recent_missing_count": recent_missing,
+                "recent_expected_count": recent_count,
+                "interpretation": "source coverage or collection process changed; not an entity behavior finding",
+            })
+        active = triggered
+    return {"signals": signals, "windows_checked": checks, "signal_count": len(signals)}
 
 
 def _pearson_rho(x: Sequence[float], y: Sequence[float]) -> float | None:
@@ -340,16 +432,42 @@ def first_difference_mad_scale(
     }
 
 
+def _theil_sen_prediction(
+    history: Sequence[Mapping[str, Any]],
+    target_time: str,
+    time_unit: str,
+) -> float:
+    x_values = [_time_number(row["event_time"], time_unit) for row in history]
+    origin = x_values[0]
+    x = [value - origin for value in x_values]
+    y = [float(row["value"]) for row in history]
+    slopes = [
+        (y[j] - y[i]) / (x[j] - x[i])
+        for i in range(len(x))
+        for j in range(i + 1, len(x))
+        if x[j] > x[i]
+    ]
+    if not slopes:
+        return statistics.median(y)
+    slope = statistics.median(slopes)
+    intercept = statistics.median(y[i] - slope * x[i] for i in range(len(x)))
+    target_x = _time_number(target_time, time_unit) - origin
+    return intercept + slope * target_x
+
+
 def build_univariate_residuals(
     observations: Sequence[Mapping[str, Any]],
     *,
     baseline_window: int = 12,
     min_history: int = 8,
     time_unit: str = "years",
+    baseline_method: str = "rolling_median",
 ) -> list[dict[str, Any]]:
-    """Prequential rolling-median baseline; current observation never trains itself."""
+    """Prequential baseline; current observation never trains itself."""
     if baseline_window < min_history or min_history < 4:
         raise ValueError("baseline_window_must_be_at_least_min_history_and_min_history_ge_4")
+    if baseline_method not in {"rolling_median", "rolling_theil_sen"}:
+        raise ValueError("baseline_method_unsupported")
     identities = {(row["entity_id"], row["metric_id"]) for row in observations}
     if len(identities) > 1:
         raise ValueError("build_univariate_residuals_requires_one_entity_metric")
@@ -362,7 +480,10 @@ def build_univariate_residuals(
     for index in range(min_history, len(series)):
         history = series[max(0, index - baseline_window):index]
         scale = first_difference_mad_scale(history, time_unit=time_unit)
-        expected = statistics.median(float(row["value"]) for row in history)
+        if baseline_method == "rolling_theil_sen":
+            expected = _theil_sen_prediction(history, series[index]["event_time"], time_unit)
+        else:
+            expected = statistics.median(float(row["value"]) for row in history)
         observed = float(series[index]["value"])
         ready = scale["status"] == "ok" and scale["value"] is not None
         residual = observed - expected
@@ -376,7 +497,7 @@ def build_univariate_residuals(
             "scale": scale["value"],
             "z_score": residual / scale["value"] if ready else None,
             "status": "ready" if ready else "scale_unavailable",
-            "baseline_method": "prequential_rolling_median",
+            "baseline_method": "prequential_" + baseline_method,
             "baseline_support": len(history),
             "scale_method": scale["method"],
             "scale_support": scale["n_differences"],
@@ -463,6 +584,7 @@ def cohort_peer_residuals(
     observations: Sequence[Mapping[str, Any]],
     *,
     min_peers: int = 5,
+    use_exposure: bool = False,
 ) -> list[dict[str, Any]]:
     """Same-period peer comparison using an explicit, caller-provided cohort_id.
 
@@ -478,8 +600,18 @@ def cohort_peer_residuals(
         cohort = row.get("cohort_id")
         if cohort in (None, ""):
             continue
-        key = (str(row["metric_id"]), str(row["event_time"]), str(cohort))
-        buckets[key].append((float(row["value"]), str(row["entity_id"])))
+        peer_value = float(row["value"])
+        if use_exposure:
+            exposure = row.get("exposure")
+            if exposure is None:
+                continue
+            exposure = float(exposure)
+            if not math.isfinite(exposure) or exposure <= 0:
+                continue
+            peer_value = peer_value / exposure
+        canonical_time = _parse_time(row["event_time"]).isoformat()
+        key = (str(row["metric_id"]), canonical_time, str(cohort))
+        buckets[key].append((peer_value, str(row["entity_id"])))
 
     output: list[dict[str, Any]] = []
     for (metric_id, event_time, cohort), members in buckets.items():
@@ -506,6 +638,7 @@ def cohort_peer_residuals(
                 "peer_expected": peer_median,
                 "peer_residual": value - peer_median,
                 "peer_count": peer_count,
+                "value_basis": "value_per_exposure" if use_exposure else "raw_value",
                 "baseline_method": "same_period_peer_median",
             })
     output.sort(key=lambda row: (row["metric_id"], row["event_time"], row["cohort_id"], row["entity_id"]))
