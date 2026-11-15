@@ -1,0 +1,47 @@
+name: CHAOS checkpoint ledger verification
+
+on:
+  push:
+    branches:
+      - experiment/residual-innovation-whitening-v1
+    paths:
+      - "experiments/identity_lab/checkpoints/**"
+
+permissions:
+  contents: read
+
+jobs:
+  verify-checkpoint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Resolve checkpoint against the current input fingerprint
+        id: checkpoint
+        run: |
+          python -m experiments.identity_lab.checkpoint_experiment resume \
+            --package-id confirmation-freeze-screen-v1 \
+            --github-output "$GITHUB_OUTPUT" \
+            --input experiments/identity_lab/checkpoint_experiment.py \
+            --input experiments/identity_lab/test_checkpoint_experiment.py \
+            --input experiments/identity_lab/exp_p_engine/baseline_freeze_experiment.py \
+            --input experiments/identity_lab/exp_p_engine/baseline_freeze_screen.py \
+            --input experiments/identity_lab/exp_p_engine/test_baseline_freeze.py \
+            --input experiments/identity_lab/exp_p_engine/test_baseline_freeze_screen.py \
+            --input experiments/identity_lab/exp_p_engine/domain_neutral.py \
+            --input experiments/identity_lab/exp_p_engine/calibration_sweep.py \
+            --input experiments/identity_lab/exp_p_engine/residual_dependence_experiment.py \
+            --input experiments/identity_lab/schemas/residual_event_v1.schema.json \
+            --input data/raw/financial_world_bank_v1/WB_FS_AST_PRVT_GD_ZS_2000_2024.csv \
+            --input .github/workflows/baseline-freeze-screen.yml
+      - name: Assert package is resumable without rerunning it
+        env:
+          RESUMABLE: ${{ steps.checkpoint.outputs.resumable }}
+          REASON: ${{ steps.checkpoint.outputs.resume_reason }}
+        run: |
+          echo "resumable=$RESUMABLE reason=$REASON"
+          test "$RESUMABLE" = "true"

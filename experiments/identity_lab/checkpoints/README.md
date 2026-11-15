@@ -27,3 +27,11 @@ are excluded from workflow path filters to avoid recursive runs.
 A hosted GitHub Actions runner continues if the browser or ChatGPT connection
 drops. On reconnection, the next run checks this ledger and skips only packages
 whose exact inputs already completed.
+
+
+## Automatic resume verification
+
+The workflow \`.github/workflows/checkpoint-ledger-verify.yml\` runs when a
+checkpoint record is committed. It recomputes the declared input fingerprint
+and asserts that the matching package checkpoint resolves to
+\`resumable=true\`. This verification job does not run the experiment again.
