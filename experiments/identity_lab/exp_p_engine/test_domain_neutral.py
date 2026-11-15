@@ -302,7 +302,7 @@ class ScaleEstimatorTests(unittest.TestCase):
         self.assertAlmostEqual(result["value"], target_sigma, delta=0.25)
 
     def test_univariate_builder_keeps_iid_and_ar1_scale_lanes_distinct(self):
-        values = ar1_series(60, rho=0.4, stationary_sigma=1.7, seed=718)
+        values = ar1_series(180, rho=0.4, stationary_sigma=1.7, seed=718)
         rows = observations(values, unit="days")
         iid = build_univariate_residuals(
             rows, baseline_window=12, min_history=8,
@@ -312,8 +312,8 @@ class ScaleEstimatorTests(unittest.TestCase):
         ar1 = build_univariate_residuals(
             rows, baseline_window=12, min_history=8,
             time_unit="days", baseline_method="rolling_theil_sen",
-            estimate_rho=True, scale_window=24,
-            min_adjacent_pairs_for_rho=14,
+            estimate_rho=True, scale_window=64,
+            min_adjacent_pairs_for_rho=32,
         )
         self.assertTrue(iid)
         self.assertTrue(ar1)
