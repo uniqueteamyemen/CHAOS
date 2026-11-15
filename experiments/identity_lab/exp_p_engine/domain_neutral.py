@@ -545,8 +545,15 @@ def build_univariate_residuals(
             "event_time": series[index]["event_time"],
             "observed": observed,
             "expected": expected,
+            "observed_value": observed,
+            "expected_value": expected,
             "residual": residual,
             "scale": scale["value"],
+            "unit": series[index].get("unit"),
+            "baseline_id": (
+                str(series[index]["metric_id"]) + ":" + baseline_method
+                + ":w" + str(baseline_window)
+            ),
             "z_score": residual / scale["value"] if ready and not gap_unresolved else None,
             "status": (
                 "gap_unresolved" if gap_unresolved
@@ -556,6 +563,7 @@ def build_univariate_residuals(
             "observation_gap_units": observation_gap,
             "baseline_method": "prequential_" + baseline_method,
             "baseline_support": len(history),
+            "support_count": len(history),
             "scale_method": scale["method"],
             "scale_support": scale["n_differences"],
             "rho": scale.get("rho"),
