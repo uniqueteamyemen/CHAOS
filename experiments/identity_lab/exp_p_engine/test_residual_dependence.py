@@ -13,6 +13,7 @@ from experiments.identity_lab.exp_p_engine.residual_dependence_experiment import
     stationary_bootstrap_sample,
     compare_screened_injection_recall,
     fixed_injection_onset,
+    _matched_evaluation_streams,
     _first_hit_summary,
 )
 from experiments.identity_lab.exp_p_engine.domain_neutral import (
@@ -254,6 +255,101 @@ class ResidualDependenceTests(unittest.TestCase):
             )
             observed = sum(len(block) for block in blocks) / len(blocks)
             self.assertAlmostEqual(observed, expected, delta=0.20)
+
+    def test_matched_streams_use_identical_entity_metric_year_support(self):
+        def make_row(year, value, *, status="ready", baseline="base"):
+            return {
+                "entity_id": "entity-1",
+                "metric_id": "metric",
+                "event_time": str(year),
+                "observed_value": value if status == "ready" else None,
+                "expected_value": 0.0 if status == "ready" else None,
+                "residual": value if status == "ready" else None,
+                "scale": 1.0 if status == "ready" else None,
+                "z_score": value if status == "ready" else None,
+                "status": status,
+                "baseline_id": baseline,
+                "baseline_method": "test",
+                "support_count": 8,
+            }
+
+        raw = [
+            make_row(2015, 0.1, baseline="raw"),
+            make_row(2016, 0.2, baseline="raw"),
+            make_row(2017, 0.3, baseline="raw"),
+            make_row(2018, 0.4, baseline="raw"),
+        ]
+        white = [
+            make_row(2015, 0.11, baseline="white"),
+            make_row(2016, 0.21, baseline="white"),
+            make_row(
+                2017, None,
+                status="innovation_warmup_or_gap",
+                baseline="white",
+            ),
+            make_row(2018, 0.41, baseline="white"),
+        ]
+        (
+            raw_aligned,
+            white_aligned,
+            matched_series,
+            matched_ready_periods,
+        ) = _matched_evaluation_streams(raw, white, min_segment_length=2)
+
+        self.assertEqual(matched_series, 1)
+        self.assertEqual(matched_ready_periods, 3)
+        self.assertEqual(
+            [row["event_time"] for row in raw_aligned],
+            ["2015", "2016", "2017", "2018"],
+        )
+        self.assertEqual(
+            [row["event_time"] for row in white_aligned],
+            ["2015", "2016", "2017", "2018"],
+        )
+        self.assertEqual(raw_aligned[2]["status"], "gap_unresolved")
+        self.assertEqual(white_aligned[2]["status"], "gap_unresolved")
+        self.assertIsNone(raw_aligned[2]["z_score"])
+        self.assertIsNone(white_aligned[2]["z_score"])
+
+    def test_four_way_injection_alignment_uses_same_annual_periods(self):
+        def make_row(year, value, *, status="ready", baseline="base"):
+            return {
+                "entity_id": "entity-1",
+                "metric_id": "metric",
+                "event_time": str(year),
+                "observed_value": value if status == "ready" else None,
+                "expected_value": 0.0 if status == "ready" else None,
+                "residual": value if status == "ready" else None,
+                "scale": 1.0 if status == "ready" else None,
+                "z_score": value if status == "ready" else None,
+                "status": status,
+                "baseline_id": baseline,
+                "baseline_method": "test",
+                "support_count": 8,
+            }
+
+        streams = [
+            [make_row(year, 0.1, baseline=f"stream-{i}") for year in (2019, 2020, 2021, 2022)]
+            for i in range(4)
+        ]
+        streams[2][1] = make_row(
+            2020, None,
+            status="innovation_warmup_or_gap",
+            baseline="stream-2",
+        )
+        *aligned, matched_series, matched_periods = _matched_evaluation_streams(
+            *streams,
+            min_segment_length=2,
+        )
+        self.assertEqual(matched_series, 1)
+        self.assertEqual(matched_periods, 3)
+        timestamps = [
+            [row["event_time"] for row in stream]
+            for stream in aligned
+        ]
+        self.assertTrue(all(value == timestamps[0] for value in timestamps[1:]))
+        statuses = [[row["status"] for row in stream] for stream in aligned]
+        self.assertTrue(all(value[1] == "gap_unresolved" for value in statuses))
 
     def test_injection_onset_is_fixed_after_null_window(self):
         self.assertEqual(fixed_injection_onset(list(range(2015, 2025))), 2019)
