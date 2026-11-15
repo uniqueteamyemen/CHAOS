@@ -368,24 +368,42 @@ class ResidualDependenceTests(unittest.TestCase):
                 "support_count": 8,
             }
 
+        # Each contiguous side is independently long enough to qualify.
+        # Its CUSUM total is 3.6 (< h=4); joining the sides across the
+        # missing year would incorrectly carry state and trigger at 2017.
         raw = [
-            make_row(2015, 2.8, "raw-baseline"),
-            make_row(2017, 2.8, "raw-baseline"),
+            make_row(2014, 2.3, "raw-baseline"),
+            make_row(2015, 2.3, "raw-baseline"),
+            make_row(2017, 2.3, "raw-baseline"),
+            make_row(2018, 2.3, "raw-baseline"),
         ]
         white = [
-            make_row(2015, 2.7, "white-baseline"),
-            make_row(2017, 2.7, "white-baseline"),
+            make_row(2014, 2.2, "white-baseline"),
+            make_row(2015, 2.2, "white-baseline"),
+            make_row(2017, 2.2, "white-baseline"),
+            make_row(2018, 2.2, "white-baseline"),
         ]
         raw_aligned, white_aligned, matched_series, ready_periods = (
             _matched_evaluation_streams(raw, white, min_segment_length=2)
         )
         self.assertEqual(matched_series, 1)
-        self.assertEqual(ready_periods, 2)
-        self.assertEqual(raw_aligned[1]["event_time"], "2016")
-        self.assertEqual(raw_aligned[1]["status"], "gap_unresolved")
-        self.assertEqual(raw_aligned[1]["baseline_id"], "raw-baseline")
-        self.assertEqual(white_aligned[1]["baseline_id"], "white-baseline")
-        self.assertEqual(detect_two_sided_cusum(raw_aligned, k=0.5, h=4.0), [])
+        self.assertEqual(ready_periods, 4)
+        self.assertEqual(raw_aligned[2]["event_time"], "2016")
+        self.assertEqual(raw_aligned[2]["status"], "gap_unresolved")
+        self.assertEqual(raw_aligned[2]["baseline_id"], "raw-baseline")
+        self.assertEqual(white_aligned[2]["baseline_id"], "white-baseline")
+        self.assertEqual(
+            [row["baseline_id"] for row in raw_aligned if row["status"] == "ready"],
+            ["raw-baseline"] * 4,
+        )
+        self.assertEqual(
+            detect_two_sided_cusum(raw_aligned, k=0.5, h=4.0),
+            [],
+        )
+        self.assertEqual(
+            detect_two_sided_cusum(white_aligned, k=0.5, h=4.0),
+            [],
+        )
 
     def test_injection_onset_is_fixed_after_longer_null_window(self):
         self.assertEqual(fixed_injection_onset(list(range(2014, 2025))), 2021)
