@@ -254,7 +254,7 @@ def missing_periods(
 ) -> dict[str, Any]:
     """Report explicit missing observations and absent expected periods separately."""
     identities = {(row.get("entity_id"), row.get("metric_id")) for row in observations}
-    if len(identities) > 1:
+    if len(identities) != 1:
         raise ValueError("missing_periods_requires_one_entity_metric")
     observed_times = {
         _parse_time(row["event_time"]).isoformat()
@@ -305,7 +305,7 @@ def detect_missingness_spikes(
         raise ValueError("minimum_window_coverage_invalid")
 
     identities = {(row.get("entity_id"), row.get("metric_id")) for row in observations}
-    if len(identities) > 1:
+    if len(identities) != 1:
         raise ValueError("missingness_spike_requires_one_entity_metric")
 
     by_time: dict[str, str] = {}
@@ -352,7 +352,10 @@ def detect_missingness_spikes(
             and recent_rate - baseline_rate >= minimum_increase
         )
         if triggered and not active:
+            entity_id, metric_id = next(iter(identities))
             signals.append({
+                "entity_id": entity_id,
+                "metric_id": metric_id,
                 "signal_type": "data_quality_missingness_spike",
                 "event_time": recent_slice[-1],
                 "baseline_missing_rate": baseline_rate,
