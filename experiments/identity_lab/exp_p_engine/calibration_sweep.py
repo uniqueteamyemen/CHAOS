@@ -34,16 +34,22 @@ BASELINE_CONFIGS = (
         "label": "rolling_median_iid_scale",
         "baseline_method": "rolling_median",
         "estimate_rho": False,
+        "scale_window": 12,
+        "min_adjacent_pairs_for_rho": 16,
     },
     {
         "label": "rolling_theil_sen_iid_scale",
         "baseline_method": "rolling_theil_sen",
         "estimate_rho": False,
+        "scale_window": 12,
+        "min_adjacent_pairs_for_rho": 16,
     },
     {
         "label": "rolling_theil_sen_detrended_ar1_scale",
         "baseline_method": "rolling_theil_sen",
         "estimate_rho": True,
+        "scale_window": 24,
+        "min_adjacent_pairs_for_rho": 14,
     },
 )
 MAX_ACCEPTABLE_DETECTION_DELAY = 3
@@ -185,6 +191,7 @@ def inject_persistent_level_shift(
     direction: int,
     time_unit: str,
     estimate_rho: bool,
+    min_adjacent_pairs_for_rho: int,
 ) -> tuple[list[dict[str, Any]] | None, str | None, int | None, float | None]:
     observed = [
         row for row in series
@@ -196,9 +203,14 @@ def inject_persistent_level_shift(
     onset_index = min(max(8, int(len(observed) * 0.65)), len(observed) - 3)
     pre_onset = observed[:onset_index]
     scale = first_difference_mad_scale(
-        pre_onset, time_unit=time_unit, estimate_rho=estimate_rho
+        pre_onset,
+        time_unit=time_unit,
+        estimate_rho=estimate_rho,
+        min_adjacent_pairs_for_rho=min_adjacent_pairs_for_rho,
     )
     if scale["status"] != "ok" or scale["value"] is None:
+        return None, None, None, None
+    if estimate_rho and scale.get("rho") is None:
         return None, None, None, None
     shift = direction * magnitude_sigma * float(scale["value"])
     injected = [dict(row) for row in observed]
@@ -213,6 +225,7 @@ def injection_response_for_series(
     baseline_method: str,
     time_unit: str,
     estimate_rho: bool,
+    min_adjacent_pairs_for_rho: int,
 ) -> dict[str, Any]:
     responses: dict[str, list[dict[str, Any]]] = {}
     for magnitude in INJECTION_MAGNITUDES:
@@ -224,8 +237,13 @@ def injection_response_for_series(
                 direction=direction,
                 time_unit=time_unit,
                 estimate_rho=estimate_rho,
+                min_adjacent_pairs_for_rho=min_adjacent_pairs_for_rho,
             )
             if injected is None or onset is None or onset_index is None or sigma is None:
+                responses[key] = {
+                    "tested": False,
+                    "skip_reason": "insufficient_pre_onset_ar1_support" if estimate_rho else "insufficient_scale_support",
+                }
                 continue
             residuals = build_univariate_residuals(
                 injected,
@@ -234,6 +252,8 @@ def injection_response_for_series(
                 time_unit=time_unit,
                 baseline_method=baseline_method,
                 estimate_rho=estimate_rho,
+                scale_window=24 if estimate_rho else 12,
+                min_adjacent_pairs_for_rho=min_adjacent_pairs_for_rho,
             )
             cusum_params_result: list[dict[str, Any]] = []
             for params in CUSUM_GRID:
@@ -295,6 +315,7 @@ def injection_response_for_series(
                     "delay_observations": delay,
                 })
             responses[key] = {
+                "tested": True,
                 "onset_time": onset,
                 "injection_scale": sigma,
                 "cusum": cusum_params_result,
@@ -402,6 +423,8 @@ def run_source(
     for baseline_config in BASELINE_CONFIGS:
         baseline_method = baseline_config["baseline_method"]
         estimate_rho = baseline_config["estimate_rho"]
+        scale_window = baseline_config["scale_window"]
+        min_adjacent_pairs_for_rho = baseline_config["min_adjacent_pairs_for_rho"]
         baseline_label = baseline_config["label"]
         historical_rows: list[dict[str, Any]] = []
         injections: list[dict[str, Any]] = []
@@ -421,6 +444,8 @@ def run_source(
                 time_unit=time_unit,
                 baseline_method=baseline_method,
                 estimate_rho=estimate_rho,
+                scale_window=scale_window,
+                min_adjacent_pairs_for_rho=min_adjacent_pairs_for_rho,
             )
             series_count += 1
             ready_count += ready_period_count(residuals)
@@ -431,17 +456,16 @@ def run_source(
                 "ready_periods": ready_period_count(residuals),
                 "gap_unresolved": sum(1 for row in residuals if row["status"] == "gap_unresolved"),
                 "scale_unavailable": sum(1 for row in residuals if row["status"] == "scale_unavailable"),
-                "rho_estimated_rows": sum(
-                    1 for row in residuals
-                    if row.get("rho") is not None
-                    and row.get("scale_method", "").find("ar1") >= 0
-                ),
+                "rho_estimated_rows": sum(1 for row in residuals if row.get("rho") is not None),
+                "rho_values": [float(row["rho"]) for row in residuals if row.get("rho") is not None],
+                "scale_method_counts": dict(Counter(row.get("scale_method") for row in residuals)),
             }
             injection = injection_response_for_series(
                 observed,
                 baseline_method=baseline_method,
                 time_unit=time_unit,
                 estimate_rho=estimate_rho,
+                min_adjacent_pairs_for_rho=min_adjacent_pairs_for_rho,
             )
             if injection:
                 injections.append(injection)
@@ -449,6 +473,8 @@ def run_source(
         source_result["baseline_methods"][baseline_label] = {
             "baseline_method": baseline_method,
             "estimate_rho": estimate_rho,
+            "scale_window": scale_window,
+            "min_adjacent_pairs_for_rho": min_adjacent_pairs_for_rho,
             "series_tested": series_count,
             "ready_periods": ready_count,
             "historical_signal_profile": historical_detector_profile(historical_rows),
@@ -480,6 +506,8 @@ def main() -> None:
                 "label": item["label"],
                 "baseline_method": item["baseline_method"],
                 "estimate_rho": item["estimate_rho"],
+                "scale_window": item["scale_window"],
+                "min_adjacent_pairs_for_rho": item["min_adjacent_pairs_for_rho"],
             }
             for item in BASELINE_CONFIGS
         ],
