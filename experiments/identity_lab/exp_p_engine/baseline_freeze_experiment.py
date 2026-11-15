@@ -375,7 +375,7 @@ def build_policy_residuals(
                 pending_z = None
                 pending_count = 0
             else:
-                    current_sign = 1 if z is not None and z >= suspicion_z else (
+                current_sign = 1 if z is not None and z >= suspicion_z else (
                     -1 if z is not None and z <= -suspicion_z else 0
                 )
                 if current_sign == 0:
