@@ -574,6 +574,82 @@ def first_difference_mad_scale(
     }
 
 
+def second_difference_mad_scale(
+    observations: Sequence[Mapping[str, Any]],
+    *,
+    time_unit: str = "years",
+    min_differences: int = 4,
+) -> dict[str, Any]:
+    """Estimate level-noise scale from contiguous second differences.
+
+    For x_t = trend_t + iid_noise_t with locally linear trend,
+    Var(Δ²x_t) = 6 * Var(noise). Only triples with two consecutive unit
+    intervals are used. Gaps are skipped; no interpolation is performed.
+    The estimator is not valid for arbitrary autocorrelated noise without a
+    separately supported dependence model.
+    """
+    if min_differences < 1:
+        raise ValueError("min_differences_must_be_positive")
+    usable = [
+        row for row in observations
+        if row.get("observation_status") == "observed"
+        and row.get("value") is not None
+    ]
+    usable.sort(key=lambda row: _parse_time(row["event_time"]))
+    if len(usable) < min_differences + 2:
+        return {
+            "value": None,
+            "status": "insufficient_history",
+            "method": "second_difference_mad_iid_consecutive_only",
+            "n_differences": 0,
+            "n_skipped_triples": 0,
+        }
+    times = [_time_number(row["event_time"], time_unit) for row in usable]
+    second_differences: list[float] = []
+    skipped = 0
+    for index in range(2, len(usable)):
+        left_gap = times[index - 1] - times[index - 2]
+        right_gap = times[index] - times[index - 1]
+        if abs(left_gap - 1.0) > 0.02 or abs(right_gap - 1.0) > 0.02:
+            skipped += 1
+            continue
+        previous = float(usable[index - 2]["value"])
+        current = float(usable[index - 1]["value"])
+        following = float(usable[index]["value"])
+        second_differences.append(following - 2.0 * current + previous)
+
+    if len(second_differences) < min_differences:
+        return {
+            "value": None,
+            "status": "insufficient_supported_second_differences",
+            "method": "second_difference_mad_iid_consecutive_only",
+            "n_differences": len(second_differences),
+            "n_skipped_triples": skipped,
+        }
+
+    center = statistics.median(second_differences)
+    mad = statistics.median(abs(value - center) for value in second_differences)
+    scale = 1.4826 * mad / math.sqrt(6.0)
+    reference_level = statistics.median(abs(float(row["value"])) for row in usable)
+    numerical_floor = 1e-12 * max(1.0, reference_level)
+    if not math.isfinite(scale) or scale <= numerical_floor:
+        return {
+            "value": None,
+            "status": "zero_or_invalid_scale",
+            "method": "second_difference_mad_iid_consecutive_only",
+            "n_differences": len(second_differences),
+            "n_skipped_triples": skipped,
+        }
+    return {
+        "value": scale,
+        "status": "ok",
+        "method": "second_difference_mad_iid_consecutive_only",
+        "n_differences": len(second_differences),
+        "n_skipped_triples": skipped,
+        "second_difference_center": center,
+    }
+
+
 def estimate_panel_ar1_rho(
     observations: Sequence[Mapping[str, Any]],
     *,
@@ -774,6 +850,7 @@ def build_univariate_residuals(
     scale_window: int | None = None,
     min_adjacent_pairs_for_rho: int = 14,
     scale_rho: float | None = None,
+    scale_estimator: str = "first_difference_mad",
 ) -> list[dict[str, Any]]:
     """Prequential baseline; current observation never trains itself."""
     if baseline_window < min_history or min_history < 4:
@@ -787,6 +864,10 @@ def build_univariate_residuals(
         raise ValueError("provide_scale_rho_or_estimate_rho_not_both")
     if scale_rho is not None and (not math.isfinite(scale_rho) or not -0.95 <= scale_rho <= 0.95):
         raise ValueError("scale_rho_must_be_finite_and_between_-0.95_and_0.95")
+    if scale_estimator not in {"first_difference_mad", "second_difference_mad"}:
+        raise ValueError("scale_estimator_unsupported")
+    if scale_estimator == "second_difference_mad" and (estimate_rho or scale_rho is not None):
+        raise ValueError("second_difference_mad_does_not_accept_ar1_adjustment")
     identities = {(row["entity_id"], row["metric_id"]) for row in observations}
     if len(identities) > 1:
         raise ValueError("build_univariate_residuals_requires_one_entity_metric")
@@ -799,13 +880,20 @@ def build_univariate_residuals(
     for index in range(min_history, len(series)):
         history = series[max(0, index - baseline_window):index]
         scale_history = series[max(0, index - effective_scale_window):index]
-        scale = first_difference_mad_scale(
-            scale_history,
-            time_unit=time_unit,
-            estimate_rho=estimate_rho,
-            rho=scale_rho,
-            min_adjacent_pairs_for_rho=min_adjacent_pairs_for_rho,
-        )
+        if scale_estimator == "second_difference_mad":
+            scale = second_difference_mad_scale(
+                scale_history,
+                time_unit=time_unit,
+                min_differences=4,
+            )
+        else:
+            scale = first_difference_mad_scale(
+                scale_history,
+                time_unit=time_unit,
+                estimate_rho=estimate_rho,
+                rho=scale_rho,
+                min_adjacent_pairs_for_rho=min_adjacent_pairs_for_rho,
+            )
         if baseline_method == "rolling_theil_sen":
             expected = _theil_sen_prediction(history, series[index]["event_time"], time_unit)
         else:
@@ -834,7 +922,7 @@ def build_univariate_residuals(
                 + ":w" + str(baseline_window)
                 + ":sw" + str(effective_scale_window)
                 + (":panel-rho-" + format(scale_rho, ".3f") if scale_rho is not None else "")
-                + ":" + scale["method"]
+                + ":" + scale_estimator + ":" + scale["method"]
             ),
             "z_score": residual / scale["value"] if ready and not gap_unresolved else None,
             "status": (
@@ -849,6 +937,7 @@ def build_univariate_residuals(
             "scale_method": scale["method"],
             "scale_rho_estimation": estimate_rho,
             "scale_rho_external": scale_rho,
+            "scale_estimator": scale_estimator,
             "scale_rho_source": scale.get("rho_source"),
             "scale_n_unit_gaps": scale.get("n_unit_gaps"),
             "scale_n_gap_adjusted": scale.get("n_gap_adjusted"),
