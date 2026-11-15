@@ -95,7 +95,10 @@ def _variant_detector_hits(result, variant, residual_values):
             mapped.append({
                 "time": month,
                 "detector": detector,
-                "sign": 1 if residual_values[month - 1] >= 0 else -1,
+                # Production P2 is one-sided positive CUSUM; P1 is directional.
+                "sign": 1 if detector == "CUSUM" else (
+                    1 if residual_values[month - 1] >= 0 else -1
+                ),
             })
         return mapped
 
@@ -133,6 +136,9 @@ def run_benchmark():
             "thresholds_fixed_before_trials": True,
             "evaluation_seeds_disjoint_by_scenario": True,
             "scenarios": scenarios,
+            "pre_onset_null_window": [QUIET_RANGE[1] + 1, ONSET - 1],
+            "pre_onset_false_alerts_are_scored": True,
+            "detector_breakdown_uses_production_emitted_and_suppressed_alerts_for_A": True,
             "variants": {
                 "A": "unchanged engine.run production path",
                 "B": "two-sided CUSUM; preserve state during variance transitions; unbounded scale",
@@ -148,12 +154,21 @@ def run_benchmark():
         sign = -1 if "negative" in scenario else (1 if "positive" in scenario else 0)
         has_break = sign != 0
         null_trials = {variant: 0 for variant in variants}
+        null_event_counts = {variant: 0 for variant in variants}
         detected = {variant: 0 for variant in variants}
         wrong_direction = {variant: 0 for variant in variants}
         delays = {variant: [] for variant in variants}
+        pre_onset_false_trials = {variant: 0 for variant in variants}
+        pre_onset_false_events = {variant: 0 for variant in variants}
         detector_stats = {
             variant: {
-                detector: {"false_trials": 0, "detected": 0, "wrong_direction": 0, "delays": []}
+                detector: {
+                    "false_trials": 0,
+                    "pre_onset_false_trials": 0,
+                    "detected": 0,
+                    "wrong_direction": 0,
+                    "delays": [],
+                }
                 for detector in ("P1", "CUSUM")
             }
             for variant in variants
@@ -171,14 +186,36 @@ def run_benchmark():
                 alerts = _variant_alerts(result, variant)
                 detector_hits = _variant_detector_hits(result, variant, residual_values)
                 if not has_break:
-                    if any(int(a.get("index", a.get("time", 0))) >= 41
-                           if variant != "A" else int(a["time"]) >= 41 for a in alerts):
+                    false_events = [
+                        alert for alert in alerts
+                        if int(alert.get("index", alert.get("time", 0))) > QUIET_RANGE[1]
+                    ]
+                    if false_events:
                         null_trials[variant] += 1
+                        null_event_counts[variant] += len(false_events)
                     for detector in ("P1", "CUSUM"):
-                        if any(hit["time"] >= 41 and hit["detector"] == detector
+                        if any(hit["time"] > QUIET_RANGE[1] and hit["detector"] == detector
                                for hit in detector_hits):
                             detector_stats[variant][detector]["false_trials"] += 1
                     continue
+
+                # Score false alerts in the post-calibration / pre-event interval.
+                # They cannot disappear behind a later true detection.
+                pre_onset_alerts = [
+                    alert for alert in alerts
+                    if QUIET_RANGE[1] < int(alert["time"]) < ONSET
+                ]
+                if pre_onset_alerts:
+                    pre_onset_false_trials[variant] += 1
+                    pre_onset_false_events[variant] += len(pre_onset_alerts)
+                for detector in ("P1", "CUSUM"):
+                    pre_hits = [
+                        hit for hit in detector_hits
+                        if hit["detector"] == detector
+                        and QUIET_RANGE[1] < hit["time"] < ONSET
+                    ]
+                    if pre_hits:
+                        detector_stats[variant][detector]["pre_onset_false_trials"] += 1
 
                 matching = []
                 opposite = []
@@ -224,6 +261,16 @@ def run_benchmark():
                 scenario_result["variants"][variant] = {
                     "sensitivity": round(detected[variant] / TRIALS, 4),
                     "sensitivity_95pct_wilson_ci": wilson(detected[variant], TRIALS),
+                    "pre_onset_false_alert_rate": round(
+                        pre_onset_false_trials[variant] / TRIALS, 4
+                    ),
+                    "pre_onset_false_alert_rate_95pct_wilson_ci": wilson(
+                        pre_onset_false_trials[variant], TRIALS
+                    ),
+                    "pre_onset_false_alert_trials": pre_onset_false_trials[variant],
+                    "pre_onset_false_events_per_sequence": round(
+                        pre_onset_false_events[variant] / TRIALS, 4
+                    ),
                     "wrong_direction_trial_rate": round(wrong_direction[variant] / TRIALS, 4),
                     "mean_detection_delay": round(statistics.mean(delays[variant]), 2) if delays[variant] else None,
                     "median_detection_delay": statistics.median(delays[variant]) if delays[variant] else None,
@@ -231,6 +278,12 @@ def run_benchmark():
                 }
                 scenario_result["variants"][variant]["detector_breakdown"] = {
                     detector: {
+                        "pre_onset_false_alert_rate": round(
+                            detector_stats[variant][detector]["pre_onset_false_trials"] / TRIALS, 4
+                        ),
+                        "pre_onset_false_alert_rate_95pct_wilson_ci": wilson(
+                            detector_stats[variant][detector]["pre_onset_false_trials"], TRIALS
+                        ),
                         "sensitivity": round(detector_stats[variant][detector]["detected"] / TRIALS, 4),
                         "sensitivity_95pct_wilson_ci": wilson(
                             detector_stats[variant][detector]["detected"], TRIALS
@@ -250,6 +303,9 @@ def run_benchmark():
                     "false_alert_rate": round(null_trials[variant] / TRIALS, 4),
                     "false_alert_rate_95pct_wilson_ci": wilson(null_trials[variant], TRIALS),
                     "false_alert_trials": null_trials[variant],
+                    "false_events_per_sequence": round(
+                        null_event_counts[variant] / TRIALS, 4
+                    ),
                 }
                 scenario_result["variants"][variant]["detector_breakdown"] = {
                     detector: {
