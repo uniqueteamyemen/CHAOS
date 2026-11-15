@@ -20,6 +20,7 @@ from experiments.identity_lab.exp_p_engine.domain_neutral import (
     detect_sign_runs,
     detect_two_sided_cusum,
     first_difference_mad_scale,
+    second_difference_mad_scale,
     estimate_panel_ar1_rho,
     first_evidence_at_or_after,
     normalize_observations,
@@ -39,6 +40,7 @@ BASELINE_CONFIGS = (
         "estimate_rho": False,
         "scale_window": 12,
         "min_adjacent_pairs_for_rho": 16,
+        "scale_estimator": "first_difference_mad",
     },
     {
         "label": "rolling_theil_sen_iid_scale",
@@ -46,6 +48,15 @@ BASELINE_CONFIGS = (
         "estimate_rho": False,
         "scale_window": 12,
         "min_adjacent_pairs_for_rho": 16,
+        "scale_estimator": "first_difference_mad",
+    },
+    {
+        "label": "rolling_theil_sen_second_difference_mad",
+        "baseline_method": "rolling_theil_sen",
+        "estimate_rho": False,
+        "scale_window": 16,
+        "min_adjacent_pairs_for_rho": 16,
+        "scale_estimator": "second_difference_mad",
     },
 )
 MAX_ACCEPTABLE_DELAY_TIME_UNITS = 3.0
@@ -219,6 +230,7 @@ def inject_persistent_level_shift(
     estimate_rho: bool,
     min_adjacent_pairs_for_rho: int,
     scale_rho: float | None = None,
+    scale_estimator: str = "first_difference_mad",
 ) -> tuple[list[dict[str, Any]] | None, str | None, int | None, float | None]:
     observed = [
         row for row in series
@@ -229,13 +241,18 @@ def inject_persistent_level_shift(
         return None, None, None, None
     onset_index = min(max(8, int(len(observed) * 0.65)), len(observed) - 3)
     pre_onset = observed[:onset_index]
-    scale = first_difference_mad_scale(
-        pre_onset,
-        time_unit=time_unit,
-        estimate_rho=estimate_rho,
-        rho=scale_rho,
-        min_adjacent_pairs_for_rho=min_adjacent_pairs_for_rho,
-    )
+    if scale_estimator == "second_difference_mad":
+        scale = second_difference_mad_scale(
+            pre_onset, time_unit=time_unit, min_differences=4
+        )
+    else:
+        scale = first_difference_mad_scale(
+            pre_onset,
+            time_unit=time_unit,
+            estimate_rho=estimate_rho,
+            rho=scale_rho,
+            min_adjacent_pairs_for_rho=min_adjacent_pairs_for_rho,
+        )
     if scale["status"] != "ok" or scale["value"] is None:
         return None, None, None, None
     if estimate_rho and scale.get("rho") is None:
@@ -255,6 +272,7 @@ def injection_response_for_series(
     estimate_rho: bool,
     min_adjacent_pairs_for_rho: int,
     scale_rho: float | None = None,
+    scale_estimator: str = "first_difference_mad",
 ) -> dict[str, Any]:
     responses: dict[str, dict[str, Any]] = {}
     for magnitude in INJECTION_MAGNITUDES:
@@ -268,6 +286,7 @@ def injection_response_for_series(
                 estimate_rho=estimate_rho,
                 min_adjacent_pairs_for_rho=min_adjacent_pairs_for_rho,
                 scale_rho=scale_rho,
+                scale_estimator=scale_estimator,
             )
             if injected is None or onset is None or onset_index is None or sigma is None:
                 responses[key] = {
@@ -285,6 +304,7 @@ def injection_response_for_series(
                 scale_window=12,
                 min_adjacent_pairs_for_rho=min_adjacent_pairs_for_rho,
                 scale_rho=scale_rho,
+                scale_estimator=scale_estimator,
             )
             # The detector starts at the injection onset; pre-onset residuals
             # cannot carry a partially accumulated CUSUM state into the test.
@@ -596,6 +616,7 @@ def run_source(
         scale_window = baseline_config["scale_window"]
         min_adjacent_pairs_for_rho = baseline_config["min_adjacent_pairs_for_rho"]
         config_rho = baseline_config.get("scale_rho")
+        scale_estimator = baseline_config.get("scale_estimator", "first_difference_mad")
         baseline_label = baseline_config["label"]
         historical_rows: list[dict[str, Any]] = []
         injections: list[dict[str, Any]] = []
@@ -618,6 +639,7 @@ def run_source(
                 scale_window=scale_window,
                 min_adjacent_pairs_for_rho=min_adjacent_pairs_for_rho,
                 scale_rho=config_rho,
+                scale_estimator=scale_estimator,
             )
             evaluation_rows = [
                 row for row in residuals
@@ -645,6 +667,7 @@ def run_source(
                 estimate_rho=estimate_rho,
                 min_adjacent_pairs_for_rho=min_adjacent_pairs_for_rho,
                 scale_rho=config_rho,
+                scale_estimator=scale_estimator,
             )
             if injection:
                 injections.append(injection)
@@ -653,6 +676,7 @@ def run_source(
             "baseline_method": baseline_method,
             "estimate_rho": estimate_rho,
             "scale_rho": config_rho,
+            "scale_estimator": scale_estimator,
             "scale_window": scale_window,
             "evaluation_start": evaluation_start,
             "min_adjacent_pairs_for_rho": min_adjacent_pairs_for_rho,
@@ -711,6 +735,7 @@ def main() -> None:
                 "label": item["label"],
                 "baseline_method": item["baseline_method"],
                 "estimate_rho": item["estimate_rho"],
+                "scale_estimator": item.get("scale_estimator", "first_difference_mad"),
                 "scale_window": item["scale_window"],
                 "min_adjacent_pairs_for_rho": item["min_adjacent_pairs_for_rho"],
             }
