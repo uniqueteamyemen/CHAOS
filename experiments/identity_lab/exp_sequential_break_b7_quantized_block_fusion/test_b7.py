@@ -96,7 +96,7 @@ class B7BlockFusionTests(unittest.TestCase):
         values[:40] = quiet(48)
         values[55:] = 10.0
         result = QuantizedBlockFusionEngineB7(
-            c_sup=100.0, z_block=100.0
+            c_sup=1_000_000.0, z_block=1_000_000.0
         ).analyze(values)
         self.assertTrue(
             any(
