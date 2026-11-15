@@ -14,7 +14,7 @@ permissions:
 jobs:
   sequential-break:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -22,15 +22,27 @@ jobs:
           python-version: "3.12"
       - name: Install pinned numerical dependency
         run: python -m pip install numpy==2.2.6
-      - name: Test detector and timing contract
+      - name: Test original detector and timing contract
         run: python -m unittest experiments.identity_lab.exp_sequential_break.test_engine -v
-      - name: Run 500 paths per supplied scenario with paired AG-CUSUM baseline
+      - name: Run original six-scenario benchmark
         run: python -m experiments.identity_lab.exp_sequential_break.benchmark --trials 500
-      - name: Upload six-scenario benchmark
+      - name: Test isolated B-v3 implementation
+        run: python -m unittest experiments.identity_lab.exp_sequential_break.test_b3_engine -v
+      - name: Calibrate B-v3 on development seeds and verify independent holdout
+        run: python -m experiments.identity_lab.exp_sequential_break.benchmark_b3 --dev-trials 300 --holdout-trials 500
+      - name: Upload original six-scenario benchmark
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: chaos-sequential-break-engine-six-scenario
           path: experiments/identity_lab/exp_sequential_break/results/sequential_break_engine_500_seed_benchmark.json
+          if-no-files-found: warn
+          retention-days: 90
+      - name: Upload B-v3 development and holdout report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: chaos-sequential-break-engine-b3-dev-holdout
+          path: experiments/identity_lab/exp_sequential_break/results/sequential_break_engine_b3_calibration_holdout.json
           if-no-files-found: warn
           retention-days: 90
