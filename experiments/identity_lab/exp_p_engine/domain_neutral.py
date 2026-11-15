@@ -753,6 +753,7 @@ def cohort_peer_residuals(
     if min_peers < 1:
         raise ValueError("min_peers_must_be_positive")
     buckets: dict[tuple[str, str, str, str, str], list[tuple[float, str]]] = defaultdict(list)
+    seen_entity_period: set[tuple[str, str, str, str]] = set()
     for row in observations:
         if row.get("observation_status") != "observed" or row.get("value") is None:
             continue
@@ -772,8 +773,13 @@ def cohort_peer_residuals(
                 continue
             peer_value = peer_value / exposure
         canonical_time = _parse_time(row["event_time"]).isoformat()
+        entity_id = str(row["entity_id"])
+        unique_key = (str(row["metric_id"]), canonical_time, str(cohort), entity_id)
+        if unique_key in seen_entity_period:
+            raise ValueError("duplicate_entity_metric_time_in_cohort")
+        seen_entity_period.add(unique_key)
         key = (str(row["metric_id"]), canonical_time, str(cohort), metric_unit, exposure_unit)
-        buckets[key].append((peer_value, str(row["entity_id"])))
+        buckets[key].append((peer_value, entity_id))
 
     output: list[dict[str, Any]] = []
     for (metric_id, event_time, cohort, metric_unit, exposure_unit), members in buckets.items():
