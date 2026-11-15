@@ -245,6 +245,10 @@ def detect_missingness_spikes(
     if not 0 < minimum_window_coverage <= 1:
         raise ValueError("minimum_window_coverage_invalid")
 
+    identities = {(row.get("entity_id"), row.get("metric_id")) for row in observations}
+    if len(identities) > 1:
+        raise ValueError("missingness_spike_requires_one_entity_metric")
+
     by_time: dict[str, str] = {}
     for row in observations:
         key = _parse_time(row["event_time"]).isoformat()
@@ -593,7 +597,7 @@ def cohort_peer_residuals(
     """
     if min_peers < 1:
         raise ValueError("min_peers_must_be_positive")
-    buckets: dict[tuple[str, str, str], list[tuple[float, str]]] = defaultdict(list)
+    buckets: dict[tuple[str, str, str, str, str], list[tuple[float, str]]] = defaultdict(list)
     for row in observations:
         if row.get("observation_status") != "observed" or row.get("value") is None:
             continue
@@ -601,20 +605,23 @@ def cohort_peer_residuals(
         if cohort in (None, ""):
             continue
         peer_value = float(row["value"])
+        metric_unit = str(row.get("unit") or "")
+        exposure_unit = ""
         if use_exposure:
             exposure = row.get("exposure")
-            if exposure is None:
+            exposure_unit = str(row.get("exposure_unit") or "")
+            if exposure is None or not exposure_unit:
                 continue
             exposure = float(exposure)
             if not math.isfinite(exposure) or exposure <= 0:
                 continue
             peer_value = peer_value / exposure
         canonical_time = _parse_time(row["event_time"]).isoformat()
-        key = (str(row["metric_id"]), canonical_time, str(cohort))
+        key = (str(row["metric_id"]), canonical_time, str(cohort), metric_unit, exposure_unit)
         buckets[key].append((peer_value, str(row["entity_id"])))
 
     output: list[dict[str, Any]] = []
-    for (metric_id, event_time, cohort), members in buckets.items():
+    for (metric_id, event_time, cohort, metric_unit, exposure_unit), members in buckets.items():
         members.sort(key=lambda pair: (pair[0], pair[1]))
         values = [pair[0] for pair in members]
         for index, (value, entity_id) in enumerate(members):
@@ -634,6 +641,8 @@ def cohort_peer_residuals(
                 "metric_id": metric_id,
                 "event_time": event_time,
                 "cohort_id": cohort,
+                "unit": metric_unit or None,
+                "exposure_unit": exposure_unit or None,
                 "observed": value,
                 "peer_expected": peer_median,
                 "peer_residual": value - peer_median,
