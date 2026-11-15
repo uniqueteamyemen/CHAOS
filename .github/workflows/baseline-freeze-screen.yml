@@ -5,30 +5,103 @@ on:
     branches:
       - experiment/residual-innovation-whitening-v1
     paths:
+      - "experiments/identity_lab/checkpoint_experiment.py"
+      - "experiments/identity_lab/test_checkpoint_experiment.py"
       - "experiments/identity_lab/exp_p_engine/baseline_freeze_experiment.py"
       - "experiments/identity_lab/exp_p_engine/baseline_freeze_screen.py"
       - "experiments/identity_lab/exp_p_engine/test_baseline_freeze.py"
       - "experiments/identity_lab/exp_p_engine/test_baseline_freeze_screen.py"
+      - "experiments/identity_lab/exp_p_engine/domain_neutral.py"
+      - "experiments/identity_lab/exp_p_engine/calibration_sweep.py"
+      - "experiments/identity_lab/exp_p_engine/residual_dependence_experiment.py"
+      - "experiments/identity_lab/schemas/residual_event_v1.schema.json"
+      - "data/raw/financial_world_bank_v1/WB_FS_AST_PRVT_GD_ZS_2000_2024.csv"
       - ".github/workflows/baseline-freeze-screen.yml"
+
+permissions:
+  contents: write
 
 jobs:
   confirmation-freeze:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - name: Test existing baseline-freeze contracts
-        run: python -m unittest experiments.identity_lab.exp_p_engine.test_baseline_freeze -v
-      - name: Test confirmation-freeze comparison invariants
-        run: python -m unittest experiments.identity_lab.exp_p_engine.test_baseline_freeze_screen -v
+
+      - name: Check for matching completed checkpoint
+        id: resume
+        run: |
+          python -m experiments.identity_lab.checkpoint_experiment resume \
+            --package-id confirmation-freeze-screen-v1 \
+            --github-output "$GITHUB_OUTPUT" \
+            --input experiments/identity_lab/checkpoint_experiment.py \
+            --input experiments/identity_lab/test_checkpoint_experiment.py \
+            --input experiments/identity_lab/exp_p_engine/baseline_freeze_experiment.py \
+            --input experiments/identity_lab/exp_p_engine/baseline_freeze_screen.py \
+            --input experiments/identity_lab/exp_p_engine/test_baseline_freeze.py \
+            --input experiments/identity_lab/exp_p_engine/test_baseline_freeze_screen.py \
+            --input experiments/identity_lab/exp_p_engine/domain_neutral.py \
+            --input experiments/identity_lab/exp_p_engine/calibration_sweep.py \
+            --input experiments/identity_lab/exp_p_engine/residual_dependence_experiment.py \
+            --input experiments/identity_lab/schemas/residual_event_v1.schema.json \
+            --input data/raw/financial_world_bank_v1/WB_FS_AST_PRVT_GD_ZS_2000_2024.csv \
+            --input .github/workflows/baseline-freeze-screen.yml
+
+      - name: Test package and checkpoint contracts
+        id: package_tests
+        if: steps.resume.outputs.resumable != 'true'
+        run: |
+          python -m unittest \
+            experiments.identity_lab.test_checkpoint_experiment \
+            experiments.identity_lab.exp_p_engine.test_baseline_freeze \
+            experiments.identity_lab.exp_p_engine.test_baseline_freeze_screen -v
+
       - name: Screen CUSUM-confirmed baseline freezing on World Bank data
+        id: run_package
+        if: steps.resume.outputs.resumable != 'true' && steps.package_tests.outcome == 'success'
         run: python -m experiments.identity_lab.exp_p_engine.baseline_freeze_screen
-      - name: Upload confirmation-freeze screen report
-        if: always()
+
+      - name: Upload confirmation-freeze result
+        id: upload_result
+        if: always() && steps.resume.outputs.resumable != 'true'
         uses: actions/upload-artifact@v4
         with:
           name: chaos-confirmation-freeze-screen
           path: experiments/identity_lab/exp_p_engine/results/domain_neutral_confirmation_freeze_screen.json
           if-no-files-found: warn
+          retention-days: 90
+
+      - name: Persist package checkpoint to Git
+        if: always() && steps.resume.outputs.resumable != 'true'
+        env:
+          TESTS_STATUS: ${{ steps.package_tests.outcome || 'skipped' }}
+          EXPERIMENT_STATUS: ${{ steps.run_package.outcome || 'skipped' }}
+          ARTIFACT_ID: ${{ steps.upload_result.outputs.artifact-id || '' }}
+          ARTIFACT_DIGEST: ${{ steps.upload_result.outputs.artifact-digest || '' }}
+          ARTIFACT_URL: ${{ steps.upload_result.outputs.artifact-url || '' }}
+        run: |
+          python -m experiments.identity_lab.checkpoint_experiment record \
+            --package-id confirmation-freeze-screen-v1 \
+            --tests-status "$TESTS_STATUS" \
+            --experiment-status "$EXPERIMENT_STATUS" \
+            --result-file experiments/identity_lab/exp_p_engine/results/domain_neutral_confirmation_freeze_screen.json \
+            --artifact-id "$ARTIFACT_ID" \
+            --artifact-digest "$ARTIFACT_DIGEST" \
+            --artifact-url "$ARTIFACT_URL" \
+            --persist \
+            --input experiments/identity_lab/checkpoint_experiment.py \
+            --input experiments/identity_lab/test_checkpoint_experiment.py \
+            --input experiments/identity_lab/exp_p_engine/baseline_freeze_experiment.py \
+            --input experiments/identity_lab/exp_p_engine/baseline_freeze_screen.py \
+            --input experiments/identity_lab/exp_p_engine/test_baseline_freeze.py \
+            --input experiments/identity_lab/exp_p_engine/test_baseline_freeze_screen.py \
+            --input experiments/identity_lab/exp_p_engine/domain_neutral.py \
+            --input experiments/identity_lab/exp_p_engine/calibration_sweep.py \
+            --input experiments/identity_lab/exp_p_engine/residual_dependence_experiment.py \
+            --input experiments/identity_lab/schemas/residual_event_v1.schema.json \
+            --input data/raw/financial_world_bank_v1/WB_FS_AST_PRVT_GD_ZS_2000_2024.csv \
+            --input .github/workflows/baseline-freeze-screen.yml
