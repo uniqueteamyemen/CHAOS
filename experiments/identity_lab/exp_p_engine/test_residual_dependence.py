@@ -8,6 +8,8 @@ from experiments.identity_lab.exp_p_engine.residual_dependence_experiment import
     lag1_summary,
     prewhiten_evaluation_rows,
     run_injection_experiment,
+    summarize_detector_hits,
+    _first_hit_summary,
 )
 from experiments.identity_lab.exp_p_engine.domain_neutral import (
     detect_two_sided_cusum,
@@ -178,6 +180,88 @@ class ResidualDependenceTests(unittest.TestCase):
             result["skipped_entities"].get("insufficient_baseline_history"), 1
         )
         self.assertEqual(result["responses"], {})
+
+    def test_injected_detector_state_starts_at_labelled_onset(self):
+        rows = []
+        for year, z in ((2000, 2.8), (2001, 2.8), (2002, 1.0), (2003, 1.0)):
+            rows.append({
+                "entity_id": "entity-1",
+                "metric_id": "metric",
+                "event_time": str(year),
+                "observed_value": z,
+                "expected_value": 0.0,
+                "residual": z,
+                "scale": 1.0,
+                "z_score": z,
+                "status": "ready",
+                "baseline_id": "test-baseline",
+                "baseline_method": "test",
+                "support_count": 8,
+                "unit": "standardized",
+            })
+        result = _first_hit_summary(
+            rows,
+            onset="2002",
+            detector="cusum",
+            parameters={"k": 0.5, "h": 5.0},
+        )
+        # Carrying the 2000-2001 accumulator would create an immediate false
+        # post-onset hit at 2002; a fresh onset state must remain below h.
+        self.assertFalse(result["detected"])
+
+    def test_sign_run_does_not_carry_pre_onset_evidence(self):
+        rows = []
+        for year, z in ((2000, 3.0), (2001, 3.0), (2002, 1.0), (2003, 1.0)):
+            rows.append({
+                "entity_id": "entity-1",
+                "metric_id": "metric",
+                "event_time": str(year),
+                "observed_value": z,
+                "expected_value": 0.0,
+                "residual": z,
+                "scale": 1.0,
+                "z_score": z,
+                "status": "ready",
+                "baseline_id": "test-baseline",
+                "baseline_method": "test",
+                "support_count": 8,
+                "unit": "standardized",
+            })
+        result = _first_hit_summary(
+            rows,
+            onset="2002",
+            detector="sign_run",
+            parameters={"threshold": 2.5, "run_length": 2},
+        )
+        self.assertFalse(result["detected"])
+
+    def test_detector_summary_uses_stream_specific_parameter_grids(self):
+        rows = []
+        for year, z in ((2020, 0.2), (2021, 0.5), (2022, 0.1)):
+            rows.append({
+                "entity_id": "entity-1",
+                "metric_id": "metric",
+                "event_time": str(year),
+                "observed_value": z,
+                "expected_value": 0.0,
+                "residual": z,
+                "scale": 1.0,
+                "z_score": z,
+                "status": "ready",
+                "baseline_id": "test-baseline",
+                "baseline_method": "test",
+                "support_count": 8,
+                "unit": "standardized_innovation",
+            })
+        summary = summarize_detector_hits(
+            rows,
+            cusum_grid=({"k": 0.25, "h": 1.75},),
+            p1_grid=({"threshold": 0.4, "run_length": 2},),
+        )
+        self.assertEqual(summary["cusum"][0]["k"], 0.25)
+        self.assertEqual(summary["cusum"][0]["h"], 1.75)
+        self.assertEqual(summary["sign_run"][0]["threshold"], 0.4)
+        self.assertEqual(summary["sign_run"][0]["run_length"], 2)
 
     def test_evaluation_observations_do_not_change_frozen_rho(self):
         rows = make_ar1_rows(rho=0.55, seed=101)
