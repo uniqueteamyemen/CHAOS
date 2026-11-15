@@ -57,6 +57,7 @@ POLICIES = (
     "fixed_initial_baseline_fixed_scale",
     "suspicion_freeze_baseline_rolling_scale",
     "suspicion_freeze_baseline_and_scale",
+    "confirmation_freeze_baseline_rolling_scale",
 )
 
 
@@ -170,6 +171,10 @@ def build_policy_residuals(
         raise ValueError("baseline_freeze_window_invalid")
     if suspicion_run < 1 or release_run < 1 or suspicion_z <= 0 or release_z <= 0:
         raise ValueError("baseline_freeze_trigger_or_release_invalid")
+    freeze_policy = (
+        policy.startswith("suspicion_freeze")
+        or policy == "confirmation_freeze_baseline_rolling_scale"
+    )
     trigger_after_position = (
         time_position(freeze_trigger_after_time, time_unit)
         if freeze_trigger_after_time is not None else None
@@ -208,6 +213,10 @@ def build_policy_residuals(
     pending_sign = 0
     pending_z: float | None = None
     pending_count = 0
+    confirmation_cusum_positive = 0.0
+    confirmation_cusum_negative = 0.0
+    confirmation_cusum_k = 0.5
+    confirmation_cusum_h = 8.5
     previous_time: float | None = None
     fixed_model: tuple[float, float] | None = None
     fixed_scale: float | None = None
@@ -236,6 +245,8 @@ def build_policy_residuals(
             fixed_model = None
             fixed_scale = None
             fixed_support = 0
+            confirmation_cusum_positive = 0.0
+            confirmation_cusum_negative = 0.0
             if frozen_model is not None:
                 if current_episode is not None:
                     current_episode["ended_by"] = "unresolved_time_gap"
@@ -336,7 +347,7 @@ def build_policy_residuals(
             scale_result = {"value": fixed_scale, "method": "fixed_initial_first_difference_mad"}
             support = fixed_support
             frozen_now = True
-        elif policy.startswith("suspicion_freeze") and frozen_model is not None:
+        elif freeze_policy and frozen_model is not None:
             model = frozen_model
             support = frozen_support
             if policy == "suspicion_freeze_baseline_and_scale":
@@ -448,6 +459,53 @@ def build_policy_residuals(
                     pending_z = None
                     pending_count = 0
 
+        if policy == "confirmation_freeze_baseline_rolling_scale" and frozen_model is None:
+            trigger_enabled = (
+                trigger_after_position is None
+                or current_time >= trigger_after_position
+            )
+            if not trigger_enabled or z is None:
+                confirmation_cusum_positive = 0.0
+                confirmation_cusum_negative = 0.0
+            else:
+                confirmation_cusum_positive = max(
+                    0.0, confirmation_cusum_positive + z - confirmation_cusum_k
+                )
+                confirmation_cusum_negative = max(
+                    0.0, confirmation_cusum_negative - z - confirmation_cusum_k
+                )
+                confirmation_direction = (
+                    "positive"
+                    if confirmation_cusum_positive >= confirmation_cusum_h
+                    else "negative"
+                    if confirmation_cusum_negative >= confirmation_cusum_h
+                    else None
+                )
+                if confirmation_direction is not None:
+                    frozen_model = model
+                    frozen_scale = None
+                    frozen_support = support
+                    frozen_at = str(event_time)
+                    frozen_duration = 0
+                    calm_run = 0
+                    freeze_trigger = True
+                    prequential_triggers += 1
+                    current_episode = {
+                        "start_time": frozen_at,
+                        "confirmation_time": frozen_at,
+                        "start_index": index,
+                        "trigger_z": z,
+                        "confirmation_z": z,
+                        "trigger_run": "two_sided_cusum",
+                        "confirmation_direction": confirmation_direction,
+                        "cusum_k": confirmation_cusum_k,
+                        "cusum_h": confirmation_cusum_h,
+                        "support_count": frozen_support,
+                        "policy": policy,
+                    }
+                    confirmation_cusum_positive = 0.0
+                    confirmation_cusum_negative = 0.0
+
         if frozen_now:
             freeze_active_rows += 1
             if current_episode is not None:
@@ -455,7 +513,7 @@ def build_policy_residuals(
                 current_episode["duration_observations"] = frozen_duration
                 current_episode["last_z"] = z
             if (
-                policy.startswith("suspicion_freeze")
+                freeze_policy
                 and not freeze_trigger
                 and z is not None
                 and abs(z) <= release_z
@@ -464,7 +522,7 @@ def build_policy_residuals(
             elif z is not None and abs(z) > release_z:
                 calm_run = 0
             if (
-                policy.startswith("suspicion_freeze")
+                freeze_policy
                 and not freeze_trigger
                 and calm_run >= release_run
             ):
@@ -481,6 +539,8 @@ def build_policy_residuals(
                 current_episode = None
                 frozen_duration = 0
                 calm_run = 0
+                confirmation_cusum_positive = 0.0
+                confirmation_cusum_negative = 0.0
 
         status = "ready" if z is not None and scale is not None and float(scale) > 0 else "scale_unavailable"
         row = _result_row(
