@@ -60,13 +60,29 @@ def validate_residual_contract(rows: Sequence[Mapping[str, Any]]) -> None:
         support = row["support_count"]
         if isinstance(support, bool) or not isinstance(support, int) or support < 0:
             raise ValueError("residual_contract_support_count_invalid")
+        for field in ("observed_value", "expected_value", "residual", "scale", "z_score"):
+            value = row.get(field)
+            if value is not None and (
+                isinstance(value, bool) or not math.isfinite(float(value))
+            ):
+                raise ValueError("residual_contract_numeric_value_invalid:" + field)
         if row["status"] == "ready":
             for field in ("observed_value", "expected_value", "residual", "scale", "z_score"):
-                value = row.get(field)
-                if value is None or isinstance(value, bool) or not math.isfinite(float(value)):
-                    raise ValueError("residual_contract_ready_value_invalid:" + field)
+                if row.get(field) is None:
+                    raise ValueError("residual_contract_ready_value_missing:" + field)
             if float(row["scale"]) <= 0:
                 raise ValueError("residual_contract_scale_not_positive")
+        if (
+            row.get("observed_value") is not None
+            and row.get("expected_value") is not None
+            and row.get("residual") is not None
+        ):
+            expected_residual = float(row["observed_value"]) - float(row["expected_value"])
+            if not math.isclose(
+                float(row["residual"]), expected_residual,
+                rel_tol=1e-9, abs_tol=1e-9,
+            ):
+                raise ValueError("residual_contract_observed_expected_mismatch")
 
 
 def _mapped(row: Mapping[str, Any], spec: Any) -> Any:
