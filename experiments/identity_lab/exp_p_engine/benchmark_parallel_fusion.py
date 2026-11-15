@@ -147,12 +147,14 @@ def run_benchmark():
                 "E": "two-sided unbounded CUSUM; reset accumulators during variance transitions; adaptive P1; h=8.5",
                 "F": "same as E with h=10.5",
                 "G": "same as E with h=12.5",
+                "H": "two-sided unbounded CUSUM; hold both tracks through variance transitions; adaptive P1; h=12.5",
+                "I": "same as H with h=16.5",
             },
         },
         "results": {},
     }
 
-    variants = ("A", "B", "C", "D", "E", "F", "G")
+    variants = ("A", "B", "C", "D", "E", "F", "G", "H", "I")
     for scenario_index, scenario in enumerate(scenarios):
         sign = -1 if "negative" in scenario else (1 if "positive" in scenario else 0)
         has_break = sign != 0

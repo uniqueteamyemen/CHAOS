@@ -1,4 +1,4 @@
-"""A/B/C/D/E/F/G replay on the archived official EIA weekly balance residuals.
+"""A/B/C/D/E/F/G/H/I replay on the archived official EIA weekly balance residuals.
 
 Historical event counts are descriptive only: EIA residuals do not carry an
 adjudicated anomaly ground truth. Controlled +3σ/+6σ injections are applied to
@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import json
 import os
+import statistics
 from pathlib import Path
 from typing import Any
 
@@ -22,7 +23,7 @@ from oil import QUIET, DETECT_START  # type: ignore  # noqa: E402
 
 INJECT_AT_INDEX = 300
 POST_ADAPT_WEEKS = 130
-VARIANTS = ("A", "B", "C", "D", "E", "F", "G")
+VARIANTS = ("A", "B", "C", "D", "E", "F", "G", "H", "I")
 DETECTORS = ("P1", "CUSUM")
 
 
@@ -96,6 +97,29 @@ def _event_times(result: dict[str, Any], variant: str):
     return sorted({int(x["time"]) for x in result[variant]["events"]})
 
 
+def _post_adaptation_event_summary(
+    result: dict[str, Any], variant: str, cutoff: int
+) -> tuple[int, int | None]:
+    """Count candidate events that carry evidence after cutoff, even if they began earlier."""
+    if variant == "A":
+        times = sorted(
+            int(x["time"]) for x in result["A"].get("alerts", [])
+            if int(x["time"]) >= cutoff
+        )
+        return len(times), times[0] if times else None
+
+    first_evidence_indices = []
+    for event in result[variant]["events"]:
+        post_indices = [
+            int(evidence["index"])
+            for evidence in event.get("evidence", [])
+            if int(evidence["index"]) >= cutoff
+        ]
+        if post_indices:
+            first_evidence_indices.append(min(post_indices))
+    return len(first_evidence_indices), min(first_evidence_indices) if first_evidence_indices else None
+
+
 def main() -> int:
     source = build()
     if not source:
@@ -121,7 +145,7 @@ def main() -> int:
     sigma_quiet = mad_sigma([residual_values[i] for i in quiet_indices])
     if sigma_quiet <= 0:
         raise RuntimeError("EIA_quiet_sigma_invalid")
-    bias = sorted(residual_values[i] for i in quiet_indices)[len(quiet_indices) // 2]
+    bias = statistics.median(residual_values[i] for i in quiet_indices)
     rows = to_engine_rows(source)
 
     baseline = run_candidates(
@@ -165,9 +189,11 @@ def main() -> int:
         for variant in VARIANTS:
             signals = _signals(result, variant, residual_injected, bias)
             post_adapt = [x for x in signals if x["index"] >= cutoff]
-            events = [t for t in _event_times(result, variant) if t >= cutoff]
+            event_count, first_event_evidence = _post_adaptation_event_summary(
+                result, variant, cutoff
+            )
             rows_by_variant[variant] = {
-                "post_adaptation_event_count": len(events),
+                "post_adaptation_event_count": event_count,
                 "post_adaptation_p1_hits": sum(
                     x["detector"] == "P1" for x in post_adapt
                 ),
@@ -178,7 +204,7 @@ def main() -> int:
                     x["sign"] > 0 for x in post_adapt
                 ),
                 "first_post_adaptation_detection_date": (
-                    source[min(events)]["time"] if events else None
+                    source[first_event_evidence]["time"] if first_event_evidence is not None else None
                 ),
             }
         injections[f"positive_{int(magnitude_sigma)}sigma"] = {

@@ -137,8 +137,9 @@ This experiment is isolated from the production engine.py; A remains the unchang
 - **C:** same independent detector tracks; CUSUM scale is capped at 2 times quiet sigma and transition updates are damped by 0.35 instead of being erased or paused.
 - **Fusion:** evidence is aggregated before event adjudication. A reversal or six consecutive calm observations opens a new event. Same-event directional cooldown marks a repeated notification but retains the underlying evidence.
 - **D (isolated high-noise P1 arm):** uses exactly C's two-sided CUSUM and changes only P1's high-noise behavior to the production engine's adaptive-scale, 13-consecutive-direction rule. C vs D therefore isolates the P1 contribution while the CUSUM evidence is held identical.
-- **E/F/G (CUSUM policy sweep):** retain D's adaptive P1, use unbounded two-sided CUSUM with both accumulators reset during variance transitions, and compare fixed thresholds h=8.5, 10.5 and 12.5. The three arms differ only by h.
-- **EIA replay:** replays all seven arms over the archived 617-week five-series EIA identity residual and compares persistent +3σ/+6σ test-copy injections after a fixed 130-week adaptation horizon. Historical counts are descriptive only; the EIA residual has no adjudicated anomaly labels.
+- **E/F/G (CUSUM reset sweep):** retain adaptive P1, use unbounded two-sided CUSUM with both accumulators reset during variance transitions, and compare h=8.5, 10.5 and 12.5.
+- **H/I (CUSUM hold sweep):** retain the same adaptive P1 and unbounded two-sided CUSUM, but preserve accumulators through variance transitions. H uses h=12.5 to compare directly with G (same threshold, reset vs hold); I uses h=16.5 to test a stricter hold policy.
+- **EIA replay:** replays all nine arms over the archived 617-week five-series EIA identity residual and compares persistent +3σ/+6σ test-copy injections after a fixed 130-week adaptation horizon. Post-adaptation event counts now include events that began earlier but carry detector evidence after the cutoff. Historical counts are descriptive only; the EIA residual has no adjudicated anomaly labels.
 
 Each run creates an immutable configuration/input snapshot with a SHA-256 input fingerprint, frozen bias, quiet sigma, configuration, code revision, and time range. Out-of-order and duplicate timestamps fail closed.
 

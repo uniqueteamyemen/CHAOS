@@ -364,6 +364,7 @@ def run_candidates(
     p1_high_noise_run: int = 13,
     h_cusum_f: float = 10.5,
     h_cusum_g: float = 12.5,
+    h_cusum_i: float = 16.5,
     code_revision: str | None = None,
 ) -> dict[str, Any]:
     """Run unchanged production A plus independent B/C candidates on identical input."""
@@ -379,6 +380,7 @@ def run_candidates(
         "h_cusum": h_cusum,
         "h_cusum_f": h_cusum_f,
         "h_cusum_g": h_cusum_g,
+        "h_cusum_i": h_cusum_i,
         "transition_damping": transition_damping,
         "calm_k": calm_k,
         "p1_high_noise_factor": p1_high_noise_factor,
@@ -409,6 +411,7 @@ def run_candidates(
         "k_sign": k_sign, "run_sign": run_sign,
         "k_cusum": k_cusum, "h_cusum": h_cusum,
         "h_cusum_f": h_cusum_f, "h_cusum_g": h_cusum_g,
+        "h_cusum_i": h_cusum_i,
         "transition_damping": transition_damping,
         "calm_k": calm_k, "calm_periods": calm_periods, "cooldown": cooldown,
         "p1_high_noise_factor": p1_high_noise_factor,
@@ -419,6 +422,8 @@ def run_candidates(
         "E": "two-sided unbounded CUSUM; reset tracks during variance transitions; adaptive P1; h=8.5",
         "F": "same as E with h=10.5",
         "G": "same as E with h=12.5",
+        "H": "two-sided unbounded CUSUM; preserve accumulators during transitions; adaptive P1; h=12.5",
+        "I": "same as H with h=16.5",
         "fusion": "same direction until reversal or confirmed calm",
     }
     snapshot = _snapshot(
@@ -497,4 +502,26 @@ def run_candidates(
         "E": candidate_e,
         "F": candidate_f,
         "G": candidate_g,
+    candidate_h = _candidate(
+        series, bias=bias, sigma_quiet=sigma_quiet, window=window,
+        noise_gate_window=noise_gate_window, transition_ratio=transition_ratio,
+        sigma_ceiling_factor=sigma_ceiling_factor, k_sign=k_sign, run_sign=run_sign,
+        k_cusum=k_cusum, h_cusum=h_cusum_g, transition_damping=transition_damping,
+        calm_k=calm_k, calm_periods=calm_periods, cooldown=cooldown,
+        entity=entity, policy="hold_unbounded",
+        p1_high_noise_handling=True, p1_high_noise_factor=p1_high_noise_factor,
+        p1_high_noise_run=p1_high_noise_run,
+    )
+    candidate_i = _candidate(
+        series, bias=bias, sigma_quiet=sigma_quiet, window=window,
+        noise_gate_window=noise_gate_window, transition_ratio=transition_ratio,
+        sigma_ceiling_factor=sigma_ceiling_factor, k_sign=k_sign, run_sign=run_sign,
+        k_cusum=k_cusum, h_cusum=h_cusum_i, transition_damping=transition_damping,
+        calm_k=calm_k, calm_periods=calm_periods, cooldown=cooldown,
+        entity=entity, policy="hold_unbounded",
+        p1_high_noise_handling=True, p1_high_noise_factor=p1_high_noise_factor,
+        p1_high_noise_run=p1_high_noise_run,
+    )
+        "H": candidate_h,
+        "I": candidate_i,
     }
