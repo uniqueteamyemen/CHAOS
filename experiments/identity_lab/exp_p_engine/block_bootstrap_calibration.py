@@ -160,86 +160,93 @@ def residual_distribution_diagnostics() -> dict[str, Any]:
     panel = read_world_bank()
     output: dict[str, Any] = {}
     for scale_estimator in ("first_difference_mad", "second_difference_mad"):
-      output[scale_estimator] = {}
-      for baseline_method in ("rolling_median", "rolling_theil_sen"):
-        per_series: list[dict[str, Any]] = []
-        pooled_z: list[float] = []
-        scale_methods: dict[str, int] = defaultdict(int)
-        for entity_id, observations in panel.items():
-            if len(observations) < 12:
-                continue
-            residuals = build_univariate_residuals(
-                observations,
-                baseline_window=12,
-                min_history=8,
-                time_unit="years",
-                baseline_method=baseline_method,
-                estimate_rho=False,
-                scale_window=16 if scale_estimator == "second_difference_mad" else 12,
-                scale_estimator=scale_estimator,
-            )
-            ready = [
-                row for row in residuals
-                if row.get("status") == "ready" and row.get("z_score") is not None
-            ]
-            if not ready:
-                continue
-            z_values = [float(row["z_score"]) for row in ready]
-            scales = [
-                float(row["scale"])
-                for row in ready
-                if row.get("scale") is not None and float(row["scale"]) > 0
-            ]
-            for row in ready:
-                scale_methods[str(row.get("scale_method"))] += 1
-            pooled_z.extend(z_values)
-            per_series.append({
-                "entity_id": entity_id,
-                "ready_periods": len(z_values),
-                "mean_z": sum(z_values) / len(z_values),
-                "median_z": percentile(z_values, 0.5),
-                "median_abs_z": percentile([abs(value) for value in z_values], 0.5),
-                "p95_abs_z": percentile([abs(value) for value in z_values], 0.95),
-                "share_abs_z_ge_2": sum(abs(value) >= 2.0 for value in z_values) / len(z_values),
-                "share_abs_z_ge_3": sum(abs(value) >= 3.0 for value in z_values) / len(z_values),
-                "share_abs_z_ge_4": sum(abs(value) >= 4.0 for value in z_values) / len(z_values),
-                "share_positive_z_ge_3": sum(value >= 3.0 for value in z_values) / len(z_values),
-                "share_negative_z_le_minus_3": sum(value <= -3.0 for value in z_values) / len(z_values),
-                "lag1_z_correlation": lag1_correlation(z_values),
-                "median_scale": percentile(scales, 0.5) if scales else None,
-                "min_scale": min(scales) if scales else None,
-            })
-        def metric_summary(metric: str) -> dict[str, Any]:
-            values = [float(row[metric]) for row in per_series if row.get(metric) is not None]
-            return {
-                "series_with_metric": len(values),
-                "median_across_series": percentile(values, 0.5),
-                "p90_across_series": percentile(values, 0.9),
-                "max_across_series": max(values) if values else None,
+        output[scale_estimator] = {}
+        for baseline_method in ("rolling_median", "rolling_theil_sen"):
+            per_series: list[dict[str, Any]] = []
+            pooled_z: list[float] = []
+            scale_methods: dict[str, int] = defaultdict(int)
+            for entity_id, observations in panel.items():
+                if len(observations) < 12:
+                    continue
+                residuals = build_univariate_residuals(
+                    observations,
+                    baseline_window=12,
+                    min_history=8,
+                    time_unit="years",
+                    baseline_method=baseline_method,
+                    estimate_rho=False,
+                    scale_window=16 if scale_estimator == "second_difference_mad" else 12,
+                    scale_estimator=scale_estimator,
+                )
+                ready = [
+                    row for row in residuals
+                    if row.get("status") == "ready" and row.get("z_score") is not None
+                ]
+                if not ready:
+                    continue
+                z_values = [float(row["z_score"]) for row in ready]
+                scales = [
+                    float(row["scale"])
+                    for row in ready
+                    if row.get("scale") is not None and float(row["scale"]) > 0
+                ]
+                for row in ready:
+                    scale_methods[str(row.get("scale_method"))] += 1
+                pooled_z.extend(z_values)
+                per_series.append({
+                    "entity_id": entity_id,
+                    "ready_periods": len(z_values),
+                    "mean_z": sum(z_values) / len(z_values),
+                    "median_z": percentile(z_values, 0.5),
+                    "median_abs_z": percentile([abs(value) for value in z_values], 0.5),
+                    "p95_abs_z": percentile([abs(value) for value in z_values], 0.95),
+                    "share_abs_z_ge_2": sum(abs(value) >= 2.0 for value in z_values) / len(z_values),
+                    "share_abs_z_ge_3": sum(abs(value) >= 3.0 for value in z_values) / len(z_values),
+                    "share_abs_z_ge_4": sum(abs(value) >= 4.0 for value in z_values) / len(z_values),
+                    "share_positive_z_ge_3": sum(value >= 3.0 for value in z_values) / len(z_values),
+                    "share_negative_z_le_minus_3": sum(value <= -3.0 for value in z_values) / len(z_values),
+                    "lag1_z_correlation": lag1_correlation(z_values),
+                    "median_scale": percentile(scales, 0.5) if scales else None,
+                    "min_scale": min(scales) if scales else None,
+                })
+
+            def metric_summary(metric: str) -> dict[str, Any]:
+                values = [
+                    float(row[metric])
+                    for row in per_series
+                    if row.get(metric) is not None
+                ]
+                return {
+                    "series_with_metric": len(values),
+                    "median_across_series": percentile(values, 0.5),
+                    "p90_across_series": percentile(values, 0.9),
+                    "max_across_series": max(values) if values else None,
+                }
+
+            output[scale_estimator][baseline_method] = {
+                "series_tested": len(per_series),
+                "ready_residuals": len(pooled_z),
+                "pooled_z": {
+                    "mean": sum(pooled_z) / len(pooled_z) if pooled_z else None,
+                    "median": percentile(pooled_z, 0.5),
+                    "median_absolute_z": percentile([abs(value) for value in pooled_z], 0.5),
+                    "p95_absolute_z": percentile([abs(value) for value in pooled_z], 0.95),
+                    "share_abs_z_ge_2": sum(abs(value) >= 2.0 for value in pooled_z) / len(pooled_z) if pooled_z else None,
+                    "share_abs_z_ge_3": sum(abs(value) >= 3.0 for value in pooled_z) / len(pooled_z) if pooled_z else None,
+                    "share_abs_z_ge_4": sum(abs(value) >= 4.0 for value in pooled_z) / len(pooled_z) if pooled_z else None,
+                    "positive_share_z_ge_3": sum(value >= 3.0 for value in pooled_z) / len(pooled_z) if pooled_z else None,
+                    "negative_share_z_le_minus_3": sum(value <= -3.0 for value in pooled_z) / len(pooled_z) if pooled_z else None,
+                },
+                "per_series": {
+                    "median_abs_z": metric_summary("median_abs_z"),
+                    "p95_abs_z": metric_summary("p95_abs_z"),
+                    "share_abs_z_ge_3": metric_summary("share_abs_z_ge_3"),
+                    "lag1_z_correlation": metric_summary("lag1_z_correlation"),
+                    "median_scale": metric_summary("median_scale"),
+                },
+                "scale_method_counts": dict(scale_methods),
             }
-        output[scale_estimator][baseline_method] = {
-            "series_tested": len(per_series),
-            "ready_residuals": len(pooled_z),
-            "pooled_z": {
-                "mean": sum(pooled_z) / len(pooled_z) if pooled_z else None,
-                "median": percentile(pooled_z, 0.5),
-                "median_absolute_z": percentile([abs(value) for value in pooled_z], 0.5),
-                "p95_absolute_z": percentile([abs(value) for value in pooled_z], 0.95),
-                "share_abs_z_ge_2": sum(abs(value) >= 2.0 for value in pooled_z) / len(pooled_z) if pooled_z else None,
-                "share_abs_z_ge_3": sum(abs(value) >= 3.0 for value in pooled_z) / len(pooled_z) if pooled_z else None,
-                "share_abs_z_ge_4": sum(abs(value) >= 4.0 for value in pooled_z) / len(pooled_z) if pooled_z else None,
-                "positive_share_z_ge_3": sum(value >= 3.0 for value in pooled_z) / len(pooled_z) if pooled_z else None,
-                "negative_share_z_le_minus_3": sum(value <= -3.0 for value in pooled_z) / len(pooled_z) if pooled_z else None,
-            },
-            "per_series": {
-                "median_abs_z": metric_summary("median_abs_z"),
-                "p95_abs_z": metric_summary("p95_abs_z"),
-                "share_abs_z_ge_3": metric_summary("share_abs_z_ge_3"),
-                "lag1_z_correlation": metric_summary("lag1_z_correlation"),
-                "median_scale": metric_summary("median_scale"),
-            },
-            "scale_method_counts": dict(scale_methods),
-        }
+
     return {
         "source": "World Bank FS.AST.PRVT.GD.ZS",
         "purpose": "compare scale estimator and baseline behavior; not a labelled anomaly test",
