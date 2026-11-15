@@ -11,6 +11,8 @@ from experiments.identity_lab.exp_p_engine.residual_dependence_experiment import
     summarize_detector_hits,
     calibrate_prewhitened_null,
     stationary_bootstrap_sample,
+    compare_screened_injection_recall,
+    fixed_injection_onset,
     _first_hit_summary,
 )
 from experiments.identity_lab.exp_p_engine.domain_neutral import (
@@ -252,6 +254,77 @@ class ResidualDependenceTests(unittest.TestCase):
             )
             observed = sum(len(block) for block in blocks) / len(blocks)
             self.assertAlmostEqual(observed, expected, delta=0.20)
+
+    def test_injection_onset_is_fixed_after_null_window(self):
+        self.assertEqual(fixed_injection_onset(list(range(2015, 2025))), 2019)
+        self.assertIsNone(
+            fixed_injection_onset([2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022])
+        )
+
+    def test_paired_screened_recall_reports_entity_bootstrap_interval(self):
+        null = {
+            "status": "ok",
+            "detectors": {
+                "cusum": [{
+                    "params": {"k": 1.0, "h": 64.0},
+                    "passes_all_probabilities": True,
+                }],
+                "sign_run": [],
+            },
+        }
+        responses = {
+            "raw_residuals": [{
+                "entity_id": "A",
+                "scenario": "positive_3.0sigma",
+                "cusum": [{
+                    "k": 1.0, "h": 64.0,
+                    "injected_detected": True,
+                    "control_detected": False,
+                    "injected_direction": "positive",
+                    "injected_delay_years": 1.0,
+                }],
+            }],
+            "prewhitened_innovations": [{
+                "entity_id": "A",
+                "scenario": "positive_3.0sigma",
+                "cusum": [{
+                    "k": 1.0, "h": 64.0,
+                    "injected_detected": False,
+                    "control_detected": False,
+                    "injected_direction": None,
+                    "injected_delay_years": None,
+                }],
+            }],
+        }
+        report = compare_screened_injection_recall(null, null, responses)
+        comparison = report["scenario_comparisons"]["positive_3.0sigma"]["detectors"]["cusum"]
+        self.assertEqual(comparison["paired_passing_setting_count"], 1)
+        item = comparison["paired_settings"][0]
+        self.assertEqual(item["tested_series"], 1)
+        self.assertEqual(item["recall_difference_innovation_minus_raw"], -1.0)
+        self.assertEqual(item["recall_difference_ci95"], [-1.0, -1.0])
+
+    def test_comparison_excludes_settings_without_a_common_null_pass(self):
+        raw = {
+            "status": "ok",
+            "detectors": {
+                "cusum": [{
+                    "params": {"k": 1.0, "h": 64.0},
+                    "passes_all_probabilities": True,
+                }],
+            },
+        }
+        white = {
+            "status": "ok",
+            "detectors": {
+                "cusum": [{
+                    "params": {"k": 1.0, "h": 128.0},
+                    "passes_all_probabilities": True,
+                }],
+            },
+        }
+        report = compare_screened_injection_recall(raw, white, {})
+        self.assertEqual(report["common_passing_settings"]["cusum"], [])
 
     def test_injection_experiment_skips_entities_without_residual_history(self):
         short_series = make_ar1_rows(

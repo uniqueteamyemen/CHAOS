@@ -46,6 +46,9 @@ OUTPUT = (
 
 TRAINING_END = "2014"
 EVALUATION_START = "2015"
+NULL_CALIBRATION_END = "2018"
+INJECTION_ONSET = "2019"
+MIN_POST_INJECTION_PERIODS = 5
 BASELINE_WINDOW = 8
 MIN_HISTORY = 8
 BOOTSTRAP_REPLICATES = 1000
@@ -60,13 +63,22 @@ INJECTION_DIRECTIONS = (-1, 1)
 # screen rejected every candidate. Raw residuals and innovations remain paired.
 COMMON_CUSUM_GRID = tuple(
     {"k": k, "h": h}
-    for k in (0.25, 0.50, 1.00)
-    for h in (16.0, 20.0, 24.0, 28.0, 32.0)
+    for k in (0.50, 1.00, 1.50)
+    for h in (16.0, 24.0, 32.0, 48.0, 64.0, 96.0, 128.0, 192.0, 256.0)
 )
 COMMON_P1_GRID = tuple(
     {"threshold": threshold, "run_length": run_length}
-    for threshold in (3.0, 4.0, 5.0, 6.0)
-    for run_length in (3, 4, 5, 6)
+    for threshold, run_lengths in (
+        (3.0, (4, 5, 6)),
+        (4.0, (3, 4, 5, 6)),
+        (5.0, (3, 4, 5, 6)),
+        (6.0, (3, 4, 5, 6)),
+        (8.0, (2, 3, 4, 5)),
+        (10.0, (2, 3, 4, 5)),
+        (12.0, (2, 3, 4)),
+        (16.0, (2, 3)),
+    )
+    for run_length in run_lengths
 )
 RAW_CUSUM_GRID = tuple(dict(item) for item in COMMON_CUSUM_GRID)
 INNOVATION_CUSUM_GRID = tuple(dict(item) for item in COMMON_CUSUM_GRID)
@@ -82,6 +94,16 @@ def year_number(value: Any) -> int:
     if len(raw) < 4 or not raw[:4].isdigit():
         raise ValueError("annual_year_label_required")
     return int(raw[:4])
+
+
+def fixed_injection_onset(evaluation_times: Sequence[int]) -> int | None:
+    """Return the fixed post-null onset only when both sides have usable support."""
+    years = sorted({int(year) for year in evaluation_times})
+    pre = [year for year in years if year <= year_number(NULL_CALIBRATION_END)]
+    post = [year for year in years if year >= year_number(INJECTION_ONSET)]
+    if len(pre) < 2 or len(post) < MIN_POST_INJECTION_PERIODS:
+        return None
+    return year_number(INJECTION_ONSET)
 
 
 def median_or_none(values: Sequence[float]) -> float | None:
@@ -853,11 +875,12 @@ def run_injection_experiment(
             if year_number(row["event_time"]) >= year_number(EVALUATION_START)
             and row.get("status") == "ready"
         })
-        if len(evaluation_times) < 6:
-            skipped["insufficient_evaluation_history"] += 1
+        selected_onset = fixed_injection_onset(evaluation_times)
+        if selected_onset is None:
+            skipped["insufficient_pre_or_post_injection_history"] += 1
             continue
-        onset_year = evaluation_times[len(evaluation_times) // 2]
-        onset = str(onset_year)
+        onset_year = selected_onset
+        onset = INJECTION_ONSET
         prior_scales = [
             float(row["scale"])
             for row in base_residuals
@@ -1045,100 +1068,183 @@ def _matched_evaluation_streams(
 def compare_screened_injection_recall(
     raw_null: Mapping[str, Any],
     innovation_null: Mapping[str, Any],
-    injection_summaries: Mapping[str, Any],
+    injection_responses: Mapping[str, Sequence[Mapping[str, Any]]],
 ) -> dict[str, Any]:
-    """Compare recall only for identical detector settings passing both gates."""
+    """Compare identical 5%-passing settings with paired entity-level uncertainty."""
     if raw_null.get("status") != "ok" or innovation_null.get("status") != "ok":
         return {"status": "skipped_null_calibration_unavailable"}
 
-    def passing(calibration: Mapping[str, Any], detector: str) -> dict[tuple[tuple[str, Any], ...], dict[str, Any]]:
-        allowed: dict[tuple[tuple[str, Any], ...], dict[str, Any]] = {}
-        for item in calibration.get("detectors", {}).get(detector, []):
-            if item.get("passes_all_probabilities"):
-                params = dict(item["params"])
-                allowed[tuple(sorted(params.items()))] = params
-        return allowed
+    def passing(
+        calibration: Mapping[str, Any],
+        detector: str,
+    ) -> set[tuple[tuple[str, Any], ...]]:
+        return {
+            tuple(sorted(dict(item["params"]).items()))
+            for item in calibration.get("detectors", {}).get(detector, [])
+            if item.get("passes_all_probabilities")
+        }
 
-    raw_summary = injection_summaries.get("raw_residuals", {})
-    white_summary = injection_summaries.get("prewhitened_innovations", {})
-    scenarios = sorted(set(raw_summary) & set(white_summary))
+    def find_candidate(
+        row: Mapping[str, Any],
+        detector: str,
+        params: Mapping[str, Any],
+    ) -> Mapping[str, Any] | None:
+        return next(
+            (
+                candidate for candidate in row.get(detector, [])
+                if all(candidate.get(key) == value for key, value in params.items())
+            ),
+            None,
+        )
+
+    def bootstrap_ci(values: Sequence[float], *, seed: int) -> list[float] | None:
+        if not values:
+            return None
+        rng = random.Random(seed)
+        estimates = [
+            statistics.mean(values[rng.randrange(len(values))] for _ in values)
+            for _ in range(2000)
+        ]
+        estimates.sort()
+        return [
+            float(estimates[int(0.025 * (len(estimates) - 1))]),
+            float(estimates[int(0.975 * (len(estimates) - 1))]),
+        ]
+
+    raw_by_scenario: dict[str, dict[str, Mapping[str, Any]]] = defaultdict(dict)
+    white_by_scenario: dict[str, dict[str, Mapping[str, Any]]] = defaultdict(dict)
+    for row in injection_responses.get("raw_residuals", []):
+        raw_by_scenario[str(row["scenario"])][str(row["entity_id"])] = row
+    for row in injection_responses.get("prewhitened_innovations", []):
+        white_by_scenario[str(row["scenario"])][str(row["entity_id"])] = row
+
     result: dict[str, Any] = {
         "status": "ok",
         "comparison_rule": (
-            "Paired comparison only: a detector setting is eligible if it passes "
-            "the 5% upper-95% series-alarm screen for every stationary-bootstrap "
-            "restart probability in both streams."
+            "A setting is eligible only if its upper-95% series-alarm rate is <=5% "
+            "for every tested stationary-bootstrap restart probability in both streams. "
+            "Recall is paired by entity and uses identical shift, onset, and detector "
+            "parameters. Confidence intervals bootstrap matched entities."
         ),
         "common_passing_settings": {},
         "scenario_comparisons": {},
     }
 
+    common_by_detector: dict[str, set[tuple[tuple[str, Any], ...]]] = {}
     for detector in ("cusum", "sign_run"):
-        common = set(passing(raw_null, detector)) & set(passing(innovation_null, detector))
+        common = passing(raw_null, detector) & passing(innovation_null, detector)
+        common_by_detector[detector] = common
         result["common_passing_settings"][detector] = [
             dict(params) for params in sorted(common)
         ]
 
-    for scenario in scenarios:
-        result["scenario_comparisons"][scenario] = {}
+    for scenario in sorted(set(raw_by_scenario) & set(white_by_scenario)):
+        raw_entities = raw_by_scenario[scenario]
+        white_entities = white_by_scenario[scenario]
+        common_entities = sorted(set(raw_entities) & set(white_entities))
+        scenario_result: dict[str, Any] = {
+            "matched_series": len(common_entities),
+            "detectors": {},
+        }
+
         for detector in ("cusum", "sign_run"):
-            common = set(passing(raw_null, detector)) & set(passing(innovation_null, detector))
-            raw_rows = raw_summary[scenario].get(detector, [])
-            white_rows = white_summary[scenario].get(detector, [])
-            paired = []
-            for key in sorted(common):
-                params = dict(key)
-                raw_hit = next(
-                    (row for row in raw_rows if all(row.get(k) == v for k, v in params.items())),
-                    None,
-                )
-                white_hit = next(
-                    (row for row in white_rows if all(row.get(k) == v for k, v in params.items())),
-                    None,
-                )
-                if raw_hit is None or white_hit is None:
+            paired_settings = []
+            for setting_index, parameter_key in enumerate(sorted(common_by_detector[detector])):
+                params = dict(parameter_key)
+                raw_detected: list[float] = []
+                white_detected: list[float] = []
+                raw_control: list[float] = []
+                white_control: list[float] = []
+                raw_correct: list[float] = []
+                white_correct: list[float] = []
+                raw_delays: list[float] = []
+                white_delays: list[float] = []
+
+                for entity_id in common_entities:
+                    raw_hit = find_candidate(raw_entities[entity_id], detector, params)
+                    white_hit = find_candidate(white_entities[entity_id], detector, params)
+                    if raw_hit is None or white_hit is None:
+                        continue
+                    expected_direction = "positive" if scenario.startswith("positive") else "negative"
+                    raw_detected.append(float(bool(raw_hit["injected_detected"])))
+                    white_detected.append(float(bool(white_hit["injected_detected"])))
+                    raw_control.append(float(bool(raw_hit["control_detected"])))
+                    white_control.append(float(bool(white_hit["control_detected"])))
+                    raw_correct.append(float(
+                        bool(raw_hit["injected_detected"])
+                        and raw_hit.get("injected_direction") == expected_direction
+                    ))
+                    white_correct.append(float(
+                        bool(white_hit["injected_detected"])
+                        and white_hit.get("injected_direction") == expected_direction
+                    ))
+                    if raw_hit.get("injected_delay_years") is not None:
+                        raw_delays.append(float(raw_hit["injected_delay_years"]))
+                    if white_hit.get("injected_delay_years") is not None:
+                        white_delays.append(float(white_hit["injected_delay_years"]))
+
+                n = len(raw_detected)
+                if not n:
                     continue
-                raw_recall = raw_hit.get("injected_detection_rate")
-                white_recall = white_hit.get("injected_detection_rate")
-                paired.append({
+                recall_delta = [
+                    white_detected[i] - raw_detected[i] for i in range(n)
+                ]
+                raw_net = [
+                    raw_detected[i] - raw_control[i] for i in range(n)
+                ]
+                white_net = [
+                    white_detected[i] - white_control[i] for i in range(n)
+                ]
+                net_delta = [
+                    white_net[i] - raw_net[i] for i in range(n)
+                ]
+                stable_seed = (
+                    NULL_BOOTSTRAP_SEED
+                    + sum(ord(char) for char in scenario)
+                    + (0 if detector == "cusum" else 20_000)
+                    + setting_index
+                )
+                paired_settings.append({
                     "parameters": params,
-                    "raw": dict(raw_hit),
-                    "prewhitened": dict(white_hit),
-                    "recall_difference_innovation_minus_raw": (
-                        float(white_recall) - float(raw_recall)
-                        if white_recall is not None and raw_recall is not None
-                        else None
-                    ),
-                    "net_detection_gain_difference_innovation_minus_raw": (
-                        float(white_hit["net_detection_rate_delta"])
-                        - float(raw_hit["net_detection_rate_delta"])
-                        if white_hit.get("net_detection_rate_delta") is not None
-                        and raw_hit.get("net_detection_rate_delta") is not None
-                        else None
-                    ),
+                    "tested_series": n,
+                    "raw_injected_detection_rate": statistics.mean(raw_detected),
+                    "prewhitened_injected_detection_rate": statistics.mean(white_detected),
+                    "recall_difference_innovation_minus_raw": statistics.mean(recall_delta),
+                    "recall_difference_ci95": bootstrap_ci(recall_delta, seed=stable_seed),
+                    "raw_control_detection_rate": statistics.mean(raw_control),
+                    "prewhitened_control_detection_rate": statistics.mean(white_control),
+                    "raw_net_detection_gain": statistics.mean(raw_net),
+                    "prewhitened_net_detection_gain": statistics.mean(white_net),
+                    "net_detection_gain_difference_innovation_minus_raw": statistics.mean(net_delta),
+                    "net_detection_gain_difference_ci95": bootstrap_ci(net_delta, seed=stable_seed + 1),
+                    "raw_correct_direction_rate": statistics.mean(raw_correct),
+                    "prewhitened_correct_direction_rate": statistics.mean(white_correct),
+                    "raw_median_detection_delay_years": statistics.median(raw_delays) if raw_delays else None,
+                    "prewhitened_median_detection_delay_years": statistics.median(white_delays) if white_delays else None,
                 })
-            result["scenario_comparisons"][scenario][detector] = {
-                "paired_passing_setting_count": len(paired),
-                "paired_settings": paired,
+
+            deltas = [
+                item["recall_difference_innovation_minus_raw"]
+                for item in paired_settings
+            ]
+            scenario_result["detectors"][detector] = {
+                "paired_passing_setting_count": len(paired_settings),
+                "paired_settings": paired_settings,
+                "mean_recall_difference_across_settings": (
+                    statistics.mean(deltas) if deltas else None
+                ),
                 "conclusion": (
                     "prewhitened_innovations_higher_recall"
-                    if paired and statistics.mean(
-                        item["recall_difference_innovation_minus_raw"]
-                        for item in paired
-                        if item["recall_difference_innovation_minus_raw"] is not None
-                    ) > 0
+                    if deltas and statistics.mean(deltas) > 0
                     else "raw_residuals_higher_recall"
-                    if paired and statistics.mean(
-                        item["recall_difference_innovation_minus_raw"]
-                        for item in paired
-                        if item["recall_difference_innovation_minus_raw"] is not None
-                    ) < 0
-                    else "tie_or_no_complete_paired_recall"
+                    if deltas and statistics.mean(deltas) < 0
+                    else "no_common_5pct_passing_setting"
+                    if not deltas
+                    else "equal_recall"
                 ),
             }
+        result["scenario_comparisons"][scenario] = scenario_result
     return result
-
-
 
 def run_source() -> dict[str, Any]:
     entity_series = read_world_bank()
@@ -1187,14 +1293,22 @@ def run_source() -> dict[str, Any]:
 
         # Both streams use identical detector grids, sample support, restart
         # probabilities and upper-95% per-series alarm gate.
+        raw_null_rows = [
+            row for row in matched_raw
+            if year_number(row["event_time"]) <= year_number(NULL_CALIBRATION_END)
+        ]
+        white_null_rows = [
+            row for row in matched_white
+            if year_number(row["event_time"]) <= year_number(NULL_CALIBRATION_END)
+        ]
         raw_null = calibrate_prewhitened_null(
-            matched_raw,
+            raw_null_rows,
             cusum_grid=RAW_CUSUM_GRID,
             p1_grid=RAW_P1_GRID,
             min_segment_length=2,
         )
         innovation_null = calibrate_prewhitened_null(
-            matched_white,
+            white_null_rows,
             cusum_grid=INNOVATION_CUSUM_GRID,
             p1_grid=INNOVATION_P1_GRID,
             min_segment_length=2,
@@ -1232,7 +1346,7 @@ def run_source() -> dict[str, Any]:
         screened_comparison = compare_screened_injection_recall(
             raw_null,
             innovation_null,
-            summarized_injections,
+            injections.get("responses", {}),
         )
     else:
         evaluation_rows = [
@@ -1265,6 +1379,13 @@ def run_source() -> dict[str, Any]:
             "prewhitened_matched": whitened_diag,
         },
         "matched_series_count": matched_series_count,
+        "temporal_split": {
+            "dependence_training_end": TRAINING_END,
+            "null_calibration_start": EVALUATION_START,
+            "null_calibration_end": NULL_CALIBRATION_END,
+            "controlled_injection_onset": INJECTION_ONSET,
+            "minimum_post_injection_periods": MIN_POST_INJECTION_PERIODS,
+        },
         "historical_signal_profile": {
             "raw_residuals": raw_signals,
             "prewhitened_innovations": whitened_signals,
