@@ -1,6 +1,6 @@
 # exp_p_engine — المحرك الموحّد
 
-> **آخر تحديث: 2026-11-14 (+03:00)**
+> **آخر تحديث: 2026-11-15 (+03:00)**
 
 ## ما هو
 
@@ -126,3 +126,26 @@ validate_residual_contract يرفض الهوية الفارغة، والحالة
 تُقسّم الكواشف الصفوف بحسب (entity_id, metric_id, baseline_id) قبل تشغيل أي حالة تراكمية. لذلك لا يمكن أن تكمل إشارة موظف آخر أو مؤشر آخر أو مرجعية أخرى عداد CUSUM أو sign-run. تُرتب كل سلسلة زمنياً، ويُرفض تكرار الفترة داخل السلسلة. مخرجات الكواشف تحتفظ بهوية السلسلة والمرجعية.
 
 مقياس Peer الحالي هو MAD قوي واحد لكل مجموعة وفترة، مع استبعاد الكيان من وسيط القيمة المتوقعة نفسه. إذا كان تشتت المجموعة صفراً، يخرج peer_scale_unavailable؛ لا يخترع المحرك حداً أدنى للمقياس. في هذه الحالة نحتاج إلى حد ضوضاء/دقة معلن للمؤشر قبل تحويل الفرق الخام إلى z-score.
+
+
+## Isolated parallel-fusion experiment (A/B/C/D)
+
+This experiment is isolated from the production engine.py; A remains the unchanged engine.run() result.
+
+- **A:** current production execution path, including the current alert manager.
+- **B:** P1 uses the capped 3-sigma / 3-run candidate rule; positive and negative CUSUM accumulators are independent; both accumulators are held (not erased) while the short/long variance-transition condition is active; CUSUM scale remains unbounded.
+- **C:** same independent detector tracks; CUSUM scale is capped at 2 times quiet sigma and transition updates are damped by 0.35 instead of being erased or paused.
+- **Fusion:** evidence is aggregated before event adjudication. A reversal or six consecutive calm observations opens a new event. Same-event directional cooldown marks a repeated notification but retains the underlying evidence.
+- **D (isolated high-noise P1 arm):** uses exactly C's two-sided CUSUM and changes only P1's high-noise behavior to the production engine's adaptive-scale, 13-consecutive-direction rule. C vs D therefore isolates the P1 contribution while the CUSUM evidence is held identical.
+
+Each run creates an immutable configuration/input snapshot with a SHA-256 input fingerprint, frozen bias, quiet sigma, configuration, code revision, and time range. Out-of-order and duplicate timestamps fail closed.
+
+Run the experiment:
+
+```bash
+python -m unittest experiments.identity_lab.exp_p_engine.test_parallel_fusion -v
+python -m experiments.identity_lab.exp_p_engine.benchmark_parallel_fusion
+python -m experiments.identity_lab.exp_r_grade4.grade4_diagnostics
+```
+
+The benchmark runs 500 independent sequences in each declared condition and scores false alerts in null scenarios and in the pre-onset interval, and reports fused event outcomes plus detector-isolated P1/CUSUM false-alert rates, sensitivity, direction errors, detection delay, and 95% Wilson intervals. The C-vs-D comparison isolates P1 because the CUSUM path is identical. It is an experiment, not a production approval: no candidate replaces A unless the paired results justify that decision.
