@@ -1,0 +1,32 @@
+name: CHAOS residual-dependence experiment
+
+on:
+  push:
+    branches:
+      - experiment/residual-innovation-whitening-v1
+    paths:
+      - "experiments/identity_lab/exp_p_engine/domain_neutral.py"
+      - "experiments/identity_lab/exp_p_engine/residual_dependence_experiment.py"
+      - "experiments/identity_lab/exp_p_engine/test_residual_dependence.py"
+      - "experiments/identity_lab/schemas/residual_event_v1.schema.json"
+      - ".github/workflows/residual-dependence.yml"
+
+jobs:
+  residual-dependence:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Test frozen panel residual dependence and innovation contract
+        run: python -m unittest experiments.identity_lab.exp_p_engine.test_residual_dependence -v
+      - name: Probe frozen residual prewhitening on held-out World Bank years with matched injections
+        run: python -m experiments.identity_lab.exp_p_engine.residual_dependence_experiment
+      - name: Upload residual-dependence output
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: chaos-residual-dependence-results
+          path: experiments/identity_lab/exp_p_engine/results/domain_neutral_residual_dependence.json
+          if-no-files-found: warn
