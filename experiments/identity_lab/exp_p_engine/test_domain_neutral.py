@@ -312,7 +312,8 @@ class ScaleEstimatorTests(unittest.TestCase):
         ar1 = build_univariate_residuals(
             rows, baseline_window=12, min_history=8,
             time_unit="days", baseline_method="rolling_theil_sen",
-            estimate_rho=True,
+            estimate_rho=True, scale_window=24,
+            min_adjacent_pairs_for_rho=14,
         )
         self.assertTrue(iid)
         self.assertTrue(ar1)
