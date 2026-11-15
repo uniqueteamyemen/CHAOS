@@ -927,8 +927,20 @@ def run_injection_experiment(
                     row for row in base_residuals
                     if year_number(row["event_time"]) >= year_number(EVALUATION_START)
                 ]
-                white_injected = injected_whitened
-                white_control = control_whitened
+                (
+                    raw_injected,
+                    raw_control,
+                    white_injected,
+                    white_control,
+                    matched_injection_series,
+                    matched_injection_periods,
+                ) = _matched_evaluation_streams(
+                    raw_injected,
+                    raw_control,
+                    injected_whitened,
+                    control_whitened,
+                    min_segment_length=2,
+                )
 
                 raw_response = _response_grid_for_stream(
                     raw_injected,
@@ -956,6 +968,8 @@ def run_injection_experiment(
                         ),
                         "onset_time": onset,
                         "injection_scale": sigma,
+                        "matched_common_series": matched_injection_series,
+                        "matched_common_ready_periods": matched_injection_periods,
                         "cusum": response["cusum"],
                         "sign_run": response["sign_run"],
                     })
@@ -1031,38 +1045,101 @@ def summarize_injection_response(rows: Sequence[Mapping[str, Any]]) -> dict[str,
 
 
 def _matched_evaluation_streams(
-    raw_rows: Sequence[Mapping[str, Any]],
-    innovation_rows: Sequence[Mapping[str, Any]],
-    *,
+    *streams: Sequence[Mapping[str, Any]],
     min_segment_length: int = 2,
-) -> tuple[list[dict[str, Any]], list[dict[str, Any]], int]:
-    """Restrict raw and innovation streams to exactly the same series cohort."""
-    def group(rows: Sequence[Mapping[str, Any]]) -> dict[tuple[str, str], list[dict[str, Any]]]:
-        result: dict[tuple[str, str], list[dict[str, Any]]] = defaultdict(list)
-        for row in rows:
-            result[(str(row["entity_id"]), str(row["metric_id"]))].append(dict(row))
-        return result
+) -> tuple[Any, ...]:
+    """Align all streams on the exact same ready entity/metric/annual periods.
 
-    raw_grouped = group(raw_rows)
-    innovation_grouped = group(innovation_rows)
+    A period is eligible only when every stream has a ready finite z-score.
+    Missing, non-ready or absent years become shared reset rows, so detector
+    state and bootstrap segments cannot bridge a period unavailable to a peer.
+    Returns each aligned stream followed by (eligible_series, common_ready_periods).
+    """
+    if len(streams) < 2:
+        raise ValueError("matched_streams_requires_at_least_two_paths")
+    if min_segment_length < 1:
+        raise ValueError("matched_stream_min_segment_length_invalid")
 
-    def eligible(grouped: Mapping[tuple[str, str], Sequence[Mapping[str, Any]]]) -> set[tuple[str, str]]:
-        return {
-            key for key, series_rows in grouped.items()
-            if any(
-                len(segment) >= min_segment_length
-                for segment in contiguous_ready_segments(series_rows)
+    grouped_streams: list[dict[tuple[str, str], dict[int, dict[str, Any]]]] = []
+    for stream in streams:
+        grouped: dict[tuple[str, str], dict[int, dict[str, Any]]] = defaultdict(dict)
+        for row in stream:
+            key = (str(row["entity_id"]), str(row["metric_id"]))
+            year = year_number(row["event_time"])
+            if year in grouped[key]:
+                raise ValueError("matched_stream_duplicate_entity_metric_year")
+            grouped[key][year] = dict(row)
+        grouped_streams.append(dict(grouped))
+
+    common_series_keys = set(grouped_streams[0])
+    for grouped in grouped_streams[1:]:
+        common_series_keys.intersection_update(grouped)
+
+    aligned: list[list[dict[str, Any]]] = [[] for _ in streams]
+    eligible_series = 0
+    common_ready_periods = 0
+
+    for entity_id, metric_id in sorted(common_series_keys):
+        maps = [grouped[(entity_id, metric_id)] for grouped in grouped_streams]
+        observed_years = sorted({year for mapping in maps for year in mapping})
+        if not observed_years:
+            continue
+
+        per_stream: list[list[dict[str, Any]]] = [[] for _ in streams]
+        per_series_common_ready = 0
+        for year in range(observed_years[0], observed_years[-1] + 1):
+            source_rows = [mapping.get(year) for mapping in maps]
+            ready_for_all = all(
+                row is not None
+                and row.get("status") == "ready"
+                and row.get("z_score") is not None
+                and math.isfinite(float(row["z_score"]))
+                for row in source_rows
             )
-        }
+            if ready_for_all:
+                for index, row in enumerate(source_rows):
+                    per_stream[index].append(dict(row))
+                per_series_common_ready += 1
+                continue
 
-    common = eligible(raw_grouped) & eligible(innovation_grouped)
-    raw_matched = [
-        row for key in sorted(common) for row in raw_grouped[key]
-    ]
-    innovation_matched = [
-        row for key in sorted(common) for row in innovation_grouped[key]
-    ]
-    return raw_matched, innovation_matched, len(common)
+            # Emit the same explicit reset period into every aligned path.
+            for index, source in enumerate(source_rows):
+                placeholder = dict(source) if source is not None else {}
+                placeholder.update({
+                    "entity_id": entity_id,
+                    "metric_id": metric_id,
+                    "event_time": str(year),
+                    "observed_value": None,
+                    "expected_value": None,
+                    "residual": None,
+                    "scale": None,
+                    "z_score": None,
+                    "status": "gap_unresolved",
+                    "baseline_id": str(
+                        (source or {}).get(
+                            "baseline_id",
+                            f"{entity_id}:{metric_id}:matched-gap:{index}",
+                        )
+                    ),
+                    "baseline_method": str(
+                        (source or {}).get("baseline_method", "matched_support_reset")
+                    ),
+                    "support_count": int((source or {}).get("support_count", 0)),
+                })
+                per_stream[index].append(placeholder)
+
+        has_usable_segment = any(
+            len(segment) >= min_segment_length
+            for segment in contiguous_ready_segments(per_stream[0])
+        )
+        if has_usable_segment:
+            eligible_series += 1
+            common_ready_periods += per_series_common_ready
+            for index in range(len(streams)):
+                aligned[index].extend(per_stream[index])
+
+    return (*aligned, eligible_series, common_ready_periods)
+
 
 
 def compare_screened_injection_recall(
@@ -1282,7 +1359,12 @@ def run_source() -> dict[str, Any]:
             if year_number(row["event_time"]) >= year_number(EVALUATION_START)
         ]
         whitened = prewhiten_evaluation_rows(all_residuals, calibration)
-        matched_raw, matched_white, matched_series_count = _matched_evaluation_streams(
+        (
+            matched_raw,
+            matched_white,
+            matched_series_count,
+            matched_ready_periods,
+        ) = _matched_evaluation_streams(
             evaluation_rows,
             whitened,
             min_segment_length=2,
@@ -1379,6 +1461,7 @@ def run_source() -> dict[str, Any]:
             "prewhitened_matched": whitened_diag,
         },
         "matched_series_count": matched_series_count,
+        "matched_ready_periods": matched_ready_periods,
         "temporal_split": {
             "dependence_training_end": TRAINING_END,
             "null_calibration_start": EVALUATION_START,
