@@ -680,6 +680,9 @@ def run_experiment(
                 "sign_run_hits_grid_total": len(p1_hits),
             })
 
+            # Matched no-injection controls share the same source history,
+            # labelled onset, baseline policy and detector reset boundary.
+            control_cache: dict[str, dict[str, Any]] = {}
             for magnitude in (3.0, 6.0):
                 for direction in (-1, 1):
                     injected, onset, injection_scale, onset_index = _injection_copy(
@@ -703,6 +706,21 @@ def run_experiment(
                         onset=onset,
                         unit=time_unit,
                     )
+                    if onset not in control_cache:
+                        control_residuals, control_diagnostics = build_policy_residuals(
+                            observed,
+                            policy=policy,
+                            time_unit=time_unit,
+                            suspicion_z=suspicion_z,
+                            suspicion_run=suspicion_run,
+                            freeze_trigger_after_time=onset,
+                        )
+                        control_cache[onset] = _detector_response(
+                            control_residuals,
+                            onset=onset,
+                            unit=time_unit,
+                        )
+                    control_response = control_cache[onset]
                     freeze_times = [
                         item["start_time"]
                         for item in injected_diagnostics["freeze_episodes"]
@@ -731,6 +749,8 @@ def run_experiment(
                         "freeze_episodes": injected_diagnostics["freeze_trigger_count"],
                         "cusum": response["cusum"],
                         "sign_run": response["sign_run"],
+                        "control_cusum": control_response["cusum"],
+                        "control_sign_run": control_response["sign_run"],
                     })
 
         # Historical hits are unlabelled; report density rather than a false-positive claim.
@@ -772,26 +792,68 @@ def run_experiment(
                 settings = CUSUM_SETTINGS if detector == "cusum" else P1_SETTINGS
                 summaries = []
                 for params in settings:
-                    matches = [
-                        hit
-                        for row in rows
-                        for hit in row[detector]
-                        if all(hit.get(key) == value for key, value in params.items())
+                    paired: list[tuple[dict[str, Any], dict[str, Any]]] = []
+                    for row in rows:
+                        injected_hit = next(
+                            (
+                                hit for hit in row[detector]
+                                if all(hit.get(key) == value for key, value in params.items())
+                            ),
+                            None,
+                        )
+                        control_hit = next(
+                            (
+                                hit for hit in row["control_" + detector]
+                                if all(hit.get(key) == value for key, value in params.items())
+                            ),
+                            None,
+                        )
+                        if injected_hit is not None and control_hit is not None:
+                            paired.append((injected_hit, control_hit))
+                    detected = [injected_hit for injected_hit, _ in paired if injected_hit["detected"]]
+                    control_detected = [control_hit for _, control_hit in paired if control_hit["detected"]]
+                    incremental = [
+                        injected_hit for injected_hit, control_hit in paired
+                        if injected_hit["detected"] and not control_hit["detected"]
                     ]
-                    detected = [hit for hit in matches if hit["detected"]]
-                    delays = [hit["delay_time_units"] for hit in detected if hit["delay_time_units"] is not None]
+                    control_only = [
+                        control_hit for injected_hit, control_hit in paired
+                        if control_hit["detected"] and not injected_hit["detected"]
+                    ]
+                    delays = [
+                        hit["delay_time_units"] for hit in detected
+                        if hit["delay_time_units"] is not None
+                    ]
                     direction = "positive" if scenario.startswith("positive") else "negative"
                     matching_direction = sum(1 for hit in detected if hit["direction"] == direction)
-                    within_3 = sum(1 for hit in detected if hit["delay_time_units"] is not None and hit["delay_time_units"] <= 3.0)
+                    within_3 = sum(
+                        1 for hit in detected
+                        if hit["delay_time_units"] is not None
+                        and hit["delay_time_units"] <= 3.0
+                    )
+                    denominator = len(paired)
                     summaries.append({
                         **params,
-                        "tested_injections": len(rows),
+                        "tested_injections": denominator,
                         "detected_injections": len(detected),
-                        "recall": len(detected) / len(rows) if rows else None,
+                        "recall": len(detected) / denominator if denominator else None,
+                        "matched_control_detections": len(control_detected),
+                        "matched_control_recall": (
+                            len(control_detected) / denominator if denominator else None
+                        ),
+                        "incremental_detections_vs_matched_control": len(incremental),
+                        "incremental_detection_rate": (
+                            len(incremental) / denominator if denominator else None
+                        ),
+                        "control_only_detections": len(control_only),
+                        "net_detection_rate_delta_vs_control": (
+                            (len(detected) - len(control_detected)) / denominator
+                            if denominator else None
+                        ),
                         "direction_matches": matching_direction,
                         "median_detection_delay_time_units": median(delays) if delays else None,
                         "detected_within_3_time_units": within_3,
-                        "recall_within_3_time_units": within_3 / len(rows) if rows else None,
+                        "recall_within_3_time_units": within_3 / denominator if denominator else None,
                     })
                 item_result[detector] = summaries
             item_result["freeze_before_injection_series"] = sum(
