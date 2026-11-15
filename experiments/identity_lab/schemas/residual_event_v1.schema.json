@@ -277,6 +277,21 @@
           ],
           "minimum": 0,
           "maximum": 1
+        },
+        "exposure": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0,
+          "description": "Optional workload denominator; required only by exposure-normalized peer comparisons."
+        },
+        "exposure_unit": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Unit for exposure such as hours, shifts, or eligible cases."
         }
       },
       "allOf": [
