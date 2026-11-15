@@ -1,0 +1,145 @@
+{
+  "schema_version": 1,
+  "package_id": "confirmation-freeze-screen-v1",
+  "status": "completed",
+  "status_reasons": [],
+  "created_at_utc": "2026-11-15T13:14:23+00:00",
+  "input_fingerprint": "5220002db88908a5bae48b72a2ab1c64c221ecd02c057ce4892ba1ee28abc9fa",
+  "inputs": [
+    {
+      "path": ".github/workflows/baseline-freeze-screen.yml",
+      "sha256": "78c431028c7f30e12c6d061fccc73f3a97e531345c8df106a6e4f0c1640cf157"
+    },
+    {
+      "path": "data/raw/financial_world_bank_v1/WB_FS_AST_PRVT_GD_ZS_2000_2024.csv",
+      "sha256": "dae8a23280d6c1d16a03e1891bfbadccd46b87c35b5f8db020d7ab783fc1bebc"
+    },
+    {
+      "path": "experiments/identity_lab/checkpoint_experiment.py",
+      "sha256": "e3bbe6dde15c9a6389a5899755c5bdd2be8e5b9a9e1a9042eda386bfe76903ba"
+    },
+    {
+      "path": "experiments/identity_lab/exp_p_engine/baseline_freeze_experiment.py",
+      "sha256": "73d10e508f7eee6bfcc71aa735918bbd3e17e3da696165459921b506120281ff"
+    },
+    {
+      "path": "experiments/identity_lab/exp_p_engine/baseline_freeze_screen.py",
+      "sha256": "6e74983df8c47eec31fa73958c75d09af2f779d05175adf70e16b6edb6ba8513"
+    },
+    {
+      "path": "experiments/identity_lab/exp_p_engine/calibration_sweep.py",
+      "sha256": "fcf1e15f292573284c3a493e5a00c0561608614b05f9d9e55af4185a73af31db"
+    },
+    {
+      "path": "experiments/identity_lab/exp_p_engine/domain_neutral.py",
+      "sha256": "1866b16d063189f08b513b0674a2a7e3de2633d57f44889722c2a3ecd7abca7e"
+    },
+    {
+      "path": "experiments/identity_lab/exp_p_engine/residual_dependence_experiment.py",
+      "sha256": "a25da6d51782768320eeb1b15558f3cba34605646a3b6de7d082192421547934"
+    },
+    {
+      "path": "experiments/identity_lab/exp_p_engine/test_baseline_freeze.py",
+      "sha256": "5eb5d6870c8db8a3fff33496c2f108ec27c40e1c6a2b651cf3c633abd0146c09"
+    },
+    {
+      "path": "experiments/identity_lab/exp_p_engine/test_baseline_freeze_screen.py",
+      "sha256": "21826f245638f4bf2ef7bbb99d442dedaeeb68496b2cee02db50fa6c8b011d70"
+    },
+    {
+      "path": "experiments/identity_lab/schemas/residual_event_v1.schema.json",
+      "sha256": "22d0fe543b094915be820bbc3a441a46b1e642b3696022b74b24610263377df4"
+    },
+    {
+      "path": "experiments/identity_lab/test_checkpoint_experiment.py",
+      "sha256": "94e498d91cdb477d72605b44db6f64efb8584ef4ccaae17893586ac298053ce1"
+    }
+  ],
+  "source_commit": "7d0ca6d2e2becb7925090ed64c22f427d8ac4495",
+  "branch": "experiment/residual-innovation-whitening-v1",
+  "workflow": "CHAOS confirmation-freeze screen",
+  "workflow_run_id": "43717918644",
+  "workflow_run_attempt": "1",
+  "workflow_run_url": "https://github.com/uniqueteamyemen/CHAOS/actions/runs/43717918644",
+  "tests_status": "success",
+  "experiment_status": "success",
+  "decision": "",
+  "result": {
+    "path": "experiments/identity_lab/exp_p_engine/results/domain_neutral_confirmation_freeze_screen.json",
+    "sha256": "876534f5d6f3e045831693b9907b686b3b7d7f1e9547f3fd604e108a5c14a0e4",
+    "bytes": 3592027,
+    "summary": {
+      "experiment": "domain_neutral_cusum_confirmation_freeze_screen_v1",
+      "source": "World Bank FS.AST.PRVT.GD_ZS",
+      "source_series": 218,
+      "temporal_split": {
+        "null_start": 2014,
+        "null_end": 2020,
+        "controlled_injection_onset": "2021",
+        "evaluation_end": 2024,
+        "minimum_null_segment_length": 5,
+        "detection_horizon_years": 3
+      },
+      "decisions": [
+        {
+          "confirmation_h": 64.0,
+          "passes_5pct_series_alarm_screen": true,
+          "triggered_series_negative_3sigma": 0,
+          "triggered_series_positive_3sigma": 2,
+          "triggered_series_negative_6sigma": 5,
+          "triggered_series_positive_6sigma": 5,
+          "minimum_6sigma_direction_support": 5,
+          "minimum_required_6sigma_direction_support": 10,
+          "adequate_injection_support": false,
+          "trigger_time_consistency": true,
+          "matched_controls_quiet": true,
+          "positive_persistence_supported_both_6sigma_directions": true,
+          "synthetic_controls_pass": true,
+          "eligible_for_further_operational_validation": false,
+          "decision": "not_promoted_insufficient_injection_or_synthetic_support"
+        },
+        {
+          "confirmation_h": 96.0,
+          "passes_5pct_series_alarm_screen": true,
+          "triggered_series_negative_3sigma": 0,
+          "triggered_series_positive_3sigma": 2,
+          "triggered_series_negative_6sigma": 0,
+          "triggered_series_positive_6sigma": 2,
+          "minimum_6sigma_direction_support": 0,
+          "minimum_required_6sigma_direction_support": 10,
+          "adequate_injection_support": false,
+          "trigger_time_consistency": true,
+          "matched_controls_quiet": true,
+          "positive_persistence_supported_both_6sigma_directions": false,
+          "synthetic_controls_pass": true,
+          "eligible_for_further_operational_validation": false,
+          "decision": "not_promoted_insufficient_injection_or_synthetic_support"
+        },
+        {
+          "confirmation_h": 128.0,
+          "passes_5pct_series_alarm_screen": true,
+          "triggered_series_negative_3sigma": 0,
+          "triggered_series_positive_3sigma": 0,
+          "triggered_series_negative_6sigma": 0,
+          "triggered_series_positive_6sigma": 2,
+          "minimum_6sigma_direction_support": 0,
+          "minimum_required_6sigma_direction_support": 10,
+          "adequate_injection_support": false,
+          "trigger_time_consistency": true,
+          "matched_controls_quiet": true,
+          "positive_persistence_supported_both_6sigma_directions": false,
+          "synthetic_controls_pass": false,
+          "eligible_for_further_operational_validation": false,
+          "decision": "not_promoted_insufficient_injection_or_synthetic_support"
+        }
+      ],
+      "promotion": "not_automatic"
+    }
+  },
+  "artifact": {
+    "id": "14162074726",
+    "digest": "f77d437d577db0fc5ae562707c1537e7a4589f9627c1c9ef8c479d7dfa0aec86",
+    "url": "https://github.com/uniqueteamyemen/CHAOS/actions/runs/43717918644/artifacts/14162074726"
+  },
+  "resume_rule": "Skip only when status=completed and the current declared input fingerprint exactly matches this checkpoint."
+}
