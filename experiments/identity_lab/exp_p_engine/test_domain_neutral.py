@@ -170,6 +170,15 @@ class ObservationContractTests(unittest.TestCase):
         )
         self.assertEqual(result["signal_count"], 0)
 
+
+    def test_missingness_spike_rejects_mixed_entity_or_metric_input(self):
+        rows = [
+            {"entity_id": "e1", "metric_id": "m", "event_time": "2024", "observation_status": "observed"},
+            {"entity_id": "e2", "metric_id": "m", "event_time": "2025", "observation_status": "missing"},
+        ]
+        with self.assertRaisesRegex(ValueError, "one_entity_metric"):
+            detect_missingness_spikes(rows, ["2024", "2025"])
+
     def test_duplicate_entity_metric_time_is_rejected(self):
         rows = [
             {"id": "e1", "metric": "m", "year": "2024", "value": "1"},
@@ -328,6 +337,8 @@ class CohortTests(unittest.TestCase):
                 "event_time": "2025-01",
                 "value": value,
                 "exposure": exposure,
+                "exposure_unit": "hours",
+                "unit": "cases",
                 "observation_status": "observed",
                 "cohort_id": "branch-role-season",
             })
@@ -336,6 +347,15 @@ class CohortTests(unittest.TestCase):
         self.assertEqual(outlier["value_basis"], "value_per_exposure")
         self.assertEqual(outlier["peer_expected"], 10.0)
         self.assertEqual(outlier["peer_residual"], 20.0)
+
+
+    def test_exposure_normalization_requires_a_declared_unit(self):
+        rows = [{
+            "entity_id": "e1", "metric_id": "output", "event_time": "2025-01",
+            "value": 10, "exposure": 2, "observation_status": "observed",
+            "cohort_id": "cohort-A",
+        }]
+        self.assertEqual(cohort_peer_residuals(rows, use_exposure=True), [])
 
     def test_missing_cohort_does_not_trigger_guessed_peer_group(self):
         rows = [{
