@@ -45,6 +45,7 @@ def main() -> None:
                 "metric_id": "completed_cases_per_period",
                 "event_time": event_time,
                 "value": value,
+                "unit": "cases",
                 "observation_status": "observed",
                 "cohort_id": "branch-role-season-" + str(cohort_index),
                 "exposure": exposure,
