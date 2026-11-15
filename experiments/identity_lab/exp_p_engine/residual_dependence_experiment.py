@@ -44,11 +44,13 @@ OUTPUT = (
     / "results" / "domain_neutral_residual_dependence.json"
 )
 
-TRAINING_END = "2014"
-EVALUATION_START = "2015"
-NULL_CALIBRATION_END = "2018"
-INJECTION_ONSET = "2019"
-MIN_POST_INJECTION_PERIODS = 5
+TRAINING_END = "2013"
+EVALUATION_START = "2014"
+NULL_CALIBRATION_END = "2020"
+INJECTION_ONSET = "2021"
+MIN_POST_INJECTION_PERIODS = 4
+DETECTION_HORIZON_YEARS = 3
+MIN_NULL_SEGMENT_LENGTH = 5
 BASELINE_WINDOW = 8
 MIN_HISTORY = 8
 BOOTSTRAP_REPLICATES = 1000
@@ -800,11 +802,15 @@ def _first_hit_summary(
     else:
         raise ValueError("detector_type_unsupported")
     first = first_evidence_at_or_after(hits, onset)
+    delay = _time_delta(onset, first["event_time"]) if first else None
     return {
         "detected": first is not None,
+        "detected_within_3_years": (
+            delay is not None and delay <= DETECTION_HORIZON_YEARS
+        ),
         "direction": first["direction"] if first else None,
         "first_evidence_time": first["event_time"] if first else None,
-        "delay_years": _time_delta(onset, first["event_time"]) if first else None,
+        "delay_years": delay,
     }
 
 
@@ -824,8 +830,16 @@ def _response_grid_for_stream(
             **dict(params),
             "injected_detected": inj["detected"],
             "control_detected": ctl["detected"],
+            "injected_detected_within_3_years": inj["detected_within_3_years"],
+            "control_detected_within_3_years": ctl["detected_within_3_years"],
             "incremental_detection": inj["detected"] and not ctl["detected"],
             "control_only_detection": ctl["detected"] and not inj["detected"],
+            "incremental_detection_within_3_years": (
+                inj["detected_within_3_years"] and not ctl["detected_within_3_years"]
+            ),
+            "control_only_detection_within_3_years": (
+                ctl["detected_within_3_years"] and not inj["detected_within_3_years"]
+            ),
             "injected_direction": inj["direction"],
             "control_direction": ctl["direction"],
             "injected_delay_years": inj["delay_years"],
@@ -837,8 +851,16 @@ def _response_grid_for_stream(
             **dict(params),
             "injected_detected": inj["detected"],
             "control_detected": ctl["detected"],
+            "injected_detected_within_3_years": inj["detected_within_3_years"],
+            "control_detected_within_3_years": ctl["detected_within_3_years"],
             "incremental_detection": inj["detected"] and not ctl["detected"],
             "control_only_detection": ctl["detected"] and not inj["detected"],
+            "incremental_detection_within_3_years": (
+                inj["detected_within_3_years"] and not ctl["detected_within_3_years"]
+            ),
+            "control_only_detection_within_3_years": (
+                ctl["detected_within_3_years"] and not inj["detected_within_3_years"]
+            ),
             "injected_direction": inj["direction"],
             "control_direction": ctl["direction"],
             "injected_delay_years": inj["delay_years"],
@@ -1230,8 +1252,12 @@ def compare_screened_injection_recall(
                 params = dict(parameter_key)
                 raw_detected: list[float] = []
                 white_detected: list[float] = []
+                raw_detected_3yr: list[float] = []
+                white_detected_3yr: list[float] = []
                 raw_control: list[float] = []
                 white_control: list[float] = []
+                raw_control_3yr: list[float] = []
+                white_control_3yr: list[float] = []
                 raw_correct: list[float] = []
                 white_correct: list[float] = []
                 raw_delays: list[float] = []
@@ -1245,8 +1271,12 @@ def compare_screened_injection_recall(
                     expected_direction = "positive" if scenario.startswith("positive") else "negative"
                     raw_detected.append(float(bool(raw_hit["injected_detected"])))
                     white_detected.append(float(bool(white_hit["injected_detected"])))
+                    raw_detected_3yr.append(float(bool(raw_hit["injected_detected_within_3_years"])))
+                    white_detected_3yr.append(float(bool(white_hit["injected_detected_within_3_years"])))
                     raw_control.append(float(bool(raw_hit["control_detected"])))
                     white_control.append(float(bool(white_hit["control_detected"])))
+                    raw_control_3yr.append(float(bool(raw_hit["control_detected_within_3_years"])))
+                    white_control_3yr.append(float(bool(white_hit["control_detected_within_3_years"])))
                     raw_correct.append(float(
                         bool(raw_hit["injected_detected"])
                         and raw_hit.get("injected_direction") == expected_direction
@@ -1265,6 +1295,18 @@ def compare_screened_injection_recall(
                     continue
                 recall_delta = [
                     white_detected[i] - raw_detected[i] for i in range(n)
+                ]
+                recall_delta_3yr = [
+                    white_detected_3yr[i] - raw_detected_3yr[i] for i in range(n)
+                ]
+                raw_net_3yr = [
+                    raw_detected_3yr[i] - raw_control_3yr[i] for i in range(n)
+                ]
+                white_net_3yr = [
+                    white_detected_3yr[i] - white_control_3yr[i] for i in range(n)
+                ]
+                net_delta_3yr = [
+                    white_net_3yr[i] - raw_net_3yr[i] for i in range(n)
                 ]
                 raw_net = [
                     raw_detected[i] - raw_control[i] for i in range(n)
@@ -1288,12 +1330,20 @@ def compare_screened_injection_recall(
                     "prewhitened_injected_detection_rate": statistics.mean(white_detected),
                     "recall_difference_innovation_minus_raw": statistics.mean(recall_delta),
                     "recall_difference_ci95": bootstrap_ci(recall_delta, seed=stable_seed),
+                    "raw_injected_detection_rate_within_3_years": statistics.mean(raw_detected_3yr),
+                    "prewhitened_injected_detection_rate_within_3_years": statistics.mean(white_detected_3yr),
+                    "recall_difference_3yr_innovation_minus_raw": statistics.mean(recall_delta_3yr),
+                    "recall_difference_3yr_ci95": bootstrap_ci(recall_delta_3yr, seed=stable_seed + 2),
                     "raw_control_detection_rate": statistics.mean(raw_control),
                     "prewhitened_control_detection_rate": statistics.mean(white_control),
                     "raw_net_detection_gain": statistics.mean(raw_net),
                     "prewhitened_net_detection_gain": statistics.mean(white_net),
                     "net_detection_gain_difference_innovation_minus_raw": statistics.mean(net_delta),
                     "net_detection_gain_difference_ci95": bootstrap_ci(net_delta, seed=stable_seed + 1),
+                    "raw_net_detection_gain_within_3_years": statistics.mean(raw_net_3yr),
+                    "prewhitened_net_detection_gain_within_3_years": statistics.mean(white_net_3yr),
+                    "net_detection_gain_difference_3yr_innovation_minus_raw": statistics.mean(net_delta_3yr),
+                    "net_detection_gain_difference_3yr_ci95": bootstrap_ci(net_delta_3yr, seed=stable_seed + 3),
                     "raw_correct_direction_rate": statistics.mean(raw_correct),
                     "prewhitened_correct_direction_rate": statistics.mean(white_correct),
                     "raw_median_detection_delay_years": statistics.median(raw_delays) if raw_delays else None,
@@ -1375,25 +1425,35 @@ def run_source() -> dict[str, Any]:
 
         # Both streams use identical detector grids, sample support, restart
         # probabilities and upper-95% per-series alarm gate.
-        raw_null_rows = [
+        raw_null_candidates = [
             row for row in matched_raw
             if year_number(row["event_time"]) <= year_number(NULL_CALIBRATION_END)
         ]
-        white_null_rows = [
+        white_null_candidates = [
             row for row in matched_white
             if year_number(row["event_time"]) <= year_number(NULL_CALIBRATION_END)
         ]
+        (
+            matched_null_raw,
+            matched_null_white,
+            null_calibration_series_count,
+            null_calibration_ready_periods,
+        ) = _matched_evaluation_streams(
+            raw_null_candidates,
+            white_null_candidates,
+            min_segment_length=MIN_NULL_SEGMENT_LENGTH,
+        )
         raw_null = calibrate_prewhitened_null(
-            raw_null_rows,
+            matched_null_raw,
             cusum_grid=RAW_CUSUM_GRID,
             p1_grid=RAW_P1_GRID,
-            min_segment_length=2,
+            min_segment_length=MIN_NULL_SEGMENT_LENGTH,
         )
         innovation_null = calibrate_prewhitened_null(
-            white_null_rows,
+            matched_null_white,
             cusum_grid=INNOVATION_CUSUM_GRID,
             p1_grid=INNOVATION_P1_GRID,
-            min_segment_length=2,
+            min_segment_length=MIN_NULL_SEGMENT_LENGTH,
         )
 
         raw_signals = summarize_detector_hits(
@@ -1462,12 +1522,26 @@ def run_source() -> dict[str, Any]:
         },
         "matched_series_count": matched_series_count,
         "matched_ready_periods": matched_ready_periods,
+        "null_calibration_matched_series_count": (
+            null_calibration_series_count if calibration["status"] == "ok" else 0
+        ),
+        "null_calibration_matched_ready_periods": (
+            null_calibration_ready_periods if calibration["status"] == "ok" else 0
+        ),
         "temporal_split": {
             "dependence_training_end": TRAINING_END,
             "null_calibration_start": EVALUATION_START,
             "null_calibration_end": NULL_CALIBRATION_END,
             "controlled_injection_onset": INJECTION_ONSET,
             "minimum_post_injection_periods": MIN_POST_INJECTION_PERIODS,
+            "minimum_contiguous_null_segment_length": MIN_NULL_SEGMENT_LENGTH,
+            "three_year_detection_horizon_end": str(
+                year_number(INJECTION_ONSET) + DETECTION_HORIZON_YEARS
+            ),
+            "three_year_recall_definition": (
+                "A detection is within three years when first evidence is no later "
+                "than onset_year + 3; the total evaluation endpoint remains 2024."
+            ),
         },
         "historical_signal_profile": {
             "raw_residuals": raw_signals,
@@ -1482,8 +1556,10 @@ def run_source() -> dict[str, Any]:
         "interpretation": (
             "Raw residuals and prewhitened innovations are evaluated on the same "
             "entity/metric cohort with identical detector grids, stationary-bootstrap "
-            "restart probabilities and upper-95% 5% series-alarm screen. This is an "
-            "empirical candidate screen, not a verified production false-alarm "
+            "restart probabilities and upper-95% 5% series-alarm screen. Null "
+            "calibration uses only series with at least five contiguous ready periods. "
+            "Recall is reported both within three years and through the 2024 endpoint. "
+            "This is an empirical candidate screen, not a verified production false-alarm "
             "guarantee. Persistent-shift injections are controlled simulations."
         ),
     }

@@ -226,7 +226,7 @@ class ResidualDependenceTests(unittest.TestCase):
             restart_probabilities=(0.25, 0.35),
             cusum_grid=({"k": 0.5, "h": 8.5},),
             p1_grid=({"threshold": 3.0, "run_length": 3},),
-            min_segment_length=2,
+            min_segment_length=5,
         )
         self.assertEqual(report["status"], "ok")
         self.assertEqual(report["restart_probabilities"], [0.25, 0.35])
@@ -351,11 +351,48 @@ class ResidualDependenceTests(unittest.TestCase):
         statuses = [[row["status"] for row in stream] for stream in aligned]
         self.assertTrue(all(value[1] == "gap_unresolved" for value in statuses))
 
-    def test_injection_onset_is_fixed_after_null_window(self):
-        self.assertEqual(fixed_injection_onset(list(range(2015, 2025))), 2019)
+    def test_injection_onset_is_fixed_after_longer_null_window(self):
+        self.assertEqual(fixed_injection_onset(list(range(2014, 2025))), 2021)
         self.assertIsNone(
-            fixed_injection_onset([2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022])
+            fixed_injection_onset(list(range(2014, 2024)))
         )
+
+    def test_detection_horizon_marks_first_evidence_through_year_three(self):
+        rows = []
+        for year, z in ((2021, 0.2), (2022, 0.2), (2023, 0.2), (2024, 3.5), (2025, 0.1)):
+            rows.append({
+                "entity_id": "entity-horizon",
+                "metric_id": "metric",
+                "event_time": str(year),
+                "observed_value": z,
+                "expected_value": 0.0,
+                "residual": z,
+                "scale": 1.0,
+                "z_score": z,
+                "status": "ready",
+                "baseline_id": "horizon-baseline",
+                "baseline_method": "test",
+                "support_count": 8,
+                "unit": "standardized",
+            })
+        within = _first_hit_summary(
+            rows, onset="2021", detector="sign_run",
+            parameters={"threshold": 3.0, "run_length": 1},
+        )
+        self.assertEqual(within["delay_years"], 3.0)
+        self.assertTrue(within["detected_within_3_years"])
+
+        late_rows = [dict(row) for row in rows]
+        late_rows[-2]["z_score"] = 0.1
+        late_rows[-2]["observed_value"] = 0.1
+        late_rows[-1]["z_score"] = 3.5
+        late_rows[-1]["observed_value"] = 3.5
+        late = _first_hit_summary(
+            late_rows, onset="2021", detector="sign_run",
+            parameters={"threshold": 3.0, "run_length": 1},
+        )
+        self.assertEqual(late["delay_years"], 4.0)
+        self.assertFalse(late["detected_within_3_years"])
 
     def test_paired_screened_recall_reports_entity_bootstrap_interval(self):
         null = {
