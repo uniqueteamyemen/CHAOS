@@ -695,6 +695,7 @@ def run_experiment(
                         time_unit=time_unit,
                         suspicion_z=suspicion_z,
                         suspicion_run=suspicion_run,
+                        freeze_trigger_after_time=onset,
                     )
                     response = _detector_response(
                         injected_residuals,
@@ -862,14 +863,14 @@ def main() -> None:
             world_bank_source,
             time_unit="years",
             suspicion_z=SUSPICION_Z,
-            suspicion_run=1,
+            suspicion_run=SUSPICION_RUN,
         ),
         "usgs": run_experiment(
             "USGS global M6.5+ monthly event counts",
             read_usgs_monthly(),
             time_unit="months",
             suspicion_z=SUSPICION_Z,
-            suspicion_run=1,
+            suspicion_run=SUSPICION_RUN,
         ),
         "promotion": "not_automatic",
     }
