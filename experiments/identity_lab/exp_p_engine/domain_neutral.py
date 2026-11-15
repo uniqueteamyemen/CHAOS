@@ -197,6 +197,9 @@ def missing_periods(
     expected_times: Sequence[str],
 ) -> dict[str, Any]:
     """Report explicit missing observations and absent expected periods separately."""
+    identities = {(row.get("entity_id"), row.get("metric_id")) for row in observations}
+    if len(identities) > 1:
+        raise ValueError("missing_periods_requires_one_entity_metric")
     observed_times = {
         _parse_time(row["event_time"]).isoformat()
         for row in observations
@@ -490,6 +493,11 @@ def build_univariate_residuals(
             expected = statistics.median(float(row["value"]) for row in history)
         observed = float(series[index]["value"])
         ready = scale["status"] == "ok" and scale["value"] is not None
+        observation_gap = (
+            _time_number(series[index]["event_time"], time_unit)
+            - _time_number(history[-1]["event_time"], time_unit)
+        )
+        gap_unresolved = observation_gap > 1.02
         residual = observed - expected
         residual_rows.append({
             "entity_id": series[index]["entity_id"],
@@ -499,8 +507,13 @@ def build_univariate_residuals(
             "expected": expected,
             "residual": residual,
             "scale": scale["value"],
-            "z_score": residual / scale["value"] if ready else None,
-            "status": "ready" if ready else "scale_unavailable",
+            "z_score": residual / scale["value"] if ready and not gap_unresolved else None,
+            "status": (
+                "gap_unresolved" if gap_unresolved
+                else "ready" if ready
+                else "scale_unavailable"
+            ),
+            "observation_gap_units": observation_gap,
             "baseline_method": "prequential_" + baseline_method,
             "baseline_support": len(history),
             "scale_method": scale["method"],
