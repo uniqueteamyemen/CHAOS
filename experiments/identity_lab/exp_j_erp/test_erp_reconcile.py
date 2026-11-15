@@ -138,6 +138,53 @@ class CounterpartTests(unittest.TestCase):
         self.assertTrue(result["confirmed"])
         self.assertIn("loss", result["issues"])
 
+    def test_loss_classification_threshold_is_independent_of_candidate_tolerance(self):
+        receipts = [{
+            "source_picking_id": "OUT-7", "counterpart_picking_id": "IN-THRESHOLD",
+            "product_id": "P1", "counterpart_qty": "29.4", "counterpart_uom_id": "uom_unit",
+            "product_uom_category_id": "unit", "counterpart_date": "2025-01-02",
+            "counterpart_system": "receiving_wms", "counterpart_source": "signed_receipt.pdf",
+            "recorded_at": "2025-01-02T10:00:00", "location_id": "B",
+        }]
+        result = match_counterpart_receipts(
+            self.shipment, receipts, UOMS,
+            quantity_tolerance=Decimal("0.75"),
+            loss_classification_threshold=Decimal("0.5"),
+        )[0]
+        self.assertTrue(result["confirmed"])
+        self.assertIn("loss", result["issues"])
+
+    def test_loss_threshold_boundary_is_strict(self):
+        receipts = [{
+            "source_picking_id": "OUT-7", "counterpart_picking_id": "IN-BOUNDARY",
+            "product_id": "P1", "counterpart_qty": "29.5", "counterpart_uom_id": "uom_unit",
+            "product_uom_category_id": "unit", "counterpart_date": "2025-01-02",
+            "counterpart_system": "receiving_wms", "counterpart_source": "signed_receipt.pdf",
+            "recorded_at": "2025-01-02T10:00:00", "location_id": "B",
+        }]
+        result = match_counterpart_receipts(
+            self.shipment, receipts, UOMS,
+            quantity_tolerance=Decimal("0.75"),
+            loss_classification_threshold=Decimal("0.5"),
+        )[0]
+        self.assertTrue(result["confirmed"])
+        self.assertNotIn("loss", result["issues"])
+
+    def test_omitted_loss_threshold_preserves_legacy_single_tolerance_behavior(self):
+        receipts = [{
+            "source_picking_id": "OUT-7", "counterpart_picking_id": "IN-LEGACY",
+            "product_id": "P1", "counterpart_qty": "29.4", "counterpart_uom_id": "uom_unit",
+            "product_uom_category_id": "unit", "counterpart_date": "2025-01-02",
+            "counterpart_system": "receiving_wms", "counterpart_source": "signed_receipt.pdf",
+            "recorded_at": "2025-01-02T10:00:00", "location_id": "B",
+        }]
+        result = match_counterpart_receipts(
+            self.shipment, receipts, UOMS,
+            quantity_tolerance=Decimal("0.75"),
+        )[0]
+        self.assertTrue(result["confirmed"])
+        self.assertNotIn("loss", result["issues"])
+
     def test_approximate_unique_is_never_confirmed_or_loss(self):
         receipts = [{
             "counterpart_picking_id": "IN-91", "product_id": "P1",
@@ -245,6 +292,46 @@ class CounterpartTests(unittest.TestCase):
         result = match_counterpart_receipts(self.shipment, receipts, UOMS)[0]
         self.assertEqual(result["state"], "approximate_unique")
         self.assertFalse(result["confirmed"])
+
+
+class MovementGroupIdentityTests(unittest.TestCase):
+    """Regression for the duplicate-group defect: one picking, one product, two
+    source documents must stay two groups, and a picking-level receipt must not
+    arbitrarily confirm one of them."""
+
+    def moves(self):
+        base = {"product_id": "P1", "quantity": "12", "product_uom": "uom_unit",
+                "product_uom_category_id": "unit",
+                "state": "done", "location_id": "WH", "location_dest_id": "SHOP",
+                "date": "2025-01-01"}
+        return [dict(base, id=1, picking_id="OUT-1", reference="DOC-A"),
+                dict(base, id=2, picking_id="OUT-1", reference="DOC-B")]
+
+    def receipts(self):
+        return [{"source_picking_id": "OUT-1", "counterpart_picking_id": "IN-1",
+                 "product_id": "P1", "counterpart_qty": "12",
+                 "counterpart_uom_id": "uom_unit", "product_uom_category_id": "unit",
+                 "counterpart_date": "2025-01-02", "counterpart_system": "receiver",
+                 "counterpart_source": "receipt", "recorded_at": "2025-01-02T10:00:00",
+                 "location_id": "SHOP"}]
+
+    def test_two_references_produce_two_stable_group_ids(self):
+        aggregated, _ = aggregate_moves(self.moves(), UOMS)
+        self.assertEqual(len(aggregated), 2)
+        ids = {r["movement_group_id"] for r in aggregated}
+        self.assertEqual(len(ids), 2)
+        # stability: the same input yields the same ids
+        again, _ = aggregate_moves(self.moves(), UOMS)
+        self.assertEqual({r["movement_group_id"] for r in again}, ids)
+
+    def test_picking_level_receipt_cannot_pick_one_group(self):
+        aggregated, _ = aggregate_moves(self.moves(), UOMS)
+        results = match_counterpart_receipts(aggregated, self.receipts(), UOMS)
+        self.assertEqual(len(results), 2)
+        for r in results:
+            self.assertEqual(r["state"], "ambiguous")
+            self.assertFalse(r["confirmed"])
+            self.assertEqual(r["reason"], "duplicate_movement_group_identity")
 
 
 if __name__ == "__main__":

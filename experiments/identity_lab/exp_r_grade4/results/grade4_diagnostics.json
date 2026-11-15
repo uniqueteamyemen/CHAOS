@@ -1,0 +1,38 @@
+{
+  "data": {"weeks": 617, "detect_weeks": 513, "years": 9.9},
+  "seasonality": {
+    "F": 1.21,
+    "n": 513,
+    "months": 12,
+    "note": "F below the ~1.79 critical value is absence of evidence, not evidence of absence"
+  },
+  "production_engine_noise_regime": {
+    "P1_quiet_sigma_gate_factor": 1.5,
+    "P1_quiet_sigma_gate_threshold": 2053.7717,
+    "P1_high_noise_periods": 401,
+    "CUSUM_variance_transition_ratio": 1.2,
+    "CUSUM_suspended_periods": 142,
+    "first_suspended_date": "2015-05-01",
+    "last_suspended_date": "2026-05-08"
+  },
+  "variants": {
+    "R_frozen_bias_frozen_sigma": {"alarms": 39, "per_year": 3.95, "aligned_within_60d": 7, "injected_3sigma_seen_after_adaptation": 42, "injected_6sigma_seen_after_adaptation": 100},
+    "P_frozen_bias_rolling_sigma_capped": {"alarms": 14, "per_year": 1.42, "aligned_within_60d": 3, "injected_3sigma_seen_after_adaptation": 15, "injected_6sigma_seen_after_adaptation": 55},
+    "P_engine_CUSUM_noise_gated": {"alarms": 2, "per_year": 0.2, "aligned_within_60d": 0, "injected_3sigma_seen_after_adaptation": 2, "injected_6sigma_seen_after_adaptation": 16},
+    "P_engine_sign_run": {"alarms": 1, "per_year": 0.1, "aligned_within_60d": 0, "injected_3sigma_seen_after_adaptation": 0, "injected_6sigma_seen_after_adaptation": 6},
+    "diagnostic_rolling_bias_rolling_sigma": {"alarms": 12, "per_year": 1.22, "aligned_within_60d": 2, "injected_3sigma_seen_after_adaptation": 0, "injected_6sigma_seen_after_adaptation": 0}
+  },
+  "injection": {
+    "at_week": 300,
+    "tested_amount_sigmas": [3.0, 6.0],
+    "post_adaptation_weeks": 130,
+    "note": "injected into a copy; the source series is unchanged"
+  },
+  "acceptance": {
+    "P1_detects_6sigma_after_adaptation": true,
+    "P1_detects_3sigma_after_adaptation": false,
+    "CUSUM_detects_3sigma_after_adaptation": true,
+    "overall": "supported",
+    "interpretation": "The combined production P engine detects a 3-sigma quiet shift through CUSUM and a 6-sigma shift through P1 after adaptation; P1 alone does not claim 3-sigma sensitivity."
+  }
+}

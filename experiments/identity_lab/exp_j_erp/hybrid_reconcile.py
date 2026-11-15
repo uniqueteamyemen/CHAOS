@@ -170,20 +170,36 @@ def match_hybrid(
         relation_id(r.get("counterpart_picking_id")) for r in receipts
         if relation_id(r.get("counterpart_picking_id"))
     )
-    links: dict[str, list[Mapping]] = defaultdict(list)
+    links: dict[tuple, list[Mapping]] = defaultdict(list)
     for receipt in receipts:
         source = relation_id(receipt.get("source_picking_id"))
         if source:
-            links[source].append(receipt)
+            links[(source, relation_id(receipt.get("product_id")))].append(receipt)
 
-    shipment_ids = [relation_id(s.get("picking_id")) for s in shipments]
-    shipment_id_counts = Counter(x for x in shipment_ids if x)
-    linked_owners: dict[str, set[str]] = defaultdict(set)
+    # Reject a link for a product no line of this picking carries; a link for
+    # another line's product is that line's evidence, not a conflict.
+    product_sets: dict[str, set[str]] = defaultdict(set)
+    for s in shipments:
+        product_sets[relation_id(s.get("picking_id"))].add(relation_id(s.get("product_id")))
+    linked_by_picking: dict[str, list[Mapping]] = defaultdict(list)
+    for receipt in receipts:
+        source = relation_id(receipt.get("source_picking_id"))
+        if source:
+            linked_by_picking[source].append(receipt)
+
+    # Identity is the product line, not the picking: one picking may carry several
+    # products, and each line has its own counterpart receipt.
+    shipment_keys = [
+        (relation_id(s.get("picking_id")), relation_id(s.get("product_id")))
+        for s in shipments
+    ]
+    shipment_key_counts = Counter(k for k in shipment_keys if k[0])
+    linked_owners: dict[str, set[tuple]] = defaultdict(set)
     for receipt in receipts:
         rid = relation_id(receipt.get("counterpart_picking_id"))
         source = relation_id(receipt.get("source_picking_id"))
         if rid and source:
-            linked_owners[rid].add(source)
+            linked_owners[rid].add((source, relation_id(receipt.get("product_id"))))
 
     # Reserve every receipt explicitly linked to an in-scope shipment before
     # approximate discovery. Otherwise an earlier shipment could claim a receipt
@@ -194,11 +210,13 @@ def match_hybrid(
         if relation_id(r.get("source_picking_id"))
         and relation_id(r.get("counterpart_picking_id"))
     }
-    candidate_cache: dict[str, list[dict]] = {}
-    candidate_owners: dict[str, set[str]] = defaultdict(set)
+    candidate_cache: dict[tuple, list[dict]] = {}
+    candidate_owners: dict[str, set[tuple]] = defaultdict(set)
     for candidate_shipment in shipments:
         candidate_sid = relation_id(candidate_shipment.get("picking_id"))
-        if not candidate_sid or links.get(candidate_sid):
+        candidate_pid = relation_id(candidate_shipment.get("product_id"))
+        candidate_key = (candidate_sid, candidate_pid)
+        if not candidate_sid or links.get(candidate_key):
             continue
         try:
             _decimal(candidate_shipment.get("quantity", "0"), "shipment_quantity_invalid")
@@ -209,16 +227,16 @@ def match_hybrid(
             candidate_quantity_tolerance_absolute,
             candidate_quantity_tolerance_relative, reserved_receipt_ids,
         )
-        candidate_cache[candidate_sid] = found
+        candidate_cache[candidate_key] = found
         for candidate in found:
-            candidate_owners[candidate["receipt_id"]].add(candidate_sid)
+            candidate_owners[candidate["receipt_id"]].add(candidate_key)
 
     used_receipt_ids: set[str] = set()
     results: list[dict] = []
     for shipment in shipments:
         sid = relation_id(shipment.get("picking_id"))
         pid = relation_id(shipment.get("product_id"))
-        if not sid or shipment_id_counts[sid] != 1:
+        if not sid or shipment_key_counts[(sid, pid)] != 1:
             results.append({"picking_id": sid, "product_id": pid,
                             "state": "ambiguous", "confirmed": False,
                             "reason": "shipment_identity_missing_or_duplicated",
@@ -231,7 +249,20 @@ def match_hybrid(
                             "state": "ambiguous", "confirmed": False,
                             "reason": exc.code, "candidate_receipt_ids": []})
             continue
-        linked = links.get(sid, [])
+        foreign = [
+            r for r in linked_by_picking.get(sid, [])
+            if relation_id(r.get("product_id")) not in product_sets.get(sid, set())
+        ]
+        if foreign:
+            results.append({
+                "picking_id": sid, "product_id": pid,
+                "state": "ambiguous", "confirmed": False,
+                "reason": "explicit_link_conflict_or_receipt_reuse",
+                "candidate_receipt_ids": [
+                    relation_id(r.get("counterpart_picking_id")) for r in foreign],
+            })
+            continue
+        linked = links.get((sid, pid), [])
         if linked:
             linked_products = {relation_id(r.get("product_id")) for r in linked}
             linked_locations = {relation_id(r.get("location_id")) for r in linked}
@@ -297,7 +328,7 @@ def match_hybrid(
             })
             continue
 
-        candidates = candidate_cache.get(sid, [])
+        candidates = candidate_cache.get((sid, pid), [])
         shared_candidate = (
             len(candidates) == 1
             and len(candidate_owners[candidates[0]["receipt_id"]]) > 1
@@ -317,4 +348,11 @@ def match_hybrid(
             "candidate_details": candidates, "reason": reason,
             "issues": [], "loss_claim": False,
         })
+    # The matcher emits exactly one result per input shipment, in input order.
+    # Preserve group identity positionally: (picking, product) is deliberately
+    # non-unique when one picking/product has multiple movement groups.
+    if len(results) != len(shipments):
+        raise RuntimeError("hybrid_result_cardinality_mismatch")
+    for shipment, result in zip(shipments, results):
+        result["movement_group_id"] = shipment.get("movement_group_id")
     return results

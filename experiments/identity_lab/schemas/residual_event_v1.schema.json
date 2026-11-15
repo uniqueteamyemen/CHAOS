@@ -2,7 +2,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "CHAOS_RESIDUAL_EVENT_V1",
   "title": "CHAOS Residual Event V1",
-  "description": "The missing twin of TRANSITION_EVIDENCE. It records a break of a frozen identity, never a probability of a state. No event is actionable without an attributed term and an identity version.",
+  "description": "The missing twin of TRANSITION_EVIDENCE. It records a break of a frozen identity, never a probability of a state. No event is actionable without an attributed term and an identity version. This file also defines the minimal domain-neutral observation contract at #/definitions/observation; the legacy residual-event root contract remains unchanged. The shared domain-neutral residual output contract is available at #/definitions/residual.",
   "type": "object",
   "required": [
     "event_id",
@@ -142,6 +142,414 @@
       "items": {
         "type": "string"
       }
+    }
+  },
+  "definitions": {
+    "observation": {
+      "title": "CHAOS Observation Contract V1",
+      "description": "Minimal domain-neutral input record. The five required fields are sufficient; metadata remains optional and explicitly absent when unavailable.",
+      "type": "object",
+      "required": [
+        "entity_id",
+        "metric_id",
+        "event_time",
+        "value",
+        "observation_status"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "entity_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "metric_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "event_time": {
+          "type": "string",
+          "minLength": 4,
+          "description": "ISO 8601 date/time or native year/month label; interpreted using metric time semantics."
+        },
+        "value": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "observation_status": {
+          "enum": [
+            "observed",
+            "missing",
+            "not_applicable",
+            "pending",
+            "invalid"
+          ]
+        },
+        "unit": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "cohort_id": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Explicit time-valid cohort key; never inferred by the detector."
+        },
+        "source_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "source_version": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "time_support": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Instant, event, annual period, monthly period, or another declared support."
+        },
+        "quality_metadata": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "additionalProperties": true
+        },
+        "expected_value": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "residual": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "scale": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "exclusiveMinimum": 0
+        },
+        "uncertainty": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "baseline_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "baseline_method": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "support_count": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "coverage": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0,
+          "maximum": 1
+        },
+        "exposure": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0,
+          "description": "Optional workload denominator; required only by exposure-normalized peer comparisons."
+        },
+        "exposure_unit": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Unit for exposure such as hours, shifts, or eligible cases."
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "observation_status": {
+                "const": "observed"
+              }
+            },
+            "required": [
+              "observation_status"
+            ]
+          },
+          "then": {
+            "properties": {
+              "value": {
+                "type": "number"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "observation_status": {
+                "enum": [
+                  "missing",
+                  "not_applicable",
+                  "pending",
+                  "invalid"
+                ]
+              }
+            },
+            "required": [
+              "observation_status"
+            ]
+          },
+          "then": {
+            "properties": {
+              "value": {
+                "type": "null"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "residual": {
+      "title": "CHAOS Domain-Neutral Residual V1",
+      "description": "Canonical baseline output shared by univariate, peer/cohort and explicitly declared partial-relation builders. One row represents one entity, metric, event time and baseline.",
+      "type": "object",
+      "required": [
+        "entity_id",
+        "metric_id",
+        "event_time",
+        "observed_value",
+        "expected_value",
+        "residual",
+        "status",
+        "baseline_id",
+        "baseline_method",
+        "support_count"
+      ],
+      "properties": {
+        "entity_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "metric_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "event_time": {
+          "type": "string",
+          "minLength": 4
+        },
+        "observed_value": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "expected_value": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "residual": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "scale": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "exclusiveMinimum": 0
+        },
+        "z_score": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "status": {
+          "enum": [
+            "ready",
+            "gap_unresolved",
+            "scale_unavailable",
+            "peer_scale_unavailable",
+            "relation_scale_unavailable",
+            "relation_unidentifiable"
+          ]
+        },
+        "baseline_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "baseline_method": {
+          "type": "string",
+          "minLength": 1
+        },
+        "support_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "unit": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "cohort_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "exposure_unit": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "observation_gap_units": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "scale_method": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "scale_support": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "rho": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": -0.95,
+          "maximum": 0.95
+        },
+        "relationship_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "x_metric_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "y_metric_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "x_value": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "relationship_semantics": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "value_basis": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "raw_observed_value": {
+          "type": [
+            "number",
+            "null"
+          ]
+        }
+      },
+      "additionalProperties": true,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "const": "ready"
+              }
+            },
+            "required": [
+              "status"
+            ]
+          },
+          "then": {
+            "required": [
+              "scale",
+              "z_score"
+            ],
+            "properties": {
+              "observed_value": {
+                "type": "number"
+              },
+              "expected_value": {
+                "type": "number"
+              },
+              "residual": {
+                "type": "number"
+              },
+              "scale": {
+                "type": "number",
+                "exclusiveMinimum": 0
+              },
+              "z_score": {
+                "type": "number"
+              }
+            }
+          }
+        }
+      ]
     }
   }
 }

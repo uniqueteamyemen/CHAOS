@@ -1,0 +1,67 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "CHAOS_PRECURSOR_RULE_V1",
+  "title": "CHAOS Precursor Rule V1",
+  "description": "A break pattern that precedes a target event with a measured lead time and an invariance grade. No state probability appears outside the calibration block.",
+  "type": "object",
+  "required": [
+    "rule_id",
+    "break_identity",
+    "break_classification",
+    "target_event",
+    "lead_time_months",
+    "support",
+    "calibration",
+    "invariance_grade",
+    "adjudication"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "rule_id": { "type": "string" },
+    "break_identity": { "type": "string" },
+    "break_classification": { "type": "string" },
+    "target_event": { "type": "string" },
+    "lead_time_months": {
+      "type": "object",
+      "required": ["min", "median", "max"],
+      "additionalProperties": false,
+      "properties": {
+        "min": { "type": "number" },
+        "median": { "type": "number" },
+        "max": { "type": "number" }
+      }
+    },
+    "support": {
+      "type": "object",
+      "required": ["n_cases", "n_events", "n_warned", "n_breaks"],
+      "additionalProperties": false,
+      "properties": {
+        "n_cases": { "type": "integer" },
+        "n_events": { "type": "integer" },
+        "n_warned": { "type": "integer" },
+        "n_breaks": { "type": "integer" }
+      }
+    },
+    "calibration": {
+      "type": "object",
+      "required": ["warning_rate", "placebo_warning_rate", "false_alarm_rate", "placebo_false_alarm_rate"],
+      "additionalProperties": false,
+      "properties": {
+        "warning_rate": { "type": "number" },
+        "placebo_warning_rate": { "type": "number" },
+        "false_alarm_rate": { "type": "number" },
+        "placebo_false_alarm_rate": { "type": "number" }
+      }
+    },
+    "invariance_grade": { "type": "integer", "minimum": 0, "maximum": 4 },
+    "adjudication": {
+      "type": "object",
+      "required": ["status"],
+      "additionalProperties": false,
+      "properties": {
+        "status": { "enum": ["unreviewed", "supported", "rejected", "competing"] },
+        "note": { "type": ["string", "null"] }
+      }
+    }
+  }
+}
