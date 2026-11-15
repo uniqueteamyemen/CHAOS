@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import csv
 import json
+import random
 from collections import Counter, defaultdict
 from pathlib import Path
 from statistics import median
@@ -422,6 +423,85 @@ def summarize_injection_responses(
     return summary
 
 
+
+def monte_carlo_ar1_scale_validation(
+    *,
+    repetitions: int = 200,
+    sample_lengths: tuple[int, ...] = (12, 16, 24, 40),
+    rho_values: tuple[float, ...] = (0.30, 0.60, 0.85),
+    target_sigma: float = 2.0,
+) -> dict[str, Any]:
+    """Check rho/scale estimator stability at short series lengths with trend."""
+    seed = 20261115
+    rng = random.Random(seed)
+    results: dict[str, Any] = {}
+    for length in sample_lengths:
+        for true_rho in rho_values:
+            rho_estimates: list[float] = []
+            scale_estimates: list[float] = []
+            method_counts: Counter[str] = Counter()
+            for rep in range(repetitions):
+                innovation_sigma = target_sigma * (1.0 - true_rho * true_rho) ** 0.5
+                state = rng.gauss(0.0, target_sigma)
+                series = []
+                for index in range(length):
+                    state = true_rho * state + rng.gauss(0.0, innovation_sigma)
+                    value = 20.0 + 0.15 * index + state
+                    series.append({
+                        "entity_id": "ar1-sim",
+                        "metric_id": "metric",
+                        "event_time": str(2000 + index),
+                        "value": value,
+                        "observation_status": "observed",
+                    })
+                estimate = first_difference_mad_scale(
+                    series,
+                    time_unit="years",
+                    estimate_rho=True,
+                    min_adjacent_pairs_for_rho=14,
+                )
+                method_counts[estimate["method"]] += 1
+                if estimate.get("rho") is not None:
+                    rho_estimates.append(float(estimate["rho"]))
+                if estimate.get("value") is not None:
+                    scale_estimates.append(float(estimate["value"]))
+            rho_errors = [abs(value - true_rho) for value in rho_estimates]
+            scale_relative_errors = [
+                abs(value / target_sigma - 1.0) for value in scale_estimates
+            ]
+            key = f"n{length}_rho{true_rho:.2f}"
+            results[key] = {
+                "series_length": length,
+                "true_rho": true_rho,
+                "target_level_sigma": target_sigma,
+                "repetitions": repetitions,
+                "rho_estimates_available": len(rho_estimates),
+                "rho_estimate_coverage": len(rho_estimates) / repetitions,
+                "median_estimated_rho": median(rho_estimates) if rho_estimates else None,
+                "median_absolute_rho_error": median(rho_errors) if rho_errors else None,
+                "p90_absolute_rho_error": (
+                    sorted(rho_errors)[int(0.9 * (len(rho_errors) - 1))]
+                    if rho_errors else None
+                ),
+                "scale_estimates_available": len(scale_estimates),
+                "median_estimated_level_sigma": median(scale_estimates) if scale_estimates else None,
+                "median_absolute_relative_scale_error": (
+                    median(scale_relative_errors) if scale_relative_errors else None
+                ),
+                "scale_method_counts": dict(method_counts),
+                "interpretation": "Monte Carlo estimator stability, not a production threshold or real-source label",
+            }
+    return {
+        "seed": seed,
+        "repetitions_per_cell": repetitions,
+        "sample_lengths": list(sample_lengths),
+        "rho_values": list(rho_values),
+        "target_level_sigma": target_sigma,
+        "min_adjacent_pairs_for_rho": 14,
+        "trend_removed_before_rho_estimation": True,
+        "results": results,
+    }
+
 def run_source(
     name: str,
     entity_series: dict[str, list[dict[str, Any]]],
@@ -525,6 +605,7 @@ def main() -> None:
             }
             for item in BASELINE_CONFIGS
         ],
+        "scale_estimator_validation": monte_carlo_ar1_scale_validation(),
         "sources": {
             "world_bank": run_source(
                 "World Bank domestic credit to private sector (% GDP)",
