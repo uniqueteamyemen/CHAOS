@@ -7,6 +7,7 @@ from experiments.identity_lab.exp_sequential_break.b3_engine import (
 )
 from experiments.identity_lab.exp_sequential_break.benchmark_b3 import (
     generate_series,
+    summarize_trial_alerts,
     wilson_interval,
 )
 
@@ -92,6 +93,47 @@ class SequentialBreakEngineB3Tests(unittest.TestCase):
         lo, hi = wilson_interval(25, 500)
         self.assertLessEqual(lo, 0.05)
         self.assertGreaterEqual(hi, 0.05)
+
+    def test_transient_events_are_included_in_combined_any_alert_metrics(self):
+        result = {
+            "structural_breaks": [
+                {"detection_time": 72, "direction": 1},
+            ],
+            "transient_anomalies": [
+                {"time": 60},
+                {"time": 80},
+            ],
+        }
+        metrics = summarize_trial_alerts(result, boundary=65)
+        self.assertEqual(metrics["structural_events"], 1)
+        self.assertEqual(metrics["transient_events"], 2)
+        self.assertEqual(metrics["combined_events"], 3)
+        self.assertTrue(metrics["combined_sequence"])
+        self.assertEqual(metrics["pre_structural_events"], 0)
+        self.assertEqual(metrics["pre_transient_events"], 1)
+        self.assertEqual(metrics["pre_combined_events"], 1)
+        self.assertTrue(metrics["pre_combined_sequence"])
+        self.assertEqual(metrics["post_transient_events"], 1)
+
+    def test_combined_sequence_uses_union_not_event_sum(self):
+        result = {
+            "structural_breaks": [
+                {"detection_time": 80, "direction": 1},
+            ],
+            "transient_anomalies": [
+                {"time": 90},
+                {"time": 100},
+            ],
+        }
+        metrics = summarize_trial_alerts(result)
+        self.assertEqual(metrics["combined_events"], 3)
+        self.assertTrue(metrics["combined_sequence"])
+        # One trial is one alerted sequence, regardless of its event count.
+        self.assertEqual(int(metrics["combined_sequence"]), 1)
+
+    def test_wilson_interval_rejects_invalid_counts(self):
+        with self.assertRaisesRegex(ValueError, "successes_must"):
+            wilson_interval(6, 5)
 
 
 if __name__ == "__main__":

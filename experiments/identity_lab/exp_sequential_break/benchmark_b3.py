@@ -1,4 +1,10 @@
-"""Paired dev/holdout calibration for SequentialBreakEngine B-v3."""
+"""Paired dev/holdout calibration for SequentialBreakEngine B-v3.
+
+Instrumentation separates structural-break detections from transient-anomaly
+detections. The combined metric counts either channel as an emitted alert.
+Transient detections in pure-null cases are false alerts; in variance-jump
+cases they are reported separately because the variance regime genuinely changes.
+"""
 from __future__ import annotations
 
 import argparse
@@ -53,8 +59,6 @@ def build_cases() -> list[dict[str, Any]]:
                 }
             )
 
-    # Direction, shift magnitude, distribution, and serial dependence are
-    # crossed rather than testing weaker shifts at rho=0.7 only.
     for dist in ("gauss", "t3"):
         for rho in RHO_LEVELS:
             for magnitude in SHIFT_LEVELS:
@@ -109,6 +113,8 @@ def generate_series(
 def wilson_interval(successes: int, trials: int) -> list[float]:
     if trials <= 0:
         raise ValueError("trials_must_be_positive")
+    if not 0 <= successes <= trials:
+        raise ValueError("successes_must_be_between_zero_and_trials")
     z = 1.959963984540054
     p = successes / trials
     denom = 1.0 + z * z / trials
@@ -121,20 +127,103 @@ def wilson_interval(successes: int, trials: int) -> list[float]:
     return [round(max(0.0, center - half), 4), round(min(1.0, center + half), 4)]
 
 
+def summarize_trial_alerts(
+    result: dict[str, Any], *, boundary: int | None = None
+) -> dict[str, Any]:
+    """Classify emitted detections without conflating the two alert channels."""
+    breaks = list(result.get("structural_breaks", []))
+    transients = list(result.get("transient_anomalies", []))
+    metrics: dict[str, Any] = {
+        "structural_events": len(breaks),
+        "structural_sequence": bool(breaks),
+        "transient_events": len(transients),
+        "transient_sequence": bool(transients),
+        "combined_events": len(breaks) + len(transients),
+        "combined_sequence": bool(breaks or transients),
+        "pre_structural_events": 0,
+        "pre_structural_sequence": False,
+        "pre_transient_events": 0,
+        "pre_transient_sequence": False,
+        "pre_combined_events": 0,
+        "pre_combined_sequence": False,
+        "post_transient_events": 0,
+        "post_transient_sequence": False,
+    }
+    if boundary is not None:
+        pre_breaks = [b for b in breaks if int(b["detection_time"]) < boundary]
+        pre_transients = [a for a in transients if int(a["time"]) < boundary]
+        post_transients = [a for a in transients if int(a["time"]) >= boundary]
+        metrics.update(
+            {
+                "pre_structural_events": len(pre_breaks),
+                "pre_structural_sequence": bool(pre_breaks),
+                "pre_transient_events": len(pre_transients),
+                "pre_transient_sequence": bool(pre_transients),
+                "pre_combined_events": len(pre_breaks) + len(pre_transients),
+                "pre_combined_sequence": bool(pre_breaks or pre_transients),
+                "post_transient_events": len(post_transients),
+                "post_transient_sequence": bool(post_transients),
+            }
+        )
+    return metrics
+
+
 def _new_counts() -> dict[str, Any]:
     return {
-        "false_sequences": 0,
-        "false_events": 0,
-        "pre_sequences": 0,
-        "pre_events": 0,
+        "structural_sequences": 0,
+        "structural_events": 0,
+        "transient_sequences": 0,
+        "transient_events": 0,
+        "combined_sequences": 0,
+        "combined_events": 0,
+        "pre_structural_sequences": 0,
+        "pre_structural_events": 0,
+        "pre_transient_sequences": 0,
+        "pre_transient_events": 0,
+        "pre_combined_sequences": 0,
+        "pre_combined_events": 0,
+        "post_transient_sequences": 0,
+        "post_transient_events": 0,
         "correct_sequences": 0,
         "wrong_sequences": 0,
         "wrong_events": 0,
         "delays": [],
         "onset_abs_errors": [],
         "onset_signed_errors": [],
-        "all_alerts": 0,
         "rho_estimates": [],
+    }
+
+
+def _add_trial_metrics(counts: dict[str, Any], metrics: dict[str, Any]) -> None:
+    mapping = {
+        "structural_sequences": "structural_sequence",
+        "structural_events": "structural_events",
+        "transient_sequences": "transient_sequence",
+        "transient_events": "transient_events",
+        "combined_sequences": "combined_sequence",
+        "combined_events": "combined_events",
+        "pre_structural_sequences": "pre_structural_sequence",
+        "pre_structural_events": "pre_structural_events",
+        "pre_transient_sequences": "pre_transient_sequence",
+        "pre_transient_events": "pre_transient_events",
+        "pre_combined_sequences": "pre_combined_sequence",
+        "pre_combined_events": "pre_combined_events",
+        "post_transient_sequences": "post_transient_sequence",
+        "post_transient_events": "post_transient_events",
+    }
+    for count_key, metric_key in mapping.items():
+        counts[count_key] += int(metrics[metric_key])
+
+
+def _rate_block(sequences: int, events: int, trials: int) -> dict[str, Any]:
+    return {
+        "sequences": sequences,
+        "sequence_rate_pct": round(sequences / trials * 100.0, 2),
+        "sequence_rate_wilson95_pct": [
+            round(x * 100.0, 2) for x in wilson_interval(sequences, trials)
+        ],
+        "events": events,
+        "events_per_sequence": round(events / trials, 4),
     }
 
 
@@ -159,68 +248,101 @@ def evaluate_suite(
                 shift_sigma=case["shift_sigma"],
             )
             result = engine.analyze(series)
-            breaks = result["structural_breaks"]
-            counts["all_alerts"] += len(breaks)
+            metrics = summarize_trial_alerts(
+                result, boundary=ONSET if is_shift else None
+            )
+            _add_trial_metrics(counts, metrics)
             counts["rho_estimates"].append(result["diagnostics"]["rho_estimate"])
 
             if not is_shift:
+                breaks = result["structural_breaks"]
                 if breaks:
-                    counts["false_sequences"] += 1
-                    counts["false_events"] += len(breaks)
+                    # Structural detections are false for the level-shift target.
+                    pass
                 continue
 
-            pre = [b for b in breaks if b["detection_time"] < ONSET]
-            post = [b for b in breaks if b["detection_time"] >= ONSET]
-            correct = [b for b in post if b["direction"] == expected_direction]
-            wrong = [b for b in post if b["direction"] != expected_direction]
+            breaks = result["structural_breaks"]
+            pre = [b for b in breaks if int(b["detection_time"]) < ONSET]
+            post = [b for b in breaks if int(b["detection_time"]) >= ONSET]
+            correct = [b for b in post if int(b["direction"]) == expected_direction]
+            wrong = [b for b in post if int(b["direction"]) != expected_direction]
 
-            if pre:
-                counts["pre_sequences"] += 1
-                counts["pre_events"] += len(pre)
             if wrong:
                 counts["wrong_sequences"] += 1
                 counts["wrong_events"] += len(wrong)
             if correct:
                 counts["correct_sequences"] += 1
-                first = min(correct, key=lambda b: b["detection_time"])
+                first = min(correct, key=lambda b: int(b["detection_time"]))
                 delay = int(first["detection_time"]) - ONSET
                 onset_error = int(first["estimated_onset"]) - ONSET
                 counts["delays"].append(delay)
                 counts["onset_abs_errors"].append(abs(onset_error))
                 counts["onset_signed_errors"].append(onset_error)
 
+        structural = _rate_block(
+            counts["structural_sequences"], counts["structural_events"], trials
+        )
+        transient = _rate_block(
+            counts["transient_sequences"], counts["transient_events"], trials
+        )
+        combined = _rate_block(
+            counts["combined_sequences"], counts["combined_events"], trials
+        )
+
         if not is_shift:
-            rate = counts["false_sequences"] / trials
+            scenario_type = "variance_jump" if case["var_jump"] else "pure_null"
             summary[case["name"]] = {
                 "kind": "no_level_shift",
+                "scenario_type": scenario_type,
                 "trials": trials,
-                "false_alarm_sequences": counts["false_sequences"],
-                "false_alarm_rate_pct": round(rate * 100.0, 2),
-                "false_alarm_wilson95_pct": [
-                    round(x * 100.0, 2)
-                    for x in wilson_interval(counts["false_sequences"], trials)
-                ],
-                "false_break_events_per_sequence": round(
-                    counts["false_events"] / trials, 4
-                ),
-                "mean_break_events_per_sequence": round(
-                    counts["all_alerts"] / trials, 4
-                ),
+                # Backward-compatible names retain their original structural meaning.
+                "false_alarm_sequences": counts["structural_sequences"],
+                "false_alarm_rate_pct": structural["sequence_rate_pct"],
+                "false_alarm_wilson95_pct": structural["sequence_rate_wilson95_pct"],
+                "false_break_events_per_sequence": structural["events_per_sequence"],
+                "mean_break_events_per_sequence": structural["events_per_sequence"],
+                "structural_false_alarm": structural,
+                "transient_alerts": transient,
+                "combined_any_alerts": combined,
+                "combined_false_alarm": combined if scenario_type == "pure_null" else None,
                 "median_rho_estimate": round(
                     statistics.median(counts["rho_estimates"]), 4
                 ),
             }
         else:
+            pre_structural = _rate_block(
+                counts["pre_structural_sequences"],
+                counts["pre_structural_events"],
+                trials,
+            )
+            pre_transient = _rate_block(
+                counts["pre_transient_sequences"],
+                counts["pre_transient_events"],
+                trials,
+            )
+            pre_combined = _rate_block(
+                counts["pre_combined_sequences"],
+                counts["pre_combined_events"],
+                trials,
+            )
+            post_transient = _rate_block(
+                counts["post_transient_sequences"],
+                counts["post_transient_events"],
+                trials,
+            )
             summary[case["name"]] = {
                 "kind": "level_shift",
                 "trials": trials,
-                "pre_onset_false_alarm_sequences": counts["pre_sequences"],
-                "pre_onset_false_alarm_rate_pct": round(
-                    counts["pre_sequences"] / trials * 100.0, 2
-                ),
-                "pre_onset_false_alarm_wilson95_pct": [
-                    round(x * 100.0, 2)
-                    for x in wilson_interval(counts["pre_sequences"], trials)
+                "structural_alerts": structural,
+                "transient_alerts": transient,
+                "combined_any_alerts": combined,
+                "pre_onset_structural_false_alarm": pre_structural,
+                "pre_onset_transient_alerts": pre_transient,
+                "pre_onset_combined_any_alert": pre_combined,
+                "pre_onset_false_alarm_sequences": counts["pre_structural_sequences"],
+                "pre_onset_false_alarm_rate_pct": pre_structural["sequence_rate_pct"],
+                "pre_onset_false_alarm_wilson95_pct": pre_structural[
+                    "sequence_rate_wilson95_pct"
                 ],
                 "directionally_correct_detection_sequences": counts["correct_sequences"],
                 "directional_sensitivity_pct": round(
@@ -237,6 +359,7 @@ def evaluate_suite(
                 "wrong_direction_events_per_sequence": round(
                     counts["wrong_events"] / trials, 4
                 ),
+                "post_onset_transient_alerts": post_transient,
                 "median_detection_delay": (
                     round(float(statistics.median(counts["delays"])), 2)
                     if counts["delays"]
@@ -252,30 +375,56 @@ def evaluate_suite(
                     if counts["onset_signed_errors"]
                     else None
                 ),
-                "mean_break_events_per_sequence": round(
-                    counts["all_alerts"] / trials, 4
-                ),
+                "mean_break_events_per_sequence": structural["events_per_sequence"],
             }
 
-    no_shift_rates = [
-        v["false_alarm_rate_pct"]
-        for v in summary.values()
-        if v["kind"] == "no_level_shift"
+    no_shift_rows = [
+        (name, row)
+        for name, row in summary.items()
+        if row["kind"] == "no_level_shift"
     ]
+    pure_null_rows = [
+        (name, row)
+        for name, row in no_shift_rows
+        if row["scenario_type"] == "pure_null"
+    ]
+    worst_structural_name, worst_structural = max(
+        no_shift_rows, key=lambda item: item[1]["structural_false_alarm"]["sequence_rate_pct"]
+    )
+    worst_null_name, worst_null = max(
+        pure_null_rows, key=lambda item: item[1]["combined_false_alarm"]["sequence_rate_pct"]
+    )
     return {
         "threshold": threshold,
         "trials_per_case": trials,
         "case_count": len(CASES),
-        "worst_no_level_shift_false_alarm_rate_pct": max(no_shift_rates),
+        "worst_no_level_shift_structural_false_alarm_rate_pct": (
+            worst_structural["structural_false_alarm"]["sequence_rate_pct"]
+        ),
+        "worst_no_level_shift_structural_case": worst_structural_name,
+        "worst_pure_null_combined_false_alarm_rate_pct": (
+            worst_null["combined_false_alarm"]["sequence_rate_pct"]
+        ),
+        "worst_pure_null_combined_case": worst_null_name,
+        # Legacy name remains structural-only for compatibility with previous reports.
+        "worst_no_level_shift_false_alarm_rate_pct": (
+            worst_structural["structural_false_alarm"]["sequence_rate_pct"]
+        ),
         "cases": summary,
     }
 
 
 def select_threshold(dev_sweep: list[dict[str, Any]]) -> float | None:
+    """Require both structural safety and no-event combined-alert safety."""
     eligible = [
         row["threshold"]
         for row in dev_sweep
-        if row["worst_no_level_shift_false_alarm_rate_pct"] <= FALSE_ALARM_BUDGET
+        if (
+            row["worst_no_level_shift_structural_false_alarm_rate_pct"]
+            <= FALSE_ALARM_BUDGET
+            and row["worst_pure_null_combined_false_alarm_rate_pct"]
+            <= FALSE_ALARM_BUDGET
+        )
     ]
     return min(eligible) if eligible else None
 
@@ -294,17 +443,27 @@ def run_experiment(
             f"cases={len(CASES)}",
             flush=True,
         )
-        dev_sweep.append(
-            evaluate_suite(
-                threshold,
-                seed_base=DEV_SEED_BASE,
-                trials=dev_trials,
-            )
+        row = evaluate_suite(
+            threshold,
+            seed_base=DEV_SEED_BASE,
+            trials=dev_trials,
+        )
+        dev_sweep.append(row)
+        print(
+            "DEV RESULT "
+            f"threshold={threshold:.1f} "
+            f"worst_structural_no_level_shift="
+            f"{row['worst_no_level_shift_structural_false_alarm_rate_pct']:.2f}% "
+            f"worst_pure_null_combined="
+            f"{row['worst_pure_null_combined_false_alarm_rate_pct']:.2f}% "
+            f"structural_case={row['worst_no_level_shift_structural_case']} "
+            f"null_case={row['worst_pure_null_combined_case']}",
+            flush=True,
         )
 
     selected = select_threshold(dev_sweep)
     report: dict[str, Any] = {
-        "experiment": "sequential_break_engine_b3_dev_holdout_v1",
+        "experiment": "sequential_break_engine_b3_dev_holdout_v2_alert_accounting",
         "candidate": "SequentialBreakEngineB3",
         "configuration": {
             "quiet_end": 40,
@@ -315,8 +474,14 @@ def run_experiment(
             "onset_lookback": 22,
             "rho_estimator": "lag-1 Pearson correlation of adjacent quiet-baseline scores",
             "threshold_selection": (
-                "lowest threshold whose worst no-level-shift false-alarm "
-                "sequence rate across all null and variance-jump cases is <=5%"
+                "lowest threshold satisfying BOTH: worst structural false-alarm "
+                "rate <=5% across all no-level-shift cases, AND worst combined "
+                "structural-or-transient false-alert rate <=5% across pure-null cases"
+            ),
+            "transient_semantics": (
+                "separate anomaly channel; counted in combined_any_alerts. "
+                "In pure-null cases it is a false alert; in variance-jump cases "
+                "it is reported but not presumed false because variance genuinely changes."
             ),
         },
         "design": {
@@ -326,6 +491,8 @@ def run_experiment(
             "shift_levels": list(SHIFT_LEVELS),
             "distributions": ["gauss", "t3"],
             "no_level_shift_cases": 12,
+            "pure_null_cases": 6,
+            "variance_jump_cases": 6,
             "level_shift_cases": 36,
             "total_cases": len(CASES),
             "dev_seed_base": DEV_SEED_BASE,
@@ -333,9 +500,20 @@ def run_experiment(
             "seed_scheme": "seed_base + case_index*10000 + trial",
             "false_alarm_budget_pct": FALSE_ALARM_BUDGET,
         },
+        "pending_state_tracking": {
+            "available": False,
+            "reason": (
+                "B-v3 emits transient_anomalies and structural_breaks but defines "
+                "no pending/confirmed/rejected/expired lifecycle state."
+            ),
+        },
         "dev_sweep": dev_sweep,
         "selected_threshold": selected,
         "holdout": None,
+        "holdout_structural_point_gate_passed": False,
+        "holdout_structural_wilson_upper95_gate_passed": False,
+        "holdout_null_combined_point_gate_passed": False,
+        "holdout_null_combined_wilson_upper95_gate_passed": False,
         "holdout_point_estimate_gate_passed": False,
         "holdout_wilson_upper95_gate_passed": False,
         "final_gate_passed": False,
@@ -343,7 +521,8 @@ def run_experiment(
 
     if selected is None:
         report["holdout_status"] = (
-            "NOT_RUN: no development threshold met the <=5% false-alarm budget"
+            "NOT_RUN: no development threshold met BOTH structural and "
+            "pure-null combined false-alert budgets"
         )
         return report
 
@@ -358,19 +537,46 @@ def run_experiment(
         trials=holdout_trials,
     )
     report["holdout"] = holdout
+
     no_shift = [
-        v for v in holdout["cases"].values() if v["kind"] == "no_level_shift"
+        row for row in holdout["cases"].values() if row["kind"] == "no_level_shift"
     ]
-    point_gate = all(
-        v["false_alarm_rate_pct"] <= FALSE_ALARM_BUDGET for v in no_shift
+    pure_null = [
+        row for row in no_shift if row["scenario_type"] == "pure_null"
+    ]
+    structural_point = all(
+        row["structural_false_alarm"]["sequence_rate_pct"] <= FALSE_ALARM_BUDGET
+        for row in no_shift
     )
-    upper_gate = all(
-        v["false_alarm_wilson95_pct"][1] <= FALSE_ALARM_BUDGET
-        for v in no_shift
+    structural_wilson = all(
+        row["structural_false_alarm"]["sequence_rate_wilson95_pct"][1]
+        <= FALSE_ALARM_BUDGET
+        for row in no_shift
     )
-    report["holdout_point_estimate_gate_passed"] = point_gate
-    report["holdout_wilson_upper95_gate_passed"] = upper_gate
-    report["final_gate_passed"] = point_gate and upper_gate
+    null_combined_point = all(
+        row["combined_false_alarm"]["sequence_rate_pct"] <= FALSE_ALARM_BUDGET
+        for row in pure_null
+    )
+    null_combined_wilson = all(
+        row["combined_false_alarm"]["sequence_rate_wilson95_pct"][1]
+        <= FALSE_ALARM_BUDGET
+        for row in pure_null
+    )
+
+    report["holdout_structural_point_gate_passed"] = structural_point
+    report["holdout_structural_wilson_upper95_gate_passed"] = structural_wilson
+    report["holdout_null_combined_point_gate_passed"] = null_combined_point
+    report["holdout_null_combined_wilson_upper95_gate_passed"] = null_combined_wilson
+    report["holdout_point_estimate_gate_passed"] = (
+        structural_point and null_combined_point
+    )
+    report["holdout_wilson_upper95_gate_passed"] = (
+        structural_wilson and null_combined_wilson
+    )
+    report["final_gate_passed"] = (
+        report["holdout_point_estimate_gate_passed"]
+        and report["holdout_wilson_upper95_gate_passed"]
+    )
     report["holdout_status"] = "COMPLETED"
     return report
 
@@ -396,38 +602,58 @@ def main() -> int:
     print(f"selected_threshold={report['selected_threshold']}")
     print(f"holdout_status={report['holdout_status']}")
     print(
-        "holdout_point_estimate_gate_passed="
-        f"{report['holdout_point_estimate_gate_passed']}"
+        "holdout_structural_point_gate_passed="
+        f"{report['holdout_structural_point_gate_passed']}"
     )
     print(
-        "holdout_wilson_upper95_gate_passed="
-        f"{report['holdout_wilson_upper95_gate_passed']}"
+        "holdout_structural_wilson_upper95_gate_passed="
+        f"{report['holdout_structural_wilson_upper95_gate_passed']}"
+    )
+    print(
+        "holdout_null_combined_point_gate_passed="
+        f"{report['holdout_null_combined_point_gate_passed']}"
+    )
+    print(
+        "holdout_null_combined_wilson_upper95_gate_passed="
+        f"{report['holdout_null_combined_wilson_upper95_gate_passed']}"
     )
     print(f"final_gate_passed={report['final_gate_passed']}")
     print(f"artifact={args.output}")
+
     if report["holdout"] is not None:
-        for name, row in report["holdout"]["cases"].items():
-            if row["kind"] == "no_level_shift":
-                print(
-                    f"{name:32s} | false_alarm="
-                    f"{row['false_alarm_rate_pct']:5.2f}% "
-                    f"| Wilson95={row['false_alarm_wilson95_pct']}"
-                )
-            else:
-                print(
-                    f"{name:32s} | sensitivity="
-                    f"{row['directional_sensitivity_pct']:5.2f}% "
-                    f"| pre={row['pre_onset_false_alarm_rate_pct']:5.2f}% "
-                    f"| wrong={row['wrong_direction_rate_pct']:5.2f}% "
-                    f"| delay={row['median_detection_delay']} "
-                    f"| onset_MAE={row['median_onset_absolute_error']}"
-                )
+        displayed_rows = report["holdout"]["cases"].items()
+        stage = "HOLDOUT"
     else:
-        for row in report["dev_sweep"]:
+        # When no threshold qualifies, show the complete dev summary per candidate.
+        displayed_rows = (
+            (str(row["threshold"]), row) for row in report["dev_sweep"]
+        )
+        stage = "DEV"
+
+    for name, row in displayed_rows:
+        if row.get("kind") == "no_level_shift":
+            print(
+                f"{stage} {name:32s} | type={row['scenario_type']:12s} "
+                f"| structural={row['structural_false_alarm']['sequence_rate_pct']:5.2f}% "
+                f"| transient={row['transient_alerts']['sequence_rate_pct']:5.2f}% "
+                f"| combined={row['combined_any_alerts']['sequence_rate_pct']:5.2f}%"
+            )
+        elif row.get("kind") == "level_shift":
+            print(
+                f"{stage} {name:32s} | sensitivity="
+                f"{row['directional_sensitivity_pct']:5.2f}% "
+                f"| pre_structural={row['pre_onset_structural_false_alarm']['sequence_rate_pct']:5.2f}% "
+                f"| pre_transient={row['pre_onset_transient_alerts']['sequence_rate_pct']:5.2f}% "
+                f"| pre_combined={row['pre_onset_combined_any_alert']['sequence_rate_pct']:5.2f}% "
+                f"| post_transient={row['post_onset_transient_alerts']['sequence_rate_pct']:5.2f}%"
+            )
+        elif "threshold" in row:
             print(
                 f"DEV threshold={row['threshold']:4.1f} "
-                f"| worst_no_shift_FPR="
-                f"{row['worst_no_level_shift_false_alarm_rate_pct']:5.2f}%"
+                f"| worst_structural="
+                f"{row['worst_no_level_shift_structural_false_alarm_rate_pct']:5.2f}% "
+                f"| worst_null_combined="
+                f"{row['worst_pure_null_combined_false_alarm_rate_pct']:5.2f}%"
             )
     return 0
 
