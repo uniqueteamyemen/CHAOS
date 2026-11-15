@@ -14,6 +14,7 @@ from pathlib import Path
 
 from experiments.identity_lab.exp_p_engine.domain_neutral import (
     build_univariate_residuals,
+    detect_missingness_spikes,
     missing_periods,
     normalize_observations,
     run_candidate_detectors,
@@ -29,18 +30,20 @@ def read_csv(path: Path) -> list[dict[str, str]]:
         return list(csv.DictReader(handle))
 
 
-def candidate_summary(observations: list[dict], *, time_unit: str, min_history: int, window: int) -> dict:
+def candidate_summary(observations: list[dict], *, time_unit: str, min_history: int, window: int, baseline_method: str = "rolling_median") -> dict:
     residuals = build_univariate_residuals(
         observations,
         baseline_window=window,
         min_history=min_history,
         time_unit=time_unit,
+        baseline_method=baseline_method,
     )
     detectors = run_candidate_detectors(residuals)
     scale_status = Counter(row["status"] for row in residuals)
     cusum_hits = detectors["raw_hits"]["cusum"]
     p1_hits = detectors["raw_hits"]["sign_run"]
     return {
+        "baseline_method": baseline_method,
         "observations": len(observations),
         "residual_rows": len(residuals),
         "scale_ready_rows": scale_status.get("ready", 0),
@@ -73,24 +76,42 @@ def probe_world_bank() -> dict:
         grouped[row["entity_id"]].append(row)
 
     years = [str(year) for year in range(2000, 2025)]
-    missing = []
     per_series = []
     total_cusum = total_p1 = tested_entities = scale_ready = 0
+    trend_cusum = trend_p1 = trend_scale_ready = 0
+    missingness_signals = 0
     lengths = []
     for entity_id, series in grouped.items():
         coverage = missing_periods(series, years)
-        missing.append(coverage["absent_records"] + coverage["explicit_missing_or_invalid"])
         lengths.append(coverage["observed_periods"])
+        quality = detect_missingness_spikes(
+            series, years, window_size=5,
+            minimum_recent_rate=0.30, minimum_increase=0.20,
+            minimum_window_coverage=0.80,
+        )
+        missingness_signals += quality["signal_count"]
         if coverage["observed_periods"] >= 8:
             tested_entities += 1
-            result = candidate_summary(series, time_unit="years", min_history=8, window=12)
-            total_cusum += result["cusum_raw_hits"]
-            total_p1 += result["sign_run_raw_hits"]
-            scale_ready += result["scale_ready_rows"]
+            median_result = candidate_summary(
+                series, time_unit="years", min_history=8, window=12,
+                baseline_method="rolling_median",
+            )
+            trend_result = candidate_summary(
+                series, time_unit="years", min_history=8, window=12,
+                baseline_method="rolling_theil_sen",
+            )
+            total_cusum += median_result["cusum_raw_hits"]
+            total_p1 += median_result["sign_run_raw_hits"]
+            scale_ready += median_result["scale_ready_rows"]
+            trend_cusum += trend_result["cusum_raw_hits"]
+            trend_p1 += trend_result["sign_run_raw_hits"]
+            trend_scale_ready += trend_result["scale_ready_rows"]
             per_series.append({
                 "entity_id": entity_id,
                 "coverage": coverage,
-                **result,
+                "missingness_quality_signals": quality["signals"],
+                "rolling_median": median_result,
+                "rolling_theil_sen": trend_result,
             })
 
     expected_slots = len(grouped) * len(years)
@@ -111,9 +132,13 @@ def probe_world_bank() -> dict:
         "series_length_median": statistics.median(lengths) if lengths else 0,
         "series_length_max": max(lengths) if lengths else 0,
         "entities_with_at_least_8_observations": tested_entities,
-        "scale_ready_residual_rows": scale_ready,
-        "cusum_candidate_raw_hits": total_cusum,
-        "sign_run_candidate_raw_hits": total_p1,
+        "scale_ready_residual_rows_rolling_median": scale_ready,
+        "cusum_raw_hits_rolling_median": total_cusum,
+        "sign_run_raw_hits_rolling_median": total_p1,
+        "scale_ready_residual_rows_rolling_theil_sen": trend_scale_ready,
+        "cusum_raw_hits_rolling_theil_sen": trend_cusum,
+        "sign_run_raw_hits_rolling_theil_sen": trend_p1,
+        "missingness_quality_signals": missingness_signals,
         "rejected_source_rows": normalized["rejected_rows"],
         "sample_entity_diagnostics": per_series[:10],
         "interpretation": (
@@ -163,7 +188,8 @@ def probe_usgs() -> dict:
                 "source_id": "USGS FDSN event catalog",
                 "time_support": "monthly",
             })
-    result = candidate_summary(monthly, time_unit="months", min_history=12, window=24)
+    median_result = candidate_summary(monthly, time_unit="months", min_history=12, window=24, baseline_method="rolling_median")
+    trend_result = candidate_summary(monthly, time_unit="months", min_history=12, window=24, baseline_method="rolling_theil_sen")
     return {
         "source": "USGS FDSN event catalog snapshot",
         "manifest_event_count": manifest["event_count"],
@@ -177,7 +203,10 @@ def probe_usgs() -> dict:
         "optional_column_missing_counts": missing_columns,
         "monthly_series_points": len(monthly),
         "zero_event_months": sum(1 for row in monthly if row["value"] == 0),
-        "monthly_detection_candidate": result,
+        "monthly_detection_candidates": {
+            "rolling_median": median_result,
+            "rolling_theil_sen": trend_result,
+        },
         "interpretation": (
             "The monthly zeroes mean no event meeting this catalog query's magnitude "
             "threshold was returned for that month. They do not mean no earthquake occurred. "
@@ -221,14 +250,17 @@ def main() -> None:
             "rows": report["world_bank"]["csv_rows"],
             "entities": report["world_bank"]["entity_count"],
             "coverage_rate": report["world_bank"]["coverage_rate"],
-            "cusum_raw_hits": report["world_bank"]["cusum_candidate_raw_hits"],
-            "sign_run_raw_hits": report["world_bank"]["sign_run_candidate_raw_hits"],
+            "rolling_median_cusum_raw_hits": report["world_bank"]["cusum_raw_hits_rolling_median"],
+            "rolling_median_sign_run_raw_hits": report["world_bank"]["sign_run_raw_hits_rolling_median"],
+            "rolling_theil_sen_cusum_raw_hits": report["world_bank"]["cusum_raw_hits_rolling_theil_sen"],
+            "rolling_theil_sen_sign_run_raw_hits": report["world_bank"]["sign_run_raw_hits_rolling_theil_sen"],
+            "missingness_quality_signals": report["world_bank"]["missingness_quality_signals"],
         },
         "usgs": {
             "events": report["usgs"]["csv_event_rows"],
             "monthly_points": report["usgs"]["monthly_series_points"],
-            "cusum_raw_hits": report["usgs"]["monthly_detection_candidate"]["cusum_raw_hits"],
-            "sign_run_raw_hits": report["usgs"]["monthly_detection_candidate"]["sign_run_raw_hits"],
+            "rolling_median_cusum_raw_hits": report["usgs"]["monthly_detection_candidates"]["rolling_median"]["cusum_raw_hits"],
+            "rolling_theil_sen_cusum_raw_hits": report["usgs"]["monthly_detection_candidates"]["rolling_theil_sen"]["cusum_raw_hits"],
         },
         "who": {
             "manifest_rows": report["who"]["manifest_rows"],
