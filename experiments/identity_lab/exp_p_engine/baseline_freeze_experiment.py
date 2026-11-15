@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import json
 import math
+import random
 from collections import Counter, defaultdict
 from datetime import datetime, timezone
 from pathlib import Path
@@ -818,6 +819,125 @@ def run_experiment(
     return result
 
 
+def _synthetic_control_series(
+    scenario: str,
+    *,
+    count: int = 120,
+    seed: int = 20261115,
+) -> tuple[list[dict[str, Any]], dict[str, Any]]:
+    """Known-truth controls: stable noise, variance-only shift, transient and level shift."""
+    rng = random.Random(seed)
+    rows = []
+    onset_index = 60
+    for index in range(count):
+        sigma = 0.12
+        if scenario == "variance_only_jump" and index >= onset_index:
+            sigma = 0.65
+        value = 40.0 + 0.18 * index + rng.gauss(0.0, sigma)
+        if scenario == "transient_three_period_shift" and onset_index <= index < onset_index + 3:
+            value += 0.9
+        elif scenario == "persistent_level_shift" and index >= onset_index:
+            value += 0.9
+        rows.append({
+            "entity_id": "synthetic-" + scenario,
+            "metric_id": "level",
+            "event_time": str(2000 + index),
+            "value": value,
+            "observation_status": "observed",
+            "unit": "units",
+        })
+    return rows, {
+        "onset_time": str(2000 + onset_index),
+        "mean_level_shift": scenario in {
+            "transient_three_period_shift", "persistent_level_shift"
+        },
+        "variance_regime_shift": scenario == "variance_only_jump",
+        "transient_only": scenario == "transient_three_period_shift",
+        "synthetic_ground_truth": True,
+    }
+
+
+def synthetic_control_suite() -> dict[str, Any]:
+    scenarios = (
+        "stable_noise_no_shift",
+        "variance_only_jump",
+        "transient_three_period_shift",
+        "persistent_level_shift",
+    )
+    output: dict[str, Any] = {
+        "seed": 20261115,
+        "series_length": 120,
+        "onset_index": 60,
+        "suspicion_z": SUSPICION_Z,
+        "suspicion_run": SUSPICION_RUN,
+        "release_z": RELEASE_Z,
+        "release_run": RELEASE_RUN,
+        "primary_detectors": {
+            "cusum": {"k": 0.5, "h": 8.5},
+            "sign_run": {"threshold": 3.0, "run_length": 3},
+        },
+        "scenarios": {},
+        "interpretation": (
+            "Synthetic controls have known mean/variance-shift labels. A CUSUM hit "
+            "in stable-noise or variance-only scenarios is a false mean-break signal "
+            "for this test, not proof of a general real-world false-positive rate."
+        ),
+    }
+    onset = str(2000 + 60)
+    for scenario in scenarios:
+        series, truth = _synthetic_control_series(scenario)
+        scenario_rows: dict[str, Any] = {}
+        for policy in POLICIES:
+            residuals, diagnostics = build_policy_residuals(
+                series,
+                policy=policy,
+                time_unit="years",
+                suspicion_z=SUSPICION_Z,
+                suspicion_run=SUSPICION_RUN,
+                release_z=RELEASE_Z,
+                release_run=RELEASE_RUN,
+            )
+            cusum_hits = detect_two_sided_cusum(residuals, k=0.5, h=8.5)
+            sign_hits = detect_sign_runs(residuals, threshold=3.0, run_length=3)
+            after_onset_cusum = [
+                hit for hit in cusum_hits
+                if time_position(hit["event_time"], "years") >= time_position(onset, "years")
+            ]
+            after_onset_sign = [
+                hit for hit in sign_hits
+                if time_position(hit["event_time"], "years") >= time_position(onset, "years")
+            ]
+            returned_episodes = [
+                episode for episode in diagnostics["freeze_episodes"]
+                if episode.get("ended_by") == "confirmed_return_to_frozen_baseline"
+            ]
+            scenario_rows[policy] = {
+                **truth,
+                "ready_rows": diagnostics["ready_rows"],
+                "freeze_trigger_count": diagnostics["freeze_trigger_count"],
+                "freeze_release_count": diagnostics["freeze_release_count"],
+                "freeze_active_fraction": diagnostics["freeze_active_fraction"],
+                "freeze_episodes_ended_by_return": len(returned_episodes),
+                "historical_cusum_hits_total": len(cusum_hits),
+                "historical_sign_run_hits_total": len(sign_hits),
+                "post_onset_cusum_hits": len(after_onset_cusum),
+                "post_onset_sign_run_hits": len(after_onset_sign),
+                "first_post_onset_cusum_time": (
+                    after_onset_cusum[0]["event_time"] if after_onset_cusum else None
+                ),
+                "first_post_onset_sign_run_time": (
+                    after_onset_sign[0]["event_time"] if after_onset_sign else None
+                ),
+                "synthetic_false_mean_break_hits": (
+                    len(cusum_hits)
+                    if not truth["mean_level_shift"]
+                    else None
+                ),
+            }
+        output["scenarios"][scenario] = scenario_rows
+    return output
+
+
 def main() -> None:
     world_bank_source = read_world_bank()
     freeze_policies = (
@@ -847,6 +967,7 @@ def main() -> None:
             "world_bank": world_bank_trigger_sweep,
             "interpretation": "A freeze candidate is confirmed only after two contiguous same-direction residuals exceed the threshold; the frozen model is snapshotted from the first candidate.",
         },
+        "synthetic_controls": synthetic_control_suite(),
         "parameters": {
             "baseline_window": BASELINE_WINDOW,
             "scale_window": SCALE_WINDOW,
