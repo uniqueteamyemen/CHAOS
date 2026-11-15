@@ -627,7 +627,7 @@ def build_univariate_residuals(
             "baseline_id": (
                 str(series[index]["metric_id"]) + ":" + baseline_method
                 + ":w" + str(baseline_window)
-                + (":ar1-adjusted" if estimate_rho else ":iid-unit-gap")
+                + (":ar1-estimation-enabled" if estimate_rho else ":iid-unit-gap")
             ),
             "z_score": residual / scale["value"] if ready and not gap_unresolved else None,
             "status": (
