@@ -213,6 +213,28 @@ class ParallelFusionTests(unittest.TestCase):
         self.assertLess(hits_85[0]["index"], hits_105[0]["index"])
         self.assertLess(hits_105[0]["index"], hits_125[0]["index"])
 
+    def test_H_and_I_keep_production_adaptive_P1_with_hold_policy(self):
+        rows = make_rows(sign=-1, magnitude=9.0, seed=41)
+        result = run_candidates("stock", rows, quiet_range=(1, 40))
+        g_p1 = [
+            hit for hit in result["G"]["raw_hits"]
+            if hit["detector"] == "sign_run"
+        ]
+        for variant in ("H", "I"):
+            p1 = [
+                hit for hit in result[variant]["raw_hits"]
+                if hit["detector"] == "sign_run"
+            ]
+            self.assertEqual(p1, g_p1)
+            self.assertEqual(
+                result[variant]["diagnostics"]["sigma_cusum_policy"],
+                "unbounded_hold",
+            )
+            self.assertEqual(
+                result[variant]["diagnostics"]["p1_mode"],
+                "production_adaptive_13_run",
+            )
+
     def test_same_event_cooldown_marks_but_retains_evidence(self):
         series = [{"month": i, "residual": 5.0} for i in range(1, 100)]
         hits = [
