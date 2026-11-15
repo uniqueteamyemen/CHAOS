@@ -1126,6 +1126,17 @@ def _matched_evaluation_streams(
 
             # Emit the same explicit reset period into every aligned path.
             for index, source in enumerate(source_rows):
+                # A year absent from every input still needs to reset the
+                # detector state inside the original baseline_id group.
+                # Inherit identity from the nearest source row rather than
+                # creating an isolated synthetic baseline for this reset.
+                fallback = source
+                if fallback is None and maps[index]:
+                    nearest_year = min(
+                        maps[index],
+                        key=lambda candidate: (abs(candidate - year), candidate),
+                    )
+                    fallback = maps[index][nearest_year]
                 placeholder = dict(source) if source is not None else {}
                 placeholder.update({
                     "entity_id": entity_id,
@@ -1138,15 +1149,15 @@ def _matched_evaluation_streams(
                     "z_score": None,
                     "status": "gap_unresolved",
                     "baseline_id": str(
-                        (source or {}).get(
+                        (fallback or {}).get(
                             "baseline_id",
                             f"{entity_id}:{metric_id}:matched-gap:{index}",
                         )
                     ),
                     "baseline_method": str(
-                        (source or {}).get("baseline_method", "matched_support_reset")
+                        (fallback or {}).get("baseline_method", "matched_support_reset")
                     ),
-                    "support_count": int((source or {}).get("support_count", 0)),
+                    "support_count": int((fallback or {}).get("support_count", 0)),
                 })
                 per_stream[index].append(placeholder)
 
