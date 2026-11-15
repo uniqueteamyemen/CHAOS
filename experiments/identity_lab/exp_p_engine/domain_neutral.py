@@ -567,7 +567,8 @@ def build_partial_relation_residuals(
             raise ValueError("partial_relation_duplicate_observation")
         seen_keys.add(unique_key)
         unit = str(row.get("unit")) if row.get("unit") not in (None, "") else None
-        units_seen[(entity_id, metric_id)].add(unit)
+        if unit is not None:
+            units_seen[(entity_id, metric_id)].add(unit)
         if row.get("observation_status") != "observed" or row.get("value") is None:
             continue
         value = float(row["value"])
