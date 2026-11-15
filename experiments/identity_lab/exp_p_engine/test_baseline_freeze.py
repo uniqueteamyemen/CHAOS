@@ -1,0 +1,126 @@
+"""Tests for rolling, fixed and suspicion-triggered baseline freezing."""
+import random
+import unittest
+
+from experiments.identity_lab.exp_p_engine.baseline_freeze_experiment import (
+    POLICIES,
+    build_policy_residuals,
+)
+
+
+def make_series(*, count=36, shift_from=None, shift=0.0, transient_at=None, gap_at=None):
+    rows = []
+    pattern = (0.10, -0.10, 0.05, -0.05)
+    years = []
+    year = 2000
+    for index in range(count):
+        if gap_at is not None and index >= gap_at:
+            year += 3 if index == gap_at else 1
+        years.append(year)
+        value = 20.0 + 0.2 * index + pattern[index % len(pattern)]
+        if shift_from is not None and index >= shift_from:
+            value += shift
+        if transient_at is not None and index == transient_at:
+            value += shift
+        rows.append({
+            "entity_id": "entity-1",
+            "metric_id": "output",
+            "event_time": str(year),
+            "value": value,
+            "observation_status": "observed",
+            "unit": "units",
+        })
+    return rows
+
+
+class BaselineFreezeTests(unittest.TestCase):
+    def test_all_policies_emit_valid_residual_rows(self):
+        series = make_series()
+        for policy in POLICIES:
+            with self.subTest(policy=policy):
+                rows, diagnostics = build_policy_residuals(
+                    series, policy=policy, time_unit="years",
+                )
+                self.assertTrue(rows)
+                self.assertEqual(diagnostics["policy"], policy)
+                self.assertTrue(all("baseline_id" in row for row in rows))
+                self.assertTrue(all(row["status"] in {
+                    "ready", "gap_unresolved", "scale_unavailable"
+                } for row in rows))
+
+    def test_suspicion_freeze_holds_the_pre_break_baseline(self):
+        onset_index = 23
+        series = make_series(shift_from=onset_index, shift=2.0)
+        rolling, _ = build_policy_residuals(
+            series, policy="rolling_baseline_rolling_scale", time_unit="years",
+        )
+        frozen, diagnostics = build_policy_residuals(
+            series, policy="suspicion_freeze_baseline_and_scale", time_unit="years",
+        )
+        target_time = str(2000 + (onset_index + 7))
+        rolling_row = next(row for row in rolling if row["event_time"] == target_time)
+        frozen_row = next(row for row in frozen if row["event_time"] == target_time)
+        self.assertGreaterEqual(diagnostics["freeze_trigger_count"], 1)
+        self.assertGreater(abs(frozen_row["z_score"]), abs(rolling_row["z_score"]))
+        self.assertTrue(frozen_row["freeze_active"])
+
+    def test_freeze_baseline_only_isolates_scale_adaptation(self):
+        series = make_series(shift_from=23, shift=2.0)
+        baseline_only, _ = build_policy_residuals(
+            series, policy="suspicion_freeze_baseline_rolling_scale", time_unit="years",
+        )
+        baseline_and_scale, _ = build_policy_residuals(
+            series, policy="suspicion_freeze_baseline_and_scale", time_unit="years",
+        )
+        time = "2030"
+        left = next(row for row in baseline_only if row["event_time"] == time)
+        right = next(row for row in baseline_and_scale if row["event_time"] == time)
+        self.assertTrue(left["freeze_active"])
+        self.assertTrue(right["freeze_active"])
+        self.assertGreaterEqual(abs(right["z_score"]), abs(left["z_score"]))
+
+    def test_transient_spike_releases_after_confirmed_return(self):
+        series = make_series(transient_at=18, shift=3.0)
+        rows, diagnostics = build_policy_residuals(
+            series,
+            policy="suspicion_freeze_baseline_and_scale",
+            time_unit="years",
+            suspicion_z=2.0,
+            release_z=1.0,
+            release_run=5,
+        )
+        self.assertGreaterEqual(diagnostics["freeze_trigger_count"], 1)
+        self.assertGreaterEqual(diagnostics["freeze_release_count"], 1)
+        self.assertTrue(any(row["freeze_released"] for row in rows))
+
+    def test_first_observation_after_gap_is_not_scored_and_history_rebuilds(self):
+        series = make_series(count=18, gap_at=8)
+        rows, _ = build_policy_residuals(
+            series, policy="rolling_baseline_rolling_scale", time_unit="years",
+        )
+        gap_time = series[8]["event_time"]
+        gap_row = next(row for row in rows if row["event_time"] == gap_time)
+        self.assertEqual(gap_row["status"], "gap_unresolved")
+        post_gap = [row for row in rows if int(row["event_time"]) >= int(gap_time)]
+        self.assertTrue(all(row["z_score"] is None for row in post_gap[:-1]))
+        self.assertEqual(post_gap[-1]["status"], "ready")
+
+    def test_builder_rejects_multiple_entities(self):
+        rows = make_series()
+        rows.append({
+            "entity_id": "entity-2",
+            "metric_id": "output",
+            "event_time": "2040",
+            "value": 22.0,
+            "observation_status": "observed",
+        })
+        with self.assertRaisesRegex(ValueError, "one_entity_metric"):
+            build_policy_residuals(
+                rows,
+                policy="rolling_baseline_rolling_scale",
+                time_unit="years",
+            )
+
+
+if __name__ == "__main__":
+    unittest.main()
