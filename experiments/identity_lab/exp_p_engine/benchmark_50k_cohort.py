@@ -27,7 +27,7 @@ PEER_RATE_RESIDUAL_THRESHOLD = 0.20
 def main() -> None:
     rng = random.Random(731)
     started = time.perf_counter()
-    observations_processed = peer_residuals = injected = detected = rate_false_flags = raw_count_detected = raw_count_false_flags = 0
+    observations_processed = peer_residuals = raw_peer_residuals = injected = detected = rate_false_flags = raw_count_detected = raw_count_false_flags = 0
     period_metrics = []
 
     for period in range(PERIODS):
@@ -45,6 +45,7 @@ def main() -> None:
                 "metric_id": "completed_cases_per_period",
                 "event_time": event_time,
                 "value": value,
+                "unit": "cases",
                 "observation_status": "observed",
                 "cohort_id": "branch-role-season-" + str(cohort_index),
                 "exposure": exposure,
@@ -56,7 +57,10 @@ def main() -> None:
         raw_results = cohort_peer_residuals(rows, min_peers=20)
         results = cohort_peer_residuals(rows, min_peers=20, use_exposure=True)
         observations_processed += len(rows)
+        raw_peer_residuals += len(raw_results)
         peer_residuals += len(results)
+        if len(raw_results) != len(rows) or len(results) != len(rows):
+            raise AssertionError("peer_builder_dropped_entity_period_rows")
         injected_ids = {"staff-" + str(i) for i in range(COHORT_COUNT)}
         period_rate_detected = period_rate_false = period_raw_detected = period_raw_false = 0
         for row in results:
@@ -91,6 +95,13 @@ def main() -> None:
             },
         })
 
+    if peer_residuals != observations_processed:
+        raise AssertionError("exposure_peer_residual_count_mismatch")
+    if detected != injected:
+        raise AssertionError("known_injection_recall_below_100_percent")
+    if rate_false_flags != 0:
+        raise AssertionError("exposure_adjusted_peer_false_flags_detected")
+
     elapsed = time.perf_counter() - started
     total_entity_years = ENTITY_COUNT * PERIODS
     null_entity_years = total_entity_years - injected
@@ -104,6 +115,7 @@ def main() -> None:
         "periods": PERIODS,
         "entity_period_observations": observations_processed,
         "cohort_count_per_period": COHORT_COUNT,
+        "raw_peer_residuals_computed": raw_peer_residuals,
         "peer_residuals_computed": peer_residuals,
         "known_injections": injected,
         "known_injections_flagged": detected,
