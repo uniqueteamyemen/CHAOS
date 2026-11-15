@@ -510,6 +510,137 @@ def build_univariate_residuals(
     return residual_rows
 
 
+def _theil_sen_relation(
+    pairs: Sequence[tuple[float, float]],
+) -> tuple[float, float] | None:
+    """Fit y = intercept + slope*x robustly from explicitly paired history."""
+    slopes = [
+        (pairs[j][1] - pairs[i][1]) / (pairs[j][0] - pairs[i][0])
+        for i in range(len(pairs))
+        for j in range(i + 1, len(pairs))
+        if pairs[j][0] != pairs[i][0]
+    ]
+    if not slopes:
+        return None
+    slope = statistics.median(slopes)
+    intercept = statistics.median(y - slope * x for x, y in pairs)
+    return intercept, slope
+
+
+def build_partial_relation_residuals(
+    observations: Sequence[Mapping[str, Any]],
+    *,
+    x_metric_id: str,
+    y_metric_id: str,
+    relationship_id: str,
+    baseline_window: int = 24,
+    min_pairs: int = 8,
+    time_unit: str = "years",
+) -> list[dict[str, Any]]:
+    """Build prequential residuals for an explicitly declared two-metric relation.
+
+    Only same-entity, same-time, actually observed pairs are used. The relation
+    is descriptive, not causal or a hard conservation law. At every scored
+    time, Theil-Sen is fitted only to earlier pairs. Missing counterparts are
+    skipped rather than imputed. Metric units must be stable within each entity.
+    """
+    if not x_metric_id or not y_metric_id or x_metric_id == y_metric_id:
+        raise ValueError("partial_relation_requires_two_distinct_metrics")
+    if not relationship_id or not relationship_id.strip():
+        raise ValueError("relationship_id_required")
+    if min_pairs < 4 or baseline_window < min_pairs:
+        raise ValueError("partial_relation_history_invalid")
+
+    selected: dict[tuple[str, str], dict[str, tuple[float, str | None]]] = defaultdict(dict)
+    units_seen: dict[tuple[str, str], set[str | None]] = defaultdict(set)
+    seen_keys: set[tuple[str, str, str]] = set()
+    for row in observations:
+        metric_id = str(row.get("metric_id", ""))
+        if metric_id not in {x_metric_id, y_metric_id}:
+            continue
+        entity_id = str(row.get("entity_id", "")).strip()
+        if not entity_id:
+            raise ValueError("partial_relation_entity_id_missing")
+        event_time = _parse_time(row["event_time"]).isoformat()
+        unique_key = (entity_id, metric_id, event_time)
+        if unique_key in seen_keys:
+            raise ValueError("partial_relation_duplicate_observation")
+        seen_keys.add(unique_key)
+        unit = str(row.get("unit")) if row.get("unit") not in (None, "") else None
+        units_seen[(entity_id, metric_id)].add(unit)
+        if row.get("observation_status") != "observed" or row.get("value") is None:
+            continue
+        value = float(row["value"])
+        if not math.isfinite(value):
+            continue
+        selected[(entity_id, event_time)][metric_id] = (value, unit)
+
+    for entity_metric, units in units_seen.items():
+        if len(units) > 1:
+            raise ValueError("partial_relation_unit_changed_without_metric_version:" + "|".join(entity_metric))
+
+    by_entity: dict[str, list[tuple[str, float, float, str | None, str | None]]] = defaultdict(list)
+    for (entity_id, event_time), metrics in selected.items():
+        if x_metric_id not in metrics or y_metric_id not in metrics:
+            continue
+        x_value, x_unit = metrics[x_metric_id]
+        y_value, y_unit = metrics[y_metric_id]
+        by_entity[entity_id].append((event_time, x_value, y_value, x_unit, y_unit))
+
+    output: list[dict[str, Any]] = []
+    for entity_id, entity_pairs in by_entity.items():
+        entity_pairs.sort(key=lambda item: _parse_time(item[0]))
+        for index in range(min_pairs, len(entity_pairs)):
+            history = entity_pairs[max(0, index - baseline_window):index]
+            fit_pairs = [(item[1], item[2]) for item in history]
+            fitted = _theil_sen_relation(fit_pairs)
+            if fitted is None:
+                output.append({
+                    "entity_id": entity_id,
+                    "relationship_id": relationship_id,
+                    "event_time": entity_pairs[index][0],
+                    "status": "relation_unidentifiable",
+                    "support_count": len(history),
+                })
+                continue
+            intercept, slope = fitted
+            historical_residuals = [
+                y - (intercept + slope * x)
+                for x, y in fit_pairs
+            ]
+            residual_center = statistics.median(historical_residuals)
+            scale = 1.4826 * statistics.median(
+                abs(value - residual_center) for value in historical_residuals
+            )
+            event_time, x_value, y_value, x_unit, y_unit = entity_pairs[index]
+            expected = intercept + slope * x_value
+            residual = y_value - expected
+            ready = math.isfinite(scale) and scale > 0
+            output.append({
+                "entity_id": entity_id,
+                "relationship_id": relationship_id,
+                "event_time": event_time,
+                "x_metric_id": x_metric_id,
+                "y_metric_id": y_metric_id,
+                "x_value": x_value,
+                "y_observed": y_value,
+                "y_expected": expected,
+                "residual": residual,
+                "scale": scale if ready else None,
+                "z_score": residual / scale if ready else None,
+                "status": "ready" if ready else "relation_scale_unavailable",
+                "baseline_method": "prequential_theil_sen_pairwise_relation",
+                "support_count": len(history),
+                "slope": slope,
+                "intercept": intercept,
+                "x_unit": x_unit,
+                "y_unit": y_unit,
+                "relationship_semantics": "explicit_statistical_relation_not_causal_or_conservation_proof",
+            })
+    output.sort(key=lambda row: (row["entity_id"], row["event_time"]))
+    return output
+
+
 def detect_two_sided_cusum(
     residual_rows: Sequence[Mapping[str, Any]],
     *,
