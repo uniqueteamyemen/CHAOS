@@ -573,6 +573,172 @@ def first_difference_mad_scale(
     }
 
 
+def estimate_panel_ar1_rho(
+    observations: Sequence[Mapping[str, Any]],
+    *,
+    training_end: str,
+    time_unit: str = "years",
+    min_series: int = 20,
+    min_lag_pairs: int = 100,
+    bootstrap_replicates: int = 500,
+    seed: int = 20261115,
+) -> dict[str, Any]:
+    """Estimate common AR(1) level dependence from a pre-cutoff panel.
+
+    For an AR(1) level process with a locally linear drift, lag-1 ACF of unit
+    first differences is -(1-rho)/2. Differences are centered and MAD-scaled
+    within each entity before pooling, so high-variance entities do not dominate.
+    Only consecutive unit-time differences from observations at/before the
+    training cutoff contribute. Bootstrap resamples entities, not rows.
+    """
+    if min_series < 2 or min_lag_pairs < 4 or bootstrap_replicates < 100:
+        raise ValueError("panel_rho_support_parameters_invalid")
+    cutoff = _time_number(training_end, time_unit)
+    grouped: dict[tuple[str, str], list[Mapping[str, Any]]] = defaultdict(list)
+    for row in observations:
+        if row.get("observation_status") != "observed" or row.get("value") is None:
+            continue
+        if _time_number(row["event_time"], time_unit) <= cutoff:
+            grouped[(str(row["entity_id"]), str(row["metric_id"]))].append(row)
+
+    series_pairs: dict[str, list[tuple[float, float]]] = {}
+    dropped = Counter()
+    for (entity_id, metric_id), rows in grouped.items():
+        rows = sorted(rows, key=lambda row: _parse_time(row["event_time"]))
+        times = [_time_number(row["event_time"], time_unit) for row in rows]
+        differences: list[tuple[int, int, float]] = []
+        for index in range(1, len(rows)):
+            gap = times[index] - times[index - 1]
+            if abs(gap - 1.0) > 0.02:
+                continue
+            difference = float(rows[index]["value"]) - float(rows[index - 1]["value"])
+            differences.append((index - 1, index, difference))
+        lag_pairs = [
+            (differences[index - 1][2], differences[index][2])
+            for index in range(1, len(differences))
+            if differences[index - 1][1] == differences[index][0]
+        ]
+        if len(lag_pairs) < 4:
+            dropped["insufficient_lag_pairs"] += 1
+            continue
+        all_differences = [item[2] for item in differences]
+        center = statistics.median(all_differences)
+        scale = 1.4826 * statistics.median(
+            abs(value - center) for value in all_differences
+        )
+        if not math.isfinite(scale) or scale <= 0:
+            dropped["zero_or_invalid_difference_scale"] += 1
+            continue
+        normalized = [
+            ((left - center) / scale, (right - center) / scale)
+            for left, right in lag_pairs
+        ]
+        series_pairs[entity_id + "::" + metric_id] = normalized
+
+    total_pairs = sum(len(pairs) for pairs in series_pairs.values())
+    if len(series_pairs) < min_series or total_pairs < min_lag_pairs:
+        return {
+            "status": "insufficient_panel_support",
+            "rho": None,
+            "training_end": training_end,
+            "series_count": len(series_pairs),
+            "lag_pair_count": total_pairs,
+            "min_series": min_series,
+            "min_lag_pairs": min_lag_pairs,
+            "dropped_series": dict(dropped),
+        }
+
+    def pooled_acf(sample_keys: Sequence[str]) -> float | None:
+        cross = left_sq = right_sq = 0.0
+        for key in sample_keys:
+            for left, right in series_pairs[key]:
+                cross += left * right
+                left_sq += left * left
+                right_sq += right * right
+        denominator = math.sqrt(left_sq * right_sq)
+        if denominator <= 0:
+            return None
+        return cross / denominator
+
+    keys = sorted(series_pairs)
+    acf = pooled_acf(keys)
+    if acf is None:
+        return {
+            "status": "panel_acf_unidentifiable",
+            "rho": None,
+            "training_end": training_end,
+            "series_count": len(keys),
+            "lag_pair_count": total_pairs,
+            "dropped_series": dict(dropped),
+        }
+    rho = 1.0 + 2.0 * acf
+    if not math.isfinite(rho) or not -0.95 <= rho <= 0.95:
+        return {
+            "status": "panel_rho_outside_supported_range",
+            "rho": None,
+            "raw_rho": rho,
+            "difference_acf": acf,
+            "training_end": training_end,
+            "series_count": len(keys),
+            "lag_pair_count": total_pairs,
+            "dropped_series": dict(dropped),
+        }
+
+    rng = random.Random(seed)
+    boot_rhos: list[float] = []
+    for _ in range(bootstrap_replicates):
+        sampled_keys = [keys[rng.randrange(len(keys))] for _ in keys]
+        boot_acf = pooled_acf(sampled_keys)
+        if boot_acf is None:
+            continue
+        boot_rho = 1.0 + 2.0 * boot_acf
+        if math.isfinite(boot_rho) and -0.95 <= boot_rho <= 0.95:
+            boot_rhos.append(boot_rho)
+
+    if len(boot_rhos) < bootstrap_replicates * 0.8:
+        return {
+            "status": "unstable_panel_rho_bootstrap",
+            "rho": None,
+            "raw_rho": rho,
+            "difference_acf": acf,
+            "training_end": training_end,
+            "series_count": len(keys),
+            "lag_pair_count": total_pairs,
+            "valid_bootstrap_replicates": len(boot_rhos),
+            "dropped_series": dict(dropped),
+        }
+
+    lower = percentile_value(boot_rhos, 0.025)
+    upper = percentile_value(boot_rhos, 0.975)
+    return {
+        "status": "ok",
+        "rho": rho,
+        "difference_acf": acf,
+        "rho_ci95": [lower, upper],
+        "ci_width": upper - lower,
+        "training_end": training_end,
+        "series_count": len(keys),
+        "lag_pair_count": total_pairs,
+        "bootstrap_replicates": len(boot_rhos),
+        "seed": seed,
+        "estimator": "within_entity_mad_scaled_pooled_first_difference_acf",
+        "formula": "rho = 1 + 2 * lag1_acf(first_differences)",
+        "dropped_series": dict(dropped),
+        "scope": "frozen panel estimate from pre-evaluation training observations only",
+    }
+
+
+def percentile_value(values: Sequence[float], q: float) -> float:
+    ordered = sorted(values)
+    position = min(len(ordered) - 1, max(0, q * (len(ordered) - 1)))
+    lower = int(math.floor(position))
+    upper = int(math.ceil(position))
+    if lower == upper:
+        return float(ordered[lower])
+    weight = position - lower
+    return float(ordered[lower] * (1.0 - weight) + ordered[upper] * weight)
+
+
 def _theil_sen_prediction(
     history: Sequence[Mapping[str, Any]],
     target_time: str,
