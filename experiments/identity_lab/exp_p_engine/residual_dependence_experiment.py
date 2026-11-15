@@ -522,8 +522,17 @@ def run_injection_experiment(
     eligible = 0
     skipped = defaultdict(int)
     for entity_id, source in entity_series.items():
+        # Residual streams are intentionally built only for entities with
+        # sufficient contiguous history. Short source series must be counted
+        # and skipped, not indexed as if a residual stream had been created.
+        if entity_id not in original_residuals:
+            skipped["insufficient_baseline_history"] += 1
+            continue
         series = [dict(row) for row in source]
         base_residuals = list(original_residuals[entity_id])
+        if not base_residuals:
+            skipped["empty_residual_stream"] += 1
+            continue
         evaluation_times = sorted({
             year_number(row["event_time"])
             for row in base_residuals
