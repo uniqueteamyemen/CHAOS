@@ -227,7 +227,7 @@ def injection_response_for_series(
     estimate_rho: bool,
     min_adjacent_pairs_for_rho: int,
 ) -> dict[str, Any]:
-    responses: dict[str, list[dict[str, Any]]] = {}
+    responses: dict[str, dict[str, Any]] = {}
     for magnitude in INJECTION_MAGNITUDES:
         for direction in INJECTION_DIRECTIONS:
             key = f"{'positive' if direction > 0 else 'negative'}_{magnitude:g}sigma"
@@ -353,12 +353,18 @@ def summarize_injection_responses(
             grid = P1_GRID
             get_key = lambda p: (p["threshold"], p["run_length"])
         by_scenario: dict[str, list[dict[str, Any]]] = defaultdict(list)
+        skipped_by_scenario: Counter[str] = Counter()
         for response in all_responses:
             for scenario, result in response.items():
+                if not result.get("tested", True):
+                    skipped_by_scenario[scenario] += 1
+                    continue
                 for candidate in result[detector]:
                     by_scenario[scenario].append(candidate)
+        scenario_names = sorted(set(by_scenario) | set(skipped_by_scenario))
         scenario_summary: dict[str, Any] = {}
-        for scenario, results in by_scenario.items():
+        for scenario in scenario_names:
+            results = by_scenario.get(scenario, [])
             candidate_rows = []
             for params in grid:
                 key = get_key(params)
@@ -403,7 +409,15 @@ def summarize_injection_responses(
                         ("positive" if "positive" in scenario else "negative")
                     ),
                 })
-            scenario_summary[scenario] = candidate_rows
+            scenario_summary[scenario] = {
+                "eligible_series": len(results) // len(grid) if grid else 0,
+                "skipped_series": skipped_by_scenario[scenario],
+                "skip_reason": (
+                    "insufficient_pre_onset_ar1_support"
+                    if skipped_by_scenario[scenario] else None
+                ),
+                "candidates": candidate_rows,
+            }
         summary[detector] = scenario_summary
     return summary
 
@@ -540,7 +554,14 @@ def main() -> None:
                 "ready_periods": result["ready_periods"],
                 "cusum_signal_rates": result["historical_signal_profile"]["cusum_p1_disabled"],
                 "sign_run_signal_rates": result["historical_signal_profile"]["sign_run_cusum_disabled"],
-                "injection_scenarios": list(result["injection_response"]["cusum"].keys()),
+                "injection_scenarios": {
+                    key: {
+                        "eligible_series": value["eligible_series"],
+                        "skipped_series": value["skipped_series"],
+                        "skip_reason": value["skip_reason"],
+                    }
+                    for key, value in result["injection_response"]["cusum"].items()
+                },
             }
     print(json.dumps({
         "output": str(OUTPUT.relative_to(ROOT)),
