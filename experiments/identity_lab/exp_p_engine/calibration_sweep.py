@@ -273,6 +273,7 @@ def injection_response_for_series(
     min_adjacent_pairs_for_rho: int,
     scale_rho: float | None = None,
     scale_estimator: str = "first_difference_mad",
+    scale_window: int = 12,
 ) -> dict[str, Any]:
     responses: dict[str, dict[str, Any]] = {}
     for magnitude in INJECTION_MAGNITUDES:
@@ -301,7 +302,7 @@ def injection_response_for_series(
                 time_unit=time_unit,
                 baseline_method=baseline_method,
                 estimate_rho=estimate_rho,
-                scale_window=12,
+                scale_window=scale_window,
                 min_adjacent_pairs_for_rho=min_adjacent_pairs_for_rho,
                 scale_rho=scale_rho,
                 scale_estimator=scale_estimator,
@@ -668,6 +669,7 @@ def run_source(
                 min_adjacent_pairs_for_rho=min_adjacent_pairs_for_rho,
                 scale_rho=config_rho,
                 scale_estimator=scale_estimator,
+                scale_window=scale_window,
             )
             if injection:
                 injections.append(injection)
