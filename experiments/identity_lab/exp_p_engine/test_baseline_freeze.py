@@ -125,6 +125,51 @@ class BaselineFreezeTests(unittest.TestCase):
         self.assertTrue(all(row["suspicion_run_required"] == 2 for row in rows))
         self.assertGreaterEqual(len(pending), 1)
 
+    def test_injection_freeze_is_disabled_before_labelled_onset(self):
+        series = make_series(shift_from=18, shift=2.0)
+        onset = "2024"
+        rows, diagnostics = build_policy_residuals(
+            series,
+            policy="suspicion_freeze_baseline_and_scale",
+            time_unit="years",
+            suspicion_z=2.0,
+            suspicion_run=2,
+            freeze_trigger_after_time=onset,
+        )
+        pre_onset = [
+            row for row in rows
+            if int(row["event_time"]) < int(onset)
+        ]
+        self.assertTrue(pre_onset)
+        self.assertFalse(any(row["freeze_trigger"] for row in pre_onset))
+        self.assertFalse(any(row["freeze_active"] for row in pre_onset))
+        self.assertGreaterEqual(diagnostics["freeze_trigger_count"], 1)
+
+    def test_fixed_baseline_waits_for_full_window_and_rewarms_after_gap(self):
+        series = make_series(count=36, gap_at=18)
+        rows, _ = build_policy_residuals(
+            series,
+            policy="fixed_initial_baseline_fixed_scale",
+            time_unit="years",
+        )
+        before_gap = [row for row in rows if int(row["event_time"]) < 2020]
+        after_gap = [row for row in rows if int(row["event_time"]) >= 2020]
+        self.assertTrue(before_gap)
+        self.assertTrue(after_gap)
+        self.assertTrue(all(
+            row["reason"] == "fixed_baseline_requires_full_initial_window"
+            for row in before_gap[:4]
+        ))
+        post_gap_rewarm = [
+            row for row in after_gap
+            if row.get("reason") == "fixed_baseline_requires_full_initial_window"
+        ]
+        self.assertGreaterEqual(len(post_gap_rewarm), 4)
+        first_ready_after_gap = next(
+            row for row in after_gap if row["status"] == "ready"
+        )
+        self.assertGreaterEqual(first_ready_after_gap["support_count"], 12)
+
     def test_builder_rejects_multiple_entities(self):
         rows = make_series()
         rows.append({
