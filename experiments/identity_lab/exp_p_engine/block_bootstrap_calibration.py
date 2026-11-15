@@ -156,10 +156,12 @@ def lag1_correlation(values: Sequence[float]) -> float | None:
 
 
 def residual_distribution_diagnostics() -> dict[str, Any]:
-    """Compare prequential z and scale distributions before tuning any detector."""
+    """Compare baseline and scale-estimator distributions before detector tuning."""
     panel = read_world_bank()
     output: dict[str, Any] = {}
-    for baseline_method in ("rolling_median", "rolling_theil_sen"):
+    for scale_estimator in ("first_difference_mad", "second_difference_mad"):
+      output[scale_estimator] = {}
+      for baseline_method in ("rolling_median", "rolling_theil_sen"):
         per_series: list[dict[str, Any]] = []
         pooled_z: list[float] = []
         scale_methods: dict[str, int] = defaultdict(int)
@@ -173,6 +175,8 @@ def residual_distribution_diagnostics() -> dict[str, Any]:
                 time_unit="years",
                 baseline_method=baseline_method,
                 estimate_rho=False,
+                scale_window=16 if scale_estimator == "second_difference_mad" else 12,
+                scale_estimator=scale_estimator,
             )
             ready = [
                 row for row in residuals
@@ -213,7 +217,7 @@ def residual_distribution_diagnostics() -> dict[str, Any]:
                 "p90_across_series": percentile(values, 0.9),
                 "max_across_series": max(values) if values else None,
             }
-        output[baseline_method] = {
+        output[scale_estimator][baseline_method] = {
             "series_tested": len(per_series),
             "ready_residuals": len(pooled_z),
             "pooled_z": {
@@ -238,15 +242,21 @@ def residual_distribution_diagnostics() -> dict[str, Any]:
         }
     return {
         "source": "World Bank FS.AST.PRVT.GD.ZS",
-        "scale_estimator": "first_difference_mad_iid_unit_gap_only",
-        "purpose": "diagnose baseline and standardization behavior; not a labelled anomaly test",
-        "baselines": output,
+        "purpose": "compare scale estimator and baseline behavior; not a labelled anomaly test",
+        "estimators": output,
     }
 
 
-def prepare_panel() -> dict[str, list[list[float]]]:
+def prepare_panel_from_series(
+    entity_series: dict[str, list[dict[str, Any]]],
+    *,
+    scale_estimator: str,
+) -> dict[str, list[list[float]]]:
+    """Build identical source panels with one explicitly selected scale estimator."""
+    if scale_estimator not in {"first_difference_mad", "second_difference_mad"}:
+        raise ValueError("block_bootstrap_scale_estimator_unsupported")
     panel: dict[str, list[list[float]]] = {}
-    for entity_id, observations in read_world_bank().items():
+    for entity_id, observations in entity_series.items():
         if len(observations) < 12:
             continue
         residuals = build_univariate_residuals(
@@ -256,6 +266,8 @@ def prepare_panel() -> dict[str, list[list[float]]]:
             time_unit="years",
             baseline_method="rolling_theil_sen",
             estimate_rho=False,
+            scale_window=16 if scale_estimator == "second_difference_mad" else 12,
+            scale_estimator=scale_estimator,
         )
         segments = [
             segment for segment in contiguous_ready_segments(residuals)
@@ -264,6 +276,16 @@ def prepare_panel() -> dict[str, list[list[float]]]:
         if segments:
             panel[entity_id] = segments
     return panel
+
+
+def prepare_panel(
+    *,
+    scale_estimator: str = "first_difference_mad",
+) -> dict[str, list[list[float]]]:
+    return prepare_panel_from_series(
+        read_world_bank(),
+        scale_estimator=scale_estimator,
+    )
 
 
 def run_bootstrap(
@@ -380,38 +402,80 @@ def run_bootstrap(
 
 
 def main() -> None:
-    panel = prepare_panel()
-    segment_lengths = [
-        len(segment)
-        for segments in panel.values()
-        for segment in segments
-    ]
+    scale_estimators = ("first_difference_mad", "second_difference_mad")
+    estimator_results: dict[str, Any] = {}
+    compact: dict[str, Any] = {}
+    diagnostics = residual_distribution_diagnostics()
+
+    for estimator_index, scale_estimator in enumerate(scale_estimators):
+        panel = prepare_panel(scale_estimator=scale_estimator)
+        segment_lengths = [
+            len(segment)
+            for segments in panel.values()
+            for segment in segments
+        ]
+        block_results: dict[str, Any] = {}
+        for block_length in BLOCK_LENGTHS:
+            block_results[str(block_length)] = run_bootstrap(
+                panel,
+                block_length=block_length,
+                replicates=BOOTSTRAP_REPLICATES,
+            )
+        estimator_results[scale_estimator] = {
+            "scale_estimator": scale_estimator,
+            "baseline": "prequential_rolling_theil_sen",
+            "entity_count": len(panel),
+            "segment_count": len(segment_lengths),
+            "ready_residual_exposure": sum(segment_lengths),
+            "segment_length_summary": {
+                "min": min(segment_lengths) if segment_lengths else None,
+                "median": (
+                    percentile(segment_lengths, 0.5) if segment_lengths else None
+                ),
+                "max": max(segment_lengths) if segment_lengths else None,
+            },
+            "block_lengths": block_results,
+        }
+        compact[scale_estimator] = {}
+        for length, block in block_results.items():
+            compact[scale_estimator][length] = {
+                "cusum": [
+                    {
+                        "k": item["k"], "h": item["h"],
+                        "mean_series_alarm_rate": round(item["mean_series_with_any_alarm_rate"], 4),
+                        "upper95_series_alarm_rate": round(item["upper95_bootstrap_series_alarm_rate"], 4),
+                        "pass_5pct_screen": item["passes_5pct_series_alarm_screen"],
+                    }
+                    for item in block["detectors"]["cusum"]
+                ],
+                "sign_run": [
+                    {
+                        "threshold": item["threshold"], "run_length": item["run_length"],
+                        "mean_series_alarm_rate": round(item["mean_series_with_any_alarm_rate"], 4),
+                        "upper95_series_alarm_rate": round(item["upper95_bootstrap_series_alarm_rate"], 4),
+                        "pass_5pct_screen": item["passes_5pct_series_alarm_screen"],
+                    }
+                    for item in block["detectors"]["sign_run"]
+                ],
+            }
+
     report = {
-        "experiment": "domain_neutral_block_bootstrap_null_calibration_v1",
+        "experiment": "domain_neutral_block_bootstrap_null_calibration_v2",
         "source": "World Bank FS.AST.PRVT.GD.ZS",
         "synthetic_data": False,
+        "estimators": estimator_results,
+        "residual_distribution_diagnostics": diagnostics,
         "null_definition": (
             "Circular moving-block resampling of historical ready residual z-scores. "
-            "Temporal order is randomized only between blocks; dependence within each "
-            "block is preserved. The historical source is unlabelled and may contain "
-            "real breaks, so this is a conservative empirical null assumption, not "
-            "verified no-break ground truth."
+            "Both scale estimators use the same source panel definition, detector grid, "
+            "block lengths, replicate count and bootstrap seeds. Temporal order is "
+            "randomized only between blocks; within-block dependence is preserved. "
+            "The historical source is unlabelled and may contain real breaks, so this "
+            "is an empirical reference distribution, not verified no-break ground truth."
         ),
-        "baseline": "prequential_rolling_theil_sen_with_first_difference_iid_scale",
-        "entity_count": len(panel),
-        "segment_count": len(segment_lengths),
-        "ready_residual_exposure": sum(segment_lengths),
-        "segment_length_summary": {
-            "min": min(segment_lengths) if segment_lengths else None,
-            "median": (
-                percentile(segment_lengths, 0.5) if segment_lengths else None
-            ),
-            "max": max(segment_lengths) if segment_lengths else None,
-        },
         "bootstrap_replicates": BOOTSTRAP_REPLICATES,
         "bootstrap_seed": BOOTSTRAP_SEED,
-        "residual_distribution_diagnostics": residual_distribution_diagnostics(),
-        "block_lengths": {},
+        "block_lengths": list(BLOCK_LENGTHS),
         "5pct_series_alarm_screen": (
             "A candidate passes only when the 95th percentile across bootstrap panels "
             "of the proportion of entities with at least one alarm is <= 5%. "
@@ -419,42 +483,18 @@ def main() -> None:
         ),
         "threshold_promotion": "not_automatic",
     }
-    for block_length in BLOCK_LENGTHS:
-        report["block_lengths"][str(block_length)] = run_bootstrap(
-            panel,
-            block_length=block_length,
-            replicates=BOOTSTRAP_REPLICATES,
-        )
     OUTPUT.parent.mkdir(parents=True, exist_ok=True)
     OUTPUT.write_text(json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8")
-    compact: dict[str, Any] = {}
-    for length, block in report["block_lengths"].items():
-        compact[length] = {
-            "cusum": [
-                {
-                    "k": item["k"], "h": item["h"],
-                    "mean_series_alarm_rate": round(item["mean_series_with_any_alarm_rate"], 4),
-                    "upper95_series_alarm_rate": round(item["upper95_bootstrap_series_alarm_rate"], 4),
-                    "pass_5pct_screen": item["passes_5pct_series_alarm_screen"],
-                }
-                for item in block["detectors"]["cusum"]
-            ],
-            "sign_run": [
-                {
-                    "threshold": item["threshold"], "run_length": item["run_length"],
-                    "mean_series_alarm_rate": round(item["mean_series_with_any_alarm_rate"], 4),
-                    "upper95_series_alarm_rate": round(item["upper95_bootstrap_series_alarm_rate"], 4),
-                    "pass_5pct_screen": item["passes_5pct_series_alarm_screen"],
-                }
-                for item in block["detectors"]["sign_run"]
-            ],
-        }
     print(json.dumps({
         "output": str(OUTPUT.relative_to(ROOT)),
-        "entities": len(panel),
-        "segments": len(segment_lengths),
-        "ready_residual_exposure": report["ready_residual_exposure"],
-        "segment_length_summary": report["segment_length_summary"],
+        "estimators": {
+            key: {
+                "entities": value["entity_count"],
+                "segments": value["segment_count"],
+                "ready_residual_exposure": value["ready_residual_exposure"],
+            }
+            for key, value in estimator_results.items()
+        },
         "block_results": compact,
         "promotion": "not_automatic",
     }, ensure_ascii=False, indent=2))
