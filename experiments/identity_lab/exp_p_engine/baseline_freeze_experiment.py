@@ -426,8 +426,25 @@ def _injection_copy(
     observed.sort(key=lambda row: time_position(row["event_time"], time_unit))
     if len(observed) < 14:
         return None, None, None, None
-    onset_index = min(max(MIN_HISTORY + 2, int(len(observed) * 0.65)), len(observed) - 3)
-    pre_onset = observed[max(0, onset_index - SCALE_WINDOW):onset_index]
+    target_index = min(max(MIN_HISTORY + 2, int(len(observed) * 0.65)), len(observed) - 3)
+    valid_onsets = []
+    for candidate in range(target_index, len(observed) - 2):
+        start = candidate - 1
+        while start > 0:
+            gap = (
+                time_position(observed[start]["event_time"], time_unit)
+                - time_position(observed[start - 1]["event_time"], time_unit)
+            )
+            if gap > 1.02:
+                break
+            start -= 1
+        history = observed[max(start, candidate - SCALE_WINDOW):candidate]
+        if len(history) >= MIN_HISTORY:
+            valid_onsets.append((candidate, history))
+            break
+    if not valid_onsets:
+        return None, None, None, None
+    onset_index, pre_onset = valid_onsets[0]
     scale = scale_from(pre_onset, time_unit).get("value")
     if scale is None or float(scale) <= 0:
         return None, None, None, None
