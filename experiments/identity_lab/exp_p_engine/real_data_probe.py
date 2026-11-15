@@ -79,6 +79,7 @@ def probe_world_bank() -> dict:
     per_series = []
     total_cusum = total_p1 = tested_entities = scale_ready = 0
     trend_cusum = trend_p1 = trend_scale_ready = 0
+    median_gap_unresolved = trend_gap_unresolved = 0
     lengths = []
     for entity_id, series in grouped.items():
         coverage = missing_periods(series, years)
@@ -97,9 +98,11 @@ def probe_world_bank() -> dict:
             total_cusum += median_result["cusum_raw_hits"]
             total_p1 += median_result["sign_run_raw_hits"]
             scale_ready += median_result["scale_ready_rows"]
+            median_gap_unresolved += median_result["gap_unresolved_rows"]
             trend_cusum += trend_result["cusum_raw_hits"]
             trend_p1 += trend_result["sign_run_raw_hits"]
             trend_scale_ready += trend_result["scale_ready_rows"]
+            trend_gap_unresolved += trend_result["gap_unresolved_rows"]
             per_series.append({
                 "entity_id": entity_id,
                 "coverage": coverage,
@@ -127,9 +130,11 @@ def probe_world_bank() -> dict:
         "series_length_max": max(lengths) if lengths else 0,
         "entities_with_at_least_8_observations": tested_entities,
         "scale_ready_residual_rows_rolling_median": scale_ready,
+        "gap_unresolved_rows_rolling_median": median_gap_unresolved,
         "cusum_raw_hits_rolling_median": total_cusum,
         "sign_run_raw_hits_rolling_median": total_p1,
         "scale_ready_residual_rows_rolling_theil_sen": trend_scale_ready,
+        "gap_unresolved_rows_rolling_theil_sen": trend_gap_unresolved,
         "cusum_raw_hits_rolling_theil_sen": trend_cusum,
         "sign_run_raw_hits_rolling_theil_sen": trend_p1,
         "missingness_quality_signals": None,
