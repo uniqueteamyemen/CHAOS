@@ -86,9 +86,10 @@ class BaselineFreezeTests(unittest.TestCase):
             series,
             policy="suspicion_freeze_baseline_and_scale",
             time_unit="years",
-            suspicion_z=2.0,
-            release_z=1.0,
+            suspicion_z=8.0,
+            release_z=2.0,
             release_run=5,
+            suspicion_run=1,
         )
         self.assertGreaterEqual(diagnostics["freeze_trigger_count"], 1)
         self.assertGreaterEqual(diagnostics["freeze_release_count"], 1)
@@ -106,6 +107,23 @@ class BaselineFreezeTests(unittest.TestCase):
         self.assertEqual(post_gap[0]["status"], "gap_unresolved")
         self.assertTrue(all(row["status"] == "scale_unavailable" for row in post_gap[1:8]))
         self.assertTrue(all(row["status"] == "ready" for row in post_gap[8:]))
+
+
+    def test_two_same_direction_suspicion_points_are_required_before_freeze(self):
+        series = make_series(shift_from=23, shift=2.0)
+        rows, diagnostics = build_policy_residuals(
+            series,
+            policy="suspicion_freeze_baseline_and_scale",
+            time_unit="years",
+            suspicion_z=2.0,
+            suspicion_run=2,
+        )
+        triggers = [row for row in rows if row["freeze_trigger"]]
+        pending = [row for row in rows if row.get("suspicion_pending")]
+        self.assertGreaterEqual(diagnostics["freeze_trigger_count"], 1)
+        self.assertEqual(len(triggers), diagnostics["freeze_trigger_count"])
+        self.assertTrue(all(row["suspicion_run_required"] == 2 for row in rows))
+        self.assertGreaterEqual(len(pending), 1)
 
     def test_builder_rejects_multiple_entities(self):
         rows = make_series()
