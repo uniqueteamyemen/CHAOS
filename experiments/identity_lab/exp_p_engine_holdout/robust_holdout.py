@@ -202,11 +202,11 @@ def residuals_to_stock_rows(values: list[float]) -> list[dict[str, Any]]:
         expected_closing = balance + 400.0 - 400.0 - 5.0
         closing = expected_closing - residual
         rows.append({
-            "opening_balance": balance,
-            "inflow": 400.0,
-            "outflow": 400.0,
-            "adjustments": 5.0,
-            "closing_balance": closing,
+            "opening": balance,
+            "arrivals": 400.0,
+            "dispensed": 400.0,
+            "expired": 5.0,
+            "closing": closing,
             "month": month,
         })
         balance = closing

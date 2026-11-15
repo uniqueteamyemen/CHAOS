@@ -55,15 +55,15 @@ class RobustHoldoutTests(unittest.TestCase):
         jump = generate_residuals(456, "gaussian_ar1_variance_jump_null")
         # Same seed drives the same Gaussian sequence before the variance jump.
         self.assertEqual(base[:64], jump[:64])
-        self.assertEqual(base[64:], jump[64:])
+        self.assertNotEqual(base[64:], jump[64:])
 
     def test_ledger_adapter_preserves_residuals(self):
         values = [0.5, -1.0, 2.5, -0.2]
         rows = residuals_to_stock_rows(values)
         self.assertEqual(len(rows), len(values))
         for index, row in enumerate(rows):
-            expected = row["opening_balance"] + row["inflow"] - row["outflow"] - row["adjustments"]
-            self.assertAlmostEqual(expected - row["closing_balance"], values[index])
+            expected = row["opening"] + row["arrivals"] - row["dispensed"] - row["expired"]
+            self.assertAlmostEqual(expected - row["closing"], values[index])
 
 
 if __name__ == "__main__":
