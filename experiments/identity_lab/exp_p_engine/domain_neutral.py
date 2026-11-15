@@ -827,13 +827,14 @@ def cohort_peer_residuals(
         cohort = row.get("cohort_id")
         if cohort in (None, ""):
             continue
-        peer_value = float(row["value"])
+        raw_observed_value = float(row["value"])
+        peer_value = raw_observed_value
         metric_unit = str(row.get("unit") or "")
         exposure_unit = ""
         if use_exposure:
             exposure = row.get("exposure")
             exposure_unit = str(row.get("exposure_unit") or "")
-            if exposure is None or not exposure_unit:
+            if exposure is None or not exposure_unit or not metric_unit:
                 continue
             exposure = float(exposure)
             if not math.isfinite(exposure) or exposure <= 0:
@@ -864,19 +865,46 @@ def cohort_peer_residuals(
                 return values[position] if position < index else values[position + 1]
 
             peer_median = (without_self(lower) + without_self(upper)) / 2.0
+            peer_deviations = [
+                abs(without_self(position) - peer_median)
+                for position in range(remaining_count)
+            ]
+            peer_mad = statistics.median(peer_deviations)
+            peer_scale = 1.4826 * peer_mad
+            comparable_unit = (
+                metric_unit + "/" + exposure_unit
+                if use_exposure else metric_unit or None
+            )
+            baseline_id = (
+                "peer:" + metric_id + ":" + cohort + ":"
+                + (metric_unit or "unit-unspecified") + ":"
+                + (exposure_unit or "raw")
+            )
+            peer_residual = value - peer_median
+            scale_ready = math.isfinite(peer_scale) and peer_scale > 0
             output.append({
                 "entity_id": entity_id,
                 "metric_id": metric_id,
                 "event_time": event_time,
                 "cohort_id": cohort,
-                "unit": metric_unit or None,
+                "unit": comparable_unit,
                 "exposure_unit": exposure_unit or None,
                 "observed": value,
-                "peer_expected": peer_median,
-                "peer_residual": value - peer_median,
-                "peer_count": peer_count,
-                "value_basis": "value_per_exposure" if use_exposure else "raw_value",
+                "expected": peer_median,
+                "observed_value": value,
+                "expected_value": peer_median,
+                "residual": peer_residual,
+                "scale": peer_scale if scale_ready else None,
+                "z_score": peer_residual / peer_scale if scale_ready else None,
+                "status": "ready" if scale_ready else "peer_scale_unavailable",
+                "baseline_id": baseline_id,
                 "baseline_method": "same_period_peer_median",
+                "support_count": peer_count,
+                "peer_expected": peer_median,
+                "peer_residual": peer_residual,
+                "peer_count": peer_count,
+                "raw_observed_value": raw_observed_value,
+                "value_basis": "value_per_exposure" if use_exposure else "raw_value",
             })
     output.sort(key=lambda row: (row["metric_id"], row["event_time"], row["cohort_id"], row["entity_id"]))
     return output
