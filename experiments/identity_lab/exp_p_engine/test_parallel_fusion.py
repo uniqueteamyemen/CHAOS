@@ -172,6 +172,33 @@ class ParallelFusionTests(unittest.TestCase):
         self.assertEqual(result["D"]["diagnostics"]["p1_mode"], "production_adaptive_13_run")
         self.assertGreater(result["D"]["diagnostics"]["p1_adaptive_high_noise_periods"], 0)
 
+    def test_E_resets_both_cusum_accumulators_at_transition_and_resumes_after(self):
+        series = [
+            {"month": month, "residual": residual}
+            for month, residual in enumerate((2.0, 2.0, 0.0, 1.5, 1.5, 1.5), start=1)
+        ]
+        sigmas = [1.0] * len(series)
+        transitions = [False, False, True, False, False, False]
+        common = dict(
+            series=series, bias=0.0, sigmas=sigmas, transitions=transitions,
+            sigma_cap=1.0, k_sigma=0.5, h_sigma=4.0, transition_damping=0.35,
+        )
+        held = _two_sided_cusum(policy="hold_unbounded", **common)
+        damped = _two_sided_cusum(policy="bounded_damped", **common)
+        reset = _two_sided_cusum(policy="suspend_reset", **common)
+        self.assertTrue(any(hit["time"] == 5 for hit in held))
+        self.assertTrue(any(hit["time"] == 5 for hit in damped))
+        self.assertEqual(reset, [])
+
+    def test_E_is_same_as_C_for_P1(self):
+        residuals = [0.2] * 40 + [15.0, -15.0] * 30 + [2.0] * 40
+        rows = rows_from_residuals(residuals)
+        result = run_candidates("stock", rows, quiet_range=(1, 40))
+        c_p1 = [hit for hit in result["C"]["raw_hits"] if hit["detector"] == "sign_run"]
+        e_p1 = [hit for hit in result["E"]["raw_hits"] if hit["detector"] == "sign_run"]
+        self.assertEqual(c_p1, e_p1)
+        self.assertEqual(result["E"]["diagnostics"]["policy"], "suspend_reset")
+
     def test_same_event_cooldown_marks_but_retains_evidence(self):
         series = [{"month": i, "residual": 5.0} for i in range(1, 100)]
         hits = [

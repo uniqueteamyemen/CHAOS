@@ -70,7 +70,8 @@ This experiment is isolated from the production engine.py; A remains the unchang
 - **B:** P1 uses the capped 3-sigma / 3-run candidate rule; positive and negative CUSUM accumulators are independent; both accumulators are held (not erased) while the short/long variance-transition condition is active; CUSUM scale remains unbounded.
 - **C:** same independent detector tracks; CUSUM scale is capped at 2 times quiet sigma and transition updates are damped by 0.35 instead of being erased or paused.
 - **Fusion:** evidence is aggregated before event adjudication. A reversal or six consecutive calm observations opens a new event. Same-event directional cooldown marks a repeated notification but retains the underlying evidence.
-- **D (next isolation arm):** uses exactly C's two-sided CUSUM and changes only P1's high-noise behavior to the production engine's adaptive-scale, 13-consecutive-direction rule. C vs D therefore isolates the P1 contribution while the CUSUM evidence is held identical.
+- **D:** uses exactly C's two-sided CUSUM and changes only P1's high-noise behavior to the production engine's adaptive-scale, 13-consecutive-direction rule. C vs D isolates the P1 contribution.
+- **E:** uses the same capped P1 as C and changes only CUSUM transition handling: both directional accumulators are reset during a variance transition, then accumulate again after the transition ends. C vs E isolates transition-memory behavior.
 
 Each run creates an immutable configuration/input snapshot with a SHA-256 input fingerprint, frozen bias, quiet sigma, configuration, code revision, and time range. Out-of-order and duplicate timestamps fail closed.
 
