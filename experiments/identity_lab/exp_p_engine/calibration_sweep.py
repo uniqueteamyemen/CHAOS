@@ -1,0 +1,450 @@
+"""Real-series threshold sweep for the domain-neutral break detectors.
+
+This tool reports observed historical signal density separately from controlled
+injection response. Historical hits are NOT labelled false positives because
+the committed public sources have no trusted anomaly ground truth.
+"""
+from __future__ import annotations
+
+import csv
+import json
+from collections import Counter, defaultdict
+from pathlib import Path
+from statistics import median
+from typing import Any
+
+from experiments.identity_lab.exp_p_engine.domain_neutral import (
+    build_univariate_residuals,
+    detect_sign_runs,
+    detect_two_sided_cusum,
+    first_difference_mad_scale,
+    first_evidence_at_or_after,
+    normalize_observations,
+)
+
+ROOT = Path(__file__).resolve().parents[3]
+DATA = ROOT / "data" / "raw"
+OUTPUT = (
+    ROOT / "experiments" / "identity_lab" / "exp_p_engine"
+    / "results" / "domain_neutral_threshold_sweep.json"
+)
+
+BASELINES = ("rolling_median", "rolling_theil_sen")
+CUSUM_GRID = (
+    {"k": 0.25, "h": 8.5},
+    {"k": 0.25, "h": 12.0},
+    {"k": 0.50, "h": 8.5},
+    {"k": 0.50, "h": 12.0},
+    {"k": 0.50, "h": 16.0},
+    {"k": 0.75, "h": 12.0},
+    {"k": 1.00, "h": 16.0},
+)
+P1_GRID = (
+    {"threshold": 3.0, "run_length": 3},
+    {"threshold": 3.0, "run_length": 4},
+    {"threshold": 3.5, "run_length": 3},
+    {"threshold": 3.5, "run_length": 4},
+    {"threshold": 4.0, "run_length": 3},
+    {"threshold": 4.0, "run_length": 4},
+)
+INJECTION_MAGNITUDES = (3.0, 6.0)
+INJECTION_DIRECTIONS = (-1, 1)
+
+
+def read_csv(path: Path) -> list[dict[str, str]]:
+    with path.open("r", encoding="utf-8-sig", newline="") as handle:
+        return list(csv.DictReader(handle))
+
+
+def read_world_bank() -> dict[str, list[dict[str, Any]]]:
+    folder = DATA / "financial_world_bank_v1"
+    manifest = json.loads((folder / "MANIFEST.json").read_text(encoding="utf-8"))
+    rows = read_csv(folder / "WB_FS_AST_PRVT_GD_ZS_2000_2024.csv")
+    normalized = normalize_observations(
+        rows,
+        {
+            "entity_id": "entity_code",
+            "metric_id": {"constant": manifest["indicator"]},
+            "event_time": "year",
+            "value": "value",
+            "unit": {"constant": "% of GDP"},
+            "source_id": {"constant": "World Bank"},
+            "time_support": {"constant": "annual"},
+        },
+    )
+    grouped: dict[str, list[dict[str, Any]]] = defaultdict(list)
+    for row in normalized["observations"]:
+        grouped[row["entity_id"]].append(row)
+    return dict(grouped)
+
+
+def read_usgs_monthly() -> dict[str, list[dict[str, Any]]]:
+    folder = DATA / "usgs_earthquake_m6_5_2000_2024"
+    manifest = json.loads((folder / "MANIFEST.json").read_text(encoding="utf-8"))
+    raw_rows = read_csv(folder / manifest["raw_file"])
+    normalized = normalize_observations(
+        raw_rows,
+        {
+            "entity_id": {"constant": "USGS:global:magnitude-ge-6.5"},
+            "metric_id": {"constant": "earthquake_event_magnitude"},
+            "event_time": "time",
+            "value": "mag",
+            "unit": {"constant": "magnitude"},
+            "source_id": {"constant": "USGS FDSN event catalog"},
+            "time_support": {"constant": "event"},
+        },
+    )
+    counts: Counter[str] = Counter()
+    for row in normalized["observations"]:
+        counts[row["event_time"][:7]] += 1
+    monthly: list[dict[str, Any]] = []
+    for year in range(2000, 2025):
+        for month in range(1, 13):
+            period = f"{year:04d}-{month:02d}"
+            monthly.append({
+                "entity_id": "USGS:global:magnitude-ge-6.5",
+                "metric_id": "monthly_count_magnitude_ge_6_5",
+                "event_time": period,
+                "value": float(counts[period]),
+                "observation_status": "observed",
+                "unit": "events/month",
+                "source_id": "USGS FDSN event catalog",
+                "time_support": "monthly",
+            })
+    return {"USGS:global:magnitude-ge-6.5": monthly}
+
+
+def ready_period_count(residuals: list[dict[str, Any]]) -> int:
+    return sum(1 for row in residuals if row["status"] == "ready")
+
+
+def historical_detector_profile(
+    residuals: list[dict[str, Any]],
+) -> dict[str, Any]:
+    ready = ready_period_count(residuals)
+    cusum: list[dict[str, Any]] = []
+    p1: list[dict[str, Any]] = []
+    for params in CUSUM_GRID:
+        hits = detect_two_sided_cusum(residuals, k=params["k"], h=params["h"])
+        cusum.append({
+            **params,
+            "raw_hits": len(hits),
+            "positive_hits": sum(1 for hit in hits if hit["direction"] == "positive"),
+            "negative_hits": sum(1 for hit in hits if hit["direction"] == "negative"),
+            "observed_signal_rate_per_1000_ready_periods": (
+                1000.0 * len(hits) / ready if ready else None
+            ),
+        })
+    for params in P1_GRID:
+        hits = detect_sign_runs(
+            residuals,
+            threshold=params["threshold"],
+            run_length=params["run_length"],
+        )
+        p1.append({
+            **params,
+            "raw_hits": len(hits),
+            "positive_hits": sum(1 for hit in hits if hit["direction"] == "positive"),
+            "negative_hits": sum(1 for hit in hits if hit["direction"] == "negative"),
+            "observed_signal_rate_per_1000_ready_periods": (
+                1000.0 * len(hits) / ready if ready else None
+            ),
+        })
+    return {
+        "ready_periods": ready,
+        "cusum_p1_disabled": cusum,
+        "sign_run_cusum_disabled": p1,
+        "interpretation": (
+            "Rates are observed signal density on the historical source. They are not "
+            "false-positive rates because source periods have no trusted anomaly labels."
+        ),
+    }
+
+
+def inject_persistent_level_shift(
+    series: list[dict[str, Any]],
+    *,
+    magnitude_sigma: float,
+    direction: int,
+    time_unit: str,
+) -> tuple[list[dict[str, Any]] | None, str | None, int | None, float | None]:
+    observed = [
+        row for row in series
+        if row.get("observation_status") == "observed" and row.get("value") is not None
+    ]
+    observed.sort(key=lambda row: row["event_time"])
+    if len(observed) < 12:
+        return None, None, None, None
+    onset_index = min(max(8, int(len(observed) * 0.65)), len(observed) - 3)
+    pre_onset = observed[:onset_index]
+    scale = first_difference_mad_scale(pre_onset, time_unit=time_unit)
+    if scale["status"] != "ok" or scale["value"] is None:
+        return None, None, None, None
+    shift = direction * magnitude_sigma * float(scale["value"])
+    injected = [dict(row) for row in observed]
+    for index in range(onset_index, len(injected)):
+        injected[index]["value"] = float(injected[index]["value"]) + shift
+    return injected, injected[onset_index]["event_time"], onset_index, float(scale["value"])
+
+
+def injection_response_for_series(
+    series: list[dict[str, Any]],
+    *,
+    baseline_method: str,
+    time_unit: str,
+) -> dict[str, Any]:
+    responses: dict[str, list[dict[str, Any]]] = {}
+    for magnitude in INJECTION_MAGNITUDES:
+        for direction in INJECTION_DIRECTIONS:
+            key = f"{'positive' if direction > 0 else 'negative'}_{magnitude:g}sigma"
+            injected, onset, onset_index, sigma = inject_persistent_level_shift(
+                series,
+                magnitude_sigma=magnitude,
+                direction=direction,
+                time_unit=time_unit,
+            )
+            if injected is None or onset is None or onset_index is None or sigma is None:
+                continue
+            residuals = build_univariate_residuals(
+                injected,
+                baseline_window=12,
+                min_history=8,
+                time_unit=time_unit,
+                baseline_method=baseline_method,
+            )
+            cusum_params_result: list[dict[str, Any]] = []
+            for params in CUSUM_GRID:
+                hits = detect_two_sided_cusum(
+                    residuals, k=params["k"], h=params["h"]
+                )
+                first = first_evidence_at_or_after(hits, onset)
+                delay = None
+                if first is not None:
+                    detected_index = next(
+                        index for index, row in enumerate(residuals)
+                        if row["event_time"] == first["event_time"]
+                    )
+                    onset_residual_index = next(
+                        (
+                            index for index, row in enumerate(residuals)
+                            if row["event_time"] == onset
+                        ),
+                        None,
+                    )
+                    if onset_residual_index is not None:
+                        delay = detected_index - onset_residual_index
+                cusum_params_result.append({
+                    **params,
+                    "detected": first is not None,
+                    "direction_detected": first["direction"] if first else None,
+                    "first_evidence_time": first["event_time"] if first else None,
+                    "delay_observations": delay,
+                })
+
+            p1_params_result: list[dict[str, Any]] = []
+            for params in P1_GRID:
+                hits = detect_sign_runs(
+                    residuals,
+                    threshold=params["threshold"],
+                    run_length=params["run_length"],
+                )
+                first = first_evidence_at_or_after(hits, onset)
+                delay = None
+                if first is not None:
+                    detected_index = next(
+                        index for index, row in enumerate(residuals)
+                        if row["event_time"] == first["event_time"]
+                    )
+                    onset_residual_index = next(
+                        (
+                            index for index, row in enumerate(residuals)
+                            if row["event_time"] == onset
+                        ),
+                        None,
+                    )
+                    if onset_residual_index is not None:
+                        delay = detected_index - onset_residual_index
+                p1_params_result.append({
+                    **params,
+                    "detected": first is not None,
+                    "direction_detected": first["direction"] if first else None,
+                    "first_evidence_time": first["event_time"] if first else None,
+                    "delay_observations": delay,
+                })
+            responses[key] = {
+                "onset_time": onset,
+                "injection_scale": sigma,
+                "cusum": cusum_params_result,
+                "sign_run": p1_params_result,
+            }
+    return responses
+
+
+def summarize_injection_responses(
+    all_responses: list[dict[str, Any]],
+) -> dict[str, Any]:
+    summary: dict[str, Any] = {}
+    for detector in ("cusum", "sign_run"):
+        if detector == "cusum":
+            grid = CUSUM_GRID
+            get_key = lambda p: (p["k"], p["h"])
+        else:
+            grid = P1_GRID
+            get_key = lambda p: (p["threshold"], p["run_length"])
+        by_scenario: dict[str, list[dict[str, Any]]] = defaultdict(list)
+        for response in all_responses:
+            for scenario, result in response.items():
+                for candidate in result[detector]:
+                    by_scenario[scenario].append(candidate)
+        scenario_summary: dict[str, Any] = {}
+        for scenario, results in by_scenario.items():
+            candidate_rows = []
+            for params in grid:
+                key = get_key(params)
+                matching = [
+                    row for row in results
+                    if (
+                        get_key(row) == key
+                    )
+                ]
+                detected = [row for row in matching if row["detected"]]
+                delays = [
+                    row["delay_observations"]
+                    for row in detected
+                    if row["delay_observations"] is not None
+                ]
+                candidate_rows.append({
+                    **params,
+                    "tested_injections": len(matching),
+                    "detected_injections": len(detected),
+                    "injection_recall": (
+                        len(detected) / len(matching) if matching else None
+                    ),
+                    "median_detection_delay_observations": (
+                        median(delays) if delays else None
+                    ),
+                    "direction_matches_injection": sum(
+                        1 for row in detected
+                        if row["direction_detected"] ==
+                        ("positive" if "positive" in scenario else "negative")
+                    ),
+                })
+            scenario_summary[scenario] = candidate_rows
+        summary[detector] = scenario_summary
+    return summary
+
+
+def run_source(
+    name: str,
+    entity_series: dict[str, list[dict[str, Any]]],
+    *,
+    time_unit: str,
+) -> dict[str, Any]:
+    source_result: dict[str, Any] = {
+        "source": name,
+        "time_unit": time_unit,
+        "entity_count": len(entity_series),
+        "baseline_methods": {},
+    }
+    for baseline_method in BASELINES:
+        historical_rows: list[dict[str, Any]] = []
+        injections: list[dict[str, Any]] = []
+        series_count = ready_count = 0
+        per_entity_signal: dict[str, Any] = {}
+        for entity_id, series in entity_series.items():
+            observed = [
+                row for row in series
+                if row.get("observation_status") == "observed" and row.get("value") is not None
+            ]
+            if len(observed) < 12:
+                continue
+            residuals = build_univariate_residuals(
+                observed,
+                baseline_window=12,
+                min_history=8,
+                time_unit=time_unit,
+                baseline_method=baseline_method,
+            )
+            series_count += 1
+            ready_count += ready_period_count(residuals)
+            historical_rows.extend(residuals)
+            per_entity_signal[entity_id] = {
+                "observation_count": len(observed),
+                "residual_count": len(residuals),
+                "ready_periods": ready_period_count(residuals),
+                "gap_unresolved": sum(1 for row in residuals if row["status"] == "gap_unresolved"),
+                "scale_unavailable": sum(1 for row in residuals if row["status"] == "scale_unavailable"),
+            }
+            injection = injection_response_for_series(
+                observed,
+                baseline_method=baseline_method,
+                time_unit=time_unit,
+            )
+            if injection:
+                injections.append(injection)
+
+        source_result["baseline_methods"][baseline_method] = {
+            "series_tested": series_count,
+            "ready_periods": ready_count,
+            "historical_signal_profile": historical_detector_profile(historical_rows),
+            "injection_response": summarize_injection_responses(injections),
+            "per_entity_coverage": per_entity_signal,
+            "labeling": (
+                "Observed source signals are unlabelled. Injection recall is measured "
+                "against controlled persistent shifts added to copies of the real series."
+            ),
+        }
+    return source_result
+
+
+def main() -> None:
+    report = {
+        "experiment": "domain_neutral_real_series_threshold_sweep_v1",
+        "source_data": {
+            "world_bank_indicator": "FS.AST.PRVT.GD.ZS",
+            "usgs_query": "magnitude >= 6.5, monthly count series",
+        },
+        "threshold_grid": {
+            "cusum": list(CUSUM_GRID),
+            "sign_run": list(P1_GRID),
+        },
+        "sources": {
+            "world_bank": run_source(
+                "World Bank domestic credit to private sector (% GDP)",
+                read_world_bank(),
+                time_unit="years",
+            ),
+            "usgs": run_source(
+                "USGS global M6.5+ monthly event counts",
+                read_usgs_monthly(),
+                time_unit="months",
+            ),
+        },
+        "decision_rule": (
+            "No threshold is auto-promoted to production. Compare observed historical "
+            "signal density against persistent +/-3sigma and +/-6sigma injection recall "
+            "and detection delay, separately for each source and baseline strategy."
+        ),
+    }
+    OUTPUT.parent.mkdir(parents=True, exist_ok=True)
+    OUTPUT.write_text(json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8")
+    compact = {}
+    for source, source_data in report["sources"].items():
+        compact[source] = {}
+        for baseline, result in source_data["baseline_methods"].items():
+            compact[source][baseline] = {
+                "series_tested": result["series_tested"],
+                "ready_periods": result["ready_periods"],
+                "cusum_signal_rates": result["historical_signal_profile"]["cusum_p1_disabled"],
+                "sign_run_signal_rates": result["historical_signal_profile"]["sign_run_cusum_disabled"],
+                "injection_scenarios": list(result["injection_response"]["cusum"].keys()),
+            }
+    print(json.dumps({
+        "output": str(OUTPUT.relative_to(ROOT)),
+        "summary": compact,
+        "promotion": "not_automatic",
+    }, ensure_ascii=False, indent=2))
+
+
+if __name__ == "__main__":
+    main()
