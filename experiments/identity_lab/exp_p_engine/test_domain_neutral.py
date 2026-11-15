@@ -136,6 +136,16 @@ class ObservationContractTests(unittest.TestCase):
         self.assertEqual(report["absent_records"], 1)
 
 
+    def test_missing_periods_rejects_mixed_series(self):
+        rows = [
+            {"entity_id": "e1", "metric_id": "m", "event_time": "2024",
+             "value": 1, "observation_status": "observed"},
+            {"entity_id": "e2", "metric_id": "m", "event_time": "2024",
+             "value": 2, "observation_status": "observed"},
+        ]
+        with self.assertRaisesRegex(ValueError, "one_entity_metric"):
+            missing_periods(rows, ["2024"])
+
     def test_missingness_spike_is_reported_as_data_quality_not_behavior(self):
         expected = [f"{2024 + (month - 1) // 12}-{(month - 1) % 12 + 1:02d}" for month in range(1, 16)]
         rows = [
@@ -251,6 +261,18 @@ class ScaleEstimatorTests(unittest.TestCase):
 
 
 class BaselineTests(unittest.TestCase):
+    def test_first_observation_after_multi_period_gap_is_not_scored_as_break(self):
+        rows = observations([float(i) for i in range(9)], start_year=2000)
+        rows[-1]["event_time"] = "2012"
+        result = build_univariate_residuals(
+            rows, baseline_window=8, min_history=8, time_unit="years",
+            baseline_method="rolling_theil_sen",
+        )
+        self.assertEqual(len(result), 1)
+        self.assertEqual(result[0]["status"], "gap_unresolved")
+        self.assertIsNone(result[0]["z_score"])
+        self.assertEqual(result[0]["observation_gap_units"], 5.0)
+
     def test_theil_sen_baseline_tracks_a_smooth_trend_better_than_rolling_median(self):
         rng = random.Random(92)
         rows = observations(
