@@ -385,8 +385,10 @@ class ResidualDependenceTests(unittest.TestCase):
         late_rows = [dict(row) for row in rows]
         late_rows[-2]["z_score"] = 0.1
         late_rows[-2]["observed_value"] = 0.1
+        late_rows[-2]["residual"] = 0.1
         late_rows[-1]["z_score"] = 3.5
         late_rows[-1]["observed_value"] = 3.5
+        late_rows[-1]["residual"] = 3.5
         late = _first_hit_summary(
             late_rows, onset="2021", detector="sign_run",
             parameters={"threshold": 3.0, "run_length": 1},
@@ -413,6 +415,8 @@ class ResidualDependenceTests(unittest.TestCase):
                     "k": 1.0, "h": 64.0,
                     "injected_detected": True,
                     "control_detected": False,
+                    "injected_detected_within_3_years": True,
+                    "control_detected_within_3_years": False,
                     "injected_direction": "positive",
                     "injected_delay_years": 1.0,
                 }],
@@ -424,6 +428,8 @@ class ResidualDependenceTests(unittest.TestCase):
                     "k": 1.0, "h": 64.0,
                     "injected_detected": False,
                     "control_detected": False,
+                    "injected_detected_within_3_years": False,
+                    "control_detected_within_3_years": False,
                     "injected_direction": None,
                     "injected_delay_years": None,
                 }],
