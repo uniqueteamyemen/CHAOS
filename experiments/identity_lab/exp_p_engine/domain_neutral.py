@@ -404,7 +404,7 @@ def first_difference_mad_scale(
     time_unit: str = "years",
     rho: float | None = None,
     estimate_rho: bool = False,
-    min_adjacent_pairs_for_rho: int = 16,
+    min_adjacent_pairs_for_rho: int = 1500,
     min_differences: int = 4,
 ) -> dict[str, Any]:
     """Estimate level-noise scale from actual first differences.
@@ -602,7 +602,7 @@ def build_univariate_residuals(
     baseline_method: str = "rolling_median",
     estimate_rho: bool = False,
     scale_window: int | None = None,
-    min_adjacent_pairs_for_rho: int = 16,
+    min_adjacent_pairs_for_rho: int = 1500,
 ) -> list[dict[str, Any]]:
     """Prequential baseline; current observation never trains itself."""
     if baseline_window < min_history or min_history < 4:
