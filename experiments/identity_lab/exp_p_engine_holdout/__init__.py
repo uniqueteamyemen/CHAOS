@@ -1,1 +1,1 @@
-"""Independent P-engine robustness holdout stage."""
+"""Independent P-engine holdout and real-series replay stages."""

@@ -26,3 +26,12 @@ promotion floor. C at its fixed default (0.5, 8.5) remains the control.
 A holdout candidate passes only when every holdout null scenario has a CUSUM
 false-alarm rate <=5% and every holdout shift scenario has directional
 sensitivity >=75%. No threshold is changed after inspecting holdout results.
+
+
+## Stage I — archived EIA weekly real-series replay
+
+A separate replay reads the five already-committed EIA HTML snapshots under experiments/identity_lab/exp_c_eia/raw/. The workflow verifies their recorded SHA-256 sums before execution. It does not request fresh data from EIA.
+
+Candidate arms are A production, C default, C threshold selected from G, D adaptive high-noise P1, E reset-at-transition with capped scale, and F reset-at-transition with uncapped scale. The report separates raw P1 hits, raw CUSUM hits, fused event counts, and timing proximity to declared historical dates. Historical date alignment is descriptive, not ground truth.
+
+Positive and negative 3-sigma/6-sigma level shifts are injected into copies of the residual stream, never into source data. Detection is measured after 130 weeks of adaptation. No false-alarm-rate or production-approval claim is inferred from unlabeled EIA history.
