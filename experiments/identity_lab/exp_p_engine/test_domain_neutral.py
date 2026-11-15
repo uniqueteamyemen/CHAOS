@@ -357,6 +357,27 @@ class PartialRelationTests(unittest.TestCase):
         self.assertTrue(all(row["event_time"] != "2015-01-01T00:00:00+00:00" for row in results))
         self.assertEqual(len(results), 3)
 
+    def test_partial_relation_does_not_score_first_pair_after_time_gap(self):
+        rows = []
+        event_years = list(range(2000, 2008)) + [2013, 2014]
+        for index, year in enumerate(event_years):
+            x = float(10 + index * 2)
+            y = 5.0 + 4.0 * x + (0.1 if index % 2 else -0.1)
+            for metric_id, value in (("hours", x), ("cases", y)):
+                rows.append({
+                    "entity_id": "team-1", "metric_id": metric_id,
+                    "event_time": str(year), "value": value,
+                    "observation_status": "observed",
+                })
+        results = build_partial_relation_residuals(
+            rows, x_metric_id="hours", y_metric_id="cases",
+            relationship_id="cases-hours", min_pairs=8,
+        )
+        self.assertEqual(results[0]["status"], "gap_unresolved")
+        self.assertIsNone(results[0]["z_score"])
+        self.assertEqual(results[0]["observation_gap_units"], 6.0)
+        self.assertEqual(results[1]["status"], "ready")
+
     def test_relation_rejects_metric_unit_drift(self):
         rows = []
         for index in range(10):
