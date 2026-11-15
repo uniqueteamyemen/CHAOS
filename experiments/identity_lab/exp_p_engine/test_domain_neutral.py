@@ -480,8 +480,7 @@ class DetectorAndFleetTests(unittest.TestCase):
         residuals = [
             residual_row("A", "m", "2020", 3.0),
             residual_row("B", "m", "2020", 3.0),
-            residual_row("A", "m", "2021", 3.0),
-            residual_row("B", "m", "2021", 3.0),
+            residual_row("C", "m", "2020", 3.0),
         ]
         result = run_candidate_detectors(
             residuals, cusum_k=0.5, cusum_h=5.0,
@@ -494,7 +493,6 @@ class DetectorAndFleetTests(unittest.TestCase):
         residuals = [
             residual_row("A", "m1", "2020", 3.0, baseline="baseline-1"),
             residual_row("A", "m2", "2020", 3.0, baseline="baseline-2"),
-            residual_row("A", "m1", "2021", 3.0, baseline="baseline-1"),
         ]
         result = run_candidate_detectors(
             residuals, cusum_k=0.5, cusum_h=5.0,
