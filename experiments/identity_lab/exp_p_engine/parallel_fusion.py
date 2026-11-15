@@ -493,15 +493,6 @@ def run_candidates(
         p1_high_noise_handling=True, p1_high_noise_factor=p1_high_noise_factor,
         p1_high_noise_run=p1_high_noise_run,
     )
-    return {
-        "snapshot": snapshot.to_dict(),
-        "A": baseline,
-        "B": candidate_b,
-        "C": candidate_c,
-        "D": candidate_d,
-        "E": candidate_e,
-        "F": candidate_f,
-        "G": candidate_g,
     candidate_h = _candidate(
         series, bias=bias, sigma_quiet=sigma_quiet, window=window,
         noise_gate_window=noise_gate_window, transition_ratio=transition_ratio,
@@ -522,6 +513,15 @@ def run_candidates(
         p1_high_noise_handling=True, p1_high_noise_factor=p1_high_noise_factor,
         p1_high_noise_run=p1_high_noise_run,
     )
+    return {
+        "snapshot": snapshot.to_dict(),
+        "A": baseline,
+        "B": candidate_b,
+        "C": candidate_c,
+        "D": candidate_d,
+        "E": candidate_e,
+        "F": candidate_f,
+        "G": candidate_g,
         "H": candidate_h,
         "I": candidate_i,
     }
