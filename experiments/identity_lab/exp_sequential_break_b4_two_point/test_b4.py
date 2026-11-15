@@ -79,7 +79,8 @@ class B4MinimalChangeTests(unittest.TestCase):
         rng = np.random.default_rng(46)
         values = np.zeros(90, dtype=float)
         values[:40] = rng.normal(0.0, 0.05, size=40)
-        values[55:] = np.where(np.arange(35) % 2 == 0, 10.0, -10.0)
+        values[55:57] = 10.0
+        values[57:] = np.where(np.arange(33) % 2 == 0, -10.0, 10.0)
         result = TwoPointTransientWinsor18EngineB4(break_percent_thresh=100.0).analyze(values)
         self.assertFalse(any(x["time"] == 56 for x in result["transient_anomalies"]))
         self.assertTrue(any(x["time"] == 56 for x in result["unresolved_alerts"]))
