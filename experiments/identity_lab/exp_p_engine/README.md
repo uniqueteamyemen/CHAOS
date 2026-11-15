@@ -1,6 +1,6 @@
 # exp_p_engine — المحرك الموحّد
 
-> **آخر تحديث: 2026-11-14 (+03:00)**
+> **آخر تحديث: 2026-11-15 (+03:00)**
 
 ## ما هو
 
@@ -126,3 +126,31 @@ validate_residual_contract يرفض الهوية الفارغة، والحالة
 تُقسّم الكواشف الصفوف بحسب (entity_id, metric_id, baseline_id) قبل تشغيل أي حالة تراكمية. لذلك لا يمكن أن تكمل إشارة موظف آخر أو مؤشر آخر أو مرجعية أخرى عداد CUSUM أو sign-run. تُرتب كل سلسلة زمنياً، ويُرفض تكرار الفترة داخل السلسلة. مخرجات الكواشف تحتفظ بهوية السلسلة والمرجعية.
 
 مقياس Peer الحالي هو MAD قوي واحد لكل مجموعة وفترة، مع استبعاد الكيان من وسيط القيمة المتوقعة نفسه. إذا كان تشتت المجموعة صفراً، يخرج peer_scale_unavailable؛ لا يخترع المحرك حداً أدنى للمقياس. في هذه الحالة نحتاج إلى حد ضوضاء/دقة معلن للمؤشر قبل تحويل الفرق الخام إلى z-score.
+
+
+## Isolated parallel-fusion experiment (A/B/C/D)
+
+This experiment is isolated from the production engine.py; A remains the unchanged engine.run() result.
+
+- **A:** current production execution path, including the current alert manager.
+- **B:** P1 uses the capped 3-sigma / 3-run candidate rule; positive and negative CUSUM accumulators are independent; both accumulators are held (not erased) while the short/long variance-transition condition is active; CUSUM scale remains unbounded.
+- **C:** same independent detector tracks; CUSUM scale is capped at 2 times quiet sigma and transition updates are damped by 0.35 instead of being erased or paused.
+- **Fusion:** evidence is aggregated before event adjudication. A reversal or six consecutive calm observations opens a new event. Same-event directional cooldown marks a repeated notification but retains the underlying evidence.
+- **D (isolated high-noise P1 arm):** uses exactly C's two-sided CUSUM and changes only P1's high-noise behavior to the production engine's adaptive-scale, 13-consecutive-direction rule. C vs D therefore isolates the P1 contribution while the CUSUM evidence is held identical.
+- **E/F/G (CUSUM reset sweep):** retain adaptive P1, use unbounded two-sided CUSUM with both accumulators reset during variance transitions, and compare h=8.5, 10.5 and 12.5.
+- **H–K (CUSUM hold sweep):** retain the same adaptive P1 and unbounded two-sided CUSUM, but preserve accumulators through variance transitions. G/H compare reset vs hold at h=12.5; J/K fill h=14.5/15.5; I tests h=16.5.
+- **Independent paired confirmation:** this run uses a new seed range (2,000,000+) and reports raw exact two-sided McNemar p-values versus A for false alarms, detection, and pre-onset false alerts on identical trial seeds. The p-values are exploratory and are not multiplicity-adjusted across scenarios/arms.
+- **Detection scoring:** for fused candidates, detection is scored on the timestamp of evidence inside an event, not its first event timestamp. A pre-onset event can therefore contribute a true detection when it receives new post-onset evidence; its pre-onset false alert remains separately counted.
+- **EIA replay:** replays all nine arms over the archived 617-week five-series EIA identity residual and compares persistent +3σ/+6σ test-copy injections after a fixed 130-week adaptation horizon. Post-adaptation event counts now include events that began earlier but carry detector evidence after the cutoff. Historical counts are descriptive only; the EIA residual has no adjudicated anomaly labels.
+
+Each run creates an immutable configuration/input snapshot with a SHA-256 input fingerprint, frozen bias, quiet sigma, configuration, code revision, and time range. Out-of-order and duplicate timestamps fail closed.
+
+Run the experiment:
+
+```bash
+python -m unittest experiments.identity_lab.exp_p_engine.test_parallel_fusion -v
+python -m experiments.identity_lab.exp_p_engine.benchmark_parallel_fusion
+python -m experiments.identity_lab.exp_r_grade4.grade4_diagnostics
+```
+
+The benchmark runs 500 independent sequences per condition on a fresh seed range and scores false alerts in null scenarios and in the pre-onset interval. It reports detector-isolated P1/CUSUM rates, sensitivity, direction errors, delay, Wilson intervals, and exact paired McNemar p-values versus A. G/H isolate reset vs hold at h=12.5; J/K/I refine the hold threshold. No candidate replaces A unless paired results justify that decision.
