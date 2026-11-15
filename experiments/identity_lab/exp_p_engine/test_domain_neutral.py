@@ -503,6 +503,14 @@ class CohortTests(unittest.TestCase):
         }]
         self.assertEqual(cohort_peer_residuals(rows, use_exposure=True), [])
 
+    def test_duplicate_entity_period_is_rejected_in_peer_group(self):
+        row = {
+            "entity_id": "e1", "metric_id": "m", "event_time": "2025-01",
+            "value": 10, "observation_status": "observed", "cohort_id": "c",
+        }
+        with self.assertRaisesRegex(ValueError, "duplicate_entity_metric_time"):
+            cohort_peer_residuals([row, dict(row)])
+
     def test_missing_cohort_does_not_trigger_guessed_peer_group(self):
         rows = [{
             "entity_id": "e1", "metric_id": "m", "event_time": "2025-01",
