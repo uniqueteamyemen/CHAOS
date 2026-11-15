@@ -56,13 +56,25 @@ MAX_RHO_CI_WIDTH = 0.50
 INJECTION_SIGMAS = (3.0, 6.0)
 INJECTION_DIRECTIONS = (-1, 1)
 
-RAW_CUSUM_GRID = tuple(dict(item) for item in NULL_CUSUM_GRID)
-# Use the established empirical-null grid for transformed standardized
-# innovations. Each candidate is screened on the held-out innovation stream.
-INNOVATION_CUSUM_GRID = tuple(dict(item) for item in NULL_CUSUM_GRID)
-RAW_P1_GRID = tuple(dict(item) for item in NULL_P1_GRID)
-STATIONARY_BOOTSTRAP_P_GRID = (0.25, 0.30, 0.35)
-INNOVATION_P1_GRID = tuple(dict(item) for item in NULL_P1_GRID)
+# A broader identical grid is required because the initial empirical-null
+# screen rejected every candidate. Raw residuals and innovations remain paired.
+COMMON_CUSUM_GRID = tuple(
+    {"k": k, "h": h}
+    for k in (0.25, 0.50, 1.00)
+    for h in (16.0, 20.0, 24.0, 28.0, 32.0)
+)
+COMMON_P1_GRID = tuple(
+    {"threshold": threshold, "run_length": run_length}
+    for threshold in (3.0, 4.0, 5.0, 6.0)
+    for run_length in (3, 4, 5, 6)
+)
+RAW_CUSUM_GRID = tuple(dict(item) for item in COMMON_CUSUM_GRID)
+INNOVATION_CUSUM_GRID = tuple(dict(item) for item in COMMON_CUSUM_GRID)
+RAW_P1_GRID = tuple(dict(item) for item in COMMON_P1_GRID)
+INNOVATION_P1_GRID = tuple(dict(item) for item in COMMON_P1_GRID)
+# Lower p values compensate for truncation at short, disconnected segments.
+# The realised mean block length is measured and reported, not assumed to be 1/p.
+STATIONARY_BOOTSTRAP_P_GRID = (0.10, 0.15, 0.20, 0.25, 0.30, 0.35)
 
 
 def year_number(value: Any) -> int:
@@ -1293,8 +1305,8 @@ def main() -> None:
             key: value for key, value in result["dependence_calibration"].items()
             if key != "entity_centers" and key != "entity_pair_counts"
         },
-        "raw_eval_autocorrelation": result["evaluation_residual_dependence"]["raw"],
-        "whitened_eval_autocorrelation": result["evaluation_residual_dependence"]["prewhitened"],
+        "raw_eval_autocorrelation": result["evaluation_residual_dependence"]["raw_matched"],
+        "whitened_eval_autocorrelation": result["evaluation_residual_dependence"]["prewhitened_matched"],
         "raw_signal_profile": result["historical_signal_profile"]["raw_residuals"],
         "whitened_signal_profile": result["historical_signal_profile"]["prewhitened_innovations"],
         "stationary_bootstrap_null": result["stationary_bootstrap_null_calibration"],
