@@ -22,9 +22,7 @@ With D=P=G=off, B-v6.1 must be event-for-event equivalent to the frozen B-v6a en
 
 ### D — Normalized Innovation Drain (transient PENDING channel only)
 
-For the latest three raw point scores z0,z1,z2, the original same-direction gate remains a prerequisite: all three absolute values must be strictly greater than 3.8.
-
-When D is enabled, the first point is not residualized. The subsequent two values are:
+For the latest three raw point scores z0,z1,z2, D=1 requires only the initiating point to cross the original 3.8 threshold: abs(z0)>3.8. The subsequent two values are judged by their innovations; z1 and z2 are not independently required to exceed 3.8:
 
 u_i = (z_i - rho*z_(i-1)) / sqrt(max(1-rho^2, 0.15)), for i=1,2.
 
