@@ -11,6 +11,21 @@ from experiments.identity_lab.exp_p_engine.parallel_fusion import (
 )
 
 
+def rows_from_residuals(values):
+    balance = 2000.0
+    c = DOMAINS["stock"]
+    rows = []
+    for month, residual in enumerate(values, start=1):
+        expected = balance + 10.0 - 10.0 - 1.0
+        closing = expected - residual
+        rows.append({
+            c["opening"]: balance, c["inflow"]: 10.0, c["outflow"]: 10.0,
+            c["other"]: 1.0, c["closing"]: closing, "month": month,
+        })
+        balance = closing
+    return rows
+
+
 def make_rows(sign=0, magnitude=0.0, onset=65, noise=1.5, seed=7, months=150):
     rng = random.Random(seed)
     balance = 2000.0
@@ -136,6 +151,26 @@ class ParallelFusionTests(unittest.TestCase):
         )
         self.assertEqual(unbounded, [])
         self.assertTrue(bounded)
+
+    def test_D_changes_only_P1_high_noise_handling_and_keeps_CUSUM_identical(self):
+        rng = random.Random(991)
+        residuals = [rng.gauss(0.0, 1.5) for _ in range(40)]
+        # A variance-regime shift with alternating three-point directional runs:
+        # C's capped 3σ/3-run P1 fires; D's 13-run high-noise P1 must remain quiet.
+        for block in range(0, 110, 3):
+            sign = 1 if (block // 3) % 2 == 0 else -1
+            residuals.extend([sign * 20.0] * 3)
+        rows = rows_from_residuals(residuals)
+        result = run_candidates("stock", rows, quiet_range=(1, 40))
+        c_p1 = [h for h in result["C"]["raw_hits"] if h["detector"] == "sign_run"]
+        d_p1 = [h for h in result["D"]["raw_hits"] if h["detector"] == "sign_run"]
+        c_cusum = [h for h in result["C"]["raw_hits"] if h["detector"].startswith("cusum_")]
+        d_cusum = [h for h in result["D"]["raw_hits"] if h["detector"].startswith("cusum_")]
+        self.assertGreater(len(c_p1), 0)
+        self.assertEqual(d_p1, [])
+        self.assertEqual(c_cusum, d_cusum)
+        self.assertEqual(result["D"]["diagnostics"]["p1_mode"], "production_adaptive_13_run")
+        self.assertGreater(result["D"]["diagnostics"]["p1_adaptive_high_noise_periods"], 0)
 
     def test_same_event_cooldown_marks_but_retains_evidence(self):
         series = [{"month": i, "residual": 5.0} for i in range(1, 100)]

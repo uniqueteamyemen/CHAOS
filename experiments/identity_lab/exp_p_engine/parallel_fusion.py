@@ -249,6 +249,9 @@ def _candidate(
     k_cusum: float,
     h_cusum: float,
     transition_damping: float,
+    p1_high_noise_handling: bool,
+    p1_high_noise_factor: float,
+    p1_high_noise_run: int,
     calm_k: float,
     calm_periods: int,
     cooldown: int,
@@ -265,10 +268,20 @@ def _candidate(
         for short, long in zip(sigmas_short, sigmas_long)
     ]
 
-    # P1 candidate: the capped reference scale remains active; no 0-sigma/13-run mode.
-    p1_hits = production_engine.detect_sign_run(
-        series, sigmas_p1, bias, k=k_sign, run_len=run_sign
-    )
+    # C keeps the experimental capped 3σ/3-run rule. D changes only P1's
+    # response to a high-noise regime, reusing the production engine's
+    # adaptive-scale + 13-directional-run policy. The CUSUM path is identical.
+    p1_noise_threshold = p1_high_noise_factor * sigma_quiet
+    if p1_high_noise_handling:
+        p1_hits = production_engine.detect_sign_run(
+            series, sigmas_p1, bias, k=k_sign, run_len=run_sign,
+            adaptive_sigmas=sigmas_short, ceiling=p1_noise_threshold,
+            high_noise_k=0.0, high_noise_run=p1_high_noise_run,
+        )
+    else:
+        p1_hits = production_engine.detect_sign_run(
+            series, sigmas_p1, bias, k=k_sign, run_len=run_sign
+        )
     hits = []
     for hit in p1_hits:
         z = float(series[hit["index"]]["residual"]) - bias
@@ -276,6 +289,7 @@ def _candidate(
             "index": hit["index"], "time": hit["time"], "detector": "sign_run",
             "priority": 1, "sign": 1 if z > 0 else -1,
             "magnitude": float(hit["magnitude"]), "transition": transitions[hit["index"]],
+            "noise_regime": bool(hit.get("noise_regime", False)),
         })
     hits.extend(_two_sided_cusum(
         series, bias, sigmas_long, transitions,
@@ -306,6 +320,10 @@ def _candidate(
         "diagnostics": {
             "transition_periods": sum(transitions),
             "p1_high_noise_periods": p1_high_noise,
+            "p1_adaptive_high_noise_periods": sum(
+                sigma is not None and sigma > p1_noise_threshold for sigma in sigmas_short
+            ),
+            "p1_mode": "production_adaptive_13_run" if p1_high_noise_handling else "capped_3sigma_3run",
             "cusum_positive_hits": sum(h["detector"] == "cusum_positive" for h in hits),
             "cusum_negative_hits": sum(h["detector"] == "cusum_negative" for h in hits),
             "p1_hits": len(p1_hits),
@@ -333,6 +351,8 @@ def run_candidates(
     calm_k: float = 0.5,
     calm_periods: int = 6,
     cooldown: int = 26,
+    p1_high_noise_factor: float = 1.5,
+    p1_high_noise_run: int = 13,
     code_revision: str | None = None,
 ) -> dict[str, Any]:
     """Run unchanged production A plus independent B/C candidates on identical input."""
@@ -348,12 +368,14 @@ def run_candidates(
         "h_cusum": h_cusum,
         "transition_damping": transition_damping,
         "calm_k": calm_k,
+        "p1_high_noise_factor": p1_high_noise_factor,
     }.items():
         if not math.isfinite(float(value)) or float(value) <= 0:
             raise ValueError(f"{name}_must_be_finite_and_positive")
     if transition_ratio <= 1 or sigma_ceiling_factor <= 0 or transition_damping > 1:
         raise ValueError("candidate_parameter_out_of_range")
-    if run_sign < 1 or calm_periods < 1 or cooldown < 0:
+    if (run_sign < 1 or calm_periods < 1 or cooldown < 0 or p1_high_noise_run < 1
+            or p1_high_noise_factor <= 1):
         raise ValueError("candidate_integer_parameter_out_of_range")
 
     series = production_engine.residuals(rows, domain)
@@ -375,9 +397,12 @@ def run_candidates(
         "k_cusum": k_cusum, "h_cusum": h_cusum,
         "transition_damping": transition_damping,
         "calm_k": calm_k, "calm_periods": calm_periods, "cooldown": cooldown,
-        "B": "two_sided_CUSUM_hold_unbounded_during_transition",
-        "C": "two_sided_CUSUM_capped_scale_with_transition_damping",
-        "fusion": "same_direction_until_reversal_or_confirmed_calm",
+        "p1_high_noise_factor": p1_high_noise_factor,
+        "p1_high_noise_run": p1_high_noise_run,
+        "B": "two_sided_CUSUM_hold_unbounded_during_transition + capped P1",
+        "C": "two_sided_CUSUM_capped_scale_with_transition_damping + capped P1",
+        "D": "C CUSUM unchanged + production-style adaptive high-noise P1",
+        "fusion": "same direction until reversal or confirmed calm",
     }
     snapshot = _snapshot(
         series, quiet_range, bias, sigma_quiet, config, code_revision
@@ -393,6 +418,8 @@ def run_candidates(
         k_cusum=k_cusum, h_cusum=h_cusum, transition_damping=transition_damping,
         calm_k=calm_k, calm_periods=calm_periods, cooldown=cooldown,
         entity=entity, policy="hold_unbounded",
+        p1_high_noise_handling=False, p1_high_noise_factor=p1_high_noise_factor,
+        p1_high_noise_run=p1_high_noise_run,
     )
     candidate_c = _candidate(
         series, bias=bias, sigma_quiet=sigma_quiet, window=window,
@@ -401,10 +428,23 @@ def run_candidates(
         k_cusum=k_cusum, h_cusum=h_cusum, transition_damping=transition_damping,
         calm_k=calm_k, calm_periods=calm_periods, cooldown=cooldown,
         entity=entity, policy="bounded_damped",
+        p1_high_noise_handling=False, p1_high_noise_factor=p1_high_noise_factor,
+        p1_high_noise_run=p1_high_noise_run,
+    )
+    candidate_d = _candidate(
+        series, bias=bias, sigma_quiet=sigma_quiet, window=window,
+        noise_gate_window=noise_gate_window, transition_ratio=transition_ratio,
+        sigma_ceiling_factor=sigma_ceiling_factor, k_sign=k_sign, run_sign=run_sign,
+        k_cusum=k_cusum, h_cusum=h_cusum, transition_damping=transition_damping,
+        calm_k=calm_k, calm_periods=calm_periods, cooldown=cooldown,
+        entity=entity, policy="bounded_damped",
+        p1_high_noise_handling=True, p1_high_noise_factor=p1_high_noise_factor,
+        p1_high_noise_run=p1_high_noise_run,
     )
     return {
         "snapshot": snapshot.to_dict(),
         "A": baseline,
         "B": candidate_b,
         "C": candidate_c,
+        "D": candidate_d,
     }
