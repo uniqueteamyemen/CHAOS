@@ -580,6 +580,7 @@ def build_univariate_residuals(
     min_history: int = 8,
     time_unit: str = "years",
     baseline_method: str = "rolling_median",
+    estimate_rho: bool = False,
 ) -> list[dict[str, Any]]:
     """Prequential baseline; current observation never trains itself."""
     if baseline_window < min_history or min_history < 4:
@@ -597,7 +598,9 @@ def build_univariate_residuals(
     residual_rows: list[dict[str, Any]] = []
     for index in range(min_history, len(series)):
         history = series[max(0, index - baseline_window):index]
-        scale = first_difference_mad_scale(history, time_unit=time_unit)
+        scale = first_difference_mad_scale(
+            history, time_unit=time_unit, estimate_rho=estimate_rho
+        )
         if baseline_method == "rolling_theil_sen":
             expected = _theil_sen_prediction(history, series[index]["event_time"], time_unit)
         else:
@@ -624,6 +627,7 @@ def build_univariate_residuals(
             "baseline_id": (
                 str(series[index]["metric_id"]) + ":" + baseline_method
                 + ":w" + str(baseline_window)
+                + (":ar1-adjusted" if estimate_rho else ":iid-unit-gap")
             ),
             "z_score": residual / scale["value"] if ready and not gap_unresolved else None,
             "status": (
@@ -636,6 +640,7 @@ def build_univariate_residuals(
             "baseline_support": len(history),
             "support_count": len(history),
             "scale_method": scale["method"],
+            "scale_rho_estimation": estimate_rho,
             "scale_support": scale["n_differences"],
             "rho": scale.get("rho"),
         })
