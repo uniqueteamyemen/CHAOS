@@ -190,6 +190,48 @@ class ParallelFusionTests(unittest.TestCase):
         self.assertTrue(any(hit["time"] == 5 for hit in damped))
         self.assertEqual(reset, [])
 
+    def test_F_resets_transition_state_then_uses_uncapped_observed_scale(self):
+        series = [
+            {"month": month, "residual": residual}
+            for month, residual in enumerate((2.0, 2.0, 0.0, 1.5, 1.5, 1.5), start=1)
+        ]
+        sigmas = [2.0] * len(series)
+        transitions = [False, False, True, False, False, False]
+        common = dict(
+            series=series, bias=0.0, sigmas=sigmas, transitions=transitions,
+            sigma_cap=1.0, k_sigma=0.5, h_sigma=4.0, transition_damping=0.35,
+        )
+        capped_reset = _two_sided_cusum(policy="suspend_reset", **common)
+        unbounded_reset = _two_sided_cusum(policy="reset_unbounded", **common)
+        self.assertEqual(capped_reset, unbounded_reset)
+        # Here all post-transition increments are below threshold under either
+        # normalized scale; then isolate the stable high-noise scale behavior.
+        stable = [
+            {"month": month, "residual": 1.5}
+            for month in range(1, 7)
+        ]
+        stable_transitions = [False] * len(stable)
+        capped = _two_sided_cusum(
+            stable, 0.0, [2.0] * 6, stable_transitions,
+            policy="suspend_reset", sigma_cap=1.0,
+            k_sigma=0.5, h_sigma=4.0, transition_damping=0.35,
+        )
+        uncapped = _two_sided_cusum(
+            stable, 0.0, [2.0] * 6, stable_transitions,
+            policy="reset_unbounded", sigma_cap=1.0,
+            k_sigma=0.5, h_sigma=4.0, transition_damping=0.35,
+        )
+        self.assertTrue(capped)
+        self.assertEqual(uncapped, [])
+
+    def test_F_is_same_as_C_for_P1(self):
+        residuals = [value for _ in range(10) for value in (0.2, -0.2, 0.1, -0.1)] + [15.0, -15.0] * 30 + [2.0] * 40
+        result = run_candidates("stock", rows_from_residuals(residuals), quiet_range=(1, 40))
+        c_p1 = [hit for hit in result["C"]["raw_hits"] if hit["detector"] == "sign_run"]
+        f_p1 = [hit for hit in result["F"]["raw_hits"] if hit["detector"] == "sign_run"]
+        self.assertEqual(c_p1, f_p1)
+        self.assertEqual(result["F"]["policy"], "reset_unbounded")
+
     def test_E_is_same_as_C_for_P1(self):
         residuals = [value for _ in range(10) for value in (0.2, -0.2, 0.1, -0.1)] + [15.0, -15.0] * 30 + [2.0] * 40
         rows = rows_from_residuals(residuals)

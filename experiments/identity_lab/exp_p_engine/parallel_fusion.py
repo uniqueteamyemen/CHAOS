@@ -111,7 +111,7 @@ def _two_sided_cusum(
     transition_damping: float,
 ) -> list[dict[str, Any]]:
     """Return positive and negative evidence without sharing accumulator state."""
-    if policy not in {"hold_unbounded", "bounded_damped", "suspend_reset"}:
+    if policy not in {"hold_unbounded", "bounded_damped", "suspend_reset", "reset_unbounded"}:
         raise ValueError("cusum_transition_policy_invalid")
     positive = 0.0
     negative = 0.0
@@ -124,11 +124,13 @@ def _two_sided_cusum(
         if policy == "hold_unbounded" and in_transition:
             # Preserve both accumulators. A transient noise change must not erase evidence.
             continue
-        if policy == "suspend_reset" and in_transition:
-            # E: discard pre-transition evidence from both directions.
+        if policy in {"suspend_reset", "reset_unbounded"} and in_transition:
+            # E/F: discard pre-transition evidence from both directions.
             positive = 0.0
             negative = 0.0
             continue
+        # E retains the scale ceiling. F resets the transition state but
+        # normalizes subsequent evidence against the observed, uncapped scale.
         scale = min(raw_sigma, sigma_cap) if policy in {"bounded_damped", "suspend_reset"} else raw_sigma
         gain = transition_damping if policy == "bounded_damped" and in_transition else 1.0
         z = float(row["residual"]) - bias
@@ -456,6 +458,16 @@ def run_candidates(
         p1_high_noise_handling=False, p1_high_noise_factor=p1_high_noise_factor,
         p1_high_noise_run=p1_high_noise_run,
     )
+    candidate_f = _candidate(
+        series, bias=bias, sigma_quiet=sigma_quiet, window=window,
+        noise_gate_window=noise_gate_window, transition_ratio=transition_ratio,
+        sigma_ceiling_factor=sigma_ceiling_factor, k_sign=k_sign, run_sign=run_sign,
+        k_cusum=k_cusum, h_cusum=h_cusum, transition_damping=transition_damping,
+        calm_k=calm_k, calm_periods=calm_periods, cooldown=cooldown,
+        entity=entity, policy="reset_unbounded",
+        p1_high_noise_handling=False, p1_high_noise_factor=p1_high_noise_factor,
+        p1_high_noise_run=p1_high_noise_run,
+    )
     return {
         "snapshot": snapshot.to_dict(),
         "A": baseline,
@@ -463,4 +475,5 @@ def run_candidates(
         "C": candidate_c,
         "D": candidate_d,
         "E": candidate_e,
+        "F": candidate_f,
     }

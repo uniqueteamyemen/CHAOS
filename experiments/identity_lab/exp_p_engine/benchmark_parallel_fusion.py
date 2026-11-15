@@ -1,4 +1,4 @@
-"""Paired 500-seed A/B/C/D/E experiment for P-engine false alarms and break sensitivity."""
+"""Paired 500-seed A/B/C/D/E/F experiment for P-engine false alarms and break sensitivity."""
 from __future__ import annotations
 
 import json
@@ -144,13 +144,14 @@ def run_benchmark():
                 "B": "two-sided CUSUM; preserve state during variance transitions; unbounded scale",
                 "C": "two-sided CUSUM; capped scale; damp updates during variance transitions; capped P1",
             "D": "identical CUSUM to C; production-style adaptive high-noise P1 (13 same-sign run)",
-            "E": "same capped P1 as C; reset both CUSUM accumulators on variance transition",
+            "E": "same capped P1 as C; reset both CUSUM accumulators on variance transition; retain scale ceiling",
+                "F": "same capped P1 as C; reset both CUSUM accumulators on transition; use uncapped scale afterwards",
             },
         },
         "results": {},
     }
 
-    variants = ("A", "B", "C", "D", "E")
+    variants = ("A", "B", "C", "D", "E", "F")
     for scenario_index, scenario in enumerate(scenarios):
         sign = -1 if "negative" in scenario else (1 if "positive" in scenario else 0)
         has_break = sign != 0

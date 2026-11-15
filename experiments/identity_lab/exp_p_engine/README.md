@@ -71,7 +71,8 @@ This experiment is isolated from the production engine.py; A remains the unchang
 - **C:** same independent detector tracks; CUSUM scale is capped at 2 times quiet sigma and transition updates are damped by 0.35 instead of being erased or paused.
 - **Fusion:** evidence is aggregated before event adjudication. A reversal or six consecutive calm observations opens a new event. Same-event directional cooldown marks a repeated notification but retains the underlying evidence.
 - **D:** uses exactly C's two-sided CUSUM and changes only P1's high-noise behavior to the production engine's adaptive-scale, 13-consecutive-direction rule. C vs D isolates the P1 contribution.
-- **E:** uses the same capped P1 as C and changes only CUSUM transition handling: both directional accumulators are reset during a variance transition, then accumulate again after the transition ends. C vs E isolates transition-memory behavior.
+- **E:** uses the same capped P1 as C and changes only CUSUM transition handling: both directional accumulators are reset during a variance transition, then accumulate again after the transition ends while retaining the cap.
+- **F:** same as E but removes the cap after the transition, using the observed rolling scale. E vs F isolates the effect of the scale ceiling after a reset.
 
 Each run creates an immutable configuration/input snapshot with a SHA-256 input fingerprint, frozen bias, quiet sigma, configuration, code revision, and time range. Out-of-order and duplicate timestamps fail closed.
 
