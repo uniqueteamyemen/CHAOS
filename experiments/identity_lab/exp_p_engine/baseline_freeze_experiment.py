@@ -161,6 +161,7 @@ def build_policy_residuals(
     release_z: float = RELEASE_Z,
     release_run: int = RELEASE_RUN,
     suspicion_run: int = SUSPICION_RUN,
+    freeze_trigger_after_time: str | None = None,
 ) -> tuple[list[dict[str, Any]], dict[str, Any]]:
     if policy not in POLICIES:
         raise ValueError("baseline_freeze_policy_unsupported")
@@ -168,6 +169,10 @@ def build_policy_residuals(
         raise ValueError("baseline_freeze_window_invalid")
     if suspicion_run < 1 or release_run < 1 or suspicion_z <= 0 or release_z <= 0:
         raise ValueError("baseline_freeze_trigger_or_release_invalid")
+    trigger_after_position = (
+        time_position(freeze_trigger_after_time, time_unit)
+        if freeze_trigger_after_time is not None else None
+    )
     identities = {(str(row["entity_id"]), str(row["metric_id"])) for row in observations}
     if len(identities) != 1:
         raise ValueError("baseline_freeze_requires_one_entity_metric")
@@ -227,6 +232,9 @@ def build_policy_residuals(
         scale_history = contiguous_history[-scale_window:]
 
         if observation_gap > 1.02:
+            fixed_model = None
+            fixed_scale = None
+            fixed_support = 0
             if frozen_model is not None:
                 if current_episode is not None:
                     current_episode["ended_by"] = "unresolved_time_gap"
@@ -294,8 +302,31 @@ def build_policy_residuals(
             continue
 
         if policy == "fixed_initial_baseline_fixed_scale":
+            if index < baseline_window:
+                output.append({
+                    "entity_id": entity_id,
+                    "metric_id": metric_id,
+                    "event_time": event_time,
+                    "observed_value": float(source["value"]),
+                    "expected_value": None,
+                    "residual": None,
+                    "scale": None,
+                    "z_score": None,
+                    "status": "scale_unavailable",
+                    "baseline_id": baseline_id,
+                    "baseline_method": policy,
+                    "support_count": len(history),
+                    "unit": source.get("unit"),
+                    "observation_gap_units": observation_gap,
+                    "freeze_active": True,
+                    "freeze_trigger": False,
+                    "freeze_released": False,
+                    "reason": "fixed_baseline_requires_full_initial_window",
+                })
+                previous_time = current_time
+                continue
             if fixed_model is None:
-                anchor = list(history[:min_history])
+                anchor = list(history[:baseline_window])
                 fixed_model = fit_theil_sen(anchor, time_unit)
                 fixed_scale_result = scale_from(anchor, time_unit)
                 fixed_scale = fixed_scale_result["value"]
@@ -330,10 +361,11 @@ def build_policy_residuals(
 
         suspicion_pending = False
         if policy.startswith("suspicion_freeze") and frozen_model is None:
-            current_sign = 1 if z is not None and z >= suspicion_z else (
-                -1 if z is not None and z <= -suspicion_z else 0
+            trigger_enabled = (
+                trigger_after_position is None
+                or current_time >= trigger_after_position
             )
-            if current_sign == 0:
+            if not trigger_enabled:
                 pending_model = None
                 pending_scale = None
                 pending_support = 0
@@ -342,65 +374,78 @@ def build_policy_residuals(
                 pending_sign = 0
                 pending_z = None
                 pending_count = 0
-            elif (
-                pending_count > 0
-                and current_sign == pending_sign
-                and pending_start_index is not None
-                and index == pending_start_index + pending_count
-            ):
-                pending_count += 1
-                suspicion_pending = pending_count < suspicion_run
             else:
-                pending_model = model
-                pending_scale = float(scale) if scale is not None and float(scale) > 0 else None
-                pending_support = support
-                pending_start_time = str(event_time)
-                pending_start_index = index
-                pending_sign = current_sign
-                pending_z = z
-                pending_count = 1
-                suspicion_pending = pending_count < suspicion_run
+                    current_sign = 1 if z is not None and z >= suspicion_z else (
+                    -1 if z is not None and z <= -suspicion_z else 0
+                )
+                if current_sign == 0:
+                    pending_model = None
+                    pending_scale = None
+                    pending_support = 0
+                    pending_start_time = None
+                    pending_start_index = None
+                    pending_sign = 0
+                    pending_z = None
+                    pending_count = 0
+                elif (
+                    pending_count > 0
+                    and current_sign == pending_sign
+                    and pending_start_index is not None
+                    and index == pending_start_index + pending_count
+                ):
+                    pending_count += 1
+                    suspicion_pending = pending_count < suspicion_run
+                else:
+                    pending_model = model
+                    pending_scale = float(scale) if scale is not None and float(scale) > 0 else None
+                    pending_support = support
+                    pending_start_time = str(event_time)
+                    pending_start_index = index
+                    pending_sign = current_sign
+                    pending_z = z
+                    pending_count = 1
+                    suspicion_pending = pending_count < suspicion_run
 
-            if pending_count >= suspicion_run and pending_model is not None:
-                frozen_model = pending_model
-                frozen_scale = pending_scale
-                frozen_support = pending_support
-                frozen_at = pending_start_time
-                frozen_duration = 0
-                calm_run = 0
-                freeze_trigger = True
-                frozen_now = True
-                model = frozen_model
-                support = frozen_support
-                if policy == "suspicion_freeze_baseline_and_scale":
-                    scale_result = {
-                        "value": frozen_scale,
-                        "method": "frozen_first_difference_mad",
+                if pending_count >= suspicion_run and pending_model is not None:
+                    frozen_model = pending_model
+                    frozen_scale = pending_scale
+                    frozen_support = pending_support
+                    frozen_at = pending_start_time
+                    frozen_duration = 0
+                    calm_run = 0
+                    freeze_trigger = True
+                    frozen_now = True
+                    model = frozen_model
+                    support = frozen_support
+                    if policy == "suspicion_freeze_baseline_and_scale":
+                        scale_result = {
+                            "value": frozen_scale,
+                            "method": "frozen_first_difference_mad",
+                        }
+                        scale = frozen_scale
+                    expected = predict(model, event_time, time_unit)
+                    residual = float(source["value"]) - expected
+                    z = residual / float(scale) if scale is not None and float(scale) > 0 else None
+                    prequential_triggers += 1
+                    current_episode = {
+                        "start_time": frozen_at,
+                        "confirmation_time": str(event_time),
+                        "start_index": pending_start_index,
+                        "trigger_z": pending_z,
+                        "confirmation_z": z,
+                        "trigger_run": suspicion_run,
+                        "frozen_scale": frozen_scale,
+                        "support_count": frozen_support,
+                        "policy": policy,
                     }
-                    scale = frozen_scale
-                expected = predict(model, event_time, time_unit)
-                residual = float(source["value"]) - expected
-                z = residual / float(scale) if scale is not None and float(scale) > 0 else None
-                prequential_triggers += 1
-                current_episode = {
-                    "start_time": frozen_at,
-                    "confirmation_time": str(event_time),
-                    "start_index": pending_start_index,
-                    "trigger_z": pending_z,
-                    "confirmation_z": z,
-                    "trigger_run": suspicion_run,
-                    "frozen_scale": frozen_scale,
-                    "support_count": frozen_support,
-                    "policy": policy,
-                }
-                pending_model = None
-                pending_scale = None
-                pending_support = 0
-                pending_start_time = None
-                pending_start_index = None
-                pending_sign = 0
-                pending_z = None
-                pending_count = 0
+                    pending_model = None
+                    pending_scale = None
+                    pending_support = 0
+                    pending_start_time = None
+                    pending_start_index = None
+                    pending_sign = 0
+                    pending_z = None
+                    pending_count = 0
 
         if frozen_now:
             freeze_active_rows += 1
