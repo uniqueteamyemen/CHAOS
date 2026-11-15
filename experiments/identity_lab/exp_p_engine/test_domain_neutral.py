@@ -90,6 +90,15 @@ class ObservationContractTests(unittest.TestCase):
                 "baseline_method", "support_count",
             ],
         )
+        residual_definition = schema["definitions"]["residual"]
+        self.assertEqual(
+            residual_definition["required"],
+            [
+                "entity_id", "metric_id", "event_time", "observed_value",
+                "expected_value", "residual", "status", "baseline_id",
+                "baseline_method", "support_count",
+            ],
+        )
 
     def test_five_required_fields_are_enough(self):
         result = normalize_observations(
@@ -366,6 +375,11 @@ class PartialRelationTests(unittest.TestCase):
             last["relationship_semantics"],
             "explicit_statistical_relation_not_causal_or_conservation_proof",
         )
+        validate_residual_contract(results)
+        result = run_candidate_detectors(results, cusum_k=0.5, cusum_h=4.0)
+        self.assertTrue(
+            any(hit["entity_id"] == "team-1" for hit in result["raw_hits"]["cusum"])
+        )
 
     def test_unpaired_or_missing_observations_are_not_imputed(self):
         rows = []
@@ -563,6 +577,32 @@ class CohortTests(unittest.TestCase):
         self.assertEqual(outlier["peer_count"], 5)
         validate_residual_contract(output)
 
+
+
+    def test_peer_residuals_feed_detectors_without_cross_cohort_state(self):
+        rows = []
+        for period in range(4):
+            event_time = str(2020 + period)
+            values = [10, 11, 9, 10, 10, 11, 9, 10 if period < 2 else 20]
+            for index, value in enumerate(values):
+                rows.append({
+                    "entity_id": f"staff-{index}",
+                    "metric_id": "cases_per_period",
+                    "event_time": event_time,
+                    "value": float(value),
+                    "unit": "cases",
+                    "observation_status": "observed",
+                    "cohort_id": "branch-A:role-B:season-C",
+                })
+        peer_rows = cohort_peer_residuals(rows, min_peers=5)
+        validate_residual_contract(peer_rows)
+        result = run_candidate_detectors(peer_rows, cusum_k=0.5, cusum_h=8.5)
+        target_hits = [
+            hit for hit in result["raw_hits"]["cusum"]
+            if hit["entity_id"] == "staff-7"
+        ]
+        self.assertTrue(target_hits)
+        self.assertEqual(target_hits[0]["direction"], "positive")
 
     def test_exposure_adjusted_peer_comparison_uses_rate_not_raw_count(self):
         values = [10, 20, 30, 40, 50, 90]
