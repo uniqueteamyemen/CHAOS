@@ -60,6 +60,8 @@ class ObservationContractTests(unittest.TestCase):
         )
         self.assertIn("identity_version", schema["required"])
         self.assertIn("attributed_term", schema["required"])
+        self.assertIn("exposure", definition["properties"])
+        self.assertIn("exposure_unit", definition["properties"])
 
     def test_five_required_fields_are_enough(self):
         result = normalize_observations(
@@ -79,6 +81,32 @@ class ObservationContractTests(unittest.TestCase):
         self.assertEqual(row["value"], 12.0)
         self.assertEqual(row["observation_status"], "observed")
         self.assertNotIn("unit", row)
+
+
+    def test_optional_exposure_metadata_is_parsed_without_becoming_required(self):
+        result = normalize_observations(
+            [{"id": "e1", "metric": "output", "year": "2024", "value": "25",
+              "hours": "10", "hours_unit": "hours"}],
+            {
+                "entity_id": "id", "metric_id": "metric", "event_time": "year",
+                "value": "value", "exposure": "hours", "exposure_unit": "hours_unit",
+            },
+        )
+        row = result["observations"][0]
+        self.assertEqual(row["exposure"], 10.0)
+        self.assertEqual(row["exposure_unit"], "hours")
+
+    def test_invalid_exposure_is_marked_without_dropping_the_observation(self):
+        result = normalize_observations(
+            [{"id": "e1", "metric": "output", "year": "2024", "value": "25",
+              "hours": "unknown"}],
+            {
+                "entity_id": "id", "metric_id": "metric", "event_time": "year",
+                "value": "value", "exposure": "hours",
+            },
+        )
+        self.assertEqual(result["accepted_rows"], 1)
+        self.assertTrue(result["observations"][0]["quality_metadata"]["exposure_invalid"])
 
     def test_blank_value_is_missing_not_zero(self):
         result = normalize_observations(
