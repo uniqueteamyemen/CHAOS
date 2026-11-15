@@ -420,8 +420,8 @@ def threshold_selection_metrics(
             ),
         }
     eligible = all(
-        all(bool(item["fpr_gates_passed"]) and bool(item["sensitivity_gate_passed"])
-            for item in by_method.values())
+        bool(item["fpr_gates_passed"]) and bool(item["sensitivity_gate_passed"])
+        for item in by_method.values()
     )
     return {
         "eligible": eligible,
@@ -637,7 +637,11 @@ def parameter_provenance() -> dict[str, Any]:
 
 
 def print_holdout_tables(holdout: dict[str, Any]) -> None:
-    print("\n=== B-v6 HOLDOUT CASE COMPARISON (all percentages; Wilson 95% in JSON) ===")
+    def fmt(metric: dict[str, Any]) -> str:
+        low, high = metric["wilson95_pct"]
+        return f"{metric['rate_pct']:.2f} [{low:.2f},{high:.2f}]"
+
+    print("\\n=== B-v6 HOLDOUT CASE COMPARISON (rate_pct [Wilson95 lower,upper]) ===")
     print(
         "case | config | structural | transient | unresolved | combined | "
         "pre-onset combined | directional sensitivity"
@@ -647,20 +651,20 @@ def print_holdout_tables(holdout: dict[str, Any]) -> None:
             model = holdout["models"][config_name]
             row = model["cases"][case_name]
             sensitivity = (
-                row["structural_rate"]["rate_pct"]
-                if row["scenario_type"] == "level_shift" else None
+                fmt(row["structural_rate"])
+                if row["scenario_type"] == "level_shift" else "n/a"
             )
             print(
                 f"{case_name} | {config_name} | "
-                f"{row['structural_rate']['rate_pct']:.2f} | "
-                f"{row['transient_alert_rate']['rate_pct']:.2f} | "
-                f"{row['unresolved_alert_rate']['rate_pct']:.2f} | "
-                f"{row['combined_any_alert_rate']['rate_pct']:.2f} | "
-                f"{row['pre_onset_combined_rate']['rate_pct']:.2f} | "
-                f"{'n/a' if sensitivity is None else f'{sensitivity:.2f}'}"
+                f"{fmt(row['structural_rate'])} | "
+                f"{fmt(row['transient_alert_rate'])} | "
+                f"{fmt(row['unresolved_alert_rate'])} | "
+                f"{fmt(row['combined_any_alert_rate'])} | "
+                f"{fmt(row['pre_onset_combined_rate'])} | "
+                f"{sensitivity}"
             )
 
-    print("\n=== B-v6 HOLDOUT AGGREGATES ===")
+    print("\\n=== B-v6 HOLDOUT AGGREGATES ===")
     print(
         "config | worst structural FPR | worst pure-null Combined | "
         "worst pre-onset Combined | mean directional sensitivity | lifecycle"
