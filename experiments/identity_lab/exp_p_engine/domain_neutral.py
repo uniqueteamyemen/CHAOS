@@ -28,6 +28,46 @@ OBSERVATION_STATUSES = {
     "invalid",
 }
 
+RESIDUAL_REQUIRED_FIELDS = (
+    "entity_id",
+    "metric_id",
+    "event_time",
+    "observed_value",
+    "expected_value",
+    "residual",
+    "status",
+    "baseline_id",
+    "baseline_method",
+    "support_count",
+)
+
+
+def validate_residual_contract(rows: Sequence[Mapping[str, Any]]) -> None:
+    """Validate the shared output contract emitted by every baseline builder."""
+    for index, row in enumerate(rows):
+        missing = [field for field in RESIDUAL_REQUIRED_FIELDS if field not in row]
+        if missing:
+            raise ValueError(
+                "residual_contract_fields_missing_at_row_" + str(index) + ":" + ",".join(missing)
+            )
+        _parse_time(row["event_time"])
+        if not str(row["entity_id"]).strip() or not str(row["metric_id"]).strip():
+            raise ValueError("residual_contract_identity_empty")
+        if not str(row["status"]).strip() or not str(row["baseline_id"]).strip():
+            raise ValueError("residual_contract_status_or_baseline_id_empty")
+        if not str(row["baseline_method"]).strip():
+            raise ValueError("residual_contract_baseline_method_empty")
+        support = row["support_count"]
+        if isinstance(support, bool) or not isinstance(support, int) or support < 0:
+            raise ValueError("residual_contract_support_count_invalid")
+        if row["status"] == "ready":
+            for field in ("observed_value", "expected_value", "residual", "scale", "z_score"):
+                value = row.get(field)
+                if value is None or isinstance(value, bool) or not math.isfinite(float(value)):
+                    raise ValueError("residual_contract_ready_value_invalid:" + field)
+            if float(row["scale"]) <= 0:
+                raise ValueError("residual_contract_scale_not_positive")
+
 
 def _mapped(row: Mapping[str, Any], spec: Any) -> Any:
     if isinstance(spec, Mapping) and "constant" in spec:
