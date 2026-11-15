@@ -578,14 +578,20 @@ def run_experiment(
     source: Mapping[str, Sequence[Mapping[str, Any]]],
     *,
     time_unit: str,
+    suspicion_z: float = SUSPICION_Z,
+    suspicion_run: int = 1,
+    policy_filter: Sequence[str] | None = None,
 ) -> dict[str, Any]:
     result: dict[str, Any] = {
         "source": source_name,
         "time_unit": time_unit,
         "entity_count": len(source),
+        "suspicion_z": suspicion_z,
+        "suspicion_run": suspicion_run,
         "policies": {},
     }
-    for policy in POLICIES:
+    selected_policies = list(policy_filter) if policy_filter is not None else list(POLICIES)
+    for policy in selected_policies:
         historical_profiles = []
         historical_residuals: list[dict[str, Any]] = []
         freeze_episode_count = 0
@@ -605,6 +611,8 @@ def run_experiment(
                 observed,
                 policy=policy,
                 time_unit=time_unit,
+                suspicion_z=suspicion_z,
+                suspicion_run=suspicion_run,
             )
             tested_series += 1
             historical_residuals.extend(residuals)
@@ -639,6 +647,8 @@ def run_experiment(
                         injected,
                         policy=policy,
                         time_unit=time_unit,
+                        suspicion_z=suspicion_z,
+                        suspicion_run=suspicion_run,
                     )
                     response = _detector_response(
                         injected_residuals,
@@ -686,7 +696,10 @@ def run_experiment(
                 ]
                 if len(observed) < 14:
                     continue
-                rows, _ = build_policy_residuals(observed, policy=policy, time_unit=time_unit)
+                rows, _ = build_policy_residuals(
+                    observed, policy=policy, time_unit=time_unit,
+                    suspicion_z=suspicion_z, suspicion_run=suspicion_run,
+                )
                 hits = detect_two_sided_cusum(rows, k=params["k"], h=params["h"])
                 total_hits += len(hits)
                 ready_exposure += sum(1 for row in rows if row["status"] == "ready")
@@ -759,9 +772,34 @@ def run_experiment(
 
 
 def main() -> None:
+    world_bank_source = read_world_bank()
+    freeze_policies = (
+        "suspicion_freeze_baseline_rolling_scale",
+        "suspicion_freeze_baseline_and_scale",
+    )
+    world_bank_trigger_sweep: dict[str, Any] = {}
+    for trigger_z in (2.0, 3.0, 4.0, 6.0):
+        trigger_key = f"z{trigger_z:g}_same_direction_run2"
+        trigger_result = run_experiment(
+            "World Bank domestic credit to private sector (% GDP)",
+            world_bank_source,
+            time_unit="years",
+            suspicion_z=trigger_z,
+            suspicion_run=2,
+            policy_filter=freeze_policies,
+        )
+        world_bank_trigger_sweep[trigger_key] = trigger_result["policies"]
+
     report = {
         "experiment": "domain_neutral_baseline_freeze_comparison_v1",
         "policies": list(POLICIES),
+        "trigger_sweep": {
+            "same_direction_consecutive_evidence": True,
+            "trigger_run": 2,
+            "tested_z_thresholds": [2.0, 3.0, 4.0, 6.0],
+            "world_bank": world_bank_trigger_sweep,
+            "interpretation": "A freeze candidate is confirmed only after two contiguous same-direction residuals exceed the threshold; the frozen model is snapshotted from the first candidate.",
+        },
         "parameters": {
             "baseline_window": BASELINE_WINDOW,
             "scale_window": SCALE_WINDOW,
@@ -774,13 +812,17 @@ def main() -> None:
         },
         "world_bank": run_experiment(
             "World Bank domestic credit to private sector (% GDP)",
-            read_world_bank(),
+            world_bank_source,
             time_unit="years",
+            suspicion_z=SUSPICION_Z,
+            suspicion_run=1,
         ),
         "usgs": run_experiment(
             "USGS global M6.5+ monthly event counts",
             read_usgs_monthly(),
             time_unit="months",
+            suspicion_z=SUSPICION_Z,
+            suspicion_run=1,
         ),
         "promotion": "not_automatic",
     }
