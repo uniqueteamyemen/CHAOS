@@ -47,13 +47,6 @@ BASELINE_CONFIGS = (
         "scale_window": 12,
         "min_adjacent_pairs_for_rho": 16,
     },
-    {
-        "label": "rolling_theil_sen_first_difference_acf_ar1_scale",
-        "baseline_method": "rolling_theil_sen",
-        "estimate_rho": True,
-        "scale_window": 2048,
-        "min_adjacent_pairs_for_rho": 1500,
-    },
 )
 MAX_ACCEPTABLE_DELAY_TIME_UNITS = 3.0
 CUSUM_GRID = (
@@ -679,6 +672,29 @@ def run_source(
 
 
 def main() -> None:
+    world_bank_series = read_world_bank()
+    world_bank_panel = [
+        row
+        for series in world_bank_series.values()
+        for row in series
+    ]
+    panel_rho_candidate = estimate_panel_ar1_rho(
+        world_bank_panel,
+        training_end="2014",
+        time_unit="years",
+        min_series=40,
+        min_lag_pairs=200,
+        bootstrap_replicates=500,
+        seed=20261115,
+    )
+    panel_rho_accepted = (
+        panel_rho_candidate.get("status") == "ok"
+        and panel_rho_candidate.get("ci_width") is not None
+        and panel_rho_candidate["ci_width"] <= 0.50
+    )
+    frozen_panel_rho = (
+        float(panel_rho_candidate["rho"]) if panel_rho_accepted else None
+    )
     report = {
         "experiment": "domain_neutral_real_series_threshold_sweep_v1",
         "source_data": {
@@ -699,13 +715,26 @@ def main() -> None:
                 "min_adjacent_pairs_for_rho": item["min_adjacent_pairs_for_rho"],
             }
             for item in BASELINE_CONFIGS
-        ],
-        "scale_estimator_validation": monte_carlo_ar1_scale_validation(),
+        ] + ([{
+            "label": "rolling_theil_sen_frozen_panel_rho",
+            "baseline_method": "rolling_theil_sen",
+            "scale_rho": frozen_panel_rho,
+            "training_end": "2014",
+            "evaluation_start": "2015",
+        }] if panel_rho_accepted else []),
+        "local_ar1_monte_carlo": monte_carlo_ar1_scale_validation(),
+        "panel_noise_calibration": {
+            **panel_rho_candidate,
+            "accepted_for_held_out_probe": panel_rho_accepted,
+            "acceptance_rule": "status=ok and entity-bootstrap 95% CI width <= 0.50",
+        },
         "sources": {
             "world_bank": run_source(
                 "World Bank domestic credit to private sector (% GDP)",
-                read_world_bank(),
+                world_bank_series,
                 time_unit="years",
+                scale_rho=frozen_panel_rho,
+                evaluation_start="2015",
             ),
             "usgs": run_source(
                 "USGS global M6.5+ monthly event counts",
@@ -714,9 +743,11 @@ def main() -> None:
             ),
         },
         "decision_rule": (
-            "No threshold is auto-promoted to production. Compare observed historical "
-            "signal density against persistent +/-3sigma and +/-6sigma injection recall "
-            "and detection delay, separately for each source and baseline strategy."
+            "No threshold is auto-promoted to production. World Bank panel noise "
+            "dependence is estimated only through 2014 and frozen for evaluation from "
+            "2015 onward. Compare historical signal density with persistent +/-3sigma "
+            "and +/-6sigma injection recall and delay. Unlabelled historical hits are "
+            "not classified as false positives."
         ),
     }
     OUTPUT.parent.mkdir(parents=True, exist_ok=True)
