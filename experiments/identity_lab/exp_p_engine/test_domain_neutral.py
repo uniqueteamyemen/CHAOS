@@ -278,18 +278,24 @@ class ScaleEstimatorTests(unittest.TestCase):
         self.assertGreater(result["n_gap_adjusted"], 0)
         self.assertAlmostEqual(result["value"], target_sigma, delta=0.25)
 
-    def test_short_25_point_series_with_gaps_is_supported(self):
+    def test_short_25_point_series_with_gaps_does_not_force_ar1(self):
         values = ar1_series(25, rho=0.45, stationary_sigma=1.3, seed=41)
         rows = observations(values, unit="days")
         rows = [row for index, row in enumerate(rows) if index not in {4, 10, 18}]
-        result = first_difference_mad_scale(
+        ar1_result = first_difference_mad_scale(
             rows, time_unit="days", estimate_rho=True,
-            min_adjacent_pairs_for_rho=12,
+            min_adjacent_pairs_for_rho=40,
         )
-        self.assertEqual(result["status"], "ok")
-        self.assertGreater(result["n_differences"], 8)
-        self.assertGreater(result["n_gap_adjusted"], 0)
-        self.assertEqual(result["rho_source"], "estimated_from_first_difference_acf")
+        self.assertIsNone(ar1_result["value"])
+        self.assertEqual(ar1_result["status"], "rho_estimation_unavailable")
+        self.assertEqual(ar1_result["rho_source"], "insufficient_consecutive_difference_pairs")
+        iid_result = first_difference_mad_scale(
+            rows, time_unit="days", estimate_rho=False,
+        )
+        self.assertEqual(iid_result["status"], "ok")
+        self.assertGreater(iid_result["n_differences"], 8)
+        self.assertGreater(iid_result["n_skipped_gaps"], 0)
+        self.assertIsNone(iid_result["rho"])
 
 
     def test_ar1_first_difference_acf_is_invariant_to_linear_drift(self):
@@ -323,7 +329,8 @@ class ScaleEstimatorTests(unittest.TestCase):
         self.assertTrue(ar1)
         self.assertTrue(all(row["scale_method"] in row["baseline_id"] for row in iid))
         self.assertTrue(all(row["scale_method"] in row["baseline_id"] for row in ar1))
-        self.assertTrue(any("ar1" in row["baseline_id"] for row in ar1))
+        self.assertTrue(any("ar1_unavailable" in row["baseline_id"] for row in ar1))
+        self.assertTrue(any("ar1_unit_gap" in row["baseline_id"] for row in ar1))
         self.assertTrue(all(row["scale_method"] in row["baseline_id"] for row in ar1))
 
     def test_ar1_mode_fails_closed_when_lagged_difference_support_is_insufficient(self):
