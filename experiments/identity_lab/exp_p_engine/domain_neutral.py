@@ -732,6 +732,35 @@ def build_partial_relation_residuals(
     return output
 
 
+def _group_residual_series(
+    residual_rows: Sequence[Mapping[str, Any]],
+) -> list[list[Mapping[str, Any]]]:
+    """Validate and split rows so detector state never leaks across entities."""
+    validate_residual_contract(residual_rows)
+    grouped: dict[tuple[str, str, str], list[Mapping[str, Any]]] = defaultdict(list)
+    for row in residual_rows:
+        key = (
+            str(row["entity_id"]),
+            str(row["metric_id"]),
+            str(row["baseline_id"]),
+        )
+        grouped[key].append(row)
+
+    output: list[list[Mapping[str, Any]]] = []
+    for key, rows in grouped.items():
+        rows.sort(key=lambda row: _parse_time(row["event_time"]))
+        times = [_parse_time(row["event_time"]) for row in rows]
+        if len(set(times)) != len(times):
+            raise ValueError("residual_series_duplicate_event_time:" + "|".join(key))
+        output.append(rows)
+    output.sort(key=lambda rows: (
+        str(rows[0]["entity_id"]),
+        str(rows[0]["metric_id"]),
+        str(rows[0]["baseline_id"]),
+    ))
+    return output
+
+
 def detect_two_sided_cusum(
     residual_rows: Sequence[Mapping[str, Any]],
     *,
@@ -741,24 +770,45 @@ def detect_two_sided_cusum(
     """Candidate two-sided CUSUM; thresholds require domain calibration."""
     if k < 0 or h <= 0:
         raise ValueError("cusum_thresholds_invalid")
-    positive = negative = 0.0
     hits: list[dict[str, Any]] = []
-    for index, row in enumerate(residual_rows):
-        if row.get("status") != "ready" or row.get("z_score") is None:
-            positive = negative = 0.0
-            continue
-        z = float(row["z_score"])
-        positive = max(0.0, positive + z - k)
-        negative = max(0.0, negative - z - k)
-        if positive >= h:
-            hits.append({"detector": "cusum", "direction": "positive", "index": index,
-                         "event_time": row["event_time"], "z_score": z, "accumulator": positive})
-            positive = negative = 0.0
-        elif negative >= h:
-            hits.append({"detector": "cusum", "direction": "negative", "index": index,
-                         "event_time": row["event_time"], "z_score": z, "accumulator": negative})
-            positive = negative = 0.0
-    return hits
+    for series in _group_residual_series(residual_rows):
+        positive = negative = 0.0
+        for index, row in enumerate(series):
+            if row.get("status") != "ready" or row.get("z_score") is None:
+                positive = negative = 0.0
+                continue
+            z = float(row["z_score"])
+            positive = max(0.0, positive + z - k)
+            negative = max(0.0, negative - z - k)
+            if positive >= h:
+                hits.append({
+                    "detector": "cusum",
+                    "direction": "positive",
+                    "index": index,
+                    "entity_id": row["entity_id"],
+                    "metric_id": row["metric_id"],
+                    "baseline_id": row["baseline_id"],
+                    "event_time": row["event_time"],
+                    "z_score": z,
+                    "accumulator": positive,
+                })
+                positive = negative = 0.0
+            elif negative >= h:
+                hits.append({
+                    "detector": "cusum",
+                    "direction": "negative",
+                    "index": index,
+                    "entity_id": row["entity_id"],
+                    "metric_id": row["metric_id"],
+                    "baseline_id": row["baseline_id"],
+                    "event_time": row["event_time"],
+                    "z_score": z,
+                    "accumulator": negative,
+                })
+                positive = negative = 0.0
+    return sorted(hits, key=lambda hit: (
+        _parse_time(hit["event_time"]), hit["entity_id"], hit["metric_id"]
+    ))
 
 
 def detect_sign_runs(
@@ -770,28 +820,39 @@ def detect_sign_runs(
     """Candidate P1-style sign-run detector, kept independent from CUSUM."""
     if threshold <= 0 or run_length < 1:
         raise ValueError("sign_run_parameters_invalid")
-    sign = 0
-    streak: list[tuple[int, Mapping[str, Any]]] = []
     hits: list[dict[str, Any]] = []
-    for index, row in enumerate(residual_rows):
-        if row.get("status") != "ready" or row.get("z_score") is None:
-            sign, streak = 0, []
-            continue
-        z = float(row["z_score"])
-        current_sign = 1 if z > 0 else -1 if z < 0 else 0
-        if current_sign == 0 or abs(z) < threshold:
-            sign, streak = 0, []
-            continue
-        if sign != current_sign:
-            sign, streak = current_sign, []
-        streak.append((index, row))
-        if len(streak) >= run_length:
-            hit_index, hit_row = streak[-1]
-            hits.append({"detector": "sign_run", "direction": "positive" if sign > 0 else "negative",
-                         "index": hit_index, "event_time": hit_row["event_time"],
-                         "z_score": float(hit_row["z_score"]), "run_length": run_length})
-            sign, streak = 0, []
-    return hits
+    for series in _group_residual_series(residual_rows):
+        sign = 0
+        streak: list[tuple[int, Mapping[str, Any]]] = []
+        for index, row in enumerate(series):
+            if row.get("status") != "ready" or row.get("z_score") is None:
+                sign, streak = 0, []
+                continue
+            z = float(row["z_score"])
+            current_sign = 1 if z > 0 else -1 if z < 0 else 0
+            if current_sign == 0 or abs(z) < threshold:
+                sign, streak = 0, []
+                continue
+            if sign != current_sign:
+                sign, streak = current_sign, []
+            streak.append((index, row))
+            if len(streak) >= run_length:
+                hit_index, hit_row = streak[-1]
+                hits.append({
+                    "detector": "sign_run",
+                    "direction": "positive" if sign > 0 else "negative",
+                    "index": hit_index,
+                    "entity_id": hit_row["entity_id"],
+                    "metric_id": hit_row["metric_id"],
+                    "baseline_id": hit_row["baseline_id"],
+                    "event_time": hit_row["event_time"],
+                    "z_score": float(hit_row["z_score"]),
+                    "run_length": run_length,
+                })
+                sign, streak = 0, []
+    return sorted(hits, key=lambda hit: (
+        _parse_time(hit["event_time"]), hit["entity_id"], hit["metric_id"]
+    ))
 
 
 def first_evidence_at_or_after(
