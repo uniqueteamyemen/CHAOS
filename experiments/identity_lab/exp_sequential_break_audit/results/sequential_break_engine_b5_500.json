@@ -1,0 +1,1090 @@
+{
+  "experiment": "sequential_break_engine_b5_rho_adaptive_kendall",
+  "candidate": "RhoAdaptiveSequentialBreakEngineB5",
+  "derived_from": "benchmark_b3_audited.py (B-v3.1)",
+  "configuration": {
+    "quiet_end": 40,
+    "window_size": 12,
+    "anomaly_z_thresh": 3.8,
+    "winsor_cap": 1.8,
+    "persistence_threshold": 1.45,
+    "break_percent_thresh": 85.0,
+    "resolution_horizon": 14,
+    "return_to_baseline_z": 1.5,
+    "rho_correction": "rho_raw + 0.5*((1+3*max(0,rho_raw))/quiet_end), clipped [0,0.88]",
+    "pending_gate": "rho<=0.50: two consecutive same-sign points above 3.8; rho>0.50: three consecutive same-sign points above 3.8",
+    "onset_index_zero_based": 65
+  },
+  "design": {
+    "series_length": 140,
+    "trials_per_case": 500,
+    "case_count": 8,
+    "distribution": [
+      "gauss",
+      "t3"
+    ],
+    "rho_levels": [
+      0.3,
+      0.7
+    ],
+    "variance_jump_cases": 2,
+    "level_shift_cases": 2,
+    "pure_null_cases": 4,
+    "dev_seed_base": 6000000,
+    "holdout_seed_base": 7000000,
+    "seed_scheme": "seed_base + case_index*10000 + trial",
+    "sequence_rate_definition": "A sequence is counted once per indicator if it contains at least one event of that indicator.",
+    "combined_definition": "Combined is the sequence-level union of ANY structural break (including wrong-direction or pre-onset), transient anomaly, or unresolved alert.",
+    "pending_lifecycle_invariant": "opened = resolved_structural + resolved_transient + unresolved"
+  },
+  "dev": {
+    "seed_base": 6000000,
+    "cases": {
+      "gauss_r0.3_null": {
+        "scenario_type": "pure_null",
+        "trials": 500,
+        "structural_metric_label": "structural_false_alarm",
+        "structural_rate": {
+          "sequences": 12,
+          "rate_pct": 2.4,
+          "wilson95_pct": [
+            1.38,
+            4.15
+          ]
+        },
+        "transient_alert_rate": {
+          "sequences": 2,
+          "rate_pct": 0.4,
+          "wilson95_pct": [
+            0.11,
+            1.45
+          ]
+        },
+        "unresolved_alert_rate": {
+          "sequences": 0,
+          "rate_pct": 0.0,
+          "wilson95_pct": [
+            0.0,
+            0.76
+          ]
+        },
+        "combined_any_alert_rate": {
+          "sequences": 13,
+          "rate_pct": 2.6,
+          "wilson95_pct": [
+            1.53,
+            4.4
+          ]
+        },
+        "wrong_direction_structural_rate": {
+          "sequences": 0,
+          "rate_pct": 0.0,
+          "wilson95_pct": [
+            0.0,
+            0.76
+          ]
+        },
+        "pre_onset_structural_rate": {
+          "sequences": 0,
+          "rate_pct": 0.0,
+          "wilson95_pct": [
+            0.0,
+            0.76
+          ]
+        },
+        "median_correct_detection_delay": null,
+        "event_totals": {
+          "structural": 13,
+          "transient": 3,
+          "unresolved": 0,
+          "pending_opened": 3,
+          "pending_resolved_structural": 0,
+          "pending_resolved_transient": 3,
+          "pending_unresolved": 0
+        },
+        "pending_lifecycle_accounting_complete": true
+      },
+      "gauss_r0.7_null": {
+        "scenario_type": "pure_null",
+        "trials": 500,
+        "structural_metric_label": "structural_false_alarm",
+        "structural_rate": {
+          "sequences": 29,
+          "rate_pct": 5.8,
+          "wilson95_pct": [
+            4.07,
+            8.21
+          ]
+        },
+        "transient_alert_rate": {
+          "sequences": 2,
+          "rate_pct": 0.4,
+          "wilson95_pct": [
+            0.11,
+            1.45
+          ]
+        },
+        "unresolved_alert_rate": {
+          "sequences": 1,
+          "rate_pct": 0.2,
+          "wilson95_pct": [
+            0.04,
+            1.12
+          ]
+        },
+        "combined_any_alert_rate": {
+          "sequences": 31,
+          "rate_pct": 6.2,
+          "wilson95_pct": [
+            4.4,
+            8.67
+          ]
+        },
+        "wrong_direction_structural_rate": {
+          "sequences": 0,
+          "rate_pct": 0.0,
+          "wilson95_pct": [
+            0.0,
+            0.76
+          ]
+        },
+        "pre_onset_structural_rate": {
+          "sequences": 0,
+          "rate_pct": 0.0,
+          "wilson95_pct": [
+            0.0,
+            0.76
+          ]
+        },
+        "median_correct_detection_delay": null,
+        "event_totals": {
+          "structural": 34,
+          "transient": 2,
+          "unresolved": 1,
+          "pending_opened": 7,
+          "pending_resolved_structural": 4,
+          "pending_resolved_transient": 2,
+          "pending_unresolved": 1
+        },
+        "pending_lifecycle_accounting_complete": true
+      },
+      "gauss_r0.7_vjump": {
+        "scenario_type": "variance_jump",
+        "trials": 500,
+        "structural_metric_label": "structural_false_alarm",
+        "structural_rate": {
+          "sequences": 62,
+          "rate_pct": 12.4,
+          "wilson95_pct": [
+            9.79,
+            15.58
+          ]
+        },
+        "transient_alert_rate": {
+          "sequences": 16,
+          "rate_pct": 3.2,
+          "wilson95_pct": [
+            1.98,
+            5.13
+          ]
+        },
+        "unresolved_alert_rate": {
+          "sequences": 4,
+          "rate_pct": 0.8,
+          "wilson95_pct": [
+            0.31,
+            2.04
+          ]
+        },
+        "combined_any_alert_rate": {
+          "sequences": 73,
+          "rate_pct": 14.6,
+          "wilson95_pct": [
+            11.77,
+            17.96
+          ]
+        },
+        "wrong_direction_structural_rate": {
+          "sequences": 0,
+          "rate_pct": 0.0,
+          "wilson95_pct": [
+            0.0,
+            0.76
+          ]
+        },
+        "pre_onset_structural_rate": {
+          "sequences": 0,
+          "rate_pct": 0.0,
+          "wilson95_pct": [
+            0.0,
+            0.76
+          ]
+        },
+        "median_correct_detection_delay": null,
+        "event_totals": {
+          "structural": 75,
+          "transient": 16,
+          "unresolved": 4,
+          "pending_opened": 51,
+          "pending_resolved_structural": 31,
+          "pending_resolved_transient": 16,
+          "pending_unresolved": 4
+        },
+        "pending_lifecycle_accounting_complete": true
+      },
+      "t3_r0.3_null": {
+        "scenario_type": "pure_null",
+        "trials": 500,
+        "structural_metric_label": "structural_false_alarm",
+        "structural_rate": {
+          "sequences": 2,
+          "rate_pct": 0.4,
+          "wilson95_pct": [
+            0.11,
+            1.45
+          ]
+        },
+        "transient_alert_rate": {
+          "sequences": 36,
+          "rate_pct": 7.2,
+          "wilson95_pct": [
+            5.25,
+            9.81
+          ]
+        },
+        "unresolved_alert_rate": {
+          "sequences": 4,
+          "rate_pct": 0.8,
+          "wilson95_pct": [
+            0.31,
+            2.04
+          ]
+        },
+        "combined_any_alert_rate": {
+          "sequences": 42,
+          "rate_pct": 8.4,
+          "wilson95_pct": [
+            6.27,
+            11.16
+          ]
+        },
+        "wrong_direction_structural_rate": {
+          "sequences": 0,
+          "rate_pct": 0.0,
+          "wilson95_pct": [
+            0.0,
+            0.76
+          ]
+        },
+        "pre_onset_structural_rate": {
+          "sequences": 0,
+          "rate_pct": 0.0,
+          "wilson95_pct": [
+            0.0,
+            0.76
+          ]
+        },
+        "median_correct_detection_delay": null,
+        "event_totals": {
+          "structural": 2,
+          "transient": 38,
+          "unresolved": 4,
+          "pending_opened": 43,
+          "pending_resolved_structural": 1,
+          "pending_resolved_transient": 38,
+          "pending_unresolved": 4
+        },
+        "pending_lifecycle_accounting_complete": true
+      },
+      "t3_r0.7_null": {
+        "scenario_type": "pure_null",
+        "trials": 500,
+        "structural_metric_label": "structural_false_alarm",
+        "structural_rate": {
+          "sequences": 57,
+          "rate_pct": 11.4,
+          "wilson95_pct": [
+            8.9,
+            14.48
+          ]
+        },
+        "transient_alert_rate": {
+          "sequences": 33,
+          "rate_pct": 6.6,
+          "wilson95_pct": [
+            4.74,
+            9.12
+          ]
+        },
+        "unresolved_alert_rate": {
+          "sequences": 10,
+          "rate_pct": 2.0,
+          "wilson95_pct": [
+            1.09,
+            3.64
+          ]
+        },
+        "combined_any_alert_rate": {
+          "sequences": 97,
+          "rate_pct": 19.4,
+          "wilson95_pct": [
+            16.17,
+            23.09
+          ]
+        },
+        "wrong_direction_structural_rate": {
+          "sequences": 0,
+          "rate_pct": 0.0,
+          "wilson95_pct": [
+            0.0,
+            0.76
+          ]
+        },
+        "pre_onset_structural_rate": {
+          "sequences": 0,
+          "rate_pct": 0.0,
+          "wilson95_pct": [
+            0.0,
+            0.76
+          ]
+        },
+        "median_correct_detection_delay": null,
+        "event_totals": {
+          "structural": 65,
+          "transient": 39,
+          "unresolved": 10,
+          "pending_opened": 78,
+          "pending_resolved_structural": 29,
+          "pending_resolved_transient": 39,
+          "pending_unresolved": 10
+        },
+        "pending_lifecycle_accounting_complete": true
+      },
+      "t3_r0.7_vjump": {
+        "scenario_type": "variance_jump",
+        "trials": 500,
+        "structural_metric_label": "structural_false_alarm",
+        "structural_rate": {
+          "sequences": 97,
+          "rate_pct": 19.4,
+          "wilson95_pct": [
+            16.17,
+            23.09
+          ]
+        },
+        "transient_alert_rate": {
+          "sequences": 90,
+          "rate_pct": 18.0,
+          "wilson95_pct": [
+            14.88,
+            21.61
+          ]
+        },
+        "unresolved_alert_rate": {
+          "sequences": 14,
+          "rate_pct": 2.8,
+          "wilson95_pct": [
+            1.68,
+            4.64
+          ]
+        },
+        "combined_any_alert_rate": {
+          "sequences": 169,
+          "rate_pct": 33.8,
+          "wilson95_pct": [
+            29.79,
+            38.06
+          ]
+        },
+        "wrong_direction_structural_rate": {
+          "sequences": 0,
+          "rate_pct": 0.0,
+          "wilson95_pct": [
+            0.0,
+            0.76
+          ]
+        },
+        "pre_onset_structural_rate": {
+          "sequences": 0,
+          "rate_pct": 0.0,
+          "wilson95_pct": [
+            0.0,
+            0.76
+          ]
+        },
+        "median_correct_detection_delay": null,
+        "event_totals": {
+          "structural": 122,
+          "transient": 98,
+          "unresolved": 16,
+          "pending_opened": 185,
+          "pending_resolved_structural": 71,
+          "pending_resolved_transient": 98,
+          "pending_unresolved": 16
+        },
+        "pending_lifecycle_accounting_complete": true
+      },
+      "pos_shift_3.0s": {
+        "scenario_type": "level_shift",
+        "trials": 500,
+        "structural_metric_label": "correct_directional_structural_detection",
+        "structural_rate": {
+          "sequences": 423,
+          "rate_pct": 84.6,
+          "wilson95_pct": [
+            81.17,
+            87.5
+          ]
+        },
+        "transient_alert_rate": {
+          "sequences": 8,
+          "rate_pct": 1.6,
+          "wilson95_pct": [
+            0.81,
+            3.13
+          ]
+        },
+        "unresolved_alert_rate": {
+          "sequences": 3,
+          "rate_pct": 0.6,
+          "wilson95_pct": [
+            0.2,
+            1.75
+          ]
+        },
+        "combined_any_alert_rate": {
+          "sequences": 429,
+          "rate_pct": 85.8,
+          "wilson95_pct": [
+            82.47,
+            88.59
+          ]
+        },
+        "wrong_direction_structural_rate": {
+          "sequences": 0,
+          "rate_pct": 0.0,
+          "wilson95_pct": [
+            0.0,
+            0.76
+          ]
+        },
+        "pre_onset_structural_rate": {
+          "sequences": 2,
+          "rate_pct": 0.4,
+          "wilson95_pct": [
+            0.11,
+            1.45
+          ]
+        },
+        "median_correct_detection_delay": 10.0,
+        "event_totals": {
+          "structural": 432,
+          "transient": 8,
+          "unresolved": 3,
+          "pending_opened": 188,
+          "pending_resolved_structural": 177,
+          "pending_resolved_transient": 8,
+          "pending_unresolved": 3
+        },
+        "pending_lifecycle_accounting_complete": true
+      },
+      "neg_shift_3.0s": {
+        "scenario_type": "level_shift",
+        "trials": 500,
+        "structural_metric_label": "correct_directional_structural_detection",
+        "structural_rate": {
+          "sequences": 397,
+          "rate_pct": 79.4,
+          "wilson95_pct": [
+            75.64,
+            82.71
+          ]
+        },
+        "transient_alert_rate": {
+          "sequences": 7,
+          "rate_pct": 1.4,
+          "wilson95_pct": [
+            0.68,
+            2.86
+          ]
+        },
+        "unresolved_alert_rate": {
+          "sequences": 5,
+          "rate_pct": 1.0,
+          "wilson95_pct": [
+            0.43,
+            2.32
+          ]
+        },
+        "combined_any_alert_rate": {
+          "sequences": 408,
+          "rate_pct": 81.6,
+          "wilson95_pct": [
+            77.97,
+            84.75
+          ]
+        },
+        "wrong_direction_structural_rate": {
+          "sequences": 0,
+          "rate_pct": 0.0,
+          "wilson95_pct": [
+            0.0,
+            0.76
+          ]
+        },
+        "pre_onset_structural_rate": {
+          "sequences": 11,
+          "rate_pct": 2.2,
+          "wilson95_pct": [
+            1.23,
+            3.9
+          ]
+        },
+        "median_correct_detection_delay": 10.0,
+        "event_totals": {
+          "structural": 411,
+          "transient": 7,
+          "unresolved": 5,
+          "pending_opened": 197,
+          "pending_resolved_structural": 185,
+          "pending_resolved_transient": 7,
+          "pending_unresolved": 5
+        },
+        "pending_lifecycle_accounting_complete": true
+      }
+    },
+    "summary": {
+      "structural_fpr_pure_null_mean_pct": 5.0,
+      "combined_fpr_pure_null_mean_pct": 9.15,
+      "transient_rate_pure_null_mean_pct": 3.65,
+      "structural_sensitivity_shift_mean_pct": 82.0,
+      "pre_onset_structural_shift_mean_pct": 1.3,
+      "lifecycle_accounting_complete": true
+    }
+  },
+  "holdout": {
+    "seed_base": 7000000,
+    "cases": {
+      "gauss_r0.3_null": {
+        "scenario_type": "pure_null",
+        "trials": 500,
+        "structural_metric_label": "structural_false_alarm",
+        "structural_rate": {
+          "sequences": 6,
+          "rate_pct": 1.2,
+          "wilson95_pct": [
+            0.55,
+            2.59
+          ]
+        },
+        "transient_alert_rate": {
+          "sequences": 1,
+          "rate_pct": 0.2,
+          "wilson95_pct": [
+            0.04,
+            1.12
+          ]
+        },
+        "unresolved_alert_rate": {
+          "sequences": 0,
+          "rate_pct": 0.0,
+          "wilson95_pct": [
+            0.0,
+            0.76
+          ]
+        },
+        "combined_any_alert_rate": {
+          "sequences": 7,
+          "rate_pct": 1.4,
+          "wilson95_pct": [
+            0.68,
+            2.86
+          ]
+        },
+        "wrong_direction_structural_rate": {
+          "sequences": 0,
+          "rate_pct": 0.0,
+          "wilson95_pct": [
+            0.0,
+            0.76
+          ]
+        },
+        "pre_onset_structural_rate": {
+          "sequences": 0,
+          "rate_pct": 0.0,
+          "wilson95_pct": [
+            0.0,
+            0.76
+          ]
+        },
+        "median_correct_detection_delay": null,
+        "event_totals": {
+          "structural": 6,
+          "transient": 1,
+          "unresolved": 0,
+          "pending_opened": 1,
+          "pending_resolved_structural": 0,
+          "pending_resolved_transient": 1,
+          "pending_unresolved": 0
+        },
+        "pending_lifecycle_accounting_complete": true
+      },
+      "gauss_r0.7_null": {
+        "scenario_type": "pure_null",
+        "trials": 500,
+        "structural_metric_label": "structural_false_alarm",
+        "structural_rate": {
+          "sequences": 35,
+          "rate_pct": 7.0,
+          "wilson95_pct": [
+            5.08,
+            9.58
+          ]
+        },
+        "transient_alert_rate": {
+          "sequences": 4,
+          "rate_pct": 0.8,
+          "wilson95_pct": [
+            0.31,
+            2.04
+          ]
+        },
+        "unresolved_alert_rate": {
+          "sequences": 1,
+          "rate_pct": 0.2,
+          "wilson95_pct": [
+            0.04,
+            1.12
+          ]
+        },
+        "combined_any_alert_rate": {
+          "sequences": 38,
+          "rate_pct": 7.6,
+          "wilson95_pct": [
+            5.59,
+            10.26
+          ]
+        },
+        "wrong_direction_structural_rate": {
+          "sequences": 0,
+          "rate_pct": 0.0,
+          "wilson95_pct": [
+            0.0,
+            0.76
+          ]
+        },
+        "pre_onset_structural_rate": {
+          "sequences": 0,
+          "rate_pct": 0.0,
+          "wilson95_pct": [
+            0.0,
+            0.76
+          ]
+        },
+        "median_correct_detection_delay": null,
+        "event_totals": {
+          "structural": 43,
+          "transient": 4,
+          "unresolved": 1,
+          "pending_opened": 14,
+          "pending_resolved_structural": 9,
+          "pending_resolved_transient": 4,
+          "pending_unresolved": 1
+        },
+        "pending_lifecycle_accounting_complete": true
+      },
+      "gauss_r0.7_vjump": {
+        "scenario_type": "variance_jump",
+        "trials": 500,
+        "structural_metric_label": "structural_false_alarm",
+        "structural_rate": {
+          "sequences": 59,
+          "rate_pct": 11.8,
+          "wilson95_pct": [
+            9.26,
+            14.92
+          ]
+        },
+        "transient_alert_rate": {
+          "sequences": 23,
+          "rate_pct": 4.6,
+          "wilson95_pct": [
+            3.08,
+            6.81
+          ]
+        },
+        "unresolved_alert_rate": {
+          "sequences": 5,
+          "rate_pct": 1.0,
+          "wilson95_pct": [
+            0.43,
+            2.32
+          ]
+        },
+        "combined_any_alert_rate": {
+          "sequences": 82,
+          "rate_pct": 16.4,
+          "wilson95_pct": [
+            13.41,
+            19.9
+          ]
+        },
+        "wrong_direction_structural_rate": {
+          "sequences": 0,
+          "rate_pct": 0.0,
+          "wilson95_pct": [
+            0.0,
+            0.76
+          ]
+        },
+        "pre_onset_structural_rate": {
+          "sequences": 0,
+          "rate_pct": 0.0,
+          "wilson95_pct": [
+            0.0,
+            0.76
+          ]
+        },
+        "median_correct_detection_delay": null,
+        "event_totals": {
+          "structural": 67,
+          "transient": 24,
+          "unresolved": 5,
+          "pending_opened": 51,
+          "pending_resolved_structural": 22,
+          "pending_resolved_transient": 24,
+          "pending_unresolved": 5
+        },
+        "pending_lifecycle_accounting_complete": true
+      },
+      "t3_r0.3_null": {
+        "scenario_type": "pure_null",
+        "trials": 500,
+        "structural_metric_label": "structural_false_alarm",
+        "structural_rate": {
+          "sequences": 4,
+          "rate_pct": 0.8,
+          "wilson95_pct": [
+            0.31,
+            2.04
+          ]
+        },
+        "transient_alert_rate": {
+          "sequences": 27,
+          "rate_pct": 5.4,
+          "wilson95_pct": [
+            3.74,
+            7.74
+          ]
+        },
+        "unresolved_alert_rate": {
+          "sequences": 8,
+          "rate_pct": 1.6,
+          "wilson95_pct": [
+            0.81,
+            3.13
+          ]
+        },
+        "combined_any_alert_rate": {
+          "sequences": 39,
+          "rate_pct": 7.8,
+          "wilson95_pct": [
+            5.76,
+            10.49
+          ]
+        },
+        "wrong_direction_structural_rate": {
+          "sequences": 0,
+          "rate_pct": 0.0,
+          "wilson95_pct": [
+            0.0,
+            0.76
+          ]
+        },
+        "pre_onset_structural_rate": {
+          "sequences": 0,
+          "rate_pct": 0.0,
+          "wilson95_pct": [
+            0.0,
+            0.76
+          ]
+        },
+        "median_correct_detection_delay": null,
+        "event_totals": {
+          "structural": 4,
+          "transient": 27,
+          "unresolved": 8,
+          "pending_opened": 36,
+          "pending_resolved_structural": 1,
+          "pending_resolved_transient": 27,
+          "pending_unresolved": 8
+        },
+        "pending_lifecycle_accounting_complete": true
+      },
+      "t3_r0.7_null": {
+        "scenario_type": "pure_null",
+        "trials": 500,
+        "structural_metric_label": "structural_false_alarm",
+        "structural_rate": {
+          "sequences": 58,
+          "rate_pct": 11.6,
+          "wilson95_pct": [
+            9.08,
+            14.7
+          ]
+        },
+        "transient_alert_rate": {
+          "sequences": 34,
+          "rate_pct": 6.8,
+          "wilson95_pct": [
+            4.91,
+            9.35
+          ]
+        },
+        "unresolved_alert_rate": {
+          "sequences": 11,
+          "rate_pct": 2.2,
+          "wilson95_pct": [
+            1.23,
+            3.9
+          ]
+        },
+        "combined_any_alert_rate": {
+          "sequences": 94,
+          "rate_pct": 18.8,
+          "wilson95_pct": [
+            15.62,
+            22.46
+          ]
+        },
+        "wrong_direction_structural_rate": {
+          "sequences": 0,
+          "rate_pct": 0.0,
+          "wilson95_pct": [
+            0.0,
+            0.76
+          ]
+        },
+        "pre_onset_structural_rate": {
+          "sequences": 0,
+          "rate_pct": 0.0,
+          "wilson95_pct": [
+            0.0,
+            0.76
+          ]
+        },
+        "median_correct_detection_delay": null,
+        "event_totals": {
+          "structural": 66,
+          "transient": 36,
+          "unresolved": 11,
+          "pending_opened": 69,
+          "pending_resolved_structural": 22,
+          "pending_resolved_transient": 36,
+          "pending_unresolved": 11
+        },
+        "pending_lifecycle_accounting_complete": true
+      },
+      "t3_r0.7_vjump": {
+        "scenario_type": "variance_jump",
+        "trials": 500,
+        "structural_metric_label": "structural_false_alarm",
+        "structural_rate": {
+          "sequences": 75,
+          "rate_pct": 15.0,
+          "wilson95_pct": [
+            12.14,
+            18.4
+          ]
+        },
+        "transient_alert_rate": {
+          "sequences": 88,
+          "rate_pct": 17.6,
+          "wilson95_pct": [
+            14.51,
+            21.18
+          ]
+        },
+        "unresolved_alert_rate": {
+          "sequences": 21,
+          "rate_pct": 4.2,
+          "wilson95_pct": [
+            2.76,
+            6.34
+          ]
+        },
+        "combined_any_alert_rate": {
+          "sequences": 162,
+          "rate_pct": 32.4,
+          "wilson95_pct": [
+            28.45,
+            36.62
+          ]
+        },
+        "wrong_direction_structural_rate": {
+          "sequences": 0,
+          "rate_pct": 0.0,
+          "wilson95_pct": [
+            0.0,
+            0.76
+          ]
+        },
+        "pre_onset_structural_rate": {
+          "sequences": 0,
+          "rate_pct": 0.0,
+          "wilson95_pct": [
+            0.0,
+            0.76
+          ]
+        },
+        "median_correct_detection_delay": null,
+        "event_totals": {
+          "structural": 84,
+          "transient": 105,
+          "unresolved": 24,
+          "pending_opened": 179,
+          "pending_resolved_structural": 50,
+          "pending_resolved_transient": 105,
+          "pending_unresolved": 24
+        },
+        "pending_lifecycle_accounting_complete": true
+      },
+      "pos_shift_3.0s": {
+        "scenario_type": "level_shift",
+        "trials": 500,
+        "structural_metric_label": "correct_directional_structural_detection",
+        "structural_rate": {
+          "sequences": 424,
+          "rate_pct": 84.8,
+          "wilson95_pct": [
+            81.39,
+            87.68
+          ]
+        },
+        "transient_alert_rate": {
+          "sequences": 1,
+          "rate_pct": 0.2,
+          "wilson95_pct": [
+            0.04,
+            1.12
+          ]
+        },
+        "unresolved_alert_rate": {
+          "sequences": 5,
+          "rate_pct": 1.0,
+          "wilson95_pct": [
+            0.43,
+            2.32
+          ]
+        },
+        "combined_any_alert_rate": {
+          "sequences": 430,
+          "rate_pct": 86.0,
+          "wilson95_pct": [
+            82.68,
+            88.77
+          ]
+        },
+        "wrong_direction_structural_rate": {
+          "sequences": 0,
+          "rate_pct": 0.0,
+          "wilson95_pct": [
+            0.0,
+            0.76
+          ]
+        },
+        "pre_onset_structural_rate": {
+          "sequences": 10,
+          "rate_pct": 2.0,
+          "wilson95_pct": [
+            1.09,
+            3.64
+          ]
+        },
+        "median_correct_detection_delay": 10.0,
+        "event_totals": {
+          "structural": 440,
+          "transient": 1,
+          "unresolved": 5,
+          "pending_opened": 198,
+          "pending_resolved_structural": 192,
+          "pending_resolved_transient": 1,
+          "pending_unresolved": 5
+        },
+        "pending_lifecycle_accounting_complete": true
+      },
+      "neg_shift_3.0s": {
+        "scenario_type": "level_shift",
+        "trials": 500,
+        "structural_metric_label": "correct_directional_structural_detection",
+        "structural_rate": {
+          "sequences": 417,
+          "rate_pct": 83.4,
+          "wilson95_pct": [
+            79.89,
+            86.4
+          ]
+        },
+        "transient_alert_rate": {
+          "sequences": 6,
+          "rate_pct": 1.2,
+          "wilson95_pct": [
+            0.55,
+            2.59
+          ]
+        },
+        "unresolved_alert_rate": {
+          "sequences": 4,
+          "rate_pct": 0.8,
+          "wilson95_pct": [
+            0.31,
+            2.04
+          ]
+        },
+        "combined_any_alert_rate": {
+          "sequences": 423,
+          "rate_pct": 84.6,
+          "wilson95_pct": [
+            81.17,
+            87.5
+          ]
+        },
+        "wrong_direction_structural_rate": {
+          "sequences": 0,
+          "rate_pct": 0.0,
+          "wilson95_pct": [
+            0.0,
+            0.76
+          ]
+        },
+        "pre_onset_structural_rate": {
+          "sequences": 9,
+          "rate_pct": 1.8,
+          "wilson95_pct": [
+            0.95,
+            3.39
+          ]
+        },
+        "median_correct_detection_delay": 10.0,
+        "event_totals": {
+          "structural": 433,
+          "transient": 7,
+          "unresolved": 4,
+          "pending_opened": 179,
+          "pending_resolved_structural": 168,
+          "pending_resolved_transient": 7,
+          "pending_unresolved": 4
+        },
+        "pending_lifecycle_accounting_complete": true
+      }
+    },
+    "summary": {
+      "structural_fpr_pure_null_mean_pct": 5.15,
+      "combined_fpr_pure_null_mean_pct": 8.9,
+      "transient_rate_pure_null_mean_pct": 3.3,
+      "structural_sensitivity_shift_mean_pct": 84.1,
+      "pre_onset_structural_shift_mean_pct": 1.9,
+      "lifecycle_accounting_complete": true
+    }
+  }
+}
