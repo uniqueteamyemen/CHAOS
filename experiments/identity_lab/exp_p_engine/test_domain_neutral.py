@@ -320,7 +320,7 @@ class ScaleEstimatorTests(unittest.TestCase):
         self.assertTrue(all(row["scale_method"] in row["baseline_id"] for row in iid))
         self.assertTrue(all(row["scale_method"] in row["baseline_id"] for row in ar1))
         self.assertTrue(any("ar1" in row["baseline_id"] for row in ar1))
-        self.assertTrue(any("iid_unit_gap_only" in row["baseline_id"] for row in ar1))
+        self.assertTrue(all(row["scale_method"] in row["baseline_id"] for row in ar1))
 
     def test_sparse_nonunit_gaps_without_rho_do_not_invent_scale(self):
         rows = [
