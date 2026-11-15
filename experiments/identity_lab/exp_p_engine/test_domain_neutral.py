@@ -505,6 +505,15 @@ class DetectorAndFleetTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "residual_contract_fields_missing"):
             run_candidate_detectors([{"event_time": "2024", "status": "ready", "z_score": 4.0}])
 
+    def test_residual_contract_rejects_unknown_status_and_nonpositive_scale(self):
+        invalid_status = residual_row("E", "m", "2024", 1.0, status="unknown")
+        with self.assertRaisesRegex(ValueError, "residual_contract_status_invalid"):
+            validate_residual_contract([invalid_status])
+        invalid_scale = residual_row("E", "m", "2024", 1.0, status="gap_unresolved")
+        invalid_scale["scale"] = 0.0
+        with self.assertRaisesRegex(ValueError, "residual_contract_scale_not_positive"):
+            validate_residual_contract([invalid_scale])
+
     def test_shared_contract_accepts_all_baseline_builder_outputs(self):
         univariate = build_univariate_residuals(
             observations([float(i * i) + (0.3 if i % 2 else -0.3) for i in range(18)]),
