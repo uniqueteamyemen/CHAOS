@@ -883,10 +883,16 @@ def cohort_peer_residuals(
     buckets: dict[tuple[str, str, str, str, str], list[tuple[float, str]]] = defaultdict(list)
     seen_entity_period: set[tuple[str, str, str, str]] = set()
     for row in observations:
-        if row.get("observation_status") != "observed" or row.get("value") is None:
-            continue
         cohort = row.get("cohort_id")
         if cohort in (None, ""):
+            continue
+        canonical_time = _parse_time(row["event_time"]).isoformat()
+        entity_id = str(row["entity_id"])
+        unique_key = (str(row["metric_id"]), canonical_time, str(cohort), entity_id)
+        if unique_key in seen_entity_period:
+            raise ValueError("duplicate_entity_metric_time_in_cohort")
+        seen_entity_period.add(unique_key)
+        if row.get("observation_status") != "observed" or row.get("value") is None:
             continue
         raw_observed_value = float(row["value"])
         peer_value = raw_observed_value
@@ -901,12 +907,6 @@ def cohort_peer_residuals(
             if not math.isfinite(exposure) or exposure <= 0:
                 continue
             peer_value = peer_value / exposure
-        canonical_time = _parse_time(row["event_time"]).isoformat()
-        entity_id = str(row["entity_id"])
-        unique_key = (str(row["metric_id"]), canonical_time, str(cohort), entity_id)
-        if unique_key in seen_entity_period:
-            raise ValueError("duplicate_entity_metric_time_in_cohort")
-        seen_entity_period.add(unique_key)
         key = (str(row["metric_id"]), canonical_time, str(cohort), metric_unit, exposure_unit)
         buckets[key].append((peer_value, entity_id))
 
@@ -914,6 +914,9 @@ def cohort_peer_residuals(
     for (metric_id, event_time, cohort, metric_unit, exposure_unit), members in buckets.items():
         members.sort(key=lambda pair: (pair[0], pair[1]))
         values = [pair[0] for pair in members]
+        cohort_center = statistics.median(values)
+        cohort_mad = statistics.median(abs(value - cohort_center) for value in values)
+        cohort_scale = 1.4826 * cohort_mad
         for index, (value, entity_id) in enumerate(members):
             peer_count = len(values) - 1
             if peer_count < min_peers:
@@ -926,12 +929,7 @@ def cohort_peer_residuals(
                 return values[position] if position < index else values[position + 1]
 
             peer_median = (without_self(lower) + without_self(upper)) / 2.0
-            peer_deviations = [
-                abs(without_self(position) - peer_median)
-                for position in range(remaining_count)
-            ]
-            peer_mad = statistics.median(peer_deviations)
-            peer_scale = 1.4826 * peer_mad
+            peer_scale = cohort_scale
             comparable_unit = (
                 metric_unit + "/" + exposure_unit
                 if use_exposure else metric_unit or None
