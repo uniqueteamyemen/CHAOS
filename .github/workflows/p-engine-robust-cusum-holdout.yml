@@ -1,0 +1,45 @@
+name: CHAOS P-engine robust CUSUM independent holdout
+
+on:
+  push:
+    branches:
+      - experiment/p-engine-parallel-fusion-v1
+    paths:
+      - "experiments/identity_lab/exp_p_engine_calibration/robust_cusum_holdout.py"
+      - "experiments/identity_lab/exp_p_engine_calibration/test_robust_cusum_holdout.py"
+      - ".github/workflows/p-engine-robust-cusum-holdout.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  robust-holdout:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Download completed Stage J calibration
+        uses: actions/download-artifact@v4
+        with:
+          github-token: \${{ secrets.GITHUB_TOKEN }}
+          repository: \${{ github.repository }}
+          run-id: 43727945691
+          name: chaos-p-engine-robust-cusum-calibration
+          path: \${{ runner.temp }}/p-engine-j
+      - name: Test independent holdout contract
+        run: python -m unittest experiments.identity_lab.exp_p_engine_calibration.test_robust_cusum_holdout -v
+      - name: Run 500-seed independent holdout for Stage J selections
+        run: >-
+          python -m experiments.identity_lab.exp_p_engine_calibration.robust_cusum_holdout
+          --calibration-report \${{ runner.temp }}/p-engine-j/robust_cusum_calibration.json
+      - name: Upload robust CUSUM independent holdout
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: chaos-p-engine-robust-cusum-independent-holdout
+          path: experiments/identity_lab/exp_p_engine_calibration/results/robust_cusum_holdout.json
+          if-no-files-found: warn
+          retention-days: 90
