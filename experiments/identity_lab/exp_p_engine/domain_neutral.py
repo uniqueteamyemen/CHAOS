@@ -654,15 +654,28 @@ def build_partial_relation_residuals(
         entity_pairs.sort(key=lambda item: _parse_time(item[0]))
         for index in range(min_pairs, len(entity_pairs)):
             history = entity_pairs[max(0, index - baseline_window):index]
+            event_time, x_value, y_value, x_unit, y_unit = entity_pairs[index]
             fit_pairs = [(item[1], item[2]) for item in history]
             fitted = _theil_sen_relation(fit_pairs)
             if fitted is None:
                 output.append({
                     "entity_id": entity_id,
+                    "metric_id": y_metric_id,
                     "relationship_id": relationship_id,
-                    "event_time": entity_pairs[index][0],
+                    "event_time": event_time,
+                    "observed_value": y_value,
+                    "expected_value": None,
+                    "residual": None,
+                    "scale": None,
+                    "z_score": None,
                     "status": "relation_unidentifiable",
+                    "baseline_id": relationship_id,
+                    "baseline_method": "prequential_theil_sen_pairwise_relation",
                     "support_count": len(history),
+                    "unit": y_unit,
+                    "x_metric_id": x_metric_id,
+                    "x_value": x_value,
+                    "relationship_semantics": "explicit_statistical_relation_not_causal_or_conservation_proof",
                 })
                 continue
             intercept, slope = fitted
@@ -674,7 +687,6 @@ def build_partial_relation_residuals(
             scale = 1.4826 * statistics.median(
                 abs(value - residual_center) for value in historical_residuals
             )
-            event_time, x_value, y_value, x_unit, y_unit = entity_pairs[index]
             observation_gap = (
                 _time_number(event_time, time_unit)
                 - _time_number(history[-1][0], time_unit)
@@ -685,14 +697,22 @@ def build_partial_relation_residuals(
             ready = math.isfinite(scale) and scale > 0
             output.append({
                 "entity_id": entity_id,
+                "metric_id": y_metric_id,
                 "relationship_id": relationship_id,
                 "event_time": event_time,
+                "observed_value": y_value,
+                "expected_value": expected,
+                "baseline_id": relationship_id,
+                "baseline_method": "prequential_theil_sen_pairwise_relation",
+                "unit": y_unit,
                 "x_metric_id": x_metric_id,
                 "y_metric_id": y_metric_id,
                 "x_value": x_value,
                 "y_observed": y_value,
                 "y_expected": expected,
                 "residual": residual,
+                "observed": y_value,
+                "expected": expected,
                 "scale": scale if ready else None,
                 "z_score": residual / scale if ready and not gap_unresolved else None,
                 "status": (
@@ -701,7 +721,6 @@ def build_partial_relation_residuals(
                     else "relation_scale_unavailable"
                 ),
                 "observation_gap_units": observation_gap,
-                "baseline_method": "prequential_theil_sen_pairwise_relation",
                 "support_count": len(history),
                 "slope": slope,
                 "intercept": intercept,
