@@ -172,6 +172,47 @@ class ParallelFusionTests(unittest.TestCase):
         self.assertEqual(result["D"]["diagnostics"]["p1_mode"], "production_adaptive_13_run")
         self.assertGreater(result["D"]["diagnostics"]["p1_adaptive_high_noise_periods"], 0)
 
+    def test_reset_policy_clears_both_accumulators_during_variance_transition(self):
+        series = [
+            {"month": 1, "residual": 2.0},
+            {"month": 2, "residual": 2.0},
+            {"month": 3, "residual": 2.0},
+            {"month": 4, "residual": 2.0},
+            {"month": 5, "residual": 2.0},
+            {"month": 6, "residual": 8.0},
+        ]
+        sigmas = [1.0] * len(series)
+        transitions = [False, False, False, True, True, False]
+        held = _two_sided_cusum(
+            series, 0.0, sigmas, transitions, policy="hold_unbounded",
+            sigma_cap=2.0, k_sigma=0.5, h_sigma=8.5, transition_damping=0.35,
+        )
+        reset = _two_sided_cusum(
+            series, 0.0, sigmas, transitions, policy="reset_unbounded",
+            sigma_cap=2.0, k_sigma=0.5, h_sigma=8.5, transition_damping=0.35,
+        )
+        self.assertTrue(held)
+        self.assertEqual(reset, [])
+
+    def test_higher_reset_policy_thresholds_do_not_fire_earlier_on_same_stream(self):
+        series = [{"month": i + 1, "residual": 3.0} for i in range(40)]
+        sigmas = [1.0] * len(series)
+        transitions = [False] * len(series)
+        hits_85 = _two_sided_cusum(
+            series, 0.0, sigmas, transitions, policy="reset_unbounded",
+            sigma_cap=2.0, k_sigma=0.5, h_sigma=8.5, transition_damping=0.35,
+        )
+        hits_105 = _two_sided_cusum(
+            series, 0.0, sigmas, transitions, policy="reset_unbounded",
+            sigma_cap=2.0, k_sigma=0.5, h_sigma=10.5, transition_damping=0.35,
+        )
+        hits_125 = _two_sided_cusum(
+            series, 0.0, sigmas, transitions, policy="reset_unbounded",
+            sigma_cap=2.0, k_sigma=0.5, h_sigma=12.5, transition_damping=0.35,
+        )
+        self.assertLess(hits_85[0]["index"], hits_105[0]["index"])
+        self.assertLess(hits_105[0]["index"], hits_125[0]["index"])
+
     def test_same_event_cooldown_marks_but_retains_evidence(self):
         series = [{"month": i, "residual": 5.0} for i in range(1, 100)]
         hits = [

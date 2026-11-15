@@ -111,7 +111,7 @@ def _two_sided_cusum(
     transition_damping: float,
 ) -> list[dict[str, Any]]:
     """Return positive and negative evidence without sharing accumulator state."""
-    if policy not in {"hold_unbounded", "bounded_damped"}:
+    if policy not in {"hold_unbounded", "bounded_damped", "reset_unbounded"}:
         raise ValueError("cusum_transition_policy_invalid")
     positive = 0.0
     negative = 0.0
@@ -123,6 +123,12 @@ def _two_sided_cusum(
         in_transition = transitions[index]
         if policy == "hold_unbounded" and in_transition:
             # Preserve both accumulators. A transient noise change must not erase evidence.
+            continue
+        if policy == "reset_unbounded" and in_transition:
+            # Reset both directional tracks at the regime boundary, matching the
+            # production engine's fail-closed transition behavior.
+            positive = 0.0
+            negative = 0.0
             continue
         scale = min(raw_sigma, sigma_cap) if policy == "bounded_damped" else raw_sigma
         gain = transition_damping if policy == "bounded_damped" and in_transition else 1.0
@@ -307,9 +313,8 @@ def _candidate(
         "evidence_count": event["evidence_count"], "detectors": event["detectors"],
         "ambiguous_direction": event["ambiguous_direction"],
     } for event in events]
-    high_noise_threshold = 1.5 * sigma_quiet
     p1_high_noise = sum(
-        1 for sigma in sigmas_short if sigma is not None and sigma > high_noise_threshold
+        1 for sigma in sigmas_short if sigma is not None and sigma > p1_noise_threshold
     )
     return {
         "policy": policy,
@@ -328,7 +333,11 @@ def _candidate(
             "cusum_negative_hits": sum(h["detector"] == "cusum_negative" for h in hits),
             "p1_hits": len(p1_hits),
             "event_count": len(events),
-            "sigma_cusum_policy": "unbounded_hold" if policy == "hold_unbounded" else "capped_damped",
+            "sigma_cusum_policy": (
+                "unbounded_hold" if policy == "hold_unbounded"
+                else "unbounded_reset" if policy == "reset_unbounded"
+                else "capped_damped"
+            ),
         },
     }
 
@@ -353,6 +362,8 @@ def run_candidates(
     cooldown: int = 26,
     p1_high_noise_factor: float = 1.5,
     p1_high_noise_run: int = 13,
+    h_cusum_f: float = 10.5,
+    h_cusum_g: float = 12.5,
     code_revision: str | None = None,
 ) -> dict[str, Any]:
     """Run unchanged production A plus independent B/C candidates on identical input."""
@@ -366,6 +377,8 @@ def run_candidates(
         "k_sign": k_sign,
         "k_cusum": k_cusum,
         "h_cusum": h_cusum,
+        "h_cusum_f": h_cusum_f,
+        "h_cusum_g": h_cusum_g,
         "transition_damping": transition_damping,
         "calm_k": calm_k,
         "p1_high_noise_factor": p1_high_noise_factor,
@@ -395,6 +408,7 @@ def run_candidates(
         "sigma_ceiling_factor": sigma_ceiling_factor,
         "k_sign": k_sign, "run_sign": run_sign,
         "k_cusum": k_cusum, "h_cusum": h_cusum,
+        "h_cusum_f": h_cusum_f, "h_cusum_g": h_cusum_g,
         "transition_damping": transition_damping,
         "calm_k": calm_k, "calm_periods": calm_periods, "cooldown": cooldown,
         "p1_high_noise_factor": p1_high_noise_factor,
@@ -402,6 +416,9 @@ def run_candidates(
         "B": "two_sided_CUSUM_hold_unbounded_during_transition + capped P1",
         "C": "two_sided_CUSUM_capped_scale_with_transition_damping + capped P1",
         "D": "C CUSUM unchanged + production-style adaptive high-noise P1",
+        "E": "two-sided unbounded CUSUM; reset tracks during variance transitions; adaptive P1; h=8.5",
+        "F": "same as E with h=10.5",
+        "G": "same as E with h=12.5",
         "fusion": "same direction until reversal or confirmed calm",
     }
     snapshot = _snapshot(
@@ -441,10 +458,43 @@ def run_candidates(
         p1_high_noise_handling=True, p1_high_noise_factor=p1_high_noise_factor,
         p1_high_noise_run=p1_high_noise_run,
     )
+    candidate_e = _candidate(
+        series, bias=bias, sigma_quiet=sigma_quiet, window=window,
+        noise_gate_window=noise_gate_window, transition_ratio=transition_ratio,
+        sigma_ceiling_factor=sigma_ceiling_factor, k_sign=k_sign, run_sign=run_sign,
+        k_cusum=k_cusum, h_cusum=h_cusum, transition_damping=transition_damping,
+        calm_k=calm_k, calm_periods=calm_periods, cooldown=cooldown,
+        entity=entity, policy="reset_unbounded",
+        p1_high_noise_handling=True, p1_high_noise_factor=p1_high_noise_factor,
+        p1_high_noise_run=p1_high_noise_run,
+    )
+    candidate_f = _candidate(
+        series, bias=bias, sigma_quiet=sigma_quiet, window=window,
+        noise_gate_window=noise_gate_window, transition_ratio=transition_ratio,
+        sigma_ceiling_factor=sigma_ceiling_factor, k_sign=k_sign, run_sign=run_sign,
+        k_cusum=k_cusum, h_cusum=h_cusum_f, transition_damping=transition_damping,
+        calm_k=calm_k, calm_periods=calm_periods, cooldown=cooldown,
+        entity=entity, policy="reset_unbounded",
+        p1_high_noise_handling=True, p1_high_noise_factor=p1_high_noise_factor,
+        p1_high_noise_run=p1_high_noise_run,
+    )
+    candidate_g = _candidate(
+        series, bias=bias, sigma_quiet=sigma_quiet, window=window,
+        noise_gate_window=noise_gate_window, transition_ratio=transition_ratio,
+        sigma_ceiling_factor=sigma_ceiling_factor, k_sign=k_sign, run_sign=run_sign,
+        k_cusum=k_cusum, h_cusum=h_cusum_g, transition_damping=transition_damping,
+        calm_k=calm_k, calm_periods=calm_periods, cooldown=cooldown,
+        entity=entity, policy="reset_unbounded",
+        p1_high_noise_handling=True, p1_high_noise_factor=p1_high_noise_factor,
+        p1_high_noise_run=p1_high_noise_run,
+    )
     return {
         "snapshot": snapshot.to_dict(),
         "A": baseline,
         "B": candidate_b,
         "C": candidate_c,
         "D": candidate_d,
+        "E": candidate_e,
+        "F": candidate_f,
+        "G": candidate_g,
     }

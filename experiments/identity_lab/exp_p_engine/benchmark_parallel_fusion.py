@@ -143,13 +143,16 @@ def run_benchmark():
                 "A": "unchanged engine.run production path",
                 "B": "two-sided CUSUM; preserve state during variance transitions; unbounded scale",
                 "C": "two-sided CUSUM; capped scale; damp updates during variance transitions; capped P1",
-            "D": "identical CUSUM to C; production-style adaptive high-noise P1 (13 same-sign run)",
+                "D": "identical CUSUM to C; production-style adaptive high-noise P1 (13 same-sign run)",
+                "E": "two-sided unbounded CUSUM; reset accumulators during variance transitions; adaptive P1; h=8.5",
+                "F": "same as E with h=10.5",
+                "G": "same as E with h=12.5",
             },
         },
         "results": {},
     }
 
-    variants = ("A", "B", "C", "D")
+    variants = ("A", "B", "C", "D", "E", "F", "G")
     for scenario_index, scenario in enumerate(scenarios):
         sign = -1 if "negative" in scenario else (1 if "positive" in scenario else 0)
         has_break = sign != 0
