@@ -1,0 +1,36 @@
+name: CHAOS B-v3.1 Audit-Complete isolated benchmark
+
+on:
+  push:
+    branches:
+      - experiment/sequential-break-engine-v1
+    paths:
+      - "experiments/identity_lab/exp_sequential_break_audit/**"
+      - ".github/workflows/sequential-break-engine-audit.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  sequential-break-audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install pinned numerical dependency
+        run: python -m pip install numpy==2.2.6
+      - name: Test B-v3.1 pending lifecycle and audit accounting
+        run: python -m unittest experiments.identity_lab.exp_sequential_break_audit.test_b3_audited -v
+      - name: Run Gemini B-v3.1 audited benchmark (500 trials per scenario)
+        run: python -m experiments.identity_lab.exp_sequential_break_audit.benchmark_b3_audited --threshold 85 --seed-base 5000000 --trials 500
+      - name: Upload B-v3.1 audited report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: chaos-sequential-break-engine-b3-1-audit-complete
+          path: experiments/identity_lab/exp_sequential_break_audit/results/sequential_break_engine_b3_1_audited_500.json
+          if-no-files-found: error
+          retention-days: 90
