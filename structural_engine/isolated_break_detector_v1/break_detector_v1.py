@@ -167,6 +167,9 @@ class BreakDetectorV1:
     """Unified entry point: fast, markov_cusum, or consensus."""
 
     MODES = ("fast", "markov_cusum", "consensus")
+    MIN_SERIES_LENGTH = 52
+    MIN_FULL_RESOLUTION_LENGTH = 66
+    MIN_FULL_CONSENSUS_LENGTH = 87
 
     def __init__(
         self, mode: str = "markov_cusum", markov_threshold: float = DEFAULT_MARKOV_THRESHOLD
@@ -184,8 +187,8 @@ class BreakDetectorV1:
             raise ValueError("series_must_be_one_dimensional")
         if not np.all(np.isfinite(values)):
             raise ValueError("series_contains_nonfinite_values")
-        if values.size < 52:
-            raise ValueError("series_too_short_for_quiet_and_window:min_length=52")
+        if values.size < self.MIN_SERIES_LENGTH:
+            raise ValueError(f"series_too_short_for_quiet_and_window:min_length={self.MIN_SERIES_LENGTH}")
 
         provisional: list[dict[str, Any]] = []
         if self.mode == "fast":
@@ -240,4 +243,13 @@ class BreakDetectorV1:
         result["detector_version"] = "isolated_break_detector_v1"
         result["mode"] = self.mode
         result["markov_threshold"] = self.markov_threshold
+        result["sample_adequacy"] = {
+            "observations": int(values.size),
+            "minimum_for_first_evaluation": self.MIN_SERIES_LENGTH,
+            "minimum_for_full_resolution_horizon": self.MIN_FULL_RESOLUTION_LENGTH,
+            "minimum_for_full_consensus_window": self.MIN_FULL_CONSENSUS_LENGTH,
+            "full_resolution_horizon_available": values.size >= self.MIN_FULL_RESOLUTION_LENGTH,
+            "full_consensus_window_available": values.size >= self.MIN_FULL_CONSENSUS_LENGTH,
+            "post_warmup_observations": max(0, int(values.size) - 51),
+        }
         return result
