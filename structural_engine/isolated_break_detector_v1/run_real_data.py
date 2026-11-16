@@ -9,14 +9,13 @@ from __future__ import annotations
 import csv
 import hashlib
 import json
-import math
 from collections import Counter
 from datetime import datetime, timezone
 from pathlib import Path
 
 import numpy as np
 
-from structural_engine.isolated_break_detector_v1.break_detector_v1 import 
+from structural_engine.isolated_break_detector_v1.break_detector_v1 import (
     BreakDetectorV1,
     DEFAULT_MARKOV_THRESHOLD,
 )
@@ -30,6 +29,14 @@ END_YEAR, END_MONTH = 2024, 12
 
 def month_index(year: int, month: int) -> int:
     return (year - START_YEAR) * 12 + (month - START_MONTH)
+
+
+def month_axis() -> list[str]:
+    total = (END_YEAR - START_YEAR) * 12 + END_MONTH
+    return [
+        f"{START_YEAR + i // 12:04d}-{i % 12 + 1:02d}"
+        for i in range(total)
+    ]
 
 
 def monthly_counts(timestamps: list[datetime]) -> list[int]:
@@ -55,39 +62,78 @@ def sha256(path: Path) -> str:
     return digest.hexdigest()
 
 
-def parse_gulf_geojson(path: Path) -> tuple[list[datetime], int]:
+def parse_gulf_geojson(path: Path) -> tuple[list[datetime], list[float]]:
     payload = json.loads(path.read_text(encoding="utf-8"))
-    features = payload.get("features", [])
-    stamps = []
-    for feature in features:
+    timestamps, magnitudes = [], []
+    for feature in payload.get("features", []):
         props = feature.get("properties") or {}
-        raw_time = props.get("time")
-        if raw_time is None or props.get("mag") is None:
+        raw_time, raw_mag = props.get("time"), props.get("mag")
+        if raw_time is None or raw_mag is None:
             raise ValueError("gulf_geojson_missing_required_time_or_magnitude")
-        stamps.append(datetime.fromtimestamp(float(raw_time) / 1000, tz=timezone.utc))
-    return stamps, len(features)
+        timestamps.append(
+            datetime.fromtimestamp(float(raw_time) / 1000, tz=timezone.utc)
+        )
+        magnitudes.append(float(raw_mag))
+    return timestamps, magnitudes
 
 
-def parse_global_usgs_csv(path: Path) -> tuple[list[datetime], int]:
-    stamps = []
+def parse_global_usgs_csv(path: Path) -> tuple[list[datetime], list[float]]:
+    timestamps, magnitudes = [], []
     with path.open("r", encoding="utf-8", newline="") as stream:
         for row in csv.DictReader(stream):
-            raw_time = row.get("time")
-            if not raw_time:
-                raise ValueError("global_usgs_csv_missing_time")
-            stamps.append(datetime.fromisoformat(raw_time.replace("Z", "+00:00")))
-    return stamps, len(stamps)
+            raw_time, raw_mag = row.get("time"), row.get("mag")
+            if not raw_time or raw_mag in (None, ""):
+                raise ValueError("global_usgs_csv_missing_time_or_magnitude")
+            timestamps.append(
+                datetime.fromisoformat(raw_time.replace("Z", "+00:00"))
+            )
+            magnitudes.append(float(raw_mag))
+    return timestamps, magnitudes
 
 
-def summarize_dataset(source_id: str, path: Path, timestamps: list[datetime], row_count: int) -> dict:
+def month_for_step(value: object, axis: list[str]) -> str | None:
+    if value is None:
+        return None
+    index = int(value)
+    return axis[index] if 0 <= index < len(axis) else None
+
+
+def ledger_record(event: dict, axis: list[str]) -> dict:
+    record = dict(event)
+    step = event.get("detection_time", event.get("time"))
+    record["series_step"] = step
+    record["event_month_utc"] = month_for_step(step, axis)
+    for key, output_key in (
+        ("estimated_onset", "estimated_onset_month_utc"),
+        ("provisional_detection_time", "provisional_month_utc"),
+        ("confirmation_time", "confirmation_month_utc"),
+        ("resolved_at", "resolved_month_utc"),
+    ):
+        if key in event:
+            record[output_key] = month_for_step(event[key], axis)
+    if event.get("resolved_pending_alerts"):
+        record["resolved_pending_alerts"] = [
+            ledger_record(item, axis)
+            for item in event["resolved_pending_alerts"]
+        ]
+    return record
+
+
+def summarize_dataset(
+    source_id: str, path: Path, timestamps: list[datetime], magnitudes: list[float]
+) -> dict:
+    axis = month_axis()
     counts = monthly_counts(timestamps)
     values = np.log1p(np.asarray(counts, dtype=float))
     modes = {}
+
     for mode in BreakDetectorV1.MODES:
         result = BreakDetectorV1(
             mode=mode, markov_threshold=DEFAULT_MARKOV_THRESHOLD
         ).analyze(values)
         diag = result.get("diagnostics", {})
+        base_scale = float(diag.get("base_diff_scale", 0.0))
+        level_scale = float(diag.get("baseline_level_scale", 0.0))
         modes[mode] = {
             "provisional_count": len(result["provisional_events"]),
             "confirmed_count": len(result["confirmed_events"]),
@@ -95,28 +141,42 @@ def summarize_dataset(source_id: str, path: Path, timestamps: list[datetime], ro
             "unresolved_count": len(result["unresolved_alerts"]),
             "pending_lifecycle": result["pending_lifecycle"],
             "diagnostics": diag,
+            "baseline_scale_status": (
+                "DEGENERATE" if base_scale <= 1e-6 or level_scale <= 1e-6 else "NONDEGENERATE"
+            ),
             "event_status_counts": dict(
                 Counter(event["status"] for event in result["events"])
             ),
+            "transition_ledger": [
+                ledger_record(event, axis) for event in result["events"]
+            ],
         }
 
-    quiet = values[:40]
-    quiet_diff_mad = float(np.median(np.abs(np.diff(quiet) - np.median(np.diff(quiet)))))
+    quiet_differences = np.diff(values[:40])
+    quiet_diff_mad = float(
+        np.median(np.abs(quiet_differences - np.median(quiet_differences)))
+    )
     zero_months = sum(value == 0 for value in counts)
     return {
         "source_id": source_id,
         "source_file": str(path.relative_to(ROOT)),
         "source_sha256": sha256(path),
-        "source_rows": row_count,
+        "source_rows": len(timestamps),
         "query_window_utc": "2000-01-01/2024-12-31",
+        "observed_first_event_utc": min(timestamps).isoformat(),
+        "observed_last_event_utc": max(timestamps).isoformat(),
+        "magnitude_min": min(magnitudes),
+        "magnitude_max": max(magnitudes),
         "series_frequency": "monthly",
         "series_length": len(counts),
         "event_count": sum(counts),
         "zero_event_months": zero_months,
         "zero_event_month_fraction": round(zero_months / len(counts), 6),
         "distinct_monthly_count_values": sorted(set(counts)),
+        "month_axis_utc": axis,
+        "monthly_event_counts": counts,
         "transform": "log1p(monthly_event_count)",
-        "quiet_first_40_months_median_absolute_deviation_of_differences": quiet_diff_mad,
+        "quiet_first_40_months_diff_mad": quiet_diff_mad,
         "detector_runs": modes,
         "interpretation_guard": (
             "Historical structural-signal scan only; not an earthquake prediction "
@@ -158,49 +218,70 @@ def main() -> None:
     )
     wb_path = RAW / "financial_world_bank_v1" / "WB_FS_AST_PRVT_GD_ZS_2000_2024.csv"
 
-    gulf_times, gulf_rows = parse_gulf_geojson(gulf_path)
-    global_times, global_rows = parse_global_usgs_csv(global_path)
+    gulf_times, gulf_magnitudes = parse_gulf_geojson(gulf_path)
+    global_times, global_magnitudes = parse_global_usgs_csv(global_path)
     report = {
-        "report_version": "1.0",
+        "report_version": "1.1",
         "detector": "isolated_break_detector_v1",
         "markov_threshold": DEFAULT_MARKOV_THRESHOLD,
         "sources": [
-            summarize_dataset("USGS_GULF_OF_ADEN_M45_PLUS", gulf_path, gulf_times, gulf_rows),
-            summarize_dataset("USGS_GLOBAL_M65_PLUS", global_path, global_times, global_rows),
+            summarize_dataset(
+                "USGS_GULF_OF_ADEN_M45_PLUS",
+                gulf_path,
+                gulf_times,
+                gulf_magnitudes,
+            ),
+            summarize_dataset(
+                "USGS_GLOBAL_M65_PLUS",
+                global_path,
+                global_times,
+                global_magnitudes,
+            ),
         ],
         "excluded_sources": [summarize_world_bank(wb_path)],
         "limits": [
-            "The detector is being transferred unchanged from synthetic validation to real data.",
+            "The detector is transferred unchanged from synthetic validation to real data.",
             "Monthly event counts are a declared event-activity proxy, not physical magnitude or seismic energy.",
             "Consensus matching retains its original 35-step rule; this has not been recalibrated to monthly time.",
             "A detected historical transition is not evidence of causal influence or a forecast of an event.",
+            "A degenerate quiet-period scale invalidates interpretation even if the detector returns events.",
         ],
     }
     OUT.parent.mkdir(parents=True, exist_ok=True)
-    OUT.write_text(json.dumps(report, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
-    print(json.dumps({
-        "report": str(OUT.relative_to(ROOT)),
-        "sources": [
+    OUT.write_text(
+        json.dumps(report, indent=2, ensure_ascii=False) + "\n",
+        encoding="utf-8",
+    )
+    print(
+        json.dumps(
             {
-                "source_id": item["source_id"],
-                "rows": item["source_rows"],
-                "events": item["event_count"],
-                "months": item["series_length"],
-                "zero_month_fraction": item["zero_event_month_fraction"],
-                "mode_counts": {
-                    mode: {
-                        "provisional": result["provisional_count"],
-                        "confirmed": result["confirmed_count"],
-                        "transient": result["transient_count"],
-                        "unresolved": result["unresolved_count"],
+                "report": str(OUT.relative_to(ROOT)),
+                "sources": [
+                    {
+                        "source_id": item["source_id"],
+                        "rows": item["source_rows"],
+                        "events": item["event_count"],
+                        "months": item["series_length"],
+                        "zero_month_fraction": item["zero_event_month_fraction"],
+                        "mode_counts": {
+                            mode: {
+                                "provisional": result["provisional_count"],
+                                "confirmed": result["confirmed_count"],
+                                "transient": result["transient_count"],
+                                "unresolved": result["unresolved_count"],
+                                "baseline_scale_status": result["baseline_scale_status"],
+                            }
+                            for mode, result in item["detector_runs"].items()
+                        },
                     }
-                    for mode, result in item["detector_runs"].items()
-                },
-            }
-            for item in report["sources"]
-        ],
-        "world_bank": report["excluded_sources"][0],
-    }, indent=2, ensure_ascii=False))
+                    for item in report["sources"]
+                ],
+                "world_bank": report["excluded_sources"][0],
+            },
+            indent=2,
+            ensure_ascii=False,
+        )
+    )
 
 
 if __name__ == "__main__":
