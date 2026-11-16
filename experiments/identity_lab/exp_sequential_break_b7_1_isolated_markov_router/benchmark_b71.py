@@ -27,7 +27,7 @@ def fast_ref():
 
 def markov(h):
     return InnovationSignCusumEngineB7(quiet_end=40,window_size=12,anomaly_z_thresh=3.8,
-        winsor_cap=1.8,cusum_threshold=h,structural_rho_bias_correction=False,
+        winsor_cap=1.8,cusum_threshold=h,structural_rho_bias_correction=True,
         resolution_horizon=14,return_to_baseline_z=1.5,persistence_z_thresh=1.45,
         correlation_method="pearson",innovation_drain=True,persistence_floor=False,
         heuristic_scale_guard=False)
@@ -63,8 +63,10 @@ def analyze_consensus(x,h):
         if matches:
             partner=min(matches,key=lambda e:abs(int(e["detection_time"])-t))
             confirmed.append({**provisional,"status":"CONFIRMED",
+                "provisional_detection_time":t,
+                "detection_time":int(partner["detection_time"]),
                 "confirmation_time":int(partner["detection_time"]),
-                "confirmation_delay":abs(int(partner["detection_time"])-t)})
+                "confirmation_delay":int(partner["detection_time"])-t})
     result={**f,"structural_breaks":confirmed}
     result["diagnostics"]={**f.get("diagnostics",{}),
         "provisional_count":len(f["structural_breaks"]),
@@ -151,7 +153,7 @@ def choose(dev):
     rows=[]
     for h in HS:
         m=dev[str(h)]["systems"]["Markov_CUSUM"]
-        fpr=max(m["confirmed_structural_fpr_pct"],m["transient_fpr_pct"],m["combined_fpr_pct"])
+        fpr=max(m["confirmed_structural_fpr_pct"],m["transient_fpr_pct"],m["combined_fpr_pure_null_pct"],m["combined_fpr_all_nonlevel_pct"])
         rows.append((fpr,-m["mean_directional_sensitivity_pct"],m["confirmed_delay_mean_penalty_75"],h))
     return sorted(rows)[0][3],rows
 
@@ -180,7 +182,8 @@ def main():
     for name,m in hold["systems"].items():
         print(f"{name} | Confirmed Structural FPR={m['confirmed_structural_fpr_pct']:.2f}%"
             f" | Transient FPR={m['transient_fpr_pct']:.2f}%"
-            f" | Combined FPR={m['combined_fpr_pct']:.2f}%"
+            f" | Combined FPR(null)={m['combined_fpr_pure_null_pct']:.2f}%"
+            f" | Combined FPR(nonlevel)={m['combined_fpr_all_nonlevel_pct']:.2f}%"
             f" | Mean Directional Sensitivity={m['mean_directional_sensitivity_pct']:.2f}%"
             f" | Confirmed Delay(mean, miss=75)={m['confirmed_delay_mean_penalty_75']}"
             f" | Promotion={m['promotion_rate_pct']}%"
