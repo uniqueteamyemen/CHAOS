@@ -169,6 +169,7 @@ def summarize_dataset(
             "transient_count": len(result["transient_anomalies"]),
             "unresolved_count": len(result["unresolved_alerts"]),
             "pending_lifecycle": result["pending_lifecycle"],
+            "sample_adequacy": result["sample_adequacy"],
             "diagnostics": diag,
             "baseline_scale_status": (
                 "DEGENERATE" if base_scale <= 1e-6 or level_scale <= 1e-6 else "NONDEGENERATE"
@@ -293,6 +294,177 @@ def summarize_inter_event_series(
     }
 
 
+
+def summarize_un_ama_gdp_panel(path: Path) -> dict:
+    grouped: dict[str, dict] = {}
+    row_count = 0
+    with path.open("r", encoding="utf-8", newline="") as stream:
+        for row in csv.DictReader(stream):
+            row_count += 1
+            if (
+                row.get("IndicatorName") != "Gross Domestic Product (GDP)"
+                or not row.get("ama_gdp_growth_pct", "").strip()
+            ):
+                continue
+            country_id = row["CountryID"]
+            grouped.setdefault(
+                country_id,
+                {"country": row["Country"], "points": []},
+            )["points"].append(
+                (int(row["year"]), float(row["ama_gdp_growth_pct"]))
+            )
+
+    screened = []
+    for country_id, entry in sorted(grouped.items(), key=lambda item: int(item[0])):
+        points = sorted(entry["points"])
+        years = [year for year, _ in points]
+        contiguous = all(years[i] == years[i - 1] + 1 for i in range(1, len(years)))
+        if len(points) < BreakDetectorV1.MIN_SERIES_LENGTH or not contiguous:
+            continue
+
+        values = np.asarray([value for _, value in points], dtype=float)
+        axis = [str(year) for year in years]
+        mode_results = {}
+        for mode in BreakDetectorV1.MODES:
+            result = BreakDetectorV1(
+                mode=mode, markov_threshold=DEFAULT_MARKOV_THRESHOLD
+            ).analyze(values)
+            mode_results[mode] = {
+                "event_status_counts": dict(
+                    Counter(event["status"] for event in result["events"])
+                ),
+                "sample_adequacy": result["sample_adequacy"],
+                "pending_lifecycle": result["pending_lifecycle"],
+                "diagnostics": result.get("diagnostics", {}),
+                "transition_ledger": [
+                    ledger_record(event, axis) for event in result["events"]
+                ],
+            }
+        screened.append(
+            {
+                "country_id": country_id,
+                "country": entry["country"],
+                "observations": len(points),
+                "first_year": years[0],
+                "last_year": years[-1],
+                "mode_results": mode_results,
+            }
+        )
+
+    full_resolution = sum(
+        item["observations"] >= BreakDetectorV1.MIN_FULL_RESOLUTION_LENGTH
+        for item in screened
+    )
+    full_consensus = sum(
+        item["observations"] >= BreakDetectorV1.MIN_FULL_CONSENSUS_LENGTH
+        for item in screened
+    )
+    return {
+        "source_file": str(path.relative_to(ROOT)),
+        "source_sha256": sha256(path),
+        "row_count": row_count,
+        "country_series_in_source": len(grouped),
+        "eligible_contiguous_gdp_growth_series": len(screened),
+        "screened_year_range": (
+            [min(item["first_year"] for item in screened),
+             max(item["last_year"] for item in screened)]
+            if screened else None
+        ),
+        "minimum_observations_for_first_evaluation": BreakDetectorV1.MIN_SERIES_LENGTH,
+        "minimum_for_full_resolution": BreakDetectorV1.MIN_FULL_RESOLUTION_LENGTH,
+        "minimum_for_full_consensus": BreakDetectorV1.MIN_FULL_CONSENSUS_LENGTH,
+        "full_resolution_eligible_series": full_resolution,
+        "full_consensus_eligible_series": full_consensus,
+        "decision": "SCREENED_ONLY_INSUFFICIENT_POST_WARMUP_HORIZON",
+        "reason": (
+            "The eligible GDP-growth histories contain 54 contiguous annual observations. "
+            "That passes the 52-point start gate but does not provide the 66 points needed "
+            "for the 14-step resolution horizon or the 87 points needed for the 35-step "
+            "consensus window."
+        ),
+        "series_results": screened,
+    }
+
+
+def summarize_catalog_first_readiness() -> dict:
+    macro_path = (
+        ROOT / "catalog_first" / "readiness_gate" / "macro_plus_eia_energy"
+        / "MACRO_PLUS_EIA_ENERGY_COMPLETE_139_NUMERIC_RAW_2000_2024_WIDE.csv"
+    )
+    eia_path = (
+        ROOT / "catalog_first" / "gap_assets"
+        / "EIA_SELECTED_ANNUAL_2000_2024_LONG.csv"
+    )
+    un_ama_path = (
+        ROOT / "catalog_first" / "readiness_gate" / "independent_sources"
+        / "un_ama_2026" / "staged"
+        / "UN_AMA_INDEPENDENT_GDP_GROWTH_POPULATION_PANEL.csv"
+    )
+
+    macro_years: dict[str, set[int]] = {}
+    macro_rows = 0
+    with macro_path.open("r", encoding="utf-8", newline="") as stream:
+        for row in csv.DictReader(stream):
+            macro_rows += 1
+            macro_years.setdefault(row["entity_code"], set()).add(int(row["year"]))
+
+    eia_years: dict[tuple[str, str], set[int]] = {}
+    eia_rows = 0
+    with eia_path.open("r", encoding="utf-8", newline="") as stream:
+        for row in csv.DictReader(stream):
+            eia_rows += 1
+            key = (row["entity_code"], row["variable_id"])
+            eia_years.setdefault(key, set()).add(int(row["year"]))
+
+    ucdp_raw = (
+        ROOT / "catalog_first" / "readiness_gate" / "independent_sources"
+        / "ucdp_ged_26_1" / "raw" / "UCDP_GED_26_1_RAW.zip"
+    )
+    noaa_raw_dir = ROOT / "catalog_first" / "raw" / "noaa" / "gsom_monthly" / "stations"
+    who_raw = (
+        ROOT / "readiness_gate" / "independent_sources" / "who_covid_2026"
+        / "raw" / "WHO_COVID_GLOBAL_DAILY_RAW.csv"
+    )
+    return {
+        "macro_plus_eia_annual_panel": {
+            "source_file": str(macro_path.relative_to(ROOT)),
+            "source_sha256": sha256(macro_path),
+            "row_count": macro_rows,
+            "entity_count": len(macro_years),
+            "min_years_per_entity": min(map(len, macro_years.values())),
+            "max_years_per_entity": max(map(len, macro_years.values())),
+            "decision": "NOT_RUN_ANNUAL_HISTORY_TOO_SHORT",
+        },
+        "eia_selected_annual_long": {
+            "source_file": str(eia_path.relative_to(ROOT)),
+            "source_sha256": sha256(eia_path),
+            "row_count": eia_rows,
+            "country_series_count": len(eia_years),
+            "min_years_per_series": min(map(len, eia_years.values())),
+            "max_years_per_series": max(map(len, eia_years.values())),
+            "decision": "NOT_RUN_ANNUAL_HISTORY_TOO_SHORT",
+        },
+        "un_ama_gdp_growth": summarize_un_ama_gdp_panel(un_ama_path),
+        "raw_payload_availability": {
+            "ucdp_ged_event_csv": {
+                "manifest_present": True,
+                "raw_payload_present": ucdp_raw.exists(),
+                "decision": "NOT_RUN_RAW_PAYLOAD_NOT_COMMITTED",
+            },
+            "noaa_gsom_monthly_station_csvs": {
+                "profile_present": (ROOT / "catalog_first" / "gsom_monthly_profile.json").exists(),
+                "raw_directory_present": noaa_raw_dir.exists(),
+                "decision": "NOT_RUN_RAW_PAYLOAD_NOT_COMMITTED",
+            },
+            "who_covid_daily_csv": {
+                "manifest_present": (RAW / "who_covid_global_v2" / "MANIFEST.json").exists(),
+                "raw_payload_present": who_raw.exists(),
+                "decision": "NOT_RUN_RAW_PAYLOAD_NOT_COMMITTED",
+            },
+        },
+    }
+
+
 def summarize_world_bank(path: Path) -> dict:
     by_entity: dict[str, list[int]] = {}
     row_count = 0
@@ -329,9 +501,10 @@ def main() -> None:
     gulf_times, gulf_magnitudes = parse_gulf_geojson(gulf_path)
     global_times, global_magnitudes = parse_global_usgs_csv(global_path)
     report = {
-        "report_version": "1.2",
+        "report_version": "1.3",
         "detector": "isolated_break_detector_v1",
         "markov_threshold": DEFAULT_MARKOV_THRESHOLD,
+        "catalog_first_readiness": summarize_catalog_first_readiness(),
         "sources": [
             summarize_dataset(
                 "USGS_GULF_OF_ADEN_M45_PLUS",
