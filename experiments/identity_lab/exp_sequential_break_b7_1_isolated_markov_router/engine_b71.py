@@ -292,8 +292,9 @@ class InnovationSignCusumEngineB7:
         cusum_peak = 0.0
         cusum_directional_resets = 0
 
-        # Both one-step structural innovations and the independent PENDING
-        # reference channel begin immediately after quiet calibration.
+        # The one-step CUSUM begins immediately after quiet calibration.
+        # PENDING follows the reference engine's full-window start exactly.
+        pending_reference_start_t = self.quiet_end + self.window_size - 1
         start_t = self.quiet_end
         for t in range(start_t, n):
             win_start = t - self.window_size + 1
@@ -327,10 +328,11 @@ class InnovationSignCusumEngineB7:
             raw_gate, drain_rejected, normalized_innovations = (
                 self._pending_gate_decision(recent_z, rho)
             )
-            # Match the D1_P1_G0 PENDING scan start (quiet_end), while
-            # keeping its reference latch independent of the Markov structural latch.
+            # Match D1_P1_G0's first full-window PENDING opportunity exactly.
+            # The independent reference latch is isolated from Markov decisions.
             if (
-                raw_gate
+                t >= pending_reference_start_t
+                and raw_gate
                 and pending_latched_direction == 0
                 and not recent_pending
             ):
@@ -371,7 +373,9 @@ class InnovationSignCusumEngineB7:
             # Keep the transient-channel latch exactly aligned with Fast_Ref,
             # independent of the Markov structural detector's own latch.
             pending_reference_candidate = (
-                break_pct >= 85.0 and pending_latched_direction != direction
+                t >= pending_reference_start_t
+                and break_pct >= 85.0
+                and pending_latched_direction != direction
             )
             if pending_reference_candidate:
                 # Resolve the shadow PENDING ledger exactly as Fast_Ref does;
@@ -386,7 +390,7 @@ class InnovationSignCusumEngineB7:
                         reference_still_pending.append(pending)
                 pending_reference_spikes = reference_still_pending
                 pending_latched_direction = direction
-            elif abs(window_shift_z) < 0.40:
+            elif t >= pending_reference_start_t and abs(window_shift_z) < 0.40:
                 pending_latched_direction = 0
 
             # B-v7 structural evidence: one-step AR innovation signs.
@@ -576,6 +580,7 @@ class InnovationSignCusumEngineB7:
                 ),
                 "pending_gate_opportunities": pending_gate_opportunities,
                 "pending_reference_opened_count": pending_reference_opened,
+                "pending_reference_start_t": pending_reference_start_t,
                 "pending_reference_gate_independent": True,
                 "innovation_gate_rejections": innovation_gate_rejections,
                 "structural_threshold_candidates": structural_threshold_candidates,
