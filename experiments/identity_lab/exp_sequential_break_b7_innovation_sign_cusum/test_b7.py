@@ -137,7 +137,7 @@ class B7InnovationSignCusumTests(unittest.TestCase):
         self.assertTrue(diag["innovation_drain_enabled"])
         self.assertFalse(diag["heuristic_scale_guard_enabled"])
         self.assertFalse(diag["persistence_floor_enabled"])
-        self.assertEqual(diag["rho_used"], diag["rho_raw"])
+        self.assertEqual(diag["rho_used"], float(np.clip(diag["rho_raw"], 0.0, 0.88)))
         self.assertEqual(diag["structural_evidence_kind"], "innovation_sign_cusum")
 
     def test_pending_lifecycle_equation_is_enforced(self):
