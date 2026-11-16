@@ -98,8 +98,9 @@ This decision is limited to the eight synthetic regimes in the benchmark. It is 
 
 - Input: finite one-dimensional numeric series.
 - Minimum length to begin evaluation: 52 observations (40 quiet observations plus a 12-observation rolling window).
-- Minimum length for the full 14-step resolution horizon: 66 observations.
-- Minimum length for the full 35-step Consensus matching window: 87 observations.
+- At least 66 observations allow the earliest eligible event to complete the 14-step resolution horizon.
+- At least 87 observations allow the earliest eligible event to complete the 35-step Consensus matching window.
+- Later detections can still be right-censored; event-level `UNRESOLVED` status remains authoritative.
 - Every result includes sample-adequacy flags; passing the 52-point start gate does not imply that the full lifecycle can resolve.
 - Fast_Ref parameters match the B-v7.1 benchmark configuration.
 - Markov CUSUM defaults to H=8.5, with the benchmark's finite-sample rho correction and innovation-drain setting.
