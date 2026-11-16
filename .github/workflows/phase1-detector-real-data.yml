@@ -29,7 +29,7 @@ jobs:
       - name: Run detector contract tests
         run: python -m unittest discover -s structural_engine/isolated_break_detector_v1/tests -v
       - name: Scan committed real historical data
-        run: python structural_engine/isolated_break_detector_v1/run_real_data.py
+        run: python -m structural_engine.isolated_break_detector_v1.run_real_data
       - name: Record frozen source checksums
         run: |
           mkdir -p structural_engine/isolated_break_detector_v1/results
