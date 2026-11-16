@@ -255,6 +255,7 @@ def summarize_inter_event_series(
             "transient_count": len(result["transient_anomalies"]),
             "unresolved_count": len(result["unresolved_alerts"]),
             "pending_lifecycle": result["pending_lifecycle"],
+            "sample_adequacy": result["sample_adequacy"],
             "diagnostics": diag,
             "baseline_scale_status": (
                 "DEGENERATE" if base_scale <= 1e-6 or level_scale <= 1e-6 else "NONDEGENERATE"
@@ -421,9 +422,12 @@ def summarize_catalog_first_readiness() -> dict:
         / "ucdp_ged_26_1" / "raw" / "UCDP_GED_26_1_RAW.zip"
     )
     noaa_raw_dir = ROOT / "catalog_first" / "raw" / "noaa" / "gsom_monthly" / "stations"
-    who_raw = (
-        ROOT / "readiness_gate" / "independent_sources" / "who_covid_2026"
-        / "raw" / "WHO_COVID_GLOBAL_DAILY_RAW.csv"
+    who_raw_v2 = (
+        RAW / "who_covid_global_v2" / "WHO-COVID-19-global-daily-data.csv"
+    )
+    who_raw_catalog = (
+        ROOT / "catalog_first" / "readiness_gate" / "independent_sources"
+        / "who_covid_2026" / "raw" / "WHO_COVID_GLOBAL_DAILY_RAW.csv"
     )
     return {
         "macro_plus_eia_annual_panel": {
@@ -458,7 +462,8 @@ def summarize_catalog_first_readiness() -> dict:
             },
             "who_covid_daily_csv": {
                 "manifest_present": (RAW / "who_covid_global_v2" / "MANIFEST.json").exists(),
-                "raw_payload_present": who_raw.exists(),
+                "raw_payload_v2_present": who_raw_v2.exists(),
+                "catalog_first_raw_payload_present": who_raw_catalog.exists(),
                 "decision": "NOT_RUN_RAW_PAYLOAD_NOT_COMMITTED",
             },
         },
