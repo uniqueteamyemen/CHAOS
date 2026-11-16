@@ -192,7 +192,7 @@ The scan must be interpreted with the following constraints:
 
 ## 8. Phase 2 — Predictive Early-Warning Sensing Engine
 
-The predictive layer is a separate system above the frozen detector. It must not rewrite or tune the detector during evaluation.
+The predictive layer is a separate system above the frozen detector. It must not rewrite or tune the detector during evaluation. The detailed Arabic architecture, event-matching contract, acceptance gates, and next execution sequence are in [PREDICTIVE_EARLY_WARNING_ENGINE_PLAN_AR.md](PREDICTIVE_EARLY_WARNING_ENGINE_PLAN_AR.md).
 
 Recommended architecture:
 
