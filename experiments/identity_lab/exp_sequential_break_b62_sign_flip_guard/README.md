@@ -26,13 +26,13 @@ A persistent level shift is a step, not a monotone ramp. It has one large onset 
 
 ## Paired experiment
 - Same eight B-v6 scenarios and generator.
-- 16M development: 500 sequences per case, control and candidate (8,000 evaluations).
-- 17M validation: 500 sequences per case, B6a, D1/P1G0, and D1/P1SF8 (12,000 evaluations).
-- Seed formula: seed_base + case_index*10000 + trial_index; 16M/17M blocks are disjoint.
-- Threshold 8 is frozen before 17M. Holdout does not tune it.
+- 18M development: 500 sequences per case, control and candidate (8,000 evaluations).
+- 19M validation: 500 sequences per case, B6a, D1/P1G0, and D1/P1SF8 (12,000 evaluations).
+- Seed formula: seed_base + case_index*10000 + trial_index; 18M/19M blocks are disjoint.
+- Threshold 8 is frozen before 19M. Holdout does not tune it.
 - Wilson 95% intervals are reported for each rate; Combined includes structural, transient and unresolved alerts.
 
 ## Acceptance gates
-All six non-level structural and transient FPRs <=5%; all four pure-null Combined FPRs <=5%; both level-shift pre-onset Combined rates <=5%; mean directional sensitivity >=93%; exact lifecycle accounting; and Wilson upper bounds <=5% for each FPR category. The report also compares candidate sensitivity against D1/P1G0 on identical 17M series.
+All six non-level structural and transient FPRs <=5%; all four pure-null Combined FPRs <=5%; both level-shift pre-onset Combined rates <=5%; mean directional sensitivity >=93%; exact lifecycle accounting; and Wilson upper bounds <=5% for each FPR category. The report also compares candidate sensitivity against D1/P1G0 on identical 19M series.
 
 CI success means the experiment completed, not that the candidate passed. No merge or production approval is implied.

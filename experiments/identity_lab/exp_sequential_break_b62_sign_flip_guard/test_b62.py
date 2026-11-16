@@ -63,5 +63,7 @@ class B62SignFlipGuardTests(unittest.TestCase):
         self.assertGreater(d["sign_flip_windows_evaluated"],0)
         self.assertIn("sign_flip_guard_activation_pct",d)
         self.assertIn("mean_sign_flip_count",d)
+        self.assertGreater(d["sign_flip_total_count"],0)
+        self.assertLessEqual(d["sign_flip_total_count"],10*d["sign_flip_windows_evaluated"])
 
 if __name__=="__main__": unittest.main()

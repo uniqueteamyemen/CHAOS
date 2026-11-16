@@ -430,6 +430,7 @@ class DriftConditionalSignFlipEngineB62:
                 "sign_flip_guard_enabled": self.sign_flip_guard,
                 "sign_flip_threshold": self.sign_flip_threshold,
                 "sign_flip_windows_evaluated": sign_flip_windows_evaluated,
+                "sign_flip_total_count": sign_flip_total_count,
                 "sign_flip_guard_active_windows": sign_flip_guard_active_windows,
                 "sign_flip_guard_activation_pct": round(
                     100.0 * sign_flip_guard_active_windows / max(sign_flip_windows_evaluated, 1), 4

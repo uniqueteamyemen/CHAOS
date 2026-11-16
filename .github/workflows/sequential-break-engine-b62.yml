@@ -1,4 +1,4 @@
-name: CHAOS B-v6.2 Conditional Sign-Flip Guard (16M/17M)
+name: CHAOS B-v6.2 Conditional Sign-Flip Guard (18M/19M)
 on:
   push:
     branches:
@@ -23,13 +23,13 @@ jobs:
         run: python -m unittest experiments.identity_lab.exp_sequential_break_b62_sign_flip_guard.test_b62 -v
       - name: Run isolated smoke test
         run: python -m experiments.identity_lab.exp_sequential_break_b62_sign_flip_guard.benchmark_b62 --smoke
-      - name: Run official 16M development and 17M paired validation
+      - name: Run official 18M development and 19M paired validation
         run: python -m experiments.identity_lab.exp_sequential_break_b62_sign_flip_guard.benchmark_b62
       - name: Upload B-v6.2 sign-flip guard report
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: chaos-b62-sign-flip-guard-16m-17m
-          path: experiments/identity_lab/exp_sequential_break_b62_sign_flip_guard/results/sequential_break_engine_b62_sign_flip_guard_16m_17m.json
+          name: chaos-b62-sign-flip-guard-18m-19m
+          path: experiments/identity_lab/exp_sequential_break_b62_sign_flip_guard/results/sequential_break_engine_b62_sign_flip_guard_18m_19m.json
           if-no-files-found: warn
           retention-days: 90
