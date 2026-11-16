@@ -1,5 +1,10 @@
 name: B-v7.1 Isolated Markov Router Benchmark
 on:
+  push:
+    branches:
+      - experiment/b7-1-isolated-markov-router
+    paths:
+      - '.github/workflows/b71-trigger-once.txt'
   workflow_dispatch:
 permissions:
   contents: read
