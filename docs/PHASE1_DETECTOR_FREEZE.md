@@ -66,7 +66,7 @@ These are nine named packages, not nine total executions. The B-v7.1 benchmark t
 - Validation: a separate seed family, 2,000 trials per regime = 16,000 independent series; all four systems process the same series.
 - The reported 27M validation therefore represents 64,000 system-series evaluations (16,000 series × 4 systems).
 
-The synthetic benchmark is now **closed and frozen as historical evidence**. Do not modify its data generator, thresholds, outputs, or result artifacts to improve agreement with real data. New real-data tests belong in Phase 2 and must remain separate.
+The synthetic benchmark is now **closed and frozen as historical evidence**. Do not modify its data generator, thresholds, outputs, or result artifacts to improve agreement with real data. The original `benchmark_b71.py` remains unchanged in its source experiment folder; it is not part of the live detector package and is not rerun by Phase 2. The new 11 tests cover the public detector contract and real-data aggregation only.
 
 ## 4. B-v7.1 validation evidence
 
@@ -164,7 +164,7 @@ The dedicated workflow is:
 
 `.github/workflows/phase1-detector-real-data.yml`
 
-It runs the detector contract tests, applies all three modes to both USGS monthly series, records source and code SHA-256 hashes, and uploads a JSON transition scan plus checksums.
+It runs 11 contract and data-adapter tests; applies all three modes to monthly, quarterly, and event-time USGS representations plus the eligible UN AMA GDP-growth screen; records code, raw-data, manifest, and contract SHA-256 hashes; commits the JSON transition ledger and checksum inventory to this branch; and uploads the same outputs as a GitHub Actions artifact.
 
 The real-data scan results are summarized below.
 
