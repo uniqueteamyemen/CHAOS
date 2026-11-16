@@ -16,7 +16,10 @@ from pathlib import Path
 
 import numpy as np
 
-from structural_engine.isolated_break_detector_v1.break_detector_v1 import (\n    BreakDetectorV1,\n    DEFAULT_MARKOV_THRESHOLD,\n)
+from structural_engine.isolated_break_detector_v1.break_detector_v1 import 
+    BreakDetectorV1,
+    DEFAULT_MARKOV_THRESHOLD,
+)
 
 ROOT = Path(__file__).resolve().parents[2]
 RAW = ROOT / "data" / "raw"
