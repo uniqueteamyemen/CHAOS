@@ -80,7 +80,7 @@ class B63DualTierConfirmationTests(unittest.TestCase):
         self.assertIsNone(two["path"])
         self.assertEqual(two["hold_counter"], 1)
         self.assertEqual(three["path"], "confirmed")
-        self.assertEqual(three["hold_started_at"], 70)
+        self.assertEqual(three["confirmation_started_at"], 70)
 
     def test_score_below_83_resets_without_alert(self):
         engine = self.make_engine()
