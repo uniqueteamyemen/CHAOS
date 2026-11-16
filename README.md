@@ -79,7 +79,7 @@ Supported modes:
 
 Lifecycle statuses are normalized as `PROVISIONAL`, `CONFIRMED`, `TRANSIENT`, and `UNRESOLVED`. The adapter preserves the original detector calculations; it standardizes the public interface and status vocabulary. The original B6.1 and B7 engines are preserved as separate source files.
 
-The detector requires at least 52 finite, one-dimensional observations to begin evaluation (40 quiet observations plus a 12-point window). Full lifecycle coverage requires **66 observations** for the 14-step resolution horizon and **87 observations** for the 35-step consensus matching window. The adapter reports these adequacy flags for every run. All horizons are measured in observations or event intervals; they are not calendar units unless the input representation declares them.
+The detector requires at least 52 finite, one-dimensional observations to begin evaluation (40 quiet observations plus a 12-point window). At least **66 observations** allow the earliest eligible event to complete the 14-step resolution horizon; **87** allow the earliest eligible event to complete the 35-step consensus window. Later detections can still be right-censored. The adapter reports these sample-level adequacy flags for every run. All horizons are measured in observations or event intervals; they are not calendar units unless the input representation declares them.
 
 ## Real historical data scan
 
