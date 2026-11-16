@@ -1,6 +1,6 @@
 """Run the frozen detector on versioned, real historical event datasets.
 
-Event rows are binned into UTC calendar months over the source contracts'
+Event rows are binned into UTC calendar months or quarters over the source contracts'
 declared complete query windows. The sole transformation is log1p(monthly
 event count); no interpolation or forward filling is performed.
 """
@@ -261,7 +261,7 @@ def main() -> None:
         "excluded_sources": [summarize_world_bank(wb_path)],
         "limits": [
             "The detector is transferred unchanged from synthetic validation to real data.",
-            "Monthly event counts are a declared event-activity proxy, not physical magnitude or seismic energy.",
+            "Monthly and quarterly event counts are declared event-activity proxies, not physical magnitude or seismic energy.",
             "Consensus matching retains its original 35-step rule; this has not been recalibrated to monthly time.",
             "A detected historical transition is not evidence of causal influence or a forecast of an event.",
             "A degenerate quiet-period scale invalidates interpretation even if the detector returns events.",
