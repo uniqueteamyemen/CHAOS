@@ -63,6 +63,29 @@ def pending_opened_times(result):
     events.extend(result["unresolved_alerts"])
     return tuple(sorted(int(event["time"]) for event in events))
 
+
+def pending_channel_gate(evaluation):
+    checks={}
+    for name,metrics in evaluation["systems"].items():
+        isolation=metrics["pending_channel_isolation"]
+        accounting=metrics["pending_accounting"]
+        checks[name]={
+            "series_checked":isolation["series_checked"],
+            "mismatched_series":isolation["mismatched_series"],
+            "pending_times_match_fast_ref":isolation["matches_fast_ref"],
+            "pending_accounting_holds":accounting["equation_holds"],
+        }
+    return {
+        "passed":all(
+            item["mismatched_series"]==0
+            and item["pending_times_match_fast_ref"]
+            and item["pending_accounting_holds"]
+            for item in checks.values()
+        ),
+        "systems":checks,
+    }
+
+
 def analyze_consensus(x,h):
     f=fast_ref().analyze(x)
     m=markov(h).analyze(x)
@@ -255,12 +278,14 @@ def main():
     for h in HS:
         print(f"26M development: Markov H={h}",flush=True)
         dev[str(h)]=evaluate(DEV_SEED,TRIALS_DEV,h,"development_26M")
+        pending_gate=pending_channel_gate(dev[str(h)])
         checkpoint={
             "experiment":"B-v7.1 development checkpoint",
             "branch":"experiment/b7-1-isolated-markov-router",
             "seed":DEV_SEED,"trials_per_case":TRIALS_DEV,"cases":len(CASES),
             "completed_thresholds":[float(v) for v in dev],
             "remaining_thresholds":[v for v in HS if str(v) not in dev],
+            "pending_channel_isolation_gate":pending_gate,
             "development":dev,
         }
         DEV_CHECKPOINT.parent.mkdir(parents=True,exist_ok=True)
@@ -268,6 +293,11 @@ def main():
             json.dumps(checkpoint,indent=2,ensure_ascii=False)+"\n",
             encoding="utf-8"
         )
+        if not pending_gate["passed"]:
+            raise AssertionError(
+                "development_pending_channel_isolation_failed:"
+                +json.dumps(pending_gate,sort_keys=True)
+            )
     selected,ranking=choose(dev)
     print(f"Selected H={selected}; development ranking={ranking}",flush=True)
     hold=evaluate(HOLD_SEED,TRIALS_HOLD,selected,"isolated_validation_27M")
@@ -279,6 +309,15 @@ def main():
         "trials_per_case":{"development":TRIALS_DEV,"validation":TRIALS_HOLD},
         "cases":8,"miss_delay_penalty":PENALTY,"development_thresholds":list(HS),
         "selected_markov_threshold":selected,"development_ranking":ranking,
+        "development_pending_channel_isolation":{
+            "all_thresholds_passed":all(
+                pending_channel_gate(dev[str(h)])["passed"] for h in HS
+            ),
+            "by_threshold":{
+                str(h):pending_channel_gate(dev[str(h)]) for h in HS
+            }
+        },
+        "validation_pending_channel_isolation":pending_channel_gate(hold),
         "development":dev,"validation_27M":hold,
         "elapsed_seconds":round(time.perf_counter()-started,2)}
     OUT.parent.mkdir(parents=True,exist_ok=True)
