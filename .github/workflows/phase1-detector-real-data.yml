@@ -33,7 +33,7 @@ jobs:
       - name: Record frozen source checksums
         run: |
           mkdir -p structural_engine/isolated_break_detector_v1/results
-          sha256sum structural_engine/isolated_break_detector_v1/*.py > structural_engine/isolated_break_detector_v1/results/SHA256SUMS.txt
+          find structural_engine/isolated_break_detector_v1 -type f -name '*.py' -print0 | sort -z | xargs -0 sha256sum > structural_engine/isolated_break_detector_v1/results/SHA256SUMS.txt
           sha256sum data/raw/seismic_gulf_of_aden_v1/usgs_gulf_of_aden_query.geojson data/raw/usgs_earthquake_m6_5_2000_2024/USGS_EARTHQUAKE_M6_5_2000_2024_RAW.csv data/raw/financial_world_bank_v1/WB_FS_AST_PRVT_GD_ZS_2000_2024.csv >> structural_engine/isolated_break_detector_v1/results/SHA256SUMS.txt
       - name: Upload reproducible report and checksums
         if: always()
