@@ -44,12 +44,12 @@ class BreakDetectorContractTests(unittest.TestCase):
             {"detection_time": 5, "direction": 1},
         ]
         confirmed, pending = _pair_consensus_events(provisional, markov)
-        self.assertEqual(len(confirmed), 2)
-        self.assertEqual(len(pending), 1)
+        self.assertEqual(len(confirmed), 1)
+        self.assertEqual(len(pending), 2)
         self.assertEqual(confirmed[0]["confirmation_delay"], 10)
         self.assertEqual(confirmed[0]["status"], "CONFIRMED")
         self.assertEqual(pending[0]["status"], "PROVISIONAL")
-        self.assertEqual(pending[0]["detection_time"], 15)
+        self.assertEqual([event["detection_time"] for event in pending], [15, 30])
 
 
 if __name__ == "__main__":
