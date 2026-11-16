@@ -16,7 +16,9 @@ TRIALS_DEV=500
 TRIALS_HOLD=2000
 HS=(7.0,7.5,8.0,8.5)
 PENALTY=75
-OUT=Path(__file__).resolve().parent/"results"/"b71_26m_27m_report.json"
+RESULTS_DIR=Path(__file__).resolve().parent/"results"
+OUT=RESULTS_DIR/"b71_26m_27m_report.json"
+DEV_CHECKPOINT=RESULTS_DIR/"b71_26m_development_checkpoint.json"
 
 def fast_ref():
     return SurgicalFactorEngineB61(quiet_end=40,window_size=12,anomaly_z_thresh=3.8,
@@ -51,6 +53,15 @@ def analyze_router(x,h):
     result=(fast_ref() if choice=="Fast_Ref" else markov(h)).analyze(x)
     result["diagnostics"].update({"router_choice":choice,"router_rho_raw":rho,"router_rvar":rvar})
     return result
+
+
+def pending_opened_times(result):
+    events=[]
+    for structural in result["structural_breaks"]:
+        events.extend(structural.get("resolved_pending_alerts",[]))
+    events.extend(result["transient_anomalies"])
+    events.extend(result["unresolved_alerts"])
+    return tuple(sorted(int(event["time"]) for event in events))
 
 def analyze_consensus(x,h):
     f=fast_ref().analyze(x)
@@ -145,6 +156,9 @@ def evaluate(seed_base,trials,h,stage):
                   for c in CASES} for name in names}
     pending_audit={name:{"opened":0,"structural":0,"transient":0,"unresolved":0}
                    for name in names}
+    pending_channel_audit={name:{"series_checked":0,"mismatched_series":0,
+        "reference_opened_events":0,"system_opened_events":0}
+        for name in names}
     for ci,(case,dist,rho,vjump,shift) in enumerate(CASES):
         for ti in range(trials):
             seed=seed_base+ci*10000+ti
@@ -156,7 +170,15 @@ def evaluate(seed_base,trials,h,stage):
                 "Deterministic_Auto_Router":analyze_router(x,h),
                 "Consensus_Staging_Mode":analyze_consensus(x,h),
             }
+            reference_pending_times=pending_opened_times(outputs["Fast_Ref"])
             for name,result in outputs.items():
+                system_pending_times=pending_opened_times(result)
+                audit=pending_channel_audit[name]
+                audit["series_checked"]+=1
+                audit["reference_opened_events"]+=len(reference_pending_times)
+                audit["system_opened_events"]+=len(system_pending_times)
+                if system_pending_times!=reference_pending_times:
+                    audit["mismatched_series"]+=1
                 metric=classify(result,shift)
                 bucket=counts[name][case]
                 add_measurement(bucket,metric)
@@ -204,6 +226,12 @@ def evaluate(seed_base,trials,h,stage):
             "pending_accounting":{"opened":a["opened"],"resolved_structural":a["structural"],
                 "resolved_transient":a["transient"],"unresolved":a["unresolved"],
                 "equation_holds":equation},
+            "pending_channel_isolation":{
+                "series_checked":pending_channel_audit[name]["series_checked"],
+                "mismatched_series":pending_channel_audit[name]["mismatched_series"],
+                "matches_fast_ref":pending_channel_audit[name]["mismatched_series"]==0,
+                "reference_opened_events":pending_channel_audit[name]["reference_opened_events"],
+                "system_opened_events":pending_channel_audit[name]["system_opened_events"]},
             "promotion_rate_pct":round(100*sum(counts[name][c]["confirmed"] for c,*_ in CASES)/
                 max(1,sum(counts[name][c]["provisional"] for c,*_ in CASES)),2)
                 if name=="Consensus_Staging_Mode" else None
@@ -227,6 +255,19 @@ def main():
     for h in HS:
         print(f"26M development: Markov H={h}",flush=True)
         dev[str(h)]=evaluate(DEV_SEED,TRIALS_DEV,h,"development_26M")
+        checkpoint={
+            "experiment":"B-v7.1 development checkpoint",
+            "branch":"experiment/b7-1-isolated-markov-router",
+            "seed":DEV_SEED,"trials_per_case":TRIALS_DEV,"cases":len(CASES),
+            "completed_thresholds":[float(v) for v in dev],
+            "remaining_thresholds":[v for v in HS if str(v) not in dev],
+            "development":dev,
+        }
+        DEV_CHECKPOINT.parent.mkdir(parents=True,exist_ok=True)
+        DEV_CHECKPOINT.write_text(
+            json.dumps(checkpoint,indent=2,ensure_ascii=False)+"\\n",
+            encoding="utf-8"
+        )
     selected,ranking=choose(dev)
     print(f"Selected H={selected}; development ranking={ranking}",flush=True)
     hold=evaluate(HOLD_SEED,TRIALS_HOLD,selected,"isolated_validation_27M")
