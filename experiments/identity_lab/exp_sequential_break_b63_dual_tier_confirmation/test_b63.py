@@ -1,3 +1,4 @@
+# The confirmed event preserves its start timestamp after clearing live counter state.
 import unittest
 
 import numpy as np
