@@ -1,0 +1,38 @@
+name: CHAOS B-v6.3 Dual-Tier Structural Confirmation (20M/21M)
+
+on:
+  push:
+    branches:
+      - experiment/b6-3-dual-tier-confirmation
+    paths:
+      - "experiments/identity_lab/exp_sequential_break_b63_dual_tier_confirmation/**"
+      - ".github/workflows/sequential-break-engine-b63.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  dual-tier-and-paired-holdout:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install pinned numerical dependency
+        run: python -m pip install numpy==2.2.6
+      - name: Run B-v6.3 dual-tier and lifecycle tests
+        run: python -m unittest experiments.identity_lab.exp_sequential_break_b63_dual_tier_confirmation.test_b63 -v
+      - name: Run isolated smoke test before protected seeds
+        run: python -m experiments.identity_lab.exp_sequential_break_b63_dual_tier_confirmation.benchmark_b63 --smoke
+      - name: Run official 20M development selection and 21M paired holdout
+        run: python -m experiments.identity_lab.exp_sequential_break_b63_dual_tier_confirmation.benchmark_b63
+      - name: Upload complete B-v6.3 report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: chaos-b63-dual-tier-confirmation-20m-21m
+          path: experiments/identity_lab/exp_sequential_break_b63_dual_tier_confirmation/results/sequential_break_engine_b63_dual_tier_20m_21m.json
+          if-no-files-found: warn
+          retention-days: 90
