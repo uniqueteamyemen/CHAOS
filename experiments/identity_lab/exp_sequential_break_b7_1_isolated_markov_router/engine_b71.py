@@ -303,9 +303,10 @@ class InnovationSignCusumEngineB7:
             raw_gate, drain_rejected, normalized_innovations = (
                 self._pending_gate_decision(recent_z, rho)
             )
+            # Match the D1_P1_G0 PENDING scan start (quiet_end), while
+            # keeping its reference latch independent of the Markov structural latch.
             if (
-                t >= structural_scan_start_t
-                and raw_gate
+                raw_gate
                 and pending_latched_direction == 0
                 and not recent_pending
             ):
@@ -376,10 +377,11 @@ class InnovationSignCusumEngineB7:
             )
             cusum_updates += 1
 
-            # A bounded sign score prevents a single extreme innovation from
-            # dominating the structural decision. Each side is a one-sided
-            # reflected CUSUM with a 0.5 allowance under symmetric null signs.
-            # When a direction is latched, only opposite-direction evidence accumulates.
+            # A bounded conditional log-likelihood score prevents a single
+            # innovation from dominating the structural decision. Each side is a
+            # reflected Markov sign-CUSUM using the quiet transition null and its
+            # directional odds-tilted alternative. Only opposite-direction
+            # evidence accumulates while a direction is latched.
             previous_evidence_peak = max(cusum_positive, cusum_negative)
             cusum_positive, cusum_negative = self._markov_sign_cusum_update(
                 cusum_positive, cusum_negative, previous_innovation_sign,
