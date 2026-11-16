@@ -6,6 +6,7 @@ from structural_engine.isolated_break_detector_v1.run_real_data import (
     monthly_counts,
     quarterly_axis,
     quarterly_counts,
+    inter_event_interval_series,
 )
 
 
@@ -36,6 +37,19 @@ class RealDataAggregationTests(unittest.TestCase):
         timestamps = [datetime(1999, 12, 31, tzinfo=timezone.utc)]
         with self.assertRaisesRegex(ValueError, "outside_frozen_query_window"):
             quarterly_counts(timestamps)
+
+    def test_event_time_intervals_preserve_irregular_timestamps(self):
+        timestamps = [
+            datetime(2000, 1, 1, tzinfo=timezone.utc),
+            datetime(2000, 1, 3, tzinfo=timezone.utc),
+            datetime(2000, 1, 10, tzinfo=timezone.utc),
+        ]
+        intervals, axis = inter_event_interval_series(timestamps)
+        self.assertEqual(intervals, [2.0, 7.0])
+        self.assertEqual(axis, [
+            "2000-01-03T00:00:00+00:00",
+            "2000-01-10T00:00:00+00:00",
+        ])
 
 
 if __name__ == "__main__":
