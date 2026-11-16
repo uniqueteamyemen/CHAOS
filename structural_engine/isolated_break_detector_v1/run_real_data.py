@@ -389,7 +389,7 @@ def main() -> None:
                         "events": item["event_count"],
                         "frequency": item["series_frequency"],
                         "periods": item["series_length"],
-                        "zero_period_fraction": item["zero_event_period_fraction"],
+                        "zero_period_fraction": item.get("zero_event_period_fraction"),
                         "mode_counts": {
                             mode: {
                                 "provisional": result["provisional_count"],
