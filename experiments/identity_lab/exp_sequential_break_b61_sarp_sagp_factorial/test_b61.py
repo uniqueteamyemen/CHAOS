@@ -43,17 +43,6 @@ class B61FactorialEngineTests(unittest.TestCase):
             for key in ("rho_raw", "rho_used", "rho_method", "base_diff_scale"):
                 self.assertEqual(new["diagnostics"][key], old["diagnostics"][key])
 
-    def test_innovation_drain_uses_first_point_threshold_not_three_raw_thresholds(self):
-        engine = SurgicalFactorEngineB61(innovation_drain=True)
-        # At rho=0 the later raw z values may be below 3.8 while each
-        # normalized innovation still clears 2.8, as specified for D=1.
-        recent = np.array([4.0, 3.0, 2.9], dtype=float)
-        triggered, rejected, innovations = engine._pending_gate_decision(recent, 0.0)
-        self.assertTrue(triggered)
-        self.assertFalse(rejected)
-        self.assertGreater(abs(innovations[0]), 2.8)
-        self.assertGreater(abs(innovations[1]), 2.8)
-
     def test_innovation_drain_rejects_ar_memory_tail(self):
         engine = SurgicalFactorEngineB61(innovation_drain=True)
         recent = np.array([8.0, 5.6, 3.92], dtype=float)

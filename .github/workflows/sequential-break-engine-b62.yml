@@ -1,0 +1,35 @@
+name: CHAOS B-v6.2 Conditional Sign-Flip Guard (14M/15M)
+on:
+  push:
+    branches:
+      - experiment/b6-2-sign-flip-guard
+    paths:
+      - "experiments/identity_lab/exp_sequential_break_b62_sign_flip_guard/**"
+      - ".github/workflows/sequential-break-engine-b62.yml"
+permissions:
+  contents: read
+jobs:
+  conditional-sign-flip-ablation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install pinned numerical dependency
+        run: python -m pip install numpy==2.2.6
+      - name: Run B-v6.2 sign-flip and D1/P1 parity tests
+        run: python -m unittest experiments.identity_lab.exp_sequential_break_b62_sign_flip_guard.test_b62 -v
+      - name: Run isolated smoke test
+        run: python -m experiments.identity_lab.exp_sequential_break_b62_sign_flip_guard.benchmark_b62 --smoke
+      - name: Run official 14M development and 15M paired validation
+        run: python -m experiments.identity_lab.exp_sequential_break_b62_sign_flip_guard.benchmark_b62
+      - name: Upload B-v6.2 sign-flip guard report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: chaos-b62-sign-flip-guard-14m-15m
+          path: experiments/identity_lab/exp_sequential_break_b62_sign_flip_guard/results/sequential_break_engine_b62_sign_flip_guard_14m_15m.json
+          if-no-files-found: warn
+          retention-days: 90

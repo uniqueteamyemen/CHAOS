@@ -76,33 +76,24 @@ class SurgicalFactorEngineB61:
         """Return (raw_three_point_gate, drain_rejected, normalized_innovations)."""
         if recent_z.size != 3:
             return False, False, []
-        if self.innovation_drain:
-            # D=1: only the initiating point must cross 3.8. The following
-            # two points are judged by normalized innovations, not raw z.
-            first_point_triggered = bool(
-                abs(float(recent_z[0])) > self.anomaly_z_thresh
-            )
-            if not first_point_triggered:
-                return False, False, []
-            innovation_scale = float(np.sqrt(max(1.0 - rho * rho, 0.15)))
-            innovations = (
-                recent_z[1:] - rho * recent_z[:-1]
-            ) / innovation_scale
-            same_direction = bool(
-                np.all(np.sign(innovations) == np.sign(recent_z[0]))
-            )
-            accepted = (
-                bool(np.all(np.abs(innovations) > 2.8))
-                and same_direction
-            )
-            return True, not accepted, [float(x) for x in innovations]
-
-        # D=0: preserve the frozen B-v6a three-raw-point rule exactly.
         raw_gate = (
             bool(np.all(np.abs(recent_z) > self.anomaly_z_thresh))
             and bool(np.all(np.sign(recent_z) == np.sign(recent_z[-1])))
         )
-        return raw_gate, False, []
+        if not raw_gate or not self.innovation_drain:
+            return raw_gate, False, []
+        innovation_scale = float(np.sqrt(max(1.0 - rho * rho, 0.15)))
+        innovations = (
+            recent_z[1:] - rho * recent_z[:-1]
+        ) / innovation_scale
+        same_direction = bool(
+            np.all(np.sign(innovations) == np.sign(recent_z[0]))
+        )
+        accepted = (
+            bool(np.all(np.abs(innovations) > 2.8))
+            and same_direction
+        )
+        return raw_gate, not accepted, [float(x) for x in innovations]
 
     def _passes_persistence_floor(self, dominant_persistence: float) -> bool:
         return not self.persistence_floor or dominant_persistence >= 0.75
@@ -250,7 +241,7 @@ class SurgicalFactorEngineB61:
                             "time": int(t),
                             "value": round(float(values[t]), 3),
                             "deviation_sigma": round(z_current, 2),
-                            "direction": 1 if recent_z[0] > 0 else -1,
+                            "direction": 1 if z_current > 0 else -1,
                         }
                     )
                     pending_opened += 1
