@@ -55,22 +55,86 @@ def analyze_router(x,h):
 def analyze_consensus(x,h):
     f=fast_ref().analyze(x)
     m=markov(h).analyze(x)
+
+    # A Markov event is a single confirmation token: it can promote at most
+    # one Fast_Ref provisional event. Process provisionals chronologically and
+    # consume the earliest eligible same-direction Markov event within 35 steps.
+    markov_events=sorted(
+        enumerate(m["structural_breaks"]),
+        key=lambda pair:int(pair[1]["detection_time"])
+    )
+    consumed_markov=set()
     confirmed=[]
-    for provisional in f["structural_breaks"]:
-        t=int(provisional["detection_time"]); d=int(provisional["direction"])
-        matches=[e for e in m["structural_breaks"]
-                 if int(e["direction"])==d and 0 <= int(e["detection_time"])-t <= 35]
-        if matches:
-            partner=min(matches,key=lambda e:abs(int(e["detection_time"])-t))
-            confirmed.append({**provisional,"status":"CONFIRMED",
-                "provisional_detection_time":t,
-                "detection_time":int(partner["detection_time"]),
-                "confirmation_time":int(partner["detection_time"]),
-                "confirmation_delay":int(partner["detection_time"])-t})
+    unconfirmed=[]
+    for provisional in sorted(
+        f["structural_breaks"],key=lambda e:int(e["detection_time"])
+    ):
+        t=int(provisional["detection_time"])
+        d=int(provisional["direction"])
+        partner=next(
+            (
+                (idx,event) for idx,event in markov_events
+                if idx not in consumed_markov
+                and int(event["direction"])==d
+                and 0 <= int(event["detection_time"])-t <= 35
+            ),
+            None,
+        )
+        if partner is None:
+            unconfirmed.append(provisional)
+            continue
+        idx,event=partner
+        consumed_markov.add(idx)
+        confirmation_time=int(event["detection_time"])
+        confirmed.append({**provisional,"status":"CONFIRMED",
+            "provisional_detection_time":t,
+            "detection_time":confirmation_time,
+            "confirmation_time":confirmation_time,
+            "confirmation_delay":confirmation_time-t})
+
+    # Pending alerts absorbed by an unconfirmed Fast_Ref event are not
+    # structurally resolved in consensus mode. Reclassify them as unresolved.
+    unconfirmed_pending=[]
+    for provisional in unconfirmed:
+        for pending in provisional.get("resolved_pending_alerts",[]):
+            unconfirmed_pending.append({
+                **pending,
+                "status":"UNRESOLVED_UNCONFIRMED_PROVISIONAL",
+                "provisional_break_time":int(provisional["detection_time"]),
+                "provisional_direction":int(provisional["direction"]),
+            })
+
     result={**f,"structural_breaks":confirmed}
+    result["unresolved_alerts"]=[
+        *f["unresolved_alerts"],*unconfirmed_pending
+    ]
+    lifecycle=dict(f["pending_lifecycle"])
+    lifecycle["resolved_structural_count"]=sum(
+        len(event.get("resolved_pending_alerts",[])) for event in confirmed
+    )
+    lifecycle["unresolved_count"]=(
+        int(lifecycle["unresolved_count"])+len(unconfirmed_pending)
+    )
+    terminal=(
+        int(lifecycle["resolved_structural_count"])
+        +int(lifecycle["resolved_transient_count"])
+        +int(lifecycle["unresolved_count"])
+    )
+    lifecycle["accounting_complete"]=(
+        int(lifecycle["opened_count"])==terminal
+    )
+    if not lifecycle["accounting_complete"]:
+        raise AssertionError(
+            "consensus_pending_lifecycle_accounting_mismatch:"
+            f"opened={lifecycle['opened_count']},terminal={terminal}"
+        )
+    result["pending_lifecycle"]=lifecycle
     result["diagnostics"]={**f.get("diagnostics",{}),
         "provisional_count":len(f["structural_breaks"]),
         "confirmed_count":len(confirmed),
+        "unconfirmed_provisional_count":len(unconfirmed),
+        "unconfirmed_pending_reclassified":len(unconfirmed_pending),
+        "markov_confirmation_matching":"one_to_one",
         "promotion_rate_pct":round(100*len(confirmed)/len(f["structural_breaks"]),2)
             if f["structural_breaks"] else 0.0}
     return result
