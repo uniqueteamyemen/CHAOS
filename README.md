@@ -20,7 +20,7 @@ The working branch is `phase1-detector-freeze-phase2-real-data`. Phase 1 is froz
 - **Phase 1:** the B-v7.1 detector lineage is isolated under `structural_engine/isolated_break_detector_v1/`; the B6.1 and B7 engine source files were copied byte-for-byte.
 - **Phase 2:** the detector was run on USGS event-time intervals, monthly and quarterly activity counts, and 179 eligible UN AMA annual GDP-growth country series (screening only).
 - The synthetic B-v7.1 benchmark is closed as historical evidence and has not been modified or rerun.
-- The real-data transition ledger and SHA-256 inventory are committed under `structural_engine/isolated_break_detector_v1/results/`.
+- The real-data transition ledger and SHA-256 inventory are committed under `structural_engine/isolated_break_detector_v1/results/`. The successful CI run is [43972264171](https://github.com/uniqueteamyemen/CHAOS/actions/runs/43972264171).
 
 See [Phase 1 detector freeze and Phase 2 transition plan](docs/PHASE1_DETECTOR_FREEZE.md) and the [Predictive Early-Warning Engine architecture](docs/PREDICTIVE_EARLY_WARNING_ENGINE_PLAN_AR.md).
 
@@ -100,7 +100,7 @@ The event-time representation is `log1p(days_between_consecutive_events)`. A neg
 
 Historical event-time candidates:
 
-- **Gulf of Aden:** Markov transitions at 2010-11-14 and 2023-06-03, both in the shorter-interval direction. Consensus independently matched the Fast provisional onset of 2009-11-05 to the Markov confirmation on 2010-11-14 (16 event intervals later). The 2006 and 2023 Fast candidates remain provisional under Consensus.
+- **Gulf of Aden:** Markov transitions at 2010-11-14 and 2023-06-03, both in the shorter-interval direction. Consensus matched the Fast provisional onset of 2009-11-05 to the Markov confirmation on 2010-11-14 (16 event intervals later). The 2006 and 2023 Fast candidates remain provisional under Consensus.
 - **Global M6.5+:** one Markov transition with onset 2022-01-14 and detection 2022-08-14, in the longer-interval direction.
 
 These are detector-internal structural decisions on event waiting times. They are not independently validated geological regime changes, causal explanations, or earthquake forecasts. The monthly Gulf count result is explicitly invalidated by its degenerate baseline scale; it is not included as evidence.
