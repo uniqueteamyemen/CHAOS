@@ -5,13 +5,20 @@ on:
     branches:
       - phase1-detector-freeze-phase2-real-data
     paths:
-      - 'structural_engine/isolated_break_detector_v1/**'
+      - 'structural_engine/isolated_break_detector_v1/*.py'
+      - 'structural_engine/isolated_break_detector_v1/tests/*.py'
       - 'data/raw/**'
+      - 'catalog_first/gap_assets/EIA_SELECTED_ANNUAL_2000_2024_LONG.csv'
+      - 'catalog_first/readiness_gate/macro_plus_eia_energy/MACRO_PLUS_EIA_ENERGY_COMPLETE_139_NUMERIC_RAW_2000_2024_WIDE.csv'
+      - 'catalog_first/readiness_gate/independent_sources/un_ama_2026/staged/UN_AMA_INDEPENDENT_GDP_GROWTH_POPULATION_PANEL.csv'
+      - 'catalog_first/readiness_gate/independent_sources/ucdp_ged_26_1/UCDP_GED_26_1_RAW_MANIFEST.json'
+      - 'catalog_first/gsom_monthly_profile.json'
+      - 'experimental_contracts/EVENT_PATH_SEISMIC_TRANSFER_CONTRACT_V1.json'
       - '.github/workflows/phase1-detector-real-data.yml'
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   freeze-and-scan:
@@ -28,13 +35,33 @@ jobs:
         run: python -m pip install numpy
       - name: Run detector contract tests
         run: python -m unittest discover -s structural_engine/isolated_break_detector_v1/tests -v
-      - name: Scan committed real historical data
+      - name: Scan committed real historical data and catalog-first series
         run: python -m structural_engine.isolated_break_detector_v1.run_real_data
       - name: Record frozen source checksums
         run: |
           mkdir -p structural_engine/isolated_break_detector_v1/results
           find structural_engine/isolated_break_detector_v1 -type f -name '*.py' -print0 | sort -z | xargs -0 sha256sum > structural_engine/isolated_break_detector_v1/results/SHA256SUMS.txt
-          sha256sum data/raw/seismic_gulf_of_aden_v1/usgs_gulf_of_aden_query.geojson data/raw/usgs_earthquake_m6_5_2000_2024/USGS_EARTHQUAKE_M6_5_2000_2024_RAW.csv data/raw/financial_world_bank_v1/WB_FS_AST_PRVT_GD_ZS_2000_2024.csv >> structural_engine/isolated_break_detector_v1/results/SHA256SUMS.txt
+          sha256sum \
+            data/raw/seismic_gulf_of_aden_v1/usgs_gulf_of_aden_query.geojson \
+            data/raw/usgs_earthquake_m6_5_2000_2024/USGS_EARTHQUAKE_M6_5_2000_2024_RAW.csv \
+            data/raw/financial_world_bank_v1/WB_FS_AST_PRVT_GD_ZS_2000_2024.csv \
+            data/raw/who_covid_global_v2/MANIFEST.json \
+            catalog_first/readiness_gate/macro_plus_eia_energy/MACRO_PLUS_EIA_ENERGY_COMPLETE_139_NUMERIC_RAW_2000_2024_WIDE.csv \
+            catalog_first/gap_assets/EIA_SELECTED_ANNUAL_2000_2024_LONG.csv \
+            catalog_first/readiness_gate/independent_sources/un_ama_2026/staged/UN_AMA_INDEPENDENT_GDP_GROWTH_POPULATION_PANEL.csv \
+            catalog_first/readiness_gate/independent_sources/ucdp_ged_26_1/UCDP_GED_26_1_RAW_MANIFEST.json \
+            catalog_first/gsom_monthly_profile.json \
+            experimental_contracts/EVENT_PATH_SEISMIC_TRANSFER_CONTRACT_V1.json \
+            >> structural_engine/isolated_break_detector_v1/results/SHA256SUMS.txt
+      - name: Archive scan report and checksums in the working branch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add structural_engine/isolated_break_detector_v1/results/
+          if ! git diff --cached --quiet; then
+            git commit -m "data: archive phase 2 historical transition scan"
+            git push origin HEAD:phase1-detector-freeze-phase2-real-data
+          fi
       - name: Upload reproducible report and checksums
         if: always()
         uses: actions/upload-artifact@v4
