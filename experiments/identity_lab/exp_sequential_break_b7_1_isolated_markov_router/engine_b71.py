@@ -233,16 +233,38 @@ class InnovationSignCusumEngineB7:
         rho_adjusted = rho_raw
         rho = float(np.clip(rho_raw, 0.0, 0.88))
 
-        # Quiet-period Markov null estimated from AR innovation signs; Laplace alpha=1.
-        quiet_residuals = quiet[1:] - baseline_center - rho_raw * (quiet[:-1] - baseline_center)
+        # Use the exact same AR coefficient for quiet-period null calibration
+        # and live innovation signs; otherwise P(s_t|s_{t-1}) is miscalibrated.
+        rho_cusum_raw = (
+            (rho_raw + (1.0 / len(quiet)))
+            / (1.0 - (3.0 / len(quiet)))
+        )
+        rho_cusum = (
+            self._correct_short_sample_ar1_rho(rho_raw, len(quiet))
+            if self.structural_rho_bias_correction
+            else float(np.clip(rho_raw, 0.0, 0.88))
+        )
+
+        # Quiet-period Markov null estimated from the same AR innovation signs
+        # used online. Laplace alpha=1 is applied independently to each row.
+        quiet_residuals = (
+            quiet[1:] - baseline_center
+            - rho_cusum * (quiet[:-1] - baseline_center)
+        )
         quiet_signs = np.sign(quiet_residuals).astype(int)
         transition_counts = {-1: {-1: 1.0, 1: 1.0}, 1: {-1: 1.0, 1: 1.0}}
         for prev_s, next_s in zip(quiet_signs[:-1], quiet_signs[1:]):
             if prev_s != 0 and next_s != 0:
                 transition_counts[int(prev_s)][int(next_s)] += 1.0
-        transition_positive = {p: transition_counts[p][1] /
-            (transition_counts[p][-1] + transition_counts[p][1]) for p in (-1, 1)}
-        previous_innovation_sign = int(quiet_signs[-1]) if quiet_signs.size and quiet_signs[-1] != 0 else 1
+        transition_positive = {
+            p: transition_counts[p][1] /
+            (transition_counts[p][-1] + transition_counts[p][1])
+            for p in (-1, 1)
+        }
+        nonzero_quiet_signs = quiet_signs[quiet_signs != 0]
+        previous_innovation_sign = (
+            int(nonzero_quiet_signs[-1]) if nonzero_quiet_signs.size else 1
+        )
 
         ar_factor = 1.0 / np.sqrt(max(1.0 - rho, 0.12))
         f_lrv_corrected = np.sqrt(1.0 + rho) / max(1.0 - rho, 0.12)
@@ -356,15 +378,6 @@ class InnovationSignCusumEngineB7:
             # The B-v6.1 raw rho remains untouched for the D/PENDING channel
             # and context scaling. A finite-sample corrected rho is used only
             # to whiten the structural evidence stream.
-            rho_cusum_raw = (
-                (rho_raw + (1.0 / len(quiet)))
-                / (1.0 - (3.0 / len(quiet)))
-            )
-            rho_cusum = (
-                self._correct_short_sample_ar1_rho(rho_raw, len(quiet))
-                if self.structural_rho_bias_correction
-                else float(np.clip(rho_raw, 0.0, 0.88))
-            )
             structural_innovation = float(
                 values[t]
                 - baseline_center
