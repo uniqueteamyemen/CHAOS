@@ -22,7 +22,7 @@ The working branch is `phase1-detector-freeze-phase2-real-data`. Phase 1 is froz
 - The synthetic B-v7.1 benchmark is closed as historical evidence and has not been modified or rerun.
 - The real-data transition ledger and SHA-256 inventory are committed under `structural_engine/isolated_break_detector_v1/results/`.
 
-See [Phase 1 detector freeze and Phase 2 transition plan](docs/PHASE1_DETECTOR_FREEZE.md).
+See [Phase 1 detector freeze and Phase 2 transition plan](docs/PHASE1_DETECTOR_FREEZE.md) and the [Predictive Early-Warning Engine architecture](docs/PREDICTIVE_EARLY_WARNING_ENGINE_PLAN_AR.md).
 
 ## How the detector reached this point
 
