@@ -265,7 +265,7 @@ def main():
         }
         DEV_CHECKPOINT.parent.mkdir(parents=True,exist_ok=True)
         DEV_CHECKPOINT.write_text(
-            json.dumps(checkpoint,indent=2,ensure_ascii=False)+"\\n",
+            json.dumps(checkpoint,indent=2,ensure_ascii=False)+"\n",
             encoding="utf-8"
         )
     selected,ranking=choose(dev)
