@@ -511,9 +511,12 @@ class InnovationSignCusumEngineB7:
             reference_still_pending = []
             for pending in pending_reference_spikes:
                 age = t - int(pending["time"])
+                reference_return_z = abs(
+                    (float(values[t]) - baseline_center) / baseline_level_scale
+                )
                 returned_to_baseline = (
                     0 < age <= self.resolution_horizon
-                    and return_z < self.return_to_baseline_z
+                    and reference_return_z < self.return_to_baseline_z
                 )
                 if not returned_to_baseline:
                     reference_still_pending.append(pending)
