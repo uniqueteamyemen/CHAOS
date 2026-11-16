@@ -430,11 +430,17 @@ def summarize_catalog_first_readiness() -> dict:
             key = (row["entity_code"], row["variable_id"])
             eia_years.setdefault(key, set()).add(int(row["year"]))
 
+    ucdp_manifest = (
+        ROOT / "catalog_first" / "readiness_gate" / "independent_sources"
+        / "ucdp_ged_26_1" / "UCDP_GED_26_1_RAW_MANIFEST.json"
+    )
     ucdp_raw = (
         ROOT / "catalog_first" / "readiness_gate" / "independent_sources"
         / "ucdp_ged_26_1" / "raw" / "UCDP_GED_26_1_RAW.zip"
     )
+    noaa_profile = ROOT / "catalog_first" / "gsom_monthly_profile.json"
     noaa_raw_dir = ROOT / "catalog_first" / "raw" / "noaa" / "gsom_monthly" / "stations"
+    who_manifest = RAW / "who_covid_global_v2" / "MANIFEST.json"
     who_raw_v2 = (
         RAW / "who_covid_global_v2" / "WHO-COVID-19-global-daily-data.csv"
     )
@@ -464,17 +470,20 @@ def summarize_catalog_first_readiness() -> dict:
         "un_ama_gdp_growth": summarize_un_ama_gdp_panel(un_ama_path),
         "raw_payload_availability": {
             "ucdp_ged_event_csv": {
-                "manifest_present": True,
+                "manifest_present": ucdp_manifest.exists(),
+                "manifest_sha256": sha256(ucdp_manifest),
                 "raw_payload_present": ucdp_raw.exists(),
                 "decision": "NOT_RUN_RAW_PAYLOAD_NOT_COMMITTED",
             },
             "noaa_gsom_monthly_station_csvs": {
-                "profile_present": (ROOT / "catalog_first" / "gsom_monthly_profile.json").exists(),
+                "profile_present": noaa_profile.exists(),
+                "profile_sha256": sha256(noaa_profile),
                 "raw_directory_present": noaa_raw_dir.exists(),
                 "decision": "NOT_RUN_RAW_PAYLOAD_NOT_COMMITTED",
             },
             "who_covid_daily_csv": {
-                "manifest_present": (RAW / "who_covid_global_v2" / "MANIFEST.json").exists(),
+                "manifest_present": who_manifest.exists(),
+                "manifest_sha256": sha256(who_manifest),
                 "raw_payload_v2_present": who_raw_v2.exists(),
                 "catalog_first_raw_payload_present": who_raw_catalog.exists(),
                 "decision": "NOT_RUN_RAW_PAYLOAD_NOT_COMMITTED",
@@ -523,6 +532,11 @@ def main() -> None:
         "detector": "isolated_break_detector_v1",
         "markov_threshold": DEFAULT_MARKOV_THRESHOLD,
         "catalog_first_readiness": summarize_catalog_first_readiness(),
+        "contracts": {
+            "seismic_transfer_contract_sha256": sha256(
+                ROOT / "experimental_contracts" / "EVENT_PATH_SEISMIC_TRANSFER_CONTRACT_V1.json"
+            )
+        },
         "sources": [
             summarize_dataset(
                 "USGS_GULF_OF_ADEN_M45_PLUS",
