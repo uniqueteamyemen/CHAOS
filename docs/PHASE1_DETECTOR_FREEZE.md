@@ -1,9 +1,11 @@
 # Phase 1 — Break Detector Freeze and Phase 2 — Real Data Transition Scan
 
-**Status:** Freeze candidate; final verification is gated on the dedicated CI run and its SHA-256 artifact.  
+**Status:** Phase 1 frozen; Phase 2 historical scan completed and archived.  
 **Working branch:** `phase1-detector-freeze-phase2-real-data`  
 **B-v7.1 source branch:** `experiment/b7-1-isolated-markov-router`  
-**B-v7.1 validation run:** [43963431381](https://github.com/uniqueteamyemen/CHAOS/actions/runs/43963431381)
+**B-v7.1 validation run:** [43963431381](https://github.com/uniqueteamyemen/CHAOS/actions/runs/43963431381)  
+**Phase 2 scan run:** [43972264171](https://github.com/uniqueteamyemen/CHAOS/actions/runs/43972264171) — success, 11 tests passed  
+**Archived results commit:** `861028fbb7f6ec55912da3cb3e22c1f41e5630ef`
 
 ## 1. Decision
 
@@ -95,7 +97,10 @@ This decision is limited to the eight synthetic regimes in the benchmark. It is 
 ## 5. Detector contract
 
 - Input: finite one-dimensional numeric series.
-- Minimum length: 52 observations (40 quiet observations plus a 12-observation rolling window).
+- Minimum length to begin evaluation: 52 observations (40 quiet observations plus a 12-observation rolling window).
+- Minimum length for the full 14-step resolution horizon: 66 observations.
+- Minimum length for the full 35-step Consensus matching window: 87 observations.
+- Every result includes sample-adequacy flags; passing the 52-point start gate does not imply that the full lifecycle can resolve.
 - Fast_Ref parameters match the B-v7.1 benchmark configuration.
 - Markov CUSUM defaults to H=8.5, with the benchmark's finite-sample rho correction and innovation-drain setting.
 - The original resolution horizon is 14 observations.
@@ -112,7 +117,9 @@ Source contract: `experimental_contracts/EVENT_PATH_SEISMIC_TRANSFER_CONTRACT_V1
 - Query window: 2000-01-01 through 2024-12-31 UTC.
 - Minimum magnitude: 4.5.
 - Committed GeoJSON: 408 events; observed event dates span 2000-02-10 through 2024-10-21.
-- Planned detector input: 300 UTC calendar-month bins, transformed as `log1p(monthly_event_count)`.
+- Monthly representation: 300 UTC bins; 51.67% are empty and the quiet-period scale is degenerate, so its detector outputs are not interpretable.
+- Quarterly representation: 100 UTC bins; 17% are empty, the baseline scale is non-degenerate, and no transition was detected by the three modes.
+- Event-time representation: 407 inter-event intervals, transformed as `log1p(days_between_consecutive_events)`; this is the useful representation for the first historical transition ledger.
 
 ### 6.2 Global USGS earthquakes
 
@@ -121,9 +128,11 @@ Source manifest: `data/raw/usgs_earthquake_m6_5_2000_2024/MANIFEST.json`.
 - Query window: 2000-01-01 through 2024-12-31 UTC.
 - Minimum magnitude: 6.5.
 - Committed raw CSV: 1,141 events.
-- Planned detector input: 300 UTC calendar-month bins, transformed as `log1p(monthly_event_count)`.
+- Monthly representation: 300 UTC bins; 3.67% are empty, the baseline scale is non-degenerate, and no transition was detected.
+- Quarterly representation: 100 UTC bins; no empty quarters, the baseline scale is non-degenerate, and no transition was detected.
+- Event-time representation: 1,140 inter-event intervals, transformed as `log1p(days_between_consecutive_events)`.
 
-Monthly event count is an event-activity proxy. It is not magnitude, seismic energy, or a direct measure of physical hazard. No interpolation or forward-fill is used. Empty bins are interpreted as zero events only within the frozen complete-query window.
+Monthly and quarterly event counts are event-activity proxies, not magnitude, seismic energy, or direct physical-hazard measures. No interpolation or forward-fill is used. Empty bins are interpreted as zero events only within the frozen complete-query window. Event-time intervals preserve the exact event ordering and timestamps; their detector horizons are measured in event intervals, not calendar months.
 
 ### 6.3 World Bank financial series
 
@@ -135,6 +144,20 @@ Source: `FS.AST.PRVT.GD.ZS`, domestic credit to private sector (% of GDP), annua
 
 This dataset is therefore excluded from direct execution. It is not padded, interpolated, or silently expanded to meet the detector minimum.
 
+### 6.4 Catalog-first annual data and missing raw payloads
+
+The committed UN AMA GDP-growth panel contains 12,100 rows and 220 country series. Of these, 179 countries have 54 contiguous annual GDP-growth observations from 1971–2024. All 179 were screened through the three modes, but **zero** have the 66 observations needed for full resolution or the 87 needed for full Consensus confirmation. The scan produced three Fast provisional candidates (Bangladesh, Guinea, Singapore), with no Markov confirmations. They remain screening flags only.
+
+The other annual panels are shorter:
+
+- Macro + EIA complete panel: 139 country entities, 25 annual observations each.
+- EIA selected annual long panel: 378 country-variable series, 25 observations each.
+- World Bank domestic-credit panel: 233 entities, 25 annual observations each.
+
+These were not padded or interpolated to satisfy detector requirements.
+
+UCDP GED, NOAA GSOM, and WHO daily sources have committed manifests/profiles, but their corresponding raw event/station/daily payloads are absent at the referenced repository paths. They were not run. A catalog entry or manifest is not treated as a committed raw dataset.
+
 ## 7. Real-data scan and quality gates
 
 The dedicated workflow is:
@@ -143,13 +166,29 @@ The dedicated workflow is:
 
 It runs the detector contract tests, applies all three modes to both USGS monthly series, records source and code SHA-256 hashes, and uploads a JSON transition scan plus checksums.
 
-The real-data scan must be interpreted with the following constraints:
+The real-data scan results are summarized below.
 
-1. The monthly count transform and its zero-month distribution are recorded.
-2. A degenerate quiet-period scale is a data-quality failure, not a reason to tune the detector silently.
-3. The 14-step resolution horizon and 35-step consensus window are inherited from synthetic experiments; they are not yet calibrated to monthly observations.
-4. Detected historical transitions are candidate signals for review, not predictions of future earthquakes.
-5. The scan must preserve provisional, confirmed, transient, and unresolved outcomes, not only the final confirmed events.
+The successful scan produced the following event-time transition ledger:
+
+| Source | Mode | Result |
+|---|---|---|
+| Gulf of Aden, 407 inter-event intervals | Fast | 3 `PROVISIONAL` candidates |
+| Gulf of Aden, 407 inter-event intervals | Markov CUSUM | 2 internally `CONFIRMED` transitions: 2010-11-14 and 2023-06-03 |
+| Gulf of Aden, 407 inter-event intervals | Consensus | 1 internally cross-detector-confirmed transition: provisional onset 2009-11-05, confirmation 2010-11-14 after 16 event intervals; 2 remain provisional |
+| Global M6.5+, 1,140 inter-event intervals | Markov CUSUM | 1 internally `CONFIRMED` transition: onset 2022-01-14, detection 2022-08-14 |
+| Global M6.5+, 1,140 inter-event intervals | Fast / Consensus | No transitions |
+
+For the Gulf series, the Markov-confirmed directions are negative (shorter inter-event intervals). The global Markov-confirmed direction is positive (longer intervals). These describe changes in waiting-time sequences, not earthquake magnitudes or hazard probabilities.
+
+The word `CONFIRMED` here means confirmed by the detector's own Markov threshold rule or by Fast/Markov agreement. It does **not** mean independently validated by a geophysical reference catalog, causal explanation, or successful forecast. The full ledgers, source hashes, per-mode diagnostics, and series values are committed in `structural_engine/isolated_break_detector_v1/results/real_data_transition_scan.json`.
+
+The scan must be interpreted with the following constraints:
+
+1. The monthly and quarterly count distributions, including empty periods, are recorded.
+2. The Gulf monthly count baseline is degenerate and is excluded from interpretation.
+3. The 14-step resolution horizon and 35-step consensus window are inherited from synthetic experiments; they have not been calibrated to event-time or annual economic series.
+4. Detected historical transitions are candidates for independent review, not predictions of future earthquakes.
+5. Provisional, confirmed, transient, and unresolved outcomes are preserved in the ledger.
 
 ## 8. Phase 2 — Predictive Early-Warning Sensing Engine
 
@@ -169,7 +208,7 @@ The first Phase 2 deliverable is the historical transition ledger and data-adequ
 
 ## 9. SHA-256 freeze inventory
 
-The authoritative SHA-256 values are generated by the successful CI run and uploaded as:
+The authoritative SHA-256 values were generated by successful CI run 43972264171 and committed to the working branch:
 
 `structural_engine/isolated_break_detector_v1/results/SHA256SUMS.txt`
 
@@ -177,7 +216,14 @@ The accompanying real-data output is:
 
 `structural_engine/isolated_break_detector_v1/results/real_data_transition_scan.json`
 
-**Final freeze status remains conditional until the workflow passes and these artifacts are inspected.** The source Git blob IDs are not substitutes for SHA-256 file checksums.
+The freeze is complete. The B6.1 and B7.1 engine files were verified byte-for-byte identical to their source files before the run. The core package SHA-256 values are:
+
+- `break_detector_v1.py`: `57bfc10fa2098479c04db17b3d07ff449da957e49818c5ec3b0f5c43fda52678`
+- `engine_fast_ref.py`: `34482667f93a3b1a6acf1eeeeed1dc714bfaa1b674c97c8773a92e886be46e16`
+- `engine_markov_cusum.py`: `0402eb6e98a4a20065f9cf33b6d90c9a29dd263383e9a782c6fc9d67b53eb843`
+- `run_real_data.py`: `636bfcf6f8c17ee2b9ee3c67a5de345046ec81473d8fc806d8a618f3cce4adba`
+
+The full inventory, including both test files and every input data/manifest/contract file, is in `SHA256SUMS.txt`. The source Git blob IDs are not substitutes for SHA-256 file checksums.
 
 ## 10. Files
 
@@ -186,4 +232,5 @@ The accompanying real-data output is:
 - `structural_engine/isolated_break_detector_v1/engine_markov_cusum.py`
 - `structural_engine/isolated_break_detector_v1/run_real_data.py`
 - `structural_engine/isolated_break_detector_v1/tests/test_contract.py`
+- `structural_engine/isolated_break_detector_v1/tests/test_real_data_adapter.py`
 - `.github/workflows/phase1-detector-real-data.yml`
