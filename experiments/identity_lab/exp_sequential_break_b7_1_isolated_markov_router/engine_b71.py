@@ -273,7 +273,11 @@ class InnovationSignCusumEngineB7:
         transient_anomalies: list[dict[str, Any]] = []
         unresolved_alerts: list[dict[str, Any]] = []
         pending_spikes: list[dict[str, Any]] = []
+        # Shadow lifecycle for the D1_P1_G0 PENDING gate. Markov structural
+        # resolutions must never change the reference channel's open eligibility.
+        pending_reference_spikes: list[dict[str, Any]] = []
         pending_opened = 0
+        pending_reference_opened = 0
         pending_gate_opportunities = 0
         innovation_gate_rejections = 0
         structural_threshold_candidates = 0
@@ -288,9 +292,8 @@ class InnovationSignCusumEngineB7:
         cusum_peak = 0.0
         cusum_directional_resets = 0
 
-        # Structural CUSUM scanning starts when a full rolling window exists.
-        # The independent PENDING channel starts at quiet_end, matching D1_P1_G0.
-        structural_scan_start_t = self.quiet_end + self.window_size - 1
+        # Both one-step structural innovations and the independent PENDING
+        # reference channel begin immediately after quiet calibration.
         start_t = self.quiet_end
         for t in range(start_t, n):
             win_start = t - self.window_size + 1
@@ -316,7 +319,7 @@ class InnovationSignCusumEngineB7:
             # Stage 1: record a spike as pending; do not prematurely call it transient.
             z_current = float(z_point_raw[-1])
             recent_pending = any(
-                0 <= t - int(p["time"]) <= 2 for p in pending_spikes
+                0 <= t - int(p["time"]) <= 2 for p in pending_reference_spikes
             )
             # Stage 1 is the transient-only channel. The structural channel below
             # remains independent and never waits for PENDING.
@@ -335,15 +338,16 @@ class InnovationSignCusumEngineB7:
                 if drain_rejected:
                     innovation_gate_rejections += 1
                 else:
-                    pending_spikes.append(
-                        {
-                            "time": int(t),
-                            "value": round(float(values[t]), 3),
-                            "deviation_sigma": round(z_current, 2),
-                            "direction": 1 if recent_z[0] > 0 else -1,
-                        }
-                    )
+                    pending_event = {
+                        "time": int(t),
+                        "value": round(float(values[t]), 3),
+                        "deviation_sigma": round(z_current, 2),
+                        "direction": 1 if recent_z[0] > 0 else -1,
+                    }
+                    pending_spikes.append(dict(pending_event))
+                    pending_reference_spikes.append(dict(pending_event))
                     pending_opened += 1
+                    pending_reference_opened += 1
 
             # Stage 2: use the unchanged B-v3 structural-break score.
             z_point = np.clip(z_point_raw, -self.winsor_cap, self.winsor_cap)
@@ -370,6 +374,17 @@ class InnovationSignCusumEngineB7:
                 break_pct >= 85.0 and pending_latched_direction != direction
             )
             if pending_reference_candidate:
+                # Resolve the shadow PENDING ledger exactly as Fast_Ref does;
+                # do not use Markov's independent structural confirmation here.
+                reference_still_pending: list[dict[str, Any]] = []
+                for pending in pending_reference_spikes:
+                    age = t - int(pending["time"])
+                    if not (
+                        pending["direction"] == direction
+                        and 0 <= age <= self.resolution_horizon + 4
+                    ):
+                        reference_still_pending.append(pending)
+                pending_reference_spikes = reference_still_pending
                 pending_latched_direction = direction
             elif abs(window_shift_z) < 0.40:
                 pending_latched_direction = 0
@@ -412,9 +427,7 @@ class InnovationSignCusumEngineB7:
                 1 if cusum_positive >= cusum_negative else -1
             )
             structural_threshold_candidate = bool(
-                t >= structural_scan_start_t
-                and cusum_candidate
-                and latched_direction != cusum_direction
+                cusum_candidate and latched_direction != cusum_direction
             )
             if structural_threshold_candidate:
                 structural_threshold_candidates += 1
@@ -493,6 +506,19 @@ class InnovationSignCusumEngineB7:
                     still_pending.append(pending)
             pending_spikes = still_pending
 
+            # Mirror Fast_Ref's transient-return removal on the gate-only shadow
+            # ledger. This preserves the exact PENDING re-open timing.
+            reference_still_pending = []
+            for pending in pending_reference_spikes:
+                age = t - int(pending["time"])
+                returned_to_baseline = (
+                    0 < age <= self.resolution_horizon
+                    and return_z < self.return_to_baseline_z
+                )
+                if not returned_to_baseline:
+                    reference_still_pending.append(pending)
+            pending_reference_spikes = reference_still_pending
+
         # Stage 4: preserve pending events when the series ends before resolution.
         for pending in pending_spikes:
             unresolved_alerts.append(
@@ -546,6 +572,8 @@ class InnovationSignCusumEngineB7:
                     (1.0 + 0.25 * rho) if self.heuristic_scale_guard else 1.0, 6
                 ),
                 "pending_gate_opportunities": pending_gate_opportunities,
+                "pending_reference_opened_count": pending_reference_opened,
+                "pending_reference_gate_independent": True,
                 "innovation_gate_rejections": innovation_gate_rejections,
                 "structural_threshold_candidates": structural_threshold_candidates,
                 "persistence_floor_rejections": persistence_floor_rejections,
