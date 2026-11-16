@@ -76,6 +76,18 @@ def quarterly_counts(timestamps: list[datetime]) -> list[int]:
     return counts
 
 
+def json_safe(value):
+    if isinstance(value, dict):
+        return {str(key): json_safe(item) for key, item in value.items()}
+    if isinstance(value, (list, tuple)):
+        return [json_safe(item) for item in value]
+    if isinstance(value, (float, np.floating)):
+        return float(value) if np.isfinite(value) else None
+    if isinstance(value, np.integer):
+        return int(value)
+    return value
+
+
 def sha256(path: Path) -> str:
     digest = hashlib.sha256()
     with path.open("rb") as stream:
@@ -308,12 +320,13 @@ def summarize_un_ama_gdp_panel(path: Path) -> dict:
             ):
                 continue
             country_id = row["CountryID"]
+            value = float(row["ama_gdp_growth_pct"])
+            if not np.isfinite(value):
+                continue
             grouped.setdefault(
                 country_id,
                 {"country": row["Country"], "points": []},
-            )["points"].append(
-                (int(row["year"]), float(row["ama_gdp_growth_pct"]))
-            )
+            )["points"].append((int(row["year"]), value))
 
     screened = []
     for country_id, entry in sorted(grouped.items(), key=lambda item: int(item[0])):
@@ -553,13 +566,14 @@ def main() -> None:
         ],
     }
     OUT.parent.mkdir(parents=True, exist_ok=True)
+    safe_report = json_safe(report)
     OUT.write_text(
-        json.dumps(report, indent=2, ensure_ascii=False) + "\n",
+        json.dumps(safe_report, indent=2, ensure_ascii=False, allow_nan=False) + "\n",
         encoding="utf-8",
     )
     print(
         json.dumps(
-            {
+            json_safe({
                 "report": str(OUT.relative_to(ROOT)),
                 "sources": [
                     {
@@ -583,9 +597,18 @@ def main() -> None:
                     for item in report["sources"]
                 ],
                 "world_bank": report["excluded_sources"][0],
-            },
+                "catalog_first": {
+                    "un_ama_eligible_gdp_series": report["catalog_first_readiness"]["un_ama_gdp_growth"]["eligible_contiguous_gdp_growth_series"],
+                    "un_ama_full_resolution_eligible": report["catalog_first_readiness"]["un_ama_gdp_growth"]["full_resolution_eligible_series"],
+                    "un_ama_full_consensus_eligible": report["catalog_first_readiness"]["un_ama_gdp_growth"]["full_consensus_eligible_series"],
+                    "macro_panel_max_years": report["catalog_first_readiness"]["macro_plus_eia_annual_panel"]["max_years_per_entity"],
+                    "eia_series_max_years": report["catalog_first_readiness"]["eia_selected_annual_long"]["max_years_per_series"],
+                    "raw_payload_availability": report["catalog_first_readiness"]["raw_payload_availability"],
+                },
+            }),
             indent=2,
             ensure_ascii=False,
+            allow_nan=False,
         )
     )
 
