@@ -281,8 +281,9 @@ def main() -> None:
                         "source_id": item["source_id"],
                         "rows": item["source_rows"],
                         "events": item["event_count"],
-                        "months": item["series_length"],
-                        "frequency": item["series_frequency"],\n                        "periods": item["series_length"],\n                        "zero_period_fraction": item["zero_event_period_fraction"],
+                        "frequency": item["series_frequency"],
+                        "periods": item["series_length"],
+                        "zero_period_fraction": item["zero_event_period_fraction"],
                         "mode_counts": {
                             mode: {
                                 "provisional": result["provisional_count"],
