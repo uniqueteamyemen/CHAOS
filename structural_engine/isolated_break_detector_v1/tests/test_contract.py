@@ -12,6 +12,11 @@ class BreakDetectorContractTests(unittest.TestCase):
             BreakDetectorV1.MODES, ("fast", "markov_cusum", "consensus")
         )
 
+    def test_sample_adequacy_distinguishes_start_from_full_lifecycle(self):
+        self.assertEqual(BreakDetectorV1.MIN_SERIES_LENGTH, 52)
+        self.assertEqual(BreakDetectorV1.MIN_FULL_RESOLUTION_LENGTH, 66)
+        self.assertEqual(BreakDetectorV1.MIN_FULL_CONSENSUS_LENGTH, 87)
+
     def test_unknown_mode_is_rejected(self):
         with self.assertRaisesRegex(ValueError, "unsupported_mode"):
             BreakDetectorV1(mode="auto_router")
