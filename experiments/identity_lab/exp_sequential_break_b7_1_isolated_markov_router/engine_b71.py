@@ -266,9 +266,8 @@ class InnovationSignCusumEngineB7:
         cusum_peak = 0.0
         cusum_directional_resets = 0
 
-        # The new structural evidence stream is one-step causal and starts
-        # as soon as quiet calibration ends. The inherited PENDING path keeps
-        # its original 12-point start time to preserve D-channel comparability.
+        # Structural CUSUM scanning starts when a full rolling window exists.
+        # The independent PENDING channel starts at quiet_end, matching D1_P1_G0.
         structural_scan_start_t = self.quiet_end + self.window_size - 1
         start_t = self.quiet_end
         for t in range(start_t, n):
