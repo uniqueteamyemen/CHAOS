@@ -39,6 +39,20 @@ def month_axis() -> list[str]:
     ]
 
 
+
+def monthly_counts(timestamps: list[datetime]) -> list[int]:
+    counts = [0] * ((END_YEAR - START_YEAR) * 12 + END_MONTH)
+    for stamp in timestamps:
+        if stamp.tzinfo is None:
+            stamp = stamp.replace(tzinfo=timezone.utc)
+        stamp = stamp.astimezone(timezone.utc)
+        if (stamp.year, stamp.month) < (START_YEAR, START_MONTH) or (
+            stamp.year, stamp.month
+        ) > (END_YEAR, END_MONTH):
+            raise ValueError(f"event_outside_frozen_query_window:{stamp.isoformat()}")
+        counts[month_index(stamp.year, stamp.month)] += 1
+    return counts
+
 def quarterly_axis() -> list[str]:
     return [
         f"{year:04d}-Q{quarter}"
