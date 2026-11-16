@@ -1,4 +1,4 @@
-"""B-v6.2 targeted test: D1/P1 with conditional sign-flip guard, 14M/15M."""
+"""B-v6.2 targeted test: D1/P1 with conditional sign-flip guard, 16M/17M."""
 from __future__ import annotations
 import argparse, json, statistics, time
 from pathlib import Path
@@ -13,9 +13,9 @@ from experiments.identity_lab.exp_sequential_break_b6_spearman_ablation.engine_b
 from experiments.identity_lab.exp_sequential_break_b61_sarp_sagp_factorial.engine_b61 import SurgicalFactorEngineB61
 from experiments.identity_lab.exp_sequential_break_b62_sign_flip_guard.engine_b62 import DriftConditionalSignFlipEngineB62
 
-DEV_SEED_BASE, HOLDOUT_SEED_BASE = 14_000_000, 15_000_000
+DEV_SEED_BASE, HOLDOUT_SEED_BASE = 16_000_000, 17_000_000
 TRIALS_PER_CASE, FPR_LIMIT, SENSITIVITY_TARGET, SIGN_FLIP_THRESHOLD = 500, 5.0, 93.0, 8
-OUTPUT = Path(__file__).resolve().parent / "results" / "sequential_break_engine_b62_sign_flip_guard_14m_15m.json"
+OUTPUT = Path(__file__).resolve().parent / "results" / "sequential_break_engine_b62_sign_flip_guard_16m_17m.json"
 B6A, G0, SF8 = "B6a_frozen_reference", "D1_P1_G0", "D1_P1_SF8"
 DEV_CONFIGS, HOLDOUT_CONFIGS = (G0, SF8), (B6A, G0, SF8)
 
@@ -109,11 +109,11 @@ def run(dev_trials=500,holdout_trials=500,dev_seed=DEV_SEED_BASE,hold_seed=HOLDO
         output=OUTPUT,official=True):
     if dev_trials<1 or holdout_trials<1: raise ValueError("trial_counts_must_be_positive")
     if official and (dev_trials!=500 or holdout_trials!=500 or dev_seed!=DEV_SEED_BASE or hold_seed!=HOLDOUT_SEED_BASE):
-        raise ValueError("official_B62_requires_500_trials_and_14M_15M")
+        raise ValueError("official_B62_requires_500_trials_and_16M_17M")
     if N!=140 or ONSET!=65: raise AssertionError("generator_contract_mismatch")
-    t=time.perf_counter(); dev=evaluate(dev_seed,DEV_CONFIGS,dev_trials,"development_14M"); dev_sec=round(time.perf_counter()-t,2)
-    # Threshold 8 and target config are frozen before the 15M stage.
-    t=time.perf_counter(); hold=evaluate(hold_seed,HOLDOUT_CONFIGS,holdout_trials,"paired_validation_15M"); hold_sec=round(time.perf_counter()-t,2)
+    t=time.perf_counter(); dev=evaluate(dev_seed,DEV_CONFIGS,dev_trials,"development_16M"); dev_sec=round(time.perf_counter()-t,2)
+    # Threshold 8 and target config are frozen before the 17M stage.
+    t=time.perf_counter(); hold=evaluate(hold_seed,HOLDOUT_CONFIGS,holdout_trials,"paired_validation_17M"); hold_sec=round(time.perf_counter()-t,2)
     dr,sr=seed_ranges(dev_seed,dev_trials),seed_ranges(hold_seed,holdout_trials)
     disjoint=seed_blocks_disjoint(dr,sr)
     if not disjoint: raise AssertionError("development_holdout_seed_overlap")
@@ -134,9 +134,9 @@ def run(dev_trials=500,holdout_trials=500,dev_seed=DEV_SEED_BASE,hold_seed=HOLDO
        "holdout_generated_series":hold["generated_series_count"],"holdout_evaluations":hold["configuration_evaluations"],
        "same_generated_series_within_stage":True,"holdout_used_for_threshold_selection":False,
        "fpr_budget_pct":5,"sensitivity_target_pct":93,"wilson_confidence_level_pct":95},
-      "development_14M":dev,"development_elapsed_seconds":dev_sec,
+      "development_16M":dev,"development_elapsed_seconds":dev_sec,
       "development_candidate_minus_D1P1G0":deltas(dev["models"],G0,SF8),
-      "paired_validation_15M":hold,"holdout_elapsed_seconds":hold_sec,
+      "paired_validation_17M":hold,"holdout_elapsed_seconds":hold_sec,
       "holdout_candidate_minus_D1P1G0":deltas(hold["models"],G0,SF8),
       "holdout_candidate_minus_B6a":deltas(hold["models"],B6A,SF8),
       "holdout_confidence_gates":hg,"holdout_final_gates":hf,
@@ -144,7 +144,7 @@ def run(dev_trials=500,holdout_trials=500,dev_seed=DEV_SEED_BASE,hold_seed=HOLDO
       "holdout_candidate_approved":hf[SF8]}
     output.parent.mkdir(parents=True,exist_ok=True)
     output.write_text(json.dumps(report,ensure_ascii=False,indent=2)+"\n",encoding="utf-8")
-    for label,stage in (("14M DEVELOPMENT",dev),("15M VALIDATION",hold)):
+    for label,stage in (("16M DEVELOPMENT",dev),("17M VALIDATION",hold)):
         print("\n"+label,flush=True)
         for name,m in stage["models"].items():
             active=sum(r["instrumentation"]["sign_flip_guard_active_windows"] for r in m["cases"].values())
