@@ -39,9 +39,16 @@ def month_axis() -> list[str]:
     ]
 
 
-def monthly_counts(timestamps: list[datetime]) -> list[int]:
-    total = (END_YEAR - START_YEAR) * 12 + END_MONTH
-    counts = [0] * total
+def quarterly_axis() -> list[str]:
+    return [
+        f"{year:04d}-Q{quarter}"
+        for year in range(START_YEAR, END_YEAR + 1)
+        for quarter in range(1, 5)
+    ]
+
+
+def quarterly_counts(timestamps: list[datetime]) -> list[int]:
+    counts = [0] * (4 * (END_YEAR - START_YEAR + 1))
     for stamp in timestamps:
         if stamp.tzinfo is None:
             stamp = stamp.replace(tzinfo=timezone.utc)
@@ -50,7 +57,8 @@ def monthly_counts(timestamps: list[datetime]) -> list[int]:
             stamp.year, stamp.month
         ) > (END_YEAR, END_MONTH):
             raise ValueError(f"event_outside_frozen_query_window:{stamp.isoformat()}")
-        counts[month_index(stamp.year, stamp.month)] += 1
+        index = (stamp.year - START_YEAR) * 4 + (stamp.month - 1) // 3
+        counts[index] += 1
     return counts
 
 
@@ -102,12 +110,12 @@ def ledger_record(event: dict, axis: list[str]) -> dict:
     record = dict(event)
     step = event.get("detection_time", event.get("time"))
     record["series_step"] = step
-    record["event_month_utc"] = month_for_step(step, axis)
+    record["event_period_utc"] = month_for_step(step, axis)
     for key, output_key in (
-        ("estimated_onset", "estimated_onset_month_utc"),
-        ("provisional_detection_time", "provisional_month_utc"),
-        ("confirmation_time", "confirmation_month_utc"),
-        ("resolved_at", "resolved_month_utc"),
+        ("estimated_onset", "estimated_onset_period_utc"),
+        ("provisional_detection_time", "provisional_period_utc"),
+        ("confirmation_time", "confirmation_period_utc"),
+        ("resolved_at", "resolved_period_utc"),
     ):
         if key in event:
             record[output_key] = month_for_step(event[key], axis)
@@ -120,10 +128,17 @@ def ledger_record(event: dict, axis: list[str]) -> dict:
 
 
 def summarize_dataset(
-    source_id: str, path: Path, timestamps: list[datetime], magnitudes: list[float]
+    source_id: str, path: Path, timestamps: list[datetime], magnitudes: list[float],
+    frequency: str,
 ) -> dict:
-    axis = month_axis()
-    counts = monthly_counts(timestamps)
+    if frequency == "monthly":
+        axis = month_axis()
+        counts = monthly_counts(timestamps)
+    elif frequency == "quarterly":
+        axis = quarterly_axis()
+        counts = quarterly_counts(timestamps)
+    else:
+        raise ValueError(f"unsupported_frequency:{frequency}")
     values = np.log1p(np.asarray(counts, dtype=float))
     modes = {}
 
@@ -167,16 +182,16 @@ def summarize_dataset(
         "observed_last_event_utc": max(timestamps).isoformat(),
         "magnitude_min": min(magnitudes),
         "magnitude_max": max(magnitudes),
-        "series_frequency": "monthly",
+        "series_frequency": frequency,
         "series_length": len(counts),
         "event_count": sum(counts),
-        "zero_event_months": zero_months,
-        "zero_event_month_fraction": round(zero_months / len(counts), 6),
+        "zero_event_periods": zero_months,
+        "zero_event_period_fraction": round(zero_months / len(counts), 6),
         "distinct_monthly_count_values": sorted(set(counts)),
-        "month_axis_utc": axis,
-        "monthly_event_counts": counts,
-        "transform": "log1p(monthly_event_count)",
-        "quiet_first_40_months_diff_mad": quiet_diff_mad,
+        "period_axis_utc": axis,
+        "period_event_counts": counts,
+        "transform": "log1p(period_event_count)",
+        "quiet_first_40_periods_diff_mad": quiet_diff_mad,
         "detector_runs": modes,
         "interpretation_guard": (
             "Historical structural-signal scan only; not an earthquake prediction "
@@ -230,13 +245,18 @@ def main() -> None:
                 gulf_path,
                 gulf_times,
                 gulf_magnitudes,
-            ),
+                frequency,
+            )
+            for frequency in ("monthly", "quarterly")
+        ] + [
             summarize_dataset(
                 "USGS_GLOBAL_M65_PLUS",
                 global_path,
                 global_times,
                 global_magnitudes,
-            ),
+                frequency,
+            )
+            for frequency in ("monthly", "quarterly")
         ],
         "excluded_sources": [summarize_world_bank(wb_path)],
         "limits": [
@@ -262,7 +282,7 @@ def main() -> None:
                         "rows": item["source_rows"],
                         "events": item["event_count"],
                         "months": item["series_length"],
-                        "zero_month_fraction": item["zero_event_month_fraction"],
+                        "frequency": item["series_frequency"],\n                        "periods": item["series_length"],\n                        "zero_period_fraction": item["zero_event_period_fraction"],
                         "mode_counts": {
                             mode: {
                                 "provisional": result["provisional_count"],
