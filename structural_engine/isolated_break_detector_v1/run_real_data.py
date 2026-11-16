@@ -113,7 +113,7 @@ def parse_global_usgs_csv(path: Path) -> tuple[list[datetime], list[float]]:
     return timestamps, magnitudes
 
 
-def month_for_step(value: object, axis: list[str]) -> str | None:
+def axis_value_for_step(value: object, axis: list[str]) -> str | None:
     if value is None:
         return None
     index = int(value)
@@ -124,15 +124,15 @@ def ledger_record(event: dict, axis: list[str]) -> dict:
     record = dict(event)
     step = event.get("detection_time", event.get("time"))
     record["series_step"] = step
-    record["event_period_utc"] = month_for_step(step, axis)
+    record["event_axis_value"] = axis_value_for_step(step, axis)
     for key, output_key in (
-        ("estimated_onset", "estimated_onset_period_utc"),
-        ("provisional_detection_time", "provisional_period_utc"),
-        ("confirmation_time", "confirmation_period_utc"),
-        ("resolved_at", "resolved_period_utc"),
+        ("estimated_onset", "estimated_onset_axis_value"),
+        ("provisional_detection_time", "provisional_axis_value"),
+        ("confirmation_time", "confirmation_axis_value"),
+        ("resolved_at", "resolved_axis_value"),
     ):
         if key in event:
-            record[output_key] = month_for_step(event[key], axis)
+            record[output_key] = axis_value_for_step(event[key], axis)
     if event.get("resolved_pending_alerts"):
         record["resolved_pending_alerts"] = [
             ledger_record(item, axis)
@@ -214,6 +214,85 @@ def summarize_dataset(
     }
 
 
+
+def inter_event_interval_series(
+    timestamps: list[datetime],
+) -> tuple[list[float], list[str]]:
+    ordered = sorted(
+        stamp.replace(tzinfo=timezone.utc) if stamp.tzinfo is None else stamp.astimezone(timezone.utc)
+        for stamp in timestamps
+    )
+    if len(ordered) < 2:
+        raise ValueError("at_least_two_events_required_for_inter_event_intervals")
+    intervals_days = [
+        (ordered[i + 1] - ordered[i]).total_seconds() / 86400.0
+        for i in range(len(ordered) - 1)
+    ]
+    axis = [ordered[i + 1].isoformat() for i in range(len(ordered) - 1)]
+    return intervals_days, axis
+
+
+def summarize_inter_event_series(
+    source_id: str,
+    path: Path,
+    timestamps: list[datetime],
+    magnitudes: list[float],
+) -> dict:
+    intervals_days, axis = inter_event_interval_series(timestamps)
+    values = np.log1p(np.asarray(intervals_days, dtype=float))
+    modes = {}
+    for mode in BreakDetectorV1.MODES:
+        result = BreakDetectorV1(
+            mode=mode, markov_threshold=DEFAULT_MARKOV_THRESHOLD
+        ).analyze(values)
+        diag = result.get("diagnostics", {})
+        base_scale = float(diag.get("base_diff_scale", 0.0))
+        level_scale = float(diag.get("baseline_level_scale", 0.0))
+        modes[mode] = {
+            "provisional_count": len(result["provisional_events"]),
+            "confirmed_count": len(result["confirmed_events"]),
+            "transient_count": len(result["transient_anomalies"]),
+            "unresolved_count": len(result["unresolved_alerts"]),
+            "pending_lifecycle": result["pending_lifecycle"],
+            "diagnostics": diag,
+            "baseline_scale_status": (
+                "DEGENERATE" if base_scale <= 1e-6 or level_scale <= 1e-6 else "NONDEGENERATE"
+            ),
+            "event_status_counts": dict(
+                Counter(event["status"] for event in result["events"])
+            ),
+            "transition_ledger": [
+                ledger_record(event, axis) for event in result["events"]
+            ],
+        }
+    quiet_differences = np.diff(values[:40])
+    quiet_diff_mad = float(
+        np.median(np.abs(quiet_differences - np.median(quiet_differences)))
+    )
+    return {
+        "source_id": source_id,
+        "source_file": str(path.relative_to(ROOT)),
+        "source_sha256": sha256(path),
+        "source_rows": len(timestamps),
+        "event_count": len(timestamps),
+        "observed_first_event_utc": min(timestamps).isoformat(),
+        "observed_last_event_utc": max(timestamps).isoformat(),
+        "magnitude_min": min(magnitudes),
+        "magnitude_max": max(magnitudes),
+        "series_frequency": "event_time_interarrival",
+        "series_length": len(intervals_days),
+        "event_axis_utc": axis,
+        "inter_event_interval_days": intervals_days,
+        "transform": "log1p(inter_event_interval_days)",
+        "quiet_first_40_intervals_diff_mad": quiet_diff_mad,
+        "detector_runs": modes,
+        "interpretation_guard": (
+            "The detector operates in event order; all horizons are counts of "
+            "inter-event intervals, not fixed calendar durations."
+        ),
+    }
+
+
 def summarize_world_bank(path: Path) -> dict:
     by_entity: dict[str, list[int]] = {}
     row_count = 0
@@ -250,7 +329,7 @@ def main() -> None:
     gulf_times, gulf_magnitudes = parse_gulf_geojson(gulf_path)
     global_times, global_magnitudes = parse_global_usgs_csv(global_path)
     report = {
-        "report_version": "1.1",
+        "report_version": "1.2",
         "detector": "isolated_break_detector_v1",
         "markov_threshold": DEFAULT_MARKOV_THRESHOLD,
         "sources": [
@@ -271,12 +350,25 @@ def main() -> None:
                 frequency,
             )
             for frequency in ("monthly", "quarterly")
-        ],
+        ] + [
+            summarize_inter_event_series(
+                "USGS_GULF_OF_ADEN_M45_PLUS",
+                gulf_path,
+                gulf_times,
+                gulf_magnitudes,
+            ),
+            summarize_inter_event_series(
+                "USGS_GLOBAL_M65_PLUS",
+                global_path,
+                global_times,
+                global_magnitudes,
+            ),
         "excluded_sources": [summarize_world_bank(wb_path)],
         "limits": [
             "The detector is transferred unchanged from synthetic validation to real data.",
             "Monthly and quarterly event counts are declared event-activity proxies, not physical magnitude or seismic energy.",
-            "Consensus matching retains its original 35-step rule; this has not been recalibrated to monthly time.",
+            "Consensus matching retains its original 35-step rule; its calendar interpretation changes with the input representation.",
+            "Event-time inter-arrival scans use event order; their horizons are intervals, not calendar months.",
             "A detected historical transition is not evidence of causal influence or a forecast of an event.",
             "A degenerate quiet-period scale invalidates interpretation even if the detector returns events.",
         ],
