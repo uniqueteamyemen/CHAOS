@@ -363,6 +363,7 @@ def main() -> None:
                 global_times,
                 global_magnitudes,
             ),
+        ],
         "excluded_sources": [summarize_world_bank(wb_path)],
         "limits": [
             "The detector is transferred unchanged from synthetic validation to real data.",
