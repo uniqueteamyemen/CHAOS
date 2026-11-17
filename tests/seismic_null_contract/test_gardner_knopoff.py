@@ -2,7 +2,7 @@ import unittest
 from datetime import datetime, timedelta, timezone
 
 from real_data_stress_pipeline.diagnostics.gardner_knopoff import (
-    gardner_knopoff_declustering, gardner_knopoff_windows, haversine_km,
+    decimal_year, gardner_knopoff_declustering, gardner_knopoff_windows, haversine_km,
 )
 
 
@@ -70,6 +70,13 @@ class GardnerKnopoffTests(unittest.TestCase):
     def test_invalid_fraction_rejected(self):
         with self.assertRaises(ValueError):
             gardner_knopoff_declustering([event("one", 0, 5)], 1.5)
+
+
+    def test_decimal_year_uses_calendar_year_length(self):
+        start = datetime(2020, 1, 1, tzinfo=timezone.utc)
+        middle = datetime(2020, 7, 2, tzinfo=timezone.utc)
+        self.assertAlmostEqual(decimal_year(start), 2020.0)
+        self.assertAlmostEqual(decimal_year(middle), 2020.5, places=5)
 
 
 if __name__ == "__main__":
