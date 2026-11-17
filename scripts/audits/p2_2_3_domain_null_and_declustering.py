@@ -756,10 +756,30 @@ def run_audit(output_dir: Path, poisson_replicates: int) -> dict[str, Any]:
         fred_future = executor.submit(fetch_fred, output_dir, os.getenv("FRED_API_KEY"))
         eia_future = executor.submit(fetch_eia, output_dir, os.getenv("EIA_API_KEY"))
 
-        _seismic_series = seismic_future.result()
-        gem_result = gem_future.result()
-        fred_result = fred_future.result()
-        eia_result = eia_future.result()
+        try:
+            _seismic_series = seismic_future.result()
+        except Exception as exc:
+            source_meta["errors"].append({
+                "provider": "USGS ComCat",
+                "error_type": type(exc).__name__,
+            })
+            _seismic_series = []
+        try:
+            gem_result = gem_future.result()
+        except Exception as exc:
+            gem_result = {
+                "status": "ERROR",
+                "error_type": type(exc).__name__,
+                "per_page": WB_PER_PAGE,
+            }
+        try:
+            fred_result = fred_future.result()
+        except Exception as exc:
+            fred_result = {"status": "ERROR", "error_type": type(exc).__name__}
+        try:
+            eia_result = eia_future.result()
+        except Exception as exc:
+            eia_result = {"status": "ERROR", "error_type": type(exc).__name__}
 
     belt_results: list[dict[str, Any]] = []
     for belt in p2.BELTS:
