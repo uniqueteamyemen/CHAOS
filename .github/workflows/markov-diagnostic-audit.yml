@@ -1,0 +1,31 @@
+name: CHAOS P2.2.2 — Markov Diagnostic Contract
+
+on:
+  push:
+    branches:
+      - p2.2.2-markov-calibration-audit
+    paths:
+      - 'scripts/audits/p2_2_2_markov_diagnostics.py'
+      - 'tests/audits/**'
+      - '.github/workflows/markov-diagnostic-audit.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  audit-contract:
+    name: markov-audit-contract
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout isolated diagnostic branch
+        uses: actions/checkout@v4
+        with:
+          ref: p2.2.2-markov-calibration-audit
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Run read-only diagnostic utility tests
+        run: python -m unittest discover -s tests/audits -p 'test_*.py' -v
