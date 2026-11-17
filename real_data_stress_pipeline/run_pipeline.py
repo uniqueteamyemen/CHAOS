@@ -231,7 +231,7 @@ def gem(m):
      m["rejected"].append({"source":"gem","series":f"{code}:{iso}","quality":q});continue
     out.append({"id":f"gem:{code}:{iso}","source":"gem","source_name":"World Bank GEM","name":f"{desc} — {names[iso]}","cohort":"secondary_gem_monthly_87_plus","domain":"macro","frequency":"monthly","axis":axis,"values":vals,"sha256":hashes[0] if hashes else None,"points":len(ys),"quality":q})
    accepted_for_code=sum(1 for x in out if x["id"].startswith("gem:"+code+":"))
-   summary={"code":code,"description":desc,"date_query":"1990M01:2023M12","frequency_policy":"monthly-only by actual year-month response keys; frequency query parameter omitted because World Bank documents frequency as an MRV modifier","records_with_monthly_dates":sum(map(len,groups.values())),"country_series":len(groups),"accepted":accepted_for_code,"raw_hashes":hashes,"status":"monthly_data_found" if groups else "no_monthly_records_for_indicator"}
+   summary={"code":code,"description":desc,"date_query":GEM_PERIOD_WINDOW,"frequency_policy":"monthly-only by actual year-month response keys; frequency query parameter omitted because World Bank documents frequency as an MRV modifier","records_with_monthly_dates":sum(map(len,groups.values())),"country_series":len(groups),"accepted":accepted_for_code,"raw_hashes":hashes,"status":"monthly_data_found" if groups else "no_monthly_records_for_indicator"}
    m["gem_indicators"].append(summary)
    print("GEM",code,"monthly_records",summary["records_with_monthly_dates"],"country_series",summary["country_series"],"accepted",accepted_for_code)
   except Exception as e:
