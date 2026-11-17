@@ -1,0 +1,84 @@
+name: CHAOS P2.2.4 — Markov Injected-Break Power Audit
+
+on:
+  push:
+    branches:
+      - diag/markov-real-data-behavior
+    paths:
+      - 'scripts/audits/p2_2_4_markov_injected_break_power.py'
+      - 'tests/audits/test_p2_2_4_markov_injected_break_power.py'
+      - '.github/workflows/markov-injected-break-power.yml'
+  workflow_dispatch:
+    inputs:
+      replicates:
+        description: 'Replicates per eligible source series and length'
+        required: false
+        default: '100'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: chaos-p2-2-4-injected-power-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  tests:
+    name: injected-break-power-contract-tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: diag/markov-real-data-behavior
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Cache pip downloads
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-python-3.11-pip-${{ hashFiles('real_data_stress_pipeline/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-python-3.11-pip-
+      - name: Install pipeline requirements
+        run: python -m pip install -r real_data_stress_pipeline/requirements.txt
+      - name: Run focused injected-break tests
+        run: python -m unittest discover -s tests/audits -p 'test_p2_2_4_*.py' -v
+
+  injected-break-power:
+    name: paired-real-series-injected-break-power
+    runs-on: ubuntu-latest
+    needs: tests
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: diag/markov-real-data-behavior
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Cache pip downloads
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-python-3.11-pip-${{ hashFiles('real_data_stress_pipeline/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-python-3.11-pip-
+      - name: Install pipeline requirements
+        run: python -m pip install -r real_data_stress_pipeline/requirements.txt
+      - name: Run paired power and delay audit (unbuffered)
+        env:
+          PYTHONUNBUFFERED: '1'
+          REPLICATES: ${{ inputs.replicates || '100' }}
+        run: |
+          python -u scripts/audits/p2_2_4_markov_injected_break_power.py \
+            --replicates "$REPLICATES" \
+            --output-dir artifacts/markov_injected_break_power
+      - name: Upload per-replicate power records
+        uses: actions/upload-artifact@v4
+        with:
+          name: chaos-p2-2-4-markov-injected-break-power
+          path: artifacts/markov_injected_break_power/
+          if-no-files-found: error
+          retention-days: 90
