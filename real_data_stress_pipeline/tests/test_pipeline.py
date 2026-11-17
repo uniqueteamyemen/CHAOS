@@ -192,11 +192,7 @@ class StressPipelineContractTests(unittest.TestCase):
         )
         self.assertEqual(commodity["bootstrap_eligible_series"], 1)
         self.assertEqual(seismic["bootstrap_eligible_series"], 1)
-        self.assertNotIn("bootstrap_fpr", result["by_mode"]["markov_cusum"])
-        self.assertNotIn(
-            "conditional_bootstrap_alarm_probability_mean",
-            result["by_mode"]["markov_cusum"],
-        )
+        self.assertNotIn("by_mode", result)
 
     def test_bootstrap_output_uses_conditional_alarm_probability_name(self):
         result = boot(
