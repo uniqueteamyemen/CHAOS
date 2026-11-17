@@ -34,7 +34,7 @@ jobs:
           ref: main-phase2
           fetch-depth: 0
 
-      - name: Create and publish the immutable Phase 1 annotated tag and release
+      - name: Create and publish the Phase 1 annotated tag and release
         env:
           GH_TOKEN: ${{ github.token }}
           BASELINE_SHA: 51e4278309b7d32917b85903323a63f81d9e9b6a
@@ -64,6 +64,11 @@ jobs:
               --title "CHAOS Phase 1 — Frozen Detector Archive" \
               --notes-file docs/PHASE1_DETECTOR_FREEZE.md
           fi
+          gh release upload "${TAG_NAME}" \
+            docs/PHASE1_DETECTOR_FREEZE.md \
+            structural_engine/isolated_break_detector_v1/results/real_data_transition_scan.json \
+            structural_engine/isolated_break_detector_v1/results/SHA256SUMS.txt \
+            --clobber
 
       - name: Set up Python
         uses: actions/setup-python@v5
