@@ -1,0 +1,24 @@
+{
+  "config_version": "1.0",
+  "world_bank_source_id": 15,
+  "metadata_endpoint": "https://api.worldbank.org/v2/sources/15/series",
+  "data_endpoint_template": "https://api.worldbank.org/v2/country/all/indicator/{indicator_id}",
+  "required_frequency": "monthly",
+  "max_indicators": 16,
+  "period_window": "1990:2023",
+  "discovery_policy": "Inspect World Bank GEM source-15 series metadata. Select only indicators whose own metadata identifies monthly periodicity. If the API does not expose an unambiguous monthly frequency for an indicator, reject it from the monthly cohort rather than infer or relabel its frequency.",
+  "preferred_name_terms": [
+    "consumer price",
+    "price index",
+    "industrial production",
+    "exchange rate",
+    "interest rate",
+    "stock market",
+    "money supply",
+    "reserves",
+    "trade",
+    "exports",
+    "imports"
+  ],
+  "note": "The published GEM catalog coverage 1990–2023 is insufficient for the strict >500-observation primary monthly cohort. GEM is a secondary cohort (G0 >= 87) unless actual metadata and observations demonstrate a longer contiguous monthly series."
+}
