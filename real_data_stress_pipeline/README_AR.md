@@ -11,8 +11,8 @@
 2. Queries World Bank GEM (Data API source 15) for a declared set of indicators. GEM is a **secondary cohort** with a minimum 87-point gate; its published 1990–2023 coverage cannot meet the strict >500 monthly-point cohort. Annual/quarterly data are not relabelled as monthly.
 3. Retrieves five geographically separated USGS ComCat belts from 1980 through 2024, retaining exact GeoJSON responses and query parameters in the private workflow artifact.
 4. Builds monthly commodity log-return series, secondary monthly seismic-count series, and seismic inter-event intervals without filling gaps.
-5. Applies G0 and then runs the three frozen detector modes: `fast`, `markov_cusum`, and `consensus`.
-6. Estimates empirical null alarm rates using the Politis–Romano Stationary Bootstrap on eligible sequences. The bootstrap result is a conditional sequence-level null diagnostic, not a substitute for a domain-specific earthquake point-process null.
+5. Applies G0, screens stationarity with ADF and KPSS (G1), and runs the three frozen detector modes: `fast`, `markov_cusum`, and `consensus`.
+6. Estimates empirical null alarm rates using the Politis–Romano Stationary Bootstrap only for series that pass G1; failed and untested series remain in the ledger with the reason for skipping the null resampling. The bootstrap result is a conditional sequence-level null diagnostic, not a substitute for a domain-specific earthquake point-process null.
 7. Measures structural alarms per decade and matches detector events to a predeclared historical macro-shock anchor contract. A positive lead means the detector event was available before the anchor date; a post-anchor detection is a lag, not a warning.
 8. Emits an Arabic report, a JSON manifest, SHA-256 inventory, and raw source snapshots.
 
@@ -22,6 +22,8 @@
 - GEM secondary cohort: at least 87 contiguous, actual monthly observations and non-degenerate robust scale; reported separately from the Pink Sheet cohort.
 - Seismic inter-event cohort: at least 87 consecutive event intervals, valid time ordering, and non-degenerate robust scale.
 - Monthly seismic event counts are a separate secondary representation and are never substituted for inter-event intervals.
+- G1 passes only when ADF rejects a unit root at 5% and KPSS does not reject level stationarity at 5%; this is a preliminary screen, not proof of strict stationarity.
+- Stationary Block-Bootstrap is skipped when G1 does not pass. The G1 result itself and p-values are retained per series.
 - No missing-value imputation, interpolation, or artificial extension is permitted.
 - Failed sources and rejected series remain visible in the report with explicit reasons.
 
@@ -48,9 +50,9 @@ python -m real_data_stress_pipeline.run_pipeline
 
 Configuration is available through environment variables:
 
-- `STRESS_BOOTSTRAP_REPLICATES` (default 199)
+- `STRESS_BOOTSTRAP_REPLICATES` (default 199; set to 999 for a higher-resolution follow-up)
 - `STRESS_BOOTSTRAP_MEAN_BLOCK_MONTHS` (default 12)
-- `STRESS_MIN_COMMODITY_POINTS` (default 501)
+- `STRESS_MIN_COMMODITY_POINTS` (default 501 log-return observations; at least 502 contiguous monthly prices)
 - `STRESS_USGS_MIN_MAGNITUDE` (default 4.5)
 
 USGS and GEM API raw responses are written to `artifacts/real_data_stress/raw/` and attached to the private workflow artifact; they are not committed to the source tree. The Pink Sheet workbook remains in memory only while its workbook-specific redistribution terms are unverified; only its SHA-256 and derived detector event audit are recorded. Numeric Pink Sheet observations are redacted from the public normalized CSV. GitHub Actions uploads permitted raw responses, report, manifest, and SHA-256 inventory as a versioned artifact. The generated Arabic report is also committed at repository root.
