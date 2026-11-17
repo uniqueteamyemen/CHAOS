@@ -1,12 +1,13 @@
 """P2.2 real-data stress pipeline. Frozen BreakDetectorV1 is imported and never edited."""
 from __future__ import annotations
-import csv, hashlib, json, math, os, re, time, urllib.parse, urllib.request
+import csv, hashlib, json, math, os, re, time, urllib.parse, urllib.request, warnings
 from collections import defaultdict, Counter
 from datetime import datetime, timezone
 from io import BytesIO
 from pathlib import Path
 import numpy as np
 from openpyxl import load_workbook
+from statsmodels.tsa.stattools import adfuller, kpss
 from structural_engine.isolated_break_detector_v1 import BreakDetectorV1, DEFAULT_MARKOV_THRESHOLD
 
 ROOT=Path(__file__).resolve().parents[1]
@@ -19,7 +20,7 @@ Y0,Y1=1980,2024
 PINK_MIN=int(os.getenv("STRESS_MIN_COMMODITY_POINTS","501"))
 GEM_MIN=int(os.getenv("STRESS_MIN_GEM_POINTS","87"))
 SEISMIC_MIN=87
-REPS=int(os.getenv("STRESS_BOOTSTRAP_REPLICATES","199"))
+REPS=int(os.getenv("STRESS_BOOTSTRAP_REPLICATES","999"))
 MONTH_BLOCK=int(os.getenv("STRESS_BOOTSTRAP_MEAN_BLOCK_MONTHS","12"))
 EVENT_BLOCK=int(os.getenv("STRESS_BOOTSTRAP_MEAN_BLOCK_EVENTS","25"))
 MAG=float(os.getenv("STRESS_USGS_MIN_MAGNITUDE","4.5"))
@@ -93,6 +94,40 @@ def g0(x,n):
  if dm<=1e-10:return {"passed":False,"reason":"degenerate_baseline_diff_mad","baseline_diff_mad":dm,"baseline_level_mad":lm}
  if lm<=1e-10:return {"passed":False,"reason":"degenerate_baseline_level_mad","baseline_diff_mad":dm,"baseline_level_mad":lm}
  return {"passed":True,"observations":len(a),"minimum":n,"baseline_diff_mad":dm,"baseline_level_mad":lm}
+def g1(x):
+ a=np.asarray(x,dtype=float)
+ if a.ndim!=1 or not np.all(np.isfinite(a)):
+  return {"passed":False,"status":"INVALID_INPUT","reason":"nonfinite_or_nonvector","observations":int(a.size)}
+ if len(a)<87:
+  return {"passed":False,"status":"NOT_TESTED","reason":"fewer_than_87_observations","observations":int(len(a))}
+ if mad(a)<=1e-10:
+  return {"passed":False,"status":"DEGENERATE","reason":"degenerate_series_mad","observations":int(len(a))}
+ try:
+  with warnings.catch_warnings(record=True) as caught:
+   warnings.simplefilter("always")
+   adf_result=adfuller(a,regression="c",autolag="AIC")
+   kpss_result=kpss(a,regression="c",nlags="auto")
+  adf_p=float(adf_result[1]);kpss_p=float(kpss_result[1])
+  adf_ok=adf_p<0.05;kpss_ok=kpss_p>=0.05
+  passed=bool(adf_ok and kpss_ok)
+  return {
+   "passed":passed,
+   "status":"SCREEN_PASS" if passed else "SCREEN_FAIL",
+   "observations":int(len(a)),
+   "adf_statistic":float(adf_result[0]),
+   "adf_p_value":adf_p,
+   "adf_lags":int(adf_result[2]),
+   "adf_rejects_unit_root":adf_ok,
+   "kpss_statistic":float(kpss_result[0]),
+   "kpss_p_value":kpss_p,
+   "kpss_lags":int(kpss_result[2]),
+   "kpss_does_not_reject_level_stationarity":kpss_ok,
+   "significance":0.05,
+   "warnings":[str(item.message) for item in caught],
+   "interpretation":"Conservative preliminary stationarity screen only; passing ADF and KPSS does not prove strict stationarity or validate a domain-specific stochastic model."
+  }
+ except Exception as exc:
+  return {"passed":False,"status":"TEST_ERROR","observations":int(len(a)),"reason":f"{type(exc).__name__}:{exc}"}
 def longest_run(mapping):
  runs=[];r=[]
  for k,v in sorted(mapping.items()):
@@ -241,8 +276,11 @@ def run_modes(x):
   r=BreakDetectorV1(mode=mode,markov_threshold=H).analyze(x);ev=r.get("structural_breaks",[])
   out[mode]={"alarm_count":len(ev),"provisional_count":len(r.get("provisional_events",[])),"confirmed_count":len(r.get("confirmed_events",[])),"transient_count":len(r.get("transient_anomalies",[])),"unresolved_count":len(r.get("unresolved_alerts",[])),"pending_lifecycle":r.get("pending_lifecycle"),"diagnostics":r.get("diagnostics",{}),"sample_adequacy":r.get("sample_adequacy",{}),"events":ev}
  return out
-def boot(x,seed,block):
- rng=np.random.default_rng(int(hashlib.sha256(seed.encode()).hexdigest()[:16],16));r={k:{"alarms":0,"events":0,"runs":0,"errors":0} for k in BreakDetectorV1.MODES}
+def boot(x,seed,block,g1_result):
+ r={k:{"alarms":0,"events":0,"runs":0,"errors":0,"fpr":None,"wilson95":None} for k in BreakDetectorV1.MODES}
+ if not g1_result.get("passed"):
+  return {"status":"SKIPPED_G1_SCREEN_FAILED","method":"Politis-Romano stationary bootstrap","replicates":0,"mean_block_length":block,"by_mode":r,"seed_sha256":hashlib.sha256(seed.encode()).hexdigest(),"skip_reason":g1_result.get("status","G1_NOT_PASSED"),"note":"Stationary block resampling is not run unless the ADF/KPSS screen passes."}
+ rng=np.random.default_rng(int(hashlib.sha256(seed.encode()).hexdigest()[:16],16))
  for _ in range(REPS):
   s=stationary_sample(x,rng,block)
   for mode in BreakDetectorV1.MODES:
@@ -285,7 +323,7 @@ def shock_eval(item,events,contract):
   if anchor_index in used_anchors or event_index in used_events:continue
   used_anchors.add(anchor_index);used_events.add(event_index)
   target=contract["events"][anchor_index]
-  matches[target["id"]]={"event_id":target["id"],"eligible":True,"matched":True,"detected_month":axis[index],"lead_months":int(lead),"classification":"pre_anchor_signal" if lead>0 else ("same_month_detection" if lead==0 else "post_anchor_detection"),"detector_status":event.get("status")}
+  matches[target["id"]]={"event_id":target["id"],"eligible":True,"matched":True,"detection_index":index,"detected_month":axis[index],"lead_months":int(lead),"classification":"pre_anchor_signal" if lead>0 else ("same_month_detection" if lead==0 else "post_anchor_detection"),"detector_status":event.get("status")}
  found=[]
  for target in contract["events"]:
   if target["id"] in matches:found.append(matches[target["id"]])
@@ -294,6 +332,7 @@ def shock_eval(item,events,contract):
 
 def eval_series(item,contract):
  modes=run_modes(item["values"])
+ g1_result=g1(item["values"])
  if item["frequency"]=="monthly":
   duration=max(1,len(item["values"])/12)
  else:
@@ -302,8 +341,12 @@ def eval_series(item,contract):
  for mode,v in modes.items():
   v["alarms_per_decade"]=v["alarm_count"]/duration*10
   v["shock_matches"]=shock_eval(item,v["events"],contract) if item["frequency"]=="monthly" and item["source"]!="usgs" else []
+  matched_indices={int(match["detection_index"]) for match in v["shock_matches"] if match.get("matched") and match.get("detection_index") is not None}
+  v["matched_shock_alarm_count"]=len(matched_indices)
+  v["unassociated_structural_alarm_count"]=max(0,int(v["alarm_count"])-len(matched_indices))
+  v["unassociated_structural_alarms_per_decade"]=v["unassociated_structural_alarm_count"]/duration*10
  block=MONTH_BLOCK if item["frequency"]=="monthly" else EVENT_BLOCK
- return {"id":item["id"],"source":item["source"],"name":item["name"],"cohort":item["cohort"],"domain":item["domain"],"frequency":item["frequency"],"observations":len(item["values"]),"duration_years":duration,"first":item["axis"][0],"last":item["axis"][-1],"sha256":item["sha256"],"quality":item["quality"],"detector":modes,"bootstrap":boot(item["values"],item["id"]+str(item["sha256"]),block)}
+ return {"id":item["id"],"source":item["source"],"name":item["name"],"cohort":item["cohort"],"domain":item["domain"],"frequency":item["frequency"],"observations":len(item["values"]),"duration_years":duration,"first":item["axis"][0],"last":item["axis"][-1],"sha256":item["sha256"],"quality":item["quality"],"g1":g1_result,"detector":modes,"bootstrap":boot(item["values"],item["id"]+str(item["sha256"]),block,g1_result)}
 def normalized_csv(items):
  p=DERIVED/"normalized_detector_inputs.csv";p.parent.mkdir(parents=True,exist_ok=True)
  with p.open("w",newline="",encoding="utf-8") as f:
@@ -318,7 +361,7 @@ def aggregate(results,contract):
   for series in results:
    alarms+=series["detector"][mode]["alarm_count"];years+=series["duration_years"]
    bootstrap=series["bootstrap"]["by_mode"][mode];hits+=bootstrap["alarms"];total+=bootstrap["runs"]
-  out["by_mode"][mode]={"series":len(results),"raw_alarms":alarms,"alarms_per_decade":alarms/years*10 if years else None,"bootstrap_fpr":hits/total if total else None,"bootstrap_wilson95":wilson(hits,total),"bootstrap_alarm_replicates":hits,"bootstrap_replicates":total}
+  out["by_mode"][mode]={"series":len(results),"g1_passed_series":sum(1 for series in results if series["g1"].get("passed")),"raw_alarms":alarms,"alarms_per_decade":alarms/years*10 if years else None,"unassociated_structural_alarms":sum(series["detector"][mode]["unassociated_structural_alarm_count"] for series in results),"unassociated_structural_alarms_per_decade":sum(series["detector"][mode]["unassociated_structural_alarm_count"] for series in results)/years*10 if years else None,"bootstrap_fpr":hits/total if total else None,"bootstrap_wilson95":wilson(hits,total),"bootstrap_alarm_replicates":hits,"bootstrap_replicates":total}
  for target in contract["events"]:
   out["shocks"][target["id"]]={}
   for mode in BreakDetectorV1.MODES:
@@ -335,19 +378,19 @@ def aggregate(results,contract):
    for series in subset:
     alarms+=series["detector"][mode]["alarm_count"];years+=series["duration_years"]
     boot=series["bootstrap"]["by_mode"][mode];hits+=boot["alarms"];total+=boot["runs"]
-   cohort_stats[mode]={"series":len(subset),"alarms":alarms,"alarms_per_decade":alarms/years*10 if years else None,"bootstrap_fpr":hits/total if total else None,"bootstrap_wilson95":wilson(hits,total)}
+   cohort_stats[mode]={"series":len(subset),"g1_passed_series":sum(1 for series in subset if series["g1"].get("passed")),"alarms":alarms,"alarms_per_decade":alarms/years*10 if years else None,"unassociated_structural_alarms":sum(series["detector"][mode]["unassociated_structural_alarm_count"] for series in subset),"unassociated_structural_alarms_per_decade":sum(series["detector"][mode]["unassociated_structural_alarm_count"] for series in subset)/years*10 if years else None,"bootstrap_fpr":hits/total if total else None,"bootstrap_wilson95":wilson(hits,total)}
   out["by_cohort"][cohort]=cohort_stats
  return out
 
 def make_report(m):
  z=m["aggregate"]
- lines=["# تقرير اختبار الضغط التاريخي — CHAOS P2.2","",f"وقت التشغيل UTC: {m['run_timestamp_utc']}  ",f"Commit المصدر: {m['git_commit']}  ","الكاشف المجمد: BreakDetectorV1؛ لا تعديل للمعادلات أو الثوابت.","","## ملخص الجلب والتأهيل","",f"- سلاسل Pink Sheet الطويلة (>500 نقطة): {m['pink_eligible']}.",f"- سلاسل GEM الشهرية الثانوية (≥87 نقطة): {m['gem_eligible']}.",f"- أحزمة USGS المستعلم عنها: {len(m['belts'])}/5؛ سلاسل الفواصل المؤهلة: {m['seismic_eligible']}.",f"- إجمالي السلاسل المشغلة: {len(m['series_results'])}.",f"- الاستبعادات: {len(m['rejected'])}؛ أخطاء المصادر: {len(m['errors'])}.","","## معدل الإنذار مقارنة بالـ Stationary Block-Bootstrap","","| الوضع | السلاسل | الإنذارات المرصودة | الإنذارات لكل عقد | Bootstrap FPR | Wilson 95% |","|---|---:|---:|---:|---:|---:|"]
+ lines=["# تقرير اختبار الضغط التاريخي — CHAOS P2.2","",f"وقت التشغيل UTC: {m['run_timestamp_utc']}  ",f"Commit المصدر: {m['git_commit']}  ","الكاشف المجمد: BreakDetectorV1؛ لا تعديل للمعادلات أو الثوابت.","","## ملخص الجلب والتأهيل","",f"- سلاسل Pink Sheet الطويلة (>500 نقطة): {m['pink_eligible']}.",f"- سلاسل GEM الشهرية الثانوية (≥87 نقطة): {m['gem_eligible']}.",f"- أحزمة USGS المستعلم عنها: {len(m['belts'])}/5؛ سلاسل الفواصل المؤهلة: {m['seismic_eligible']}.",f"- إجمالي السلاسل المشغلة: {len(m['series_results'])}.",f"- اجتاز فحص G1 (ADF وKPSS): {sum(1 for s in m['series_results'] if s['g1'].get('passed'))}؛ تم تجاوز Bootstrap للسلاسل التي لم تجتز G1: {sum(1 for s in m['series_results'] if not s['g1'].get('passed'))}.",f"- الاستبعادات: {len(m['rejected'])}؛ أخطاء المصادر: {len(m['errors'])}.","","## معدل الإنذار مقارنة بالـ Stationary Block-Bootstrap","","| الوضع | السلاسل | G1 مؤهلة | الإنذارات المرصودة | إنذارات/عقد | غير مرتبطة بمرساة/عقد | Bootstrap FPR | Wilson 95% |","|---|---:|---:|---:|---:|---:|---:|---:|"]
  for mode,label in (("fast","Fast"),("markov_cusum","Markov CUSUM H=8.5"),("consensus","Consensus")):
   x=z["by_mode"][mode];ci=x["bootstrap_wilson95"]
   fpr=f"{x['bootstrap_fpr']*100:.2f}%" if x["bootstrap_fpr"] is not None else "—"
   ci_s=f"{ci[0]*100:.2f}–{ci[1]*100:.2f}%" if ci else "—"
-  lines.append(f"| {label} | {x['series']} | {x['raw_alarms']} | {x['alarms_per_decade']:.4f} | {fpr} | {ci_s} |")
- lines += ["","FPR هو نسبة العينات المعاد توليدها التي أصدرت إنذاراً بنيوياً واحداً على الأقل. هذا تقدير عدمي مشروط بالسلسلة، وليس إثباتاً بأن السلسلة الأصلية مستقرة.","","### التفصيل حسب فوج البيانات","","| الفوج | الوضع | السلاسل | الإنذارات | إنذارات/عقد | Bootstrap FPR |","|---|---|---:|---:|---:|---:|"]
+  rate=f"{x['alarms_per_decade']:.4f}" if x["alarms_per_decade"] is not None else "—";unassoc=f"{x['unassociated_structural_alarms_per_decade']:.4f}" if x["unassociated_structural_alarms_per_decade"] is not None else "—";lines.append(f"| {label} | {x['series']} | {x['g1_passed_series']} | {x['raw_alarms']} | {rate} | {unassoc} | {fpr} | {ci_s} |")
+ lines += ["","Bootstrap FPR هو نسبة عينات العدم المعاد توليدها التي أصدرت إنذاراً بنيوياً واحداً على الأقل، ويُحسب فقط للسلاسل التي اجتازت فحص G1. الإنذارات غير المرتبطة بمراسي الصدمات المحددة ليست بالضرورة إنذارات كاذبة علمياً؛ فقد توجد تحولات حقيقية غير مدرجة في سجل المراسي.","","### التفصيل حسب فوج البيانات","","| الفوج | الوضع | السلاسل | الإنذارات | إنذارات/عقد | Bootstrap FPR |","|---|---|---:|---:|---:|---:|"]
  for cohort,by_mode in m["aggregate"]["by_cohort"].items():
   for mode,label in (("fast","Fast"),("markov_cusum","Markov"),("consensus","Consensus")):
    x=by_mode[mode];fpr=f"{x['bootstrap_fpr']*100:.2f}%" if x["bootstrap_fpr"] is not None else "—"
@@ -365,7 +408,7 @@ def make_report(m):
 def main():
  for p in (RAW,DERIVED,OUT):p.mkdir(parents=True,exist_ok=True)
  contract=json.loads((HERE/"shock_event_contract.json").read_text(encoding="utf-8"))
- m={"version":"1.0","run_timestamp_utc":stamp(),"git_commit":os.getenv("GITHUB_SHA","local-unresolved"),"branch":os.getenv("GITHUB_REF_NAME","local"),"detector":"isolated_break_detector_v1","markov_H":H,"period":f"{Y0}-01/{Y1}-12","bootstrap":{"method":"Politis-Romano Stationary Bootstrap","replicates":REPS,"monthly_mean_block":MONTH_BLOCK,"event_mean_block":EVENT_BLOCK},"shock_contract":contract,"sources":[],"gem_indicators":[],"belts":[],"errors":[],"rejected":[]}
+ m={"version":"1.1","run_timestamp_utc":stamp(),"git_commit":os.getenv("GITHUB_SHA","local-unresolved"),"branch":os.getenv("GITHUB_REF_NAME","local"),"detector":"isolated_break_detector_v1","markov_H":H,"period":f"{Y0}-01/{Y1}-12","stationarity_screen":{"method":"ADF plus KPSS at 5% significance","bootstrap_policy":"run Stationary Block-Bootstrap only when ADF rejects a unit root and KPSS does not reject level stationarity"},"bootstrap":{"method":"Politis-Romano Stationary Bootstrap","replicates":REPS,"monthly_mean_block":MONTH_BLOCK,"event_mean_block":EVENT_BLOCK},"shock_contract":contract,"sources":[],"gem_indicators":[],"belts":[],"errors":[],"rejected":[]}
  print("Pink Sheet");pink_items=pink(m);print("accepted",len(pink_items))
  print("GEM");gem_items=gem(m);print("accepted",len(gem_items))
  print("USGS belts");seismic_items=seismic(m);print("accepted",len(seismic_items))
