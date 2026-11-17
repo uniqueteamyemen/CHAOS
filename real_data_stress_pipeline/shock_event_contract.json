@@ -1,0 +1,36 @@
+{
+  "contract_version": "1.0",
+  "frozen_before_detector_execution": true,
+  "purpose": "Calendar anchors for retrospective temporal matching only; not universal per-series shock onset claims.",
+  "matching_window_months": 12,
+  "events": [
+    {
+      "id": "GFC_2008",
+      "anchor_date": "2008-09-15",
+      "label": "Lehman Brothers bankruptcy / global financial-crisis anchor",
+      "domain_scope": "global macro-financial context",
+      "interpretation": "calendar anchor; commodity-specific impact dates may differ"
+    },
+    {
+      "id": "OIL_2014",
+      "anchor_date": "2014-06-01",
+      "label": "2014 oil-price decline anchor",
+      "domain_scope": "energy and related commodities",
+      "interpretation": "calendar anchor; not assumed to be the onset for every commodity"
+    },
+    {
+      "id": "COVID_2020",
+      "anchor_date": "2020-03-11",
+      "label": "WHO pandemic characterization anchor",
+      "domain_scope": "global macro and commodity context",
+      "interpretation": "calendar anchor; pandemic effects vary by series"
+    },
+    {
+      "id": "UKRAINE_2022",
+      "anchor_date": "2022-02-24",
+      "label": "Ukraine invasion / commodity-supply shock anchor",
+      "domain_scope": "energy, metals, food and macro context",
+      "interpretation": "calendar anchor; not causal attribution"
+    }
+  ]
+}
