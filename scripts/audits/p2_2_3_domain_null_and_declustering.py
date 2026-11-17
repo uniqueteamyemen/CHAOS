@@ -19,7 +19,7 @@ from pathlib import Path
 from typing import Any
 
 import numpy as np
-from scipy.stats import chi2, kstest
+from scipy.stats import kstest
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
@@ -518,24 +518,24 @@ def homogeneous_poisson_fit_diagnostics(
     counts: np.ndarray,
     events: list[dict[str, Any]],
 ) -> dict[str, Any]:
+    """Return descriptive diagnostics only; no uncalibrated goodness-of-fit p-values."""
     values = np.asarray(counts, dtype=float)
     mean_count = float(np.mean(values)) if values.size else 0.0
     variance = float(np.var(values, ddof=1)) if values.size > 1 else 0.0
+    dispersion = variance / mean_count if mean_count > 0 else None
     result: dict[str, Any] = {
         "monthly_count_mean": mean_count,
         "monthly_count_variance": variance,
-        "index_of_dispersion": variance / mean_count if mean_count > 0 else None,
+        "index_of_dispersion": dispersion,
+        "poisson_reference_index_of_dispersion": 1.0,
+        "monthly_count_dispersion_interpretation": (
+            "descriptive_ratio_only; values near 1 are compatible with Poisson "
+            "equidispersion but do not establish independence or model adequacy"
+        ),
         "homogeneous_poisson_status": "BENCHMARK_ONLY_NOT_VALIDATED",
         "catalog_completeness_status": "NOT_ASSESSED",
+        "inferential_goodness_of_fit_p_values_reported": False,
     }
-    if values.size > 1 and mean_count > 0:
-        df = values.size - 1
-        statistic = df * variance / mean_count
-        lower = float(chi2.cdf(statistic, df))
-        upper = float(chi2.sf(statistic, df))
-        result["monthly_count_dispersion_two_sided_p"] = min(1.0, 2.0 * min(lower, upper))
-    else:
-        result["monthly_count_dispersion_two_sided_p"] = None
 
     ordered = sorted(events, key=lambda item: int(item["epoch_ms"]))
     gaps = np.asarray([
@@ -543,12 +543,20 @@ def homogeneous_poisson_fit_diagnostics(
         for i in range(1, len(ordered))
     ], dtype=float)
     if gaps.size >= 5 and float(np.mean(gaps)) > 0:
-        test = kstest(gaps, "expon", args=(0.0, float(np.mean(gaps))))
+        # The exponential scale is estimated from the same observed gaps and
+        # event intervals may be dependent. Keep the KS distance descriptive;
+        # the usual one-sample KS p-value is not calibrated for this setting.
+        fitted_mean = float(np.mean(gaps))
+        test = kstest(gaps, "expon", args=(0.0, fitted_mean))
         result["inter_event_exponential_ks"] = {
             "statistic": float(test.statistic),
-            "p_value": float(test.pvalue),
             "observations": int(gaps.size),
-            "interpretation": "exploratory; parameter estimated from this catalog",
+            "fitted_mean_inter_event_days": fitted_mean,
+            "interpretation": (
+                "descriptive distance to a fitted exponential distribution only; "
+                "no p-value because the rate is estimated from this sample and "
+                "interval independence is not established"
+            ),
         }
     else:
         result["inter_event_exponential_ks"] = None
