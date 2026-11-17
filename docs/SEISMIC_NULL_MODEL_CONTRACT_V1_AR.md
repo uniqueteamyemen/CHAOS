@@ -140,3 +140,19 @@
 - `real_data_stress_pipeline/run_pipeline.py`
 - `real_data_stress_pipeline/results/real_data_stress_manifest.json`
 - `docs/P2.2_STATISTICAL_AUDIT_AR.md`
+
+## 11. العقد الآلي واختباراته
+
+حُوّلت القواعد الأساسية إلى ملف machine-readable:
+
+`real_data_stress_pipeline/contracts/seismic_null_model_contract_v1.json`
+
+واختبارات العقد:
+
+```bash
+python -m unittest discover -s tests/seismic_null_contract -p 'test_*.py' -v
+```
+
+Workflow المعزول: [Seismic null contract CI](https://github.com/uniqueteamyemen/CHAOS/actions/runs/44168629916).
+
+حالة العقد تظل `design_contract_not_yet_validated` إلى أن تُجلب وتُفحص بيانات الكتالوج، وتُقدّر حدود الاكتمال، وتنجح نماذج العدم في اختبارات الملاءمة. نجاح اختبارات JSON يعني سلامة العقد البرمجي فقط، ولا يعني صلاحية نموذج ETAS أو أي نتائج علمية.
