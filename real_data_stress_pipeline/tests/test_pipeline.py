@@ -1,8 +1,10 @@
 import unittest
 import numpy as np
+from io import BytesIO
+from openpyxl import Workbook
 
 from real_data_stress_pipeline.run_pipeline import (
-    g0, g1, boot, longest_run, month, label_month, returns, stationary_sample, wilson, series_category, shock_eval,
+    g0, g1, boot, parse_pink, longest_run, month, label_month, returns, stationary_sample, wilson, series_category, shock_eval,
 )
 
 class StressPipelineContractTests(unittest.TestCase):
@@ -104,6 +106,32 @@ class StressPipelineContractTests(unittest.TestCase):
         matched = [x for x in matches if x["matched"]]
         self.assertEqual(len(matched), 1)
         self.assertEqual(matched[0]["event_id"], "COVID_2020")
+
+
+    def test_pink_sheet_two_row_header_preserves_commodity_codes_and_units(self):
+        workbook = Workbook()
+        sheet = workbook.active
+        sheet.title = "Monthly Prices"
+        sheet.append(["World Bank Commodity Prices"])
+        sheet.append(["Metadata row"])
+        sheet.append(["Metadata row"])
+        sheet.append(["Period", "OIL_BRENT", "iCOPPER", "iWHEAT_US_HRW"])
+        sheet.append(["", "$/bbl", "$/mt", "$/mt"])
+        sheet.append(["1980M01", 10.0, 20.0, 30.0])
+        sheet.append(["1980M02", 11.0, 21.0, 31.0])
+        payload = BytesIO()
+        workbook.save(payload)
+        parsed, layout = parse_pink(payload.getvalue())
+        self.assertEqual(set(parsed), {"OIL_BRENT", "iCOPPER", "iWHEAT_US_HRW"})
+        self.assertEqual(parsed["OIL_BRENT"][1980 * 12], 10.0)
+        self.assertEqual(layout["units_by_series"]["OIL_BRENT"], "$/bbl")
+        self.assertEqual(layout["units_by_series"]["iCOPPER"], "$/mt")
+        workbook.close()
+
+    def test_native_pink_sheet_codes_are_categorized(self):
+        self.assertEqual(series_category({"domain": "commodity", "name": "OIL_BRENT"}), "energy")
+        self.assertEqual(series_category({"domain": "commodity", "name": "iCOPPER"}), "metals")
+        self.assertEqual(series_category({"domain": "commodity", "name": "iWHEAT_US_HRW"}), "agriculture_food")
 
 if __name__ == "__main__":
     unittest.main()
