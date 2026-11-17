@@ -4,7 +4,7 @@ from io import BytesIO
 from openpyxl import Workbook
 
 from real_data_stress_pipeline.run_pipeline import (
-    g0, g1, boot, parse_pink, longest_run, month, label_month, returns, stationary_sample, wilson, series_category, shock_eval, applicable_shock_series,
+    g0, g1, boot, parse_pink, longest_run, month, label_month, returns, stationary_sample, wilson, series_category, shock_eval, applicable_shock_series, aggregate,
 )
 
 class StressPipelineContractTests(unittest.TestCase):
@@ -148,6 +148,65 @@ class StressPipelineContractTests(unittest.TestCase):
         contract = {"events": [{"id": "COVID", "applicable_categories": ["macro"]}]}
         item = {"source": "gem", "frequency": "monthly", "domain": "macro", "name": "CPI"}
         self.assertTrue(applicable_shock_series(item, contract))
+
+    def test_bootstrap_aggregation_never_pools_different_cohorts(self):
+        modes = ("fast", "markov_cusum", "consensus")
+
+        def make_series(cohort, alarms, runs=1000):
+            return {
+                "cohort": cohort,
+                "duration_years": 10.0,
+                "g1": {"passed": True},
+                "detector": {
+                    mode: {
+                        "alarm_count": 0,
+                        "unassociated_structural_alarm_count": None,
+                        "shock_matches": [],
+                    }
+                    for mode in modes
+                },
+                "bootstrap": {
+                    "by_mode": {
+                        mode: {"alarms": alarms, "runs": runs}
+                        for mode in modes
+                    }
+                },
+            }
+
+        result = aggregate(
+            [
+                make_series("strict_long_monthly", 200),
+                make_series("seismic_event_interarrival", 800),
+            ],
+            {"events": []},
+        )
+
+        commodity = result["by_cohort"]["strict_long_monthly"]["markov_cusum"]
+        seismic = result["by_cohort"]["seismic_event_interarrival"]["markov_cusum"]
+
+        self.assertAlmostEqual(
+            commodity["conditional_bootstrap_alarm_probability_mean"], 0.20
+        )
+        self.assertAlmostEqual(
+            seismic["conditional_bootstrap_alarm_probability_mean"], 0.80
+        )
+        self.assertEqual(commodity["bootstrap_eligible_series"], 1)
+        self.assertEqual(seismic["bootstrap_eligible_series"], 1)
+        self.assertNotIn("bootstrap_fpr", result["by_mode"]["markov_cusum"])
+        self.assertNotIn(
+            "conditional_bootstrap_alarm_probability_mean",
+            result["by_mode"]["markov_cusum"],
+        )
+
+    def test_bootstrap_output_uses_conditional_alarm_probability_name(self):
+        result = boot(
+            np.random.default_rng(12).normal(size=120),
+            "bootstrap-name-test",
+            12,
+            {"passed": True, "status": "SCREEN_PASS"},
+        )
+        self.assertIn("alarm_probability", result["by_mode"]["fast"])
+        self.assertNotIn("fpr", result["by_mode"]["fast"])
 
 if __name__ == "__main__":
     unittest.main()
