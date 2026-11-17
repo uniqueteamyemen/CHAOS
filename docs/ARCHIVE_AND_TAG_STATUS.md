@@ -8,34 +8,42 @@
 | Reference | Target | Status |
 |---|---|---|
 | `phase1-detector-freeze-phase2-real-data` | `51e4278309b7d32917b85903323a63f81d9e9b6a` | Existing Phase 1 freeze branch; preserved |
-| `main-phase2` | `51e4278309b7d32917b85903323a63f81d9e9b6a` at creation | Created from the exact Phase 1 freeze commit; Phase 2 changes are committed only after this baseline |
-| `archive/phase1-detector-freeze-v1.0` | `51e4278309b7d32917b85903323a63f81d9e9b6a` | Additional archive-pointer branch created |
+| `archive/phase1-detector-freeze-v1.0` | `51e4278309b7d32917b85903323a63f81d9e9b6a` | Archive-pointer branch; movable ref |
+| `main-phase2` | `51e4278309b7d32917b85903323a63f81d9e9b6a` at creation | Created from the exact Phase 1 baseline; Phase 2 commits are descendants |
 
-The archive-pointer branch is a branch, not an annotated or signed Git tag. Branch references can move and must not be described as immutable tags.
+## Phase 1 tag and GitHub Release
 
-## Git tags and GitHub Releases
+<badge>Created and verified</badge>
 
-At verification, the GitHub tags query returned no tags and the Releases endpoint returned an empty list. The connected GitHub toolset available in this execution exposes file/branch operations but does not expose creation of annotated Git tag objects, tag references, or GitHub Releases. Therefore, no tag or release is claimed as created.
+- Annotated tag: [`phase1-detector-freeze-v1.0`](https://github.com/uniqueteamyemen/CHAOS/releases/tag/phase1-detector-freeze-v1.0)
+- Tag object SHA: `96301238ef79acd7ef39ec91e84ddd945f22b4aa`
+- Tag target: `51e4278309b7d32917b85903323a63f81d9e9b6a` — exact canonical Phase 1 commit.
+- GitHub Release: https://github.com/uniqueteamyemen/CHAOS/releases/tag/phase1-detector-freeze-v1.0
+- The tag is annotated but unsigned (`verification: unsigned`).
+- GitHub currently reports the release as `immutable: false`; the tag ref and release are therefore not protected against an administrator moving or deleting them. Do not describe them as cryptographically signed or platform-locked.
 
-To complete the Git tag step from a Git client with push access:
+The P2.2 workflow creates the tag only if absent, verifies any pre-existing tag points to the exact baseline, creates the release if absent, and attaches:
+- `docs/PHASE1_DETECTOR_FREEZE.md`
+- `structural_engine/isolated_break_detector_v1/results/real_data_transition_scan.json`
+- `structural_engine/isolated_break_detector_v1/results/SHA256SUMS.txt`
 
-```bash
-git fetch origin
-git tag -a phase1-detector-freeze-v1.0 51e4278309b7d32917b85903323a63f81d9e9b6a -m "CHAOS Phase 1 detector freeze v1.0"
-git push origin refs/tags/phase1-detector-freeze-v1.0
-```
-
-Then publish a GitHub Release targeting that tag and attach the Phase 1 freeze report, original real-data transition scan, and SHA-256 inventory. The release must target the canonical freeze commit, not the later Phase 2 branch head.
+The workflow step re-applies these release assets with `gh release upload --clobber` on subsequent runs to keep the release complete.
 
 ## Phase 1 integrity
 
-- Phase 1 branch and archive-pointer branch remain separate from Phase 2 development.
+- The Phase 1 freeze branch and archive-pointer branch remain separate from Phase 2 development.
 - The frozen detector implementation and historical `experiments/` tree are read-only for this work.
 - Phase 2 source code, configuration, tests, and outputs live outside `experiments/`.
-- The Phase 1 report and SHA-256 inventory remain the baseline evidence.
+- The Phase 1 report, transition scan, and SHA-256 inventory remain the baseline evidence.
+- A Git tag is a ref to an immutable Git object, but the tag ref itself can be moved unless a repository tag ruleset protects it.
 
 ## Protection status
 
-The CI immutability guard is maintained at `.github/workflows/experiments-immutable.yml`. It detects changes to `experiments/**` on pull requests and direct pushes to `main-phase2`.
+The CI immutability guard is maintained at `.github/workflows/experiments-immutable.yml`. It detects changes to `experiments/**` on pull requests and direct pushes to `main-phase2`; the workflow has passed once for the phase2 setup commit.
 
-The connected GitHub integration returned HTTP 403 for branch-protection reads and does not expose a branch-protection/ruleset mutation action. Therefore, the guard workflow is present, but a GitHub ruleset that blocks merges when the guard fails has **not** been enabled or verified. Enable repository ruleset protection in GitHub settings for `main-phase2`, require the immutability check, disable force-push/deletion for archive references, and require owner approval for protected paths.
+The connected GitHub integration returned HTTP 403 for branch-protection reads and does not expose a branch-protection/ruleset mutation action. Therefore:
+- The CI guard exists and runs, but a GitHub ruleset requiring that check has **not** been enabled or verified.
+- No GitHub tag ruleset protecting Phase 1 or P2.2 tags has been enabled or verified.
+- CODEOWNERS routes review requests to `@uniqueteamyemen`, but does not itself enforce approval.
+
+For platform-level protection, configure GitHub repository rulesets for `main-phase2` and the release tags: require the `experiments-immutable` check, block force-push and deletion, and require owner review for protected files and paths.
