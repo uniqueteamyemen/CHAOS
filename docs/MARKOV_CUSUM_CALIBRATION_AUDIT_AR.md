@@ -111,3 +111,23 @@
 - `break_detector_v1.py` — frozen adapter.
 - `real_data_stress_pipeline/run_pipeline.py` — original P2.2 analysis implementation.
 - `real_data_stress_pipeline/results/real_data_stress_manifest.json` — per-series output and bootstrap totals.
+
+## 8. أداة التدقيق القابلة للتشغيل
+
+أُضيفت أداة قراءة فقط لحساب المؤشرات من ملف manifest دون إعادة تشغيل الكاشف أو تعديل البيانات:
+
+```bash
+python scripts/audits/p2_2_2_markov_diagnostics.py \
+  real_data_stress_pipeline/results/real_data_stress_manifest.json \
+  --output artifacts/markov_calibration_audit.json
+```
+
+وتُشغّل اختبارات الأداة عبر:
+
+```bash
+python -m unittest discover -s tests/audits -p 'test_*.py' -v
+```
+
+تستبعد الأداة السلاسل التي لم تجتز G1 من المقارنة المقابلة لـBootstrap، لكنها تعرض أيضاً مؤشرات كل سلاسل الفوج منفصلة حتى لا تختفي السلاسل المستبعدة من التدقيق. لا تنتج أي حقل باسم FPR ولا تجمع أفواجاً مختلفة.
+
+فحص CI المعزول: [Markov audit contract tests](https://github.com/uniqueteamyemen/CHAOS/actions/runs/44168191298).
