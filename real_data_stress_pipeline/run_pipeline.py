@@ -395,16 +395,7 @@ def normalized_csv(items):
    for i,(t,v) in enumerate(zip(x["axis"],x["values"])):w.writerow([x["id"],x["source"],x["cohort"],i,t,("" if x["source"]=="pink_sheet" else format(float(v),".17g")),x["sha256"]])
  return {"path":str(p.relative_to(ROOT)),"sha256":hash_file(p),"rows":sum(len(x["values"]) for x in items)}
 def aggregate(results,contract):
- out={"by_mode":{},"shocks":{},"by_cohort":{}}
- for mode in BreakDetectorV1.MODES:
-  alarms=0;years=0.0;unassociated=0;matched_years=0.0;matched_series=0
-  for series in results:
-   alarms+=series["detector"][mode]["alarm_count"];years+=series["duration_years"]
-   unassociated_count=series["detector"][mode]["unassociated_structural_alarm_count"]
-   if unassociated_count is not None:
-    unassociated+=unassociated_count;matched_years+=series["duration_years"];matched_series+=1
-  # Cross-domain bootstrap probabilities are deliberately NOT pooled here.
-  out["by_mode"][mode]={"series":len(results),"g1_passed_series":sum(1 for series in results if series["g1"].get("passed")),"raw_alarms":alarms,"alarms_per_decade":alarms/years*10 if years else None,"shock_matched_cohort_series":matched_series,"unassociated_structural_alarms":unassociated if matched_series else None,"unassociated_structural_alarms_per_decade":unassociated/matched_years*10 if matched_years else None}
+ out={"shocks":{},"by_cohort":{}}
  for target in contract["events"]:
   out["shocks"][target["id"]]={}
   for mode in BreakDetectorV1.MODES:
@@ -453,7 +444,9 @@ def aggregate(results,contract):
 def make_report(m):
  z=m.get("aggregate",{})
  lines=[
-  "# تقرير اختبار الضغط التاريخي — CHAOS P2.2",
+  "# تقرير اختبار الضغط التاريخي — CHAOS P2.2.1",
+  "",
+  "> تصحيح التجميع: احتمالات الإنذار في Stationary Bootstrap معروضة لكل فوج على حدة، وليست FPR مثبتة بحقيقة أرضية. لا تجمع أفواج السلع والزلازل في مقياس واحد. راجع [التدقيق الإحصائي](docs/P2.2_STATISTICAL_AUDIT_AR.md).",
   "",
   f"وقت التشغيل UTC: {m.get('run_timestamp_utc','—')}",
   f"Commit المصدر: {m.get('git_commit','—')}",
@@ -574,7 +567,7 @@ def main():
  dependencies=dependency_inventory()
  DEPENDENCIES.write_text(json.dumps(dependencies,ensure_ascii=False,indent=2)+"\n",encoding="utf-8")
  m={
-  "version":"1.4","pipeline_config":PIPELINE_CONFIG,"gem_config":GEM_CONFIG,"seismic_config":SEISMIC_CONFIG,
+  "version":"1.5","pipeline_config":PIPELINE_CONFIG,"gem_config":GEM_CONFIG,"seismic_config":SEISMIC_CONFIG,
   "run_timestamp_utc":stamp(),
   "git_commit":os.getenv("GITHUB_SHA","local-unresolved"),
   "branch":os.getenv("GITHUB_REF_NAME","local"),
