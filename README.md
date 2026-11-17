@@ -1,5 +1,7 @@
 # CHAOS
 
+**Proprietary — All Rights Reserved.** Original project materials are owned by `uniqueteamyemen`; see [LICENSE](LICENSE) and [COPYRIGHT_AND_IP_NOTICE.md](COPYRIGHT_AND_IP_NOTICE.md). Third-party data and dependencies remain subject to their own terms.
+
 **CHAOS** is the independent workspace for the governed historical-data layer, readiness gates, experimental contracts, and structural-analysis prototypes that were previously developed under the working name `market-intelligence-engine`.
 
 > The original `market-intelligence-engine` repository is not copied as an implementation target and is not modified by this project. CHAOS is an independent research and data-readiness repository.
