@@ -360,11 +360,17 @@ def eval_series(item,contract):
   duration=max(1e-9,(times[-1]-times[0]).total_seconds()/(86400*365.2425))
  for mode,v in modes.items():
   v["alarms_per_decade"]=v["alarm_count"]/duration*10
-  v["shock_matches"]=shock_eval(item,v["events"],contract) if item["frequency"]=="monthly" and item["source"]!="usgs" else []
+  shock_applicable=item["frequency"]=="monthly" and item["source"]!="usgs"
+  v["shock_matching_applicable"]=shock_applicable
+  v["shock_matches"]=shock_eval(item,v["events"],contract) if shock_applicable else []
   matched_indices={int(match["detection_index"]) for match in v["shock_matches"] if match.get("matched") and match.get("detection_index") is not None}
   v["matched_shock_alarm_count"]=len(matched_indices)
-  v["unassociated_structural_alarm_count"]=max(0,int(v["alarm_count"])-len(matched_indices))
-  v["unassociated_structural_alarms_per_decade"]=v["unassociated_structural_alarm_count"]/duration*10
+  if shock_applicable:
+   v["unassociated_structural_alarm_count"]=max(0,int(v["alarm_count"])-len(matched_indices))
+   v["unassociated_structural_alarms_per_decade"]=v["unassociated_structural_alarm_count"]/duration*10
+  else:
+   v["unassociated_structural_alarm_count"]=None
+   v["unassociated_structural_alarms_per_decade"]=None
  block=MONTH_BLOCK if item["frequency"]=="monthly" else EVENT_BLOCK
  return {"id":item["id"],"source":item["source"],"name":item["name"],"cohort":item["cohort"],"domain":item["domain"],"frequency":item["frequency"],"observations":len(item["values"]),"duration_years":duration,"first":item["axis"][0],"last":item["axis"][-1],"sha256":item["sha256"],"quality":item["quality"],"g1":g1_result,"detector":modes,"bootstrap":boot(item["values"],item["id"]+str(item["sha256"]),block,g1_result)}
 def normalized_csv(items):
@@ -377,11 +383,14 @@ def normalized_csv(items):
 def aggregate(results,contract):
  out={"by_mode":{},"shocks":{}}
  for mode in BreakDetectorV1.MODES:
-  alarms=0;years=0.0;hits=0;total=0
+  alarms=0;years=0.0;hits=0;total=0;unassociated=0;matched_years=0.0;matched_series=0
   for series in results:
    alarms+=series["detector"][mode]["alarm_count"];years+=series["duration_years"]
    bootstrap=series["bootstrap"]["by_mode"][mode];hits+=bootstrap["alarms"];total+=bootstrap["runs"]
-  out["by_mode"][mode]={"series":len(results),"g1_passed_series":sum(1 for series in results if series["g1"].get("passed")),"raw_alarms":alarms,"alarms_per_decade":alarms/years*10 if years else None,"unassociated_structural_alarms":sum(series["detector"][mode]["unassociated_structural_alarm_count"] for series in results),"unassociated_structural_alarms_per_decade":sum(series["detector"][mode]["unassociated_structural_alarm_count"] for series in results)/years*10 if years else None,"bootstrap_fpr":hits/total if total else None,"bootstrap_wilson95":wilson(hits,total),"bootstrap_alarm_replicates":hits,"bootstrap_replicates":total}
+   unassociated_count=series["detector"][mode]["unassociated_structural_alarm_count"]
+   if unassociated_count is not None:
+    unassociated+=unassociated_count;matched_years+=series["duration_years"];matched_series+=1
+  out["by_mode"][mode]={"series":len(results),"g1_passed_series":sum(1 for series in results if series["g1"].get("passed")),"raw_alarms":alarms,"alarms_per_decade":alarms/years*10 if years else None,"shock_matched_cohort_series":matched_series,"unassociated_structural_alarms":unassociated if matched_series else None,"unassociated_structural_alarms_per_decade":unassociated/matched_years*10 if matched_years else None,"bootstrap_fpr":hits/total if total else None,"bootstrap_wilson95":wilson(hits,total),"bootstrap_alarm_replicates":hits,"bootstrap_replicates":total}
  for target in contract["events"]:
   out["shocks"][target["id"]]={}
   for mode in BreakDetectorV1.MODES:
@@ -394,11 +403,14 @@ def aggregate(results,contract):
   subset=[series for series in results if series["cohort"]==cohort]
   cohort_stats={}
   for mode in BreakDetectorV1.MODES:
-   alarms=0;years=0.0;hits=0;total=0
+   alarms=0;years=0.0;hits=0;total=0;unassociated=0;matched_years=0.0;matched_series=0
    for series in subset:
     alarms+=series["detector"][mode]["alarm_count"];years+=series["duration_years"]
     boot=series["bootstrap"]["by_mode"][mode];hits+=boot["alarms"];total+=boot["runs"]
-   cohort_stats[mode]={"series":len(subset),"g1_passed_series":sum(1 for series in subset if series["g1"].get("passed")),"alarms":alarms,"alarms_per_decade":alarms/years*10 if years else None,"unassociated_structural_alarms":sum(series["detector"][mode]["unassociated_structural_alarm_count"] for series in subset),"unassociated_structural_alarms_per_decade":sum(series["detector"][mode]["unassociated_structural_alarm_count"] for series in subset)/years*10 if years else None,"bootstrap_fpr":hits/total if total else None,"bootstrap_wilson95":wilson(hits,total)}
+    unassociated_count=series["detector"][mode]["unassociated_structural_alarm_count"]
+    if unassociated_count is not None:
+     unassociated+=unassociated_count;matched_years+=series["duration_years"];matched_series+=1
+   cohort_stats[mode]={"series":len(subset),"g1_passed_series":sum(1 for series in subset if series["g1"].get("passed")),"alarms":alarms,"alarms_per_decade":alarms/years*10 if years else None,"shock_matched_cohort_series":matched_series,"unassociated_structural_alarms":unassociated if matched_series else None,"unassociated_structural_alarms_per_decade":unassociated/matched_years*10 if matched_years else None,"bootstrap_fpr":hits/total if total else None,"bootstrap_wilson95":wilson(hits,total)}
   out["by_cohort"][cohort]=cohort_stats
  return out
 
