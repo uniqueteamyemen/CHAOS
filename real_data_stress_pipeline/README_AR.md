@@ -24,8 +24,11 @@
 - Monthly seismic event counts are a separate secondary representation and are never substituted for inter-event intervals.
 - G1 passes only when ADF rejects a unit root at 5% and KPSS does not reject level stationarity at 5%; this is a preliminary screen, not proof of strict stationarity.
 - Stationary Block-Bootstrap is skipped when G1 does not pass. The G1 result itself and p-values are retained per series.
+- G1: ADF p-value < 0.05 and KPSS p-value ≥ 0.05. This is a preliminary screen, not proof of strict stationarity.
+- Stationary Block-Bootstrap: 999 replicates by default; mean block length 12 months for market returns and 25 event intervals for seismic series.
 - No missing-value imputation, interpolation, or artificial extension is permitted.
 - Failed sources and rejected series remain visible in the report with explicit reasons.
+- Config files under `config/` are the sole source of runtime cohort, source, window, and bootstrap defaults; the report and manifest retain the exact config objects.
 
 ## Historical shock anchors
 
@@ -59,6 +62,6 @@ USGS and GEM API raw responses are written to `artifacts/real_data_stress/raw/` 
 
 ## Interpretation limits
 
-The bootstrap asks how often the frozen detector alarms on stationary-block-resampled versions of each observed sequence. It does not prove that the original sequence is stationary, does not remove every possible historical regime effect, and does not establish a causal mechanism. For earthquake catalogs, event-time interval resampling is only a conditional diagnostic; a defensible seismic null additionally requires point-process/declustering review, catalog-completeness analysis, and sensitivity across magnitude thresholds.
+The ADF/KPSS pair is a conservative preliminary screen; passing it does not prove strict stationarity. The bootstrap asks how often the frozen detector alarms on stationary-block-resampled versions of each eligible observed sequence. It does not remove every possible historical regime effect and does not establish a causal mechanism. Bootstrap outputs are not computed for G1-failing series. The report distinguishes unassociated alarms outside the predeclared shock-anchor windows from scientifically established false positives. For earthquake catalogs, event-time interval resampling is only a conditional diagnostic; a defensible seismic null additionally requires point-process/declustering review, catalog-completeness analysis, and sensitivity across magnitude thresholds.
 
 The detector's `CONFIRMED` status remains internal to its own rules. A detected break is not automatically a validated historical shock, an early warning, a forecast, or a probability of future events.
