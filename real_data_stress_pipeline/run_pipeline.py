@@ -252,23 +252,46 @@ def boot(x,seed,block):
  for v in r.values():
   v["fpr"]=v["alarms"]/v["runs"] if v["runs"] else None;v["wilson95"]=wilson(v["alarms"],v["runs"])
  return {"method":"Politis-Romano stationary bootstrap","replicates":REPS,"mean_block_length":block,"by_mode":r,"seed_sha256":hashlib.sha256(seed.encode()).hexdigest(),"note":"Conditional resampling diagnostic; stationarity and domain-specific null assumptions require separate validation."}
-def shock_eval(axis,events,contract):
+def series_category(item):
+ if item["domain"]=="macro":return "macro"
+ name=item["name"].casefold()
+ energy=("crude oil","brent","wti","dubai","coal","natural gas","liquefied natural gas","lng","gasoline","diesel","heating oil","fuel oil","kerosene","propane")
+ metals=("aluminum","aluminium","copper","iron ore","lead","nickel","tin","zinc","steel","gold","silver","platinum","palladium")
+ agriculture=("wheat","rice","maize","corn","soy","soya","soybean","sugar","coffee","cocoa","tea","palm oil","copra","coconut","cotton","meat","beef","chicken","poultry","banana","orange","shrimp","fishmeal","sunflower","rapeseed","vegetable oil","fertilizer","phosphate","potash","urea","dap")
+ if any(term in name for term in energy):return "energy"
+ if any(term in name for term in metals):return "metals"
+ if any(term in name for term in agriculture):return "agriculture_food"
+ return "other_commodity"
+def shock_eval(item,events,contract):
+ axis=item["axis"];category=series_category(item)
+ eligible={t["id"] for t in contract["events"] if category in t.get("applicable_categories",[])}
+ candidates=[]
+ for anchor_index,target in enumerate(contract["events"]):
+  if target["id"] not in eligible:continue
+  target_month=month(target["anchor_date"][:7])
+  for event_index,event in enumerate(events):
+   if event.get("detection_time") is None:continue
+   try:index=int(event["detection_time"])
+   except (TypeError,ValueError):continue
+   if not 0<=index<len(axis):continue
+   observed_month=month(axis[index])
+   if observed_month is None:continue
+   lead=target_month-observed_month
+   if abs(lead)<=contract["matching_window_months"]:
+    candidates.append((abs(lead),anchor_index,event_index,index,lead,event))
+ candidates.sort(key=lambda value:(value[0],value[1],value[2]))
+ used_anchors=set();used_events=set();matches={}
+ for _,anchor_index,event_index,index,lead,event in candidates:
+  if anchor_index in used_anchors or event_index in used_events:continue
+  used_anchors.add(anchor_index);used_events.add(event_index)
+  target=contract["events"][anchor_index]
+  matches[target["id"]]={"event_id":target["id"],"eligible":True,"matched":True,"detected_month":axis[index],"lead_months":int(lead),"classification":"pre_anchor_signal" if lead>0 else ("same_month_detection" if lead==0 else "post_anchor_detection"),"detector_status":event.get("status")}
  found=[]
  for target in contract["events"]:
-  t=month(target["anchor_date"][:7]);poss=[]
-  for e in events:
-   if e.get("detection_time") is None:continue
-   try:i=int(e["detection_time"])
-   except Exception:continue
-   if not 0<=i<len(axis):continue
-   k=month(axis[i])
-   if k is None:continue
-   lead=t-k
-   if abs(lead)<=contract["matching_window_months"]:poss.append((abs(lead),i,lead,e))
-  if not poss:found.append({"event_id":target["id"],"matched":False});continue
-  _,i,lead,e=min(poss,key=lambda z:(z[0],z[1]))
-  found.append({"event_id":target["id"],"matched":True,"detected_month":axis[i],"lead_months":lead,"classification":"pre_anchor_warning" if lead>0 else ("same_month" if lead==0 else "post_anchor_detection"),"detector_status":e.get("status")})
+  if target["id"] in matches:found.append(matches[target["id"]])
+  else:found.append({"event_id":target["id"],"eligible":target["id"] in eligible,"matched":False,"series_category":category})
  return found
+
 def eval_series(item,contract):
  modes=run_modes(item["values"])
  if item["frequency"]=="monthly":
@@ -278,7 +301,7 @@ def eval_series(item,contract):
   duration=max(1e-9,(times[-1]-times[0]).total_seconds()/(86400*365.2425))
  for mode,v in modes.items():
   v["alarms_per_decade"]=v["alarm_count"]/duration*10
-  v["shock_matches"]=shock_eval(item["axis"],v["events"],contract) if item["frequency"]=="monthly" and item["source"]!="usgs" else []
+  v["shock_matches"]=shock_eval(item,v["events"],contract) if item["frequency"]=="monthly" and item["source"]!="usgs" else []
  block=MONTH_BLOCK if item["frequency"]=="monthly" else EVENT_BLOCK
  return {"id":item["id"],"source":item["source"],"name":item["name"],"cohort":item["cohort"],"domain":item["domain"],"frequency":item["frequency"],"observations":len(item["values"]),"duration_years":duration,"first":item["axis"][0],"last":item["axis"][-1],"sha256":item["sha256"],"quality":item["quality"],"detector":modes,"bootstrap":boot(item["values"],item["id"]+str(item["sha256"]),block)}
 def normalized_csv(items):
@@ -291,16 +314,18 @@ def normalized_csv(items):
 def aggregate(results,contract):
  out={"by_mode":{},"shocks":{}}
  for mode in BreakDetectorV1.MODES:
-  a=years=hits=total=0
-  for s in results:
-   a+=s["detector"][mode]["alarm_count"];years+=s["duration_years"]
-   b=s["bootstrap"]["by_mode"][mode];hits+=b["alarms"];total+=b["runs"]
-  out["by_mode"][mode]={"series":len(results),"raw_alarms":a,"alarms_per_decade":a/years*10 if years else None,"bootstrap_fpr":hits/total if total else None,"bootstrap_wilson95":wilson(hits,total),"bootstrap_alarm_replicates":hits,"bootstrap_replicates":total}
- for t in contract["events"]:
-  out["shocks"][t["id"]]={}
+  alarms=0;years=0.0;hits=0;total=0
+  for series in results:
+   alarms+=series["detector"][mode]["alarm_count"];years+=series["duration_years"]
+   bootstrap=series["bootstrap"]["by_mode"][mode];hits+=bootstrap["alarms"];total+=bootstrap["runs"]
+  out["by_mode"][mode]={"series":len(results),"raw_alarms":alarms,"alarms_per_decade":alarms/years*10 if years else None,"bootstrap_fpr":hits/total if total else None,"bootstrap_wilson95":wilson(hits,total),"bootstrap_alarm_replicates":hits,"bootstrap_replicates":total}
+ for target in contract["events"]:
+  out["shocks"][target["id"]]={}
   for mode in BreakDetectorV1.MODES:
-   ms=[x for s in results for x in s["detector"][mode]["shock_matches"] if x["event_id"]==t["id"] and x["matched"]]
-   out["shocks"][t["id"]][mode]={"matches":len(ms),"pre_anchor":sum(x["lead_months"]>0 for x in ms),"same_month":sum(x["lead_months"]==0 for x in ms),"post_anchor":sum(x["lead_months"]<0 for x in ms),"median_lead":float(np.median([x["lead_months"] for x in ms])) if ms else None,"series_matches":ms}
+   evaluations=[event for series in results for event in series["detector"][mode]["shock_matches"] if event["event_id"]==target["id"] and event.get("eligible")]
+   matched=[event for event in evaluations if event["matched"]]
+   pre=sum(event["lead_months"]>0 for event in matched)
+   out["shocks"][target["id"]][mode]={"eligible_series":len(evaluations),"matches":len(matched),"capture_rate":len(matched)/len(evaluations) if evaluations else None,"capture_rate_pct":100*len(matched)/len(evaluations) if evaluations else None,"pre_anchor":pre,"pre_anchor_rate_pct":100*pre/len(evaluations) if evaluations else None,"same_month":sum(event["lead_months"]==0 for event in matched),"post_anchor":sum(event["lead_months"]<0 for event in matched),"median_lead":float(np.median([event["lead_months"] for event in matched])) if matched else None,"series_matches":matched}
  out["by_cohort"]={}
  for cohort in sorted({series["cohort"] for series in results}):
   subset=[series for series in results if series["cohort"]==cohort]
@@ -308,13 +333,12 @@ def aggregate(results,contract):
   for mode in BreakDetectorV1.MODES:
    alarms=0;years=0.0;hits=0;total=0
    for series in subset:
-    alarms+=series["detector"][mode]["alarm_count"]
-    years+=series["duration_years"]
-    boot_result=series["bootstrap"]["by_mode"][mode]
-    hits+=boot_result["alarms"];total+=boot_result["runs"]
+    alarms+=series["detector"][mode]["alarm_count"];years+=series["duration_years"]
+    boot=series["bootstrap"]["by_mode"][mode];hits+=boot["alarms"];total+=boot["runs"]
    cohort_stats[mode]={"series":len(subset),"alarms":alarms,"alarms_per_decade":alarms/years*10 if years else None,"bootstrap_fpr":hits/total if total else None,"bootstrap_wilson95":wilson(hits,total)}
   out["by_cohort"][cohort]=cohort_stats
  return out
+
 def make_report(m):
  z=m["aggregate"]
  lines=["# تقرير اختبار الضغط التاريخي — CHAOS P2.2","",f"وقت التشغيل UTC: {m['run_timestamp_utc']}  ",f"Commit المصدر: {m['git_commit']}  ","الكاشف المجمد: BreakDetectorV1؛ لا تعديل للمعادلات أو الثوابت.","","## ملخص الجلب والتأهيل","",f"- سلاسل Pink Sheet الطويلة (>500 نقطة): {m['pink_eligible']}.",f"- سلاسل GEM الشهرية الثانوية (≥87 نقطة): {m['gem_eligible']}.",f"- أحزمة USGS المستعلم عنها: {len(m['belts'])}/5؛ سلاسل الفواصل المؤهلة: {m['seismic_eligible']}.",f"- إجمالي السلاسل المشغلة: {len(m['series_results'])}.",f"- الاستبعادات: {len(m['rejected'])}؛ أخطاء المصادر: {len(m['errors'])}.","","## معدل الإنذار مقارنة بالـ Stationary Block-Bootstrap","","| الوضع | السلاسل | الإنذارات المرصودة | الإنذارات لكل عقد | Bootstrap FPR | Wilson 95% |","|---|---:|---:|---:|---:|---:|"]
@@ -329,10 +353,11 @@ def make_report(m):
    x=by_mode[mode];fpr=f"{x['bootstrap_fpr']*100:.2f}%" if x["bootstrap_fpr"] is not None else "—"
    rate=f"{x['alarms_per_decade']:.4f}" if x["alarms_per_decade"] is not None else "—"
    lines.append(f"| {cohort} | {label} | {x['series']} | {x['alarms']} | {rate} | {fpr} |")
- lines += ["","## مطابقة مراسي الصدمات التاريخية","","المطابقة ضمن ±12 شهراً من المراسي المحددة قبل التشغيل. المهلة الموجبة تعني كشفاً قبل المرساة؛ الكشف اللاحق تأخير وليس إنذاراً مبكراً.","","| المرساة | الوضع | السلاسل المطابقة | قبل المرساة | الشهر نفسه | بعد المرساة | وسيط المهلة |","|---|---|---:|---:|---:|---:|---:|"]
+ lines += ["","## مطابقة مراسي الصدمات التاريخية","","تُحترم فئات الأحداث المثبتة مسبقاً في العقد، وتُطابق الإشارات واحداً لواحد ضمن ±12 شهراً؛ لا يمكن إعادة استخدام إنذار لمرساتين. نسبة الالتقاط هي نسبة السلاسل المؤهلة التي سجلت كشفاً داخل النافذة. نسبة ما قبل المرساة تقيس الإشارات التي سبقت التاريخ المرجعي فعلياً، ولا تعني وحدها إنذاراً تنبؤياً مستقلاً.","","| المرساة | الوضع | المؤهلة | المطابقة ±12 شهر | نسبة الالتقاط | قبل المرساة | نسبة السابق | نفس الشهر | بعد المرساة | وسيط lead |","|---|---|---:|---:|---:|---:|---:|---:|---:|---:|"]
  for eid,by in z["shocks"].items():
   for mode,label in (("fast","Fast"),("markov_cusum","Markov"),("consensus","Consensus")):
-   x=by[mode];lines.append(f"| {eid} | {label} | {x['matches']} | {x['pre_anchor']} | {x['same_month']} | {x['post_anchor']} | {x['median_lead'] if x['median_lead'] is not None else '—'} |")
+   x=by[mode];cap=f"{x['capture_rate_pct']:.1f}%" if x["capture_rate_pct"] is not None else "—";pre=f"{x['pre_anchor_rate_pct']:.1f}%" if x["pre_anchor_rate_pct"] is not None else "—"
+   lines.append(f"| {eid} | {label} | {x['eligible_series']} | {x['matches']} | {cap} | {x['pre_anchor']} | {pre} | {x['same_month']} | {x['post_anchor']} | {x['median_lead'] if x['median_lead'] is not None else '—'} |")
  lines += ["","المراسي تواريخ سياقية عامة وليست ادعاءً أن جميع السلع تعرضت لصدمة في التاريخ نفسه. المطابقة لا تثبت السببية.","","## أحزمة USGS","","| الحزام | الأحداث | البداية | النهاية |","|---|---:|---|---|"]
  for b in m["belts"]:lines.append(f"| {b['name']} | {b['events']} | {b['start'] or '—'} | {b['end'] or '—'} |")
  lines += ["","تُختبر أحزمة USGS بتمثيلين مستقلين: الفواصل بين الأحداث بالأيام، والعدّ الشهري الثانوي داخل نافذة الاستعلام المكتملة. معدل الإنذار لكل عقد في سلسلة الفواصل يستخدم المدة الفعلية بين أول وآخر حدث. Stationary Bootstrap للفواصل تشخيص مشروط فقط، ويجب استكماله بتحليل اكتمال الكتالوج والتجمعات ونماذج point-process.","","## حدود الاستنتاج","","1. CONFIRMED قرار داخلي للكاشف وليس تحققاً مستقلاً من صدمة تاريخية.", "2. حساب المهلة يستخدم وقت الكشف الفعلي لا estimated onset.", "3. التواريخ التاريخية المنقحة حالياً لا تثبت أن البيانات ذاتها كانت متاحة في وقت الحدث؛ الاختبار الحقيقي يتطلب نسخ point-in-time.", "4. لا ينتج هذا التشغيل نموذجاً احتمالياً أو إنذاراً تشغيلياً.", "5. ملفات experiments والكاشف المجمد لم تُعدّل.", "6. GEM حد تغطيته المعلن 1990–2023؛ لذا يُعامل كفوج ثانوي ≥87 نقطة وليس ضمن فوج Pink Sheet الصارم >500 نقطة.","","## سجل التدقيق",f"- Manifest: {m['manifest_path']}",f"- Normalized inputs: {m['normalized']['path']} SHA-256 {m['normalized']['sha256']}",f"- Checksums: {m['checksums_path']}","- Raw API payloads: مرفقة ضمن GitHub Actions Artifact؛ ملف Pink Sheet الأصلي بقي في الذاكرة ولم يُنشر لعدم حسم ترخيص إعادة توزيعه.","",f"حالة التشغيل: {m['run_status']}",""]
