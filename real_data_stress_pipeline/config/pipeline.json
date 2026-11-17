@@ -1,11 +1,12 @@
 {
-  "pipeline_version": "1.0",
+  "pipeline_version": "1.1",
   "period_start": "1980-01",
   "period_end": "2024-12",
   "primary_monthly_min_observations_exclusive": 500,
   "general_g0_min_observations_inclusive": 87,
-  "mad_scaled_minimum": 1e-8,
+  "mad_scaled_minimum": 1e-10,
   "stationarity": {
+    "method": "ADF plus KPSS",
     "adf_significance": 0.05,
     "kpss_significance": 0.05,
     "bootstrap_requires_adf_p_less_than": 0.05,
@@ -14,19 +15,19 @@
   "bootstrap": {
     "replicates": 999,
     "market_mean_block_length": 12,
-    "seismic_mean_block_length_events": 8,
+    "seismic_mean_block_length_events": 25,
     "base_seed": 20261117
   },
   "usgs": {
     "max_results_per_query": 20000,
     "retry_attempts": 6,
-    "timeout_seconds": 90
+    "timeout_seconds": 90,
+    "minimum_magnitude": 4.5
   },
   "world_bank": {
     "gem_source_id": 15,
-    "gem_max_monthly_indicators": 16,
-    "gem_period_start": "1990-01",
-    "gem_period_end": "2023-12"
+    "gem_period_window": "1990M01:2023M12",
+    "gem_general_min_observations": 87
   },
   "shock_matching": {
     "window_months_before_and_after": 12,
