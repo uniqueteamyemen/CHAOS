@@ -137,31 +137,21 @@ jobs:
             chaos-p2-2-source-snapshots.tar.gz
             chaos-p2-2-source-snapshots.tar.gz.sha256
 
-      - name: Commit report, manifest, and checksum inventory
-        if: success()
-        run: |
-          set -euo pipefail
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add REAL_DATA_STRESS_REPORT_AR.md real_data_stress_pipeline/results/
-          if ! git diff --cached --quiet; then
-            git commit -m "data(chaos): archive P2.2 real-data stress results"
-            git push origin HEAD:main-phase2
-          fi
-
-      - name: Create and publish the P2.2 annotated tag and release
+      - name: Create and publish the P2.2.1 audited release
         if: success()
         env:
           GH_TOKEN: ${{ github.token }}
           TAG_NAME: p2.2-historical-stress-v1.0.1
+          SOURCE_SHA: ${{ github.sha }}
         run: |
           set -euo pipefail
-          git fetch origin main-phase2
-          git checkout -B main-phase2 origin/main-phase2
-          TAG_SHA="$(git rev-parse HEAD)"
+          git config user.name "uniqueteamyemen"
+          git config user.email "uniqueteamyemen@gmail.com"
+          git cat-file -e "${SOURCE_SHA}^{commit}"
+          TAG_SHA="${SOURCE_SHA}"
           if ! git ls-remote --exit-code --tags origin "refs/tags/${TAG_NAME}" >/dev/null 2>&1; then
             git tag -a "${TAG_NAME}" "${TAG_SHA}" \
-              -m "CHAOS P2.2.1 cohort-separated bootstrap audit v1.0.1; commit ${TAG_SHA}"
+              -m "CHAOS P2.2.1 cohort-separated bootstrap audit v1.0.1; source commit ${TAG_SHA}"
             git push origin "refs/tags/${TAG_NAME}"
           else
             existing="$(git ls-remote origin "refs/tags/${TAG_NAME}^{}" | awk '{print $1}')"
@@ -169,7 +159,7 @@ jobs:
               existing="$(git ls-remote origin "refs/tags/${TAG_NAME}" | awk '{print $1}')"
             fi
             if [ "${existing}" != "${TAG_SHA}" ]; then
-              echo "Existing P2.2 tag points to a different commit: ${existing}" >&2
+              echo "Existing P2.2.1 tag points to a different commit: ${existing}" >&2
               exit 1
             fi
           fi
