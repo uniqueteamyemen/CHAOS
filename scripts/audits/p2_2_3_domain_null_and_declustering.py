@@ -348,7 +348,10 @@ def fetch_fred(output_dir: Path, api_key: str | None) -> dict[str, Any]:
             if p2.Y0 * 12 <= month_index < (p2.Y1 + 1) * 12:
                 mapping[month_index] = float(value)
         axis, values = contiguous_transformed_series(mapping, config["transform"])
-        raw_info = save_raw(output_dir, f"fred/{series_id}.json", raw)
+        stored_payload = raw.replace(api_key.encode("utf-8"), b"[REDACTED]")
+        raw_info = save_raw(output_dir, f"fred/{series_id}.json", stored_payload)
+        raw_info["source_response_sha256"] = sha256_bytes(raw)
+        raw_info["credential_redacted_before_storage"] = stored_payload != raw
         return {
             "series_id": series_id,
             "name": config["name"],
@@ -422,7 +425,14 @@ def fetch_eia(output_dir: Path, api_key: str | None) -> dict[str, Any]:
             if p2.Y0 * 12 <= month_index < (p2.Y1 + 1) * 12:
                 mapping[month_index] = float(value)
         axis, values = contiguous_transformed_series(mapping, "log_difference")
-        raw_info = save_raw(output_dir, f"eia/{series_id.replace('.', '_')}.json", raw)
+        # EIA may echo request parameters, including api_key, in its response.
+        # Keep the exact source-response hash but never persist the credential.
+        stored_payload = raw.replace(api_key.encode("utf-8"), b"[REDACTED]")
+        raw_info = save_raw(
+            output_dir, f"eia/{series_id.replace('.', '_')}.json", stored_payload
+        )
+        raw_info["source_response_sha256"] = sha256_bytes(raw)
+        raw_info["credential_redacted_before_storage"] = stored_payload != raw
         return {
             "series_id": series_id,
             "status": "FETCHED",
