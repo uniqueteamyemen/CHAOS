@@ -12,17 +12,14 @@ def changed_paths(base: str, head: str, triple_dot: bool) -> list[tuple[str, lis
     if not base or not head:
         raise ValueError("both --base and --head are required")
 
-    if triple_dot:
-        revision = f"{base}...{head}"
-    else:
-        revision = f"{base} {head}"
+    revisions = [f"{base}...{head}"] if triple_dot else [base, head]
 
     command = [
         "git",
         "diff",
         "--name-status",
         "--find-renames",
-        revision,
+        *revisions,
         "--",
         "experiments/",
     ]
