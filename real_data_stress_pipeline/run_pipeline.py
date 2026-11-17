@@ -20,7 +20,7 @@ Y0,Y1=1980,2024
 PINK_MIN=int(os.getenv("STRESS_MIN_COMMODITY_POINTS","501"))
 GEM_MIN=int(os.getenv("STRESS_MIN_GEM_POINTS","87"))
 SEISMIC_MIN=87
-REPS=int(os.getenv("STRESS_BOOTSTRAP_REPLICATES","999"))
+REPS=int(os.getenv("STRESS_BOOTSTRAP_REPLICATES","199"))
 MONTH_BLOCK=int(os.getenv("STRESS_BOOTSTRAP_MEAN_BLOCK_MONTHS","12"))
 EVENT_BLOCK=int(os.getenv("STRESS_BOOTSTRAP_MEAN_BLOCK_EVENTS","25"))
 MAG=float(os.getenv("STRESS_USGS_MIN_MAGNITUDE","4.5"))
@@ -152,7 +152,14 @@ def parse_pink(data):
  if ws is None:raise ValueError("Pink Sheet workbook does not contain Monthly Prices")
  rows=list(ws.iter_rows(values_only=True));first=next((i for i,r in enumerate(rows) if r and month(r[0]) is not None),None)
  if first is None:raise ValueError("Pink Sheet monthly date column not found")
- header=rows[max(0,first-1)];out=defaultdict(dict);count=0
+ # Native Pink Sheet has two physical header rows: commodity code/name,
+ # followed by units. The row immediately above the first YYYYМmm record is
+ # the units row, NOT the commodity-name row.
+ header_index=first-2
+ units_index=first-1
+ if header_index<0:raise ValueError("Pink Sheet two-row header not found before first monthly record")
+ header=rows[header_index];units=rows[units_index] if units_index>=0 else ()
+ out=defaultdict(dict);count=0;unit_map={}
  for row in rows[first:]:
   if not row:continue
   m=month(row[0])
@@ -161,10 +168,16 @@ def parse_pink(data):
   for j,v in enumerate(row[1:],1):
    x=number(v)
    if x is None:continue
-   name=str(header[j]).strip() if j<len(header) and header[j] is not None else f"column_{j}"
+   raw_name=header[j] if j<len(header) else None
+   name=str(raw_name).strip() if raw_name is not None else ""
+   if not name or name.casefold() in {"none","nan"}:continue
+   unit=units[j] if j<len(units) and units[j] is not None else None
+   if name in out and unit_map.get(name)!=unit:
+    raise ValueError(f"duplicate_native_series_header_with_conflicting_units:{name}")
+   unit_map[name]=str(unit).strip() if unit is not None else None
    out[name][m]=x
  wb.close()
- return dict(out),{"sheet":"Monthly Prices","first_data_row":first+1,"monthly_rows":count,"series_columns":len(out)}
+ return dict(out),{"sheet":"Monthly Prices","first_data_row":first+1,"commodity_header_row":header_index+1,"units_row":units_index+1,"monthly_rows":count,"series_columns":len(out),"units_by_series":unit_map}
 def pink(m):
  url,discovery=discover_pink()
  try:
