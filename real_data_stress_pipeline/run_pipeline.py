@@ -18,31 +18,29 @@ RAW=ROOT/"artifacts"/"real_data_stress"/"raw"
 DERIVED=ROOT/"artifacts"/"real_data_stress"/"derived"
 OUT=HERE/"results"; REPORT=ROOT/"REAL_DATA_STRESS_REPORT_AR.md"
 MANIFEST=OUT/"real_data_stress_manifest.json"; CHECKSUMS=OUT/"SHA256SUMS.txt"; DEPENDENCIES=OUT/"dependency_manifest.json"
-Y0,Y1=1980,2024
-PINK_MIN=int(os.getenv("STRESS_MIN_COMMODITY_POINTS","501"))
-GEM_MIN=int(os.getenv("STRESS_MIN_GEM_POINTS","87"))
-SEISMIC_MIN=87
-REPS=int(os.getenv("STRESS_BOOTSTRAP_REPLICATES","199"))
-MONTH_BLOCK=int(os.getenv("STRESS_BOOTSTRAP_MEAN_BLOCK_MONTHS","12"))
-EVENT_BLOCK=int(os.getenv("STRESS_BOOTSTRAP_MEAN_BLOCK_EVENTS","25"))
-MAG=float(os.getenv("STRESS_USGS_MIN_MAGNITUDE","4.5"))
+PIPELINE_CONFIG=json.loads((HERE/"config"/"pipeline.json").read_text(encoding="utf-8"))
+GEM_CONFIG=json.loads((HERE/"config"/"gem_indicators.json").read_text(encoding="utf-8"))
+SEISMIC_CONFIG=json.loads((HERE/"config"/"seismic_belts.json").read_text(encoding="utf-8"))
+Y0,Y1=int(PIPELINE_CONFIG["period_start"][:4]),int(PIPELINE_CONFIG["period_end"][:4])
+PINK_MIN=int(os.getenv("STRESS_MIN_COMMODITY_POINTS",str(int(PIPELINE_CONFIG["primary_monthly_min_observations_exclusive"])+1)))
+GEM_MIN=int(os.getenv("STRESS_MIN_GEM_POINTS",str(GEM_CONFIG.get("minimum_observations",PIPELINE_CONFIG["world_bank"]["gem_general_min_observations"]))))
+SEISMIC_MIN=int(PIPELINE_CONFIG["general_g0_min_observations_inclusive"])
+REPS=int(os.getenv("STRESS_BOOTSTRAP_REPLICATES",str(PIPELINE_CONFIG["bootstrap"]["replicates"])))
+MONTH_BLOCK=int(os.getenv("STRESS_BOOTSTRAP_MEAN_BLOCK_MONTHS",str(PIPELINE_CONFIG["bootstrap"]["market_mean_block_length"])))
+EVENT_BLOCK=int(os.getenv("STRESS_BOOTSTRAP_MEAN_BLOCK_EVENTS",str(PIPELINE_CONFIG["bootstrap"]["seismic_mean_block_length_events"])))
+MAG=float(os.getenv("STRESS_USGS_MIN_MAGNITUDE",str(SEISMIC_CONFIG["minimum_magnitude"])))
+USGS_QUERY_LIMIT=int(SEISMIC_CONFIG["query_limit"])
+USGS_RETRIES=int(PIPELINE_CONFIG["usgs"]["retry_attempts"])
+USGS_TIMEOUT=int(PIPELINE_CONFIG["usgs"]["timeout_seconds"])
+GEM_SOURCE_ID=int(GEM_CONFIG["world_bank_source_id"])
+GEM_PERIOD_WINDOW=str(GEM_CONFIG["period_window"])
 H=DEFAULT_MARKOV_THRESHOLD
 UA="CHAOS-P2.2/1.0 https://github.com/uniqueteamyemen/CHAOS"
 LANDING="https://www.worldbank.org/en/research/commodity-markets"
 PINK_FALLBACK="https://thedocs.worldbank.org/en/doc/74e8be41ceb20fa0da750cda2f6b9e4e-0050012026/related/CMO-Historical-Data-Monthly.xlsx"
-GEM={
- "CPTOTSAXN":"Consumer price index, total, seasonally adjusted",
- "IPTOTSAKD":"Industrial production, total, seasonally adjusted",
- "DXGSRMRCHSAXD":"Merchandise exports, seasonally adjusted, current US dollars",
- "DXGSRMRCHNSKD":"Merchandise exports, seasonally adjusted, constant US dollars",
-}
-BELTS=[
- {"id":"japan_kuril_kamchatka","name":"Japan–Kuril–Kamchatka","minlatitude":35,"maxlatitude":60,"minlongitude":140,"maxlongitude":180},
- {"id":"sunda_andaman","name":"Sunda–Andaman","minlatitude":-15,"maxlatitude":20,"minlongitude":90,"maxlongitude":130},
- {"id":"andes_subduction","name":"Andes subduction","minlatitude":-45,"maxlatitude":10,"minlongitude":-82,"maxlongitude":-65},
- {"id":"alaska_aleutian","name":"Alaska–Aleutian","minlatitude":50,"maxlatitude":65,"minlongitude":-180,"maxlongitude":-130},
- {"id":"hellenic_anatolian","name":"Hellenic–Anatolian","minlatitude":30,"maxlatitude":42,"minlongitude":18,"maxlongitude":35},
-]
+GEM={item["code"]:item["description"] for item in GEM_CONFIG["indicators"]}
+BELTS=SEISMIC_CONFIG["belts"]
+
 
 def dependency_inventory():
  names=("numpy","openpyxl","statsmodels","scipy","pandas","patsy","packaging","formulaic","interface-meta","python-dateutil","pytz","tzdata")
@@ -61,7 +59,7 @@ def hash_file(p):
  with p.open("rb") as f:
   for x in iter(lambda:f.read(1024*1024),b""):h.update(x)
  return h.hexdigest()
-def get(url,retries=4,timeout=90):
+def get(url,retries=USGS_RETRIES,timeout=USGS_TIMEOUT):
  err=None
  for i in range(retries):
   try:
@@ -214,13 +212,13 @@ def gem(m):
   page=1;pages=1;groups=defaultdict(dict);names={};hashes=[]
   try:
    while page<=pages:
-    q=urllib.parse.urlencode({"source":15,"format":"json","per_page":20000,"page":page,"date":"1990M01:2023M12"})
+    q=urllib.parse.urlencode({"source":GEM_SOURCE_ID,"format":"json","per_page":20000,"page":page,"date":GEM_PERIOD_WINDOW})
     url=f"https://api.worldbank.org/v2/country/all/indicator/{code}?{q}"
     raw=get(url,3);obj=json.loads(raw)
     if not isinstance(obj,list) or len(obj)<2 or not isinstance(obj[0],dict):raise ValueError("unexpected API response")
     pages=int(obj[0].get("pages",1));rows=obj[1]
     if not isinstance(rows,list):raise ValueError("API has no data rows")
-    rec=keep_raw(f"world_bank/gem/{code}_page_{page:03d}.json",raw,"World Bank GEM",url,{"source":15,"indicator":code,"page":page})
+    rec=keep_raw(f"world_bank/gem/{code}_page_{page:03d}.json",raw,"World Bank GEM",url,{"source":GEM_SOURCE_ID,"indicator":code,"page":page})
     m["sources"].append(rec);hashes.append(rec["sha256"])
     for row in rows:
      k=month(row.get("date"));v=number(row.get("value"))
@@ -243,7 +241,7 @@ def gem(m):
    print("GEM ERROR",code,type(e).__name__,str(e))
  return out
 def usgs_query(belt,start,end,m,depth=0):
- p={"format":"geojson","starttime":start,"endtime":end,"minmagnitude":MAG,"minlatitude":belt["minlatitude"],"maxlatitude":belt["maxlatitude"],"minlongitude":belt["minlongitude"],"maxlongitude":belt["maxlongitude"],"orderby":"time-asc","limit":20000}
+ p={"format":"geojson","starttime":start,"endtime":end,"minmagnitude":MAG,"minlatitude":belt["minlatitude"],"maxlatitude":belt["maxlatitude"],"minlongitude":belt["minlongitude"],"maxlongitude":belt["maxlongitude"],"orderby":"time-asc","limit":USGS_QUERY_LIMIT}
  url="https://earthquake.usgs.gov/fdsnws/event/1/query?"+urllib.parse.urlencode(p)
  raw=get(url,4,120);r=keep_raw(f"usgs/{belt['id']}/{start.replace(':','_')}_{end.replace(':','_')}.geojson",raw,"USGS ComCat",url,p);m["sources"].append(r)
  fs=json.loads(raw).get("features",[])
@@ -558,7 +556,7 @@ def main():
  dependencies=dependency_inventory()
  DEPENDENCIES.write_text(json.dumps(dependencies,ensure_ascii=False,indent=2)+"\n",encoding="utf-8")
  m={
-  "version":"1.3",
+  "version":"1.4","pipeline_config":PIPELINE_CONFIG,"gem_config":GEM_CONFIG,"seismic_config":SEISMIC_CONFIG,
   "run_timestamp_utc":stamp(),
   "git_commit":os.getenv("GITHUB_SHA","local-unresolved"),
   "branch":os.getenv("GITHUB_REF_NAME","local"),
