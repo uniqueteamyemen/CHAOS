@@ -361,6 +361,10 @@ def shock_eval(item,events,contract):
   else:found.append({"event_id":target["id"],"eligible":target["id"] in eligible,"matched":False,"series_category":category})
  return found
 
+def applicable_shock_series(item,contract):
+ if item["frequency"]!="monthly" or item["source"]=="usgs":return False
+ category=series_category(item)
+ return any(category in target.get("applicable_categories",[]) for target in contract["events"])
 def eval_series(item,contract):
  modes=run_modes(item["values"])
  g1_result=g1(item["values"])
@@ -371,12 +375,11 @@ def eval_series(item,contract):
   duration=max(1e-9,(times[-1]-times[0]).total_seconds()/(86400*365.2425))
  for mode,v in modes.items():
   v["alarms_per_decade"]=v["alarm_count"]/duration*10
-  shock_applicable=item["frequency"]=="monthly" and item["source"]!="usgs"
-  v["shock_matching_applicable"]=shock_applicable
-  v["shock_matches"]=shock_eval(item,v["events"],contract) if shock_applicable else []
+  v["shock_matching_applicable"]=applicable_shock_series(item,contract)
+  v["shock_matches"]=shock_eval(item,v["events"],contract) if item["frequency"]=="monthly" and item["source"]!="usgs" else []
   matched_indices={int(match["detection_index"]) for match in v["shock_matches"] if match.get("matched") and match.get("detection_index") is not None}
   v["matched_shock_alarm_count"]=len(matched_indices)
-  if shock_applicable:
+  if v["shock_matching_applicable"]:
    v["unassociated_structural_alarm_count"]=max(0,int(v["alarm_count"])-len(matched_indices))
    v["unassociated_structural_alarms_per_decade"]=v["unassociated_structural_alarm_count"]/duration*10
   else:
