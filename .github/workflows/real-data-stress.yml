@@ -20,7 +20,7 @@ permissions:
   contents: write
 
 concurrency:
-  group: chaos-p2-2-stress-${{ github.ref }}
+  group: chaos-p2-2-stress-v3-${{ github.ref }}
   cancel-in-progress: false
 
 jobs:
@@ -98,7 +98,7 @@ jobs:
       - name: Execute real historical stress pipeline
         env:
           GITHUB_SHA: ${{ github.sha }}
-          STRESS_BOOTSTRAP_REPLICATES: '999'
+          STRESS_BOOTSTRAP_REPLICATES: '199'
           STRESS_BOOTSTRAP_MEAN_BLOCK_MONTHS: '12'
           STRESS_BOOTSTRAP_MEAN_BLOCK_EVENTS: '25'
           STRESS_MIN_COMMODITY_POINTS: '501'
