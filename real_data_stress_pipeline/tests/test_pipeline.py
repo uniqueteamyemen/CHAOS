@@ -2,7 +2,7 @@ import unittest
 import numpy as np
 
 from real_data_stress_pipeline.run_pipeline import (
-    g0, longest_run, month, month_label, returns, stationary_sample, wilson,
+    g0, longest_run, month, label_month, returns, stationary_sample, wilson,
 )
 
 class StressPipelineContractTests(unittest.TestCase):
@@ -15,7 +15,7 @@ class StressPipelineContractTests(unittest.TestCase):
         self.assertIsNone(month("1980M13"))
 
     def test_month_label_round_trip(self):
-        self.assertEqual(month_label(2024 * 12 + 11), "2024-12")
+        self.assertEqual(label_month(2024 * 12 + 11), "2024-12")
 
     def test_contiguous_selection_does_not_fill_gaps(self):
         xs, ys = longest_run({1: 10.0, 2: 11.0, 4: 13.0, 5: 14.0, 6: 15.0})
