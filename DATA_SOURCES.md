@@ -13,9 +13,9 @@ artifact for each run.
 
 ## Source integrity rules
 
-1. Raw responses are saved unchanged under `artifacts/real_data_stress/raw/` and included in the workflow artifact.
-2. Each saved response receives SHA-256, retrieval timestamp, original URL, and query parameters.
-3. A data revision is a new snapshot; previous snapshots are never overwritten in the artifact history.
+1. Permitted GEM and USGS raw API responses are saved unchanged under `artifacts/real_data_stress/raw/` and included in the restricted workflow artifact. The Pink Sheet workbook is fetched in memory only while its workbook-specific redistribution terms remain unverified; it is not saved, uploaded, or redistributed.
+2. Each retained raw response receives SHA-256, retrieval timestamp, original URL, and query parameters. The Pink Sheet source receives a content SHA-256 and retrieval metadata without publishing the workbook or its underlying numeric observations.
+3. A data revision is a new snapshot; previous snapshots are never overwritten in the artifact history. Derived Pink Sheet values are excluded from the public normalized input table until the source-specific redistribution terms are confirmed.
 4. Missing values remain missing. No forward fill, interpolation, or synthetic padding is permitted.
 5. A source is rejected from detector execution when period parsing, chronology, continuity, required point count, or robust-scale checks fail.
 6. A manifest or catalog page alone is not treated as a raw dataset.
