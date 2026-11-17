@@ -12,13 +12,13 @@ This register distinguishes original CHAOS materials from external data and soft
 
 ## 2. Software dependencies
 
-The Phase 2 pipeline must maintain a resolved dependency manifest containing exact versions, package URLs, license identifiers, and lockfile SHA-256. The initial dependency candidates are:
+The Phase 2 pipeline must maintain a resolved dependency manifest containing exact versions, package URLs, license identifiers, and lockfile SHA-256. The current CI requirements pin `statsmodels==0.15.0`; NumPy and openpyxl are bounded by compatible version ranges. The initial dependency candidates are:
 
 - Python standard library.
 - `requests` for retrying HTTP retrieval.
 - `openpyxl` for workbook inspection.
 - `numpy` for numeric transforms and detector inputs.
-- `statsmodels` only if adopted for documented stationarity diagnostics.
+- `statsmodels==0.15.0` for ADF and KPSS stationarity diagnostics (BSD-3-Clause).
 - `pytest` for tests.
 
 This is a candidate list, not a statement that all packages have already been installed or validated. The CI-generated dependency manifest must record the packages actually used.
