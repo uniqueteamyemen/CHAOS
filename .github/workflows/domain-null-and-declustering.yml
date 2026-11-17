@@ -10,7 +10,6 @@ on:
       - 'scripts/audits/p2_2_3_domain_null_and_declustering.py'
       - 'tests/seismic_null_contract/**'
       - 'tests/audits/test_p2_2_3_domain_null_audit_helpers.py'
-      - '.github/workflows/domain-null-and-declustering.yml'
   workflow_dispatch:
     inputs:
       poisson_replicates:
@@ -92,6 +91,9 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: chaos-p2-2-3-domain-null-and-declustering
-          path: artifacts/domain_null_and_declustering/
+          path: |
+            artifacts/domain_null_and_declustering/
+            artifacts/real_data_stress/raw/
+            artifacts/real_data_stress/derived/
           if-no-files-found: warn
           retention-days: 90
