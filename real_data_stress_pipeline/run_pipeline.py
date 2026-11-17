@@ -264,7 +264,7 @@ def shock_eval(axis,events,contract):
    k=month(axis[i])
    if k is None:continue
    lead=t-k
-   if abs(lead)<=contract["window_months"]:poss.append((abs(lead),i,lead,e))
+   if abs(lead)<=contract["matching_window_months"]:poss.append((abs(lead),i,lead,e))
   if not poss:found.append({"event_id":target["id"],"matched":False});continue
   _,i,lead,e=min(poss,key=lambda z:(z[0],z[1]))
   found.append({"event_id":target["id"],"matched":True,"detected_month":axis[i],"lead_months":lead,"classification":"pre_anchor_warning" if lead>0 else ("same_month" if lead==0 else "post_anchor_detection"),"detector_status":e.get("status")})
