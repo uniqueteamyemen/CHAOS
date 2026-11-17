@@ -72,59 +72,62 @@ def summarize_cohort(series: list[dict[str, Any]]) -> dict[str, Any]:
         "by_mode": {},
     }
     for mode in MODES:
-        observed_counts: list[float] = []
-        observed_rates: list[float] = []
+        observed_all: list[float] = []
+        observed_g1: list[float] = []
+        observed_rates_g1: list[float] = []
         conditional_probabilities: list[float] = []
         expected_event_counts: list[float] = []
-        rho_raw: list[float] = []
-        rho_used: list[float] = []
-        correction_flag: list[bool] = []
+        rho_raw_g1: list[float] = []
+        rho_used_g1: list[float] = []
+        correction_flag_g1: list[bool] = []
         bootstrap_runs = 0
         bootstrap_errors = 0
         for item in series:
+            passed_g1 = bool(item.get("g1", {}).get("passed"))
             detector = item.get("detector", {}).get(mode, {})
             alarms = detector.get("alarm_count")
             if isinstance(alarms, (int, float)) and not isinstance(alarms, bool):
-                observed_counts.append(float(alarms))
-                years = item.get("duration_years")
-                if isinstance(years, (int, float)) and years > 0:
-                    observed_rates.append(float(alarms) / float(years) * 10.0)
+                observed_all.append(float(alarms))
+                if passed_g1:
+                    observed_g1.append(float(alarms))
+                    years = item.get("duration_years")
+                    if isinstance(years, (int, float)) and years > 0:
+                        observed_rates_g1.append(float(alarms) / float(years) * 10.0)
 
             diagnostics = detector.get("diagnostics", {})
-            for source, target in (("rho_raw", rho_raw), ("rho_used", rho_used)):
-                value = diagnostics.get(source)
-                if isinstance(value, (int, float)) and math.isfinite(float(value)):
-                    target.append(float(value))
-            flag = diagnostics.get("rho_bias_correction_enabled")
-            if isinstance(flag, bool):
-                correction_flag.append(flag)
+            if passed_g1:
+                for source, target in (("rho_raw", rho_raw_g1), ("rho_used", rho_used_g1)):
+                    value = diagnostics.get(source)
+                    if isinstance(value, (int, float)) and math.isfinite(float(value)):
+                        target.append(float(value))
+                flag = diagnostics.get("rho_bias_correction_enabled")
+                if isinstance(flag, bool):
+                    correction_flag_g1.append(flag)
 
             bootstrap = item.get("bootstrap", {}).get("by_mode", {}).get(mode, {})
             runs = int(bootstrap.get("runs", 0) or 0)
             bootstrap_runs += runs
             bootstrap_errors += int(bootstrap.get("errors", 0) or 0)
             if runs > 0:
-                conditional_probabilities.append(
-                    float(bootstrap.get("alarms", 0)) / runs
-                )
-                expected_event_counts.append(
-                    float(bootstrap.get("events", 0)) / runs
-                )
+                conditional_probabilities.append(float(bootstrap.get("alarms", 0)) / runs)
+                expected_event_counts.append(float(bootstrap.get("events", 0)) / runs)
 
         result["by_mode"][mode] = {
-            "observed_alert_count_per_series": distribution(observed_counts),
-            "observed_alerts_per_decade_per_series": distribution(observed_rates),
-            "series_with_one_or_more_observed_alerts": sum(v > 0 for v in observed_counts),
+            "observed_alert_count_all_series": distribution(observed_all),
+            "observed_alert_count_g1_passed_series": distribution(observed_g1),
+            "observed_alerts_per_decade_g1_passed_series": distribution(observed_rates_g1),
+            "all_series_with_one_or_more_observed_alerts": sum(v > 0 for v in observed_all),
+            "g1_passed_series_with_one_or_more_observed_alerts": sum(v > 0 for v in observed_g1),
             "conditional_bootstrap_probability_of_one_or_more_alerts": distribution(
                 conditional_probabilities
             ),
             "conditional_bootstrap_expected_event_count_per_replicate": distribution(
                 expected_event_counts
             ),
-            "rho_raw": distribution(rho_raw),
-            "rho_used_reported_by_manifest": distribution(rho_used),
-            "reported_rho_bias_correction_enabled_false": correction_flag.count(False),
-            "reported_rho_bias_correction_enabled_true": correction_flag.count(True),
+            "rho_raw_g1_passed": distribution(rho_raw_g1),
+            "rho_used_reported_by_manifest_g1_passed": distribution(rho_used_g1),
+            "g1_passed_series_reporting_rho_bias_correction_enabled_false": correction_flag_g1.count(False),
+            "g1_passed_series_reporting_rho_bias_correction_enabled_true": correction_flag_g1.count(True),
             "bootstrap_eligible_series": len(conditional_probabilities),
             "bootstrap_replicates_total": bootstrap_runs,
             "bootstrap_errors_total": bootstrap_errors,
