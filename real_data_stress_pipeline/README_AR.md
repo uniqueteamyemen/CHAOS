@@ -18,7 +18,7 @@
 
 ## Quality gates
 
-- Pink Sheet primary cohort: at least 501 contiguous positive monthly prices (therefore at least 500 adjacent log returns), valid chronology, and non-degenerate robust scale.
+- Pink Sheet primary cohort: at least 502 contiguous positive monthly prices (therefore at least 501 adjacent log returns), valid chronology, and non-degenerate robust scale.
 - GEM secondary cohort: at least 87 contiguous, actual monthly observations and non-degenerate robust scale; reported separately from the Pink Sheet cohort.
 - Seismic inter-event cohort: at least 87 consecutive event intervals, valid time ordering, and non-degenerate robust scale.
 - Monthly seismic event counts are a separate secondary representation and are never substituted for inter-event intervals.
