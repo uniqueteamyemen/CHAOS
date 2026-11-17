@@ -39,27 +39,31 @@ The workflow step re-applies these release assets with `gh release upload --clob
 
 ## Protection status — verified 17 November 2026
 
-The CI immutability guard remains at `.github/workflows/experiments-immutable.yml`. It checks the frozen `experiments/**` tree on pull requests and direct pushes to `main-phase2`.
+The repository now has an active branch ruleset that matches `main-phase2`.
 
-A repository ruleset is now visible:
+Observed GitHub state:
 
-- Ruleset ID: `27488330`
-- Name: `main-phase2`
-- Enforcement: `active`
-- Rules: `deletion`, `non_fast_forward`
-- Ref condition: `include: []`, `exclude: []`
+- Branch endpoint: `protected: true`.
+- Ruleset ID: `27488330`, name `main-phase2`, target `branch`, enforcement `active`.
+- Ref pattern: `refs/heads/main-phase2`.
+- Active rules: `deletion`, `non_fast_forward`, `required_status_checks` (context `stress`, integration ID `15368`), and `update`.
+- `strict_required_status_checks_policy: false`.
+- `current_user_can_bypass: always`; the ruleset lists repository roles and three integration actors as bypass actors.
 
-**This is not verified as effective protection for `main-phase2`.** GitHub's ruleset condition requires at least one included ref pattern to match; the current empty include list does not explicitly select `refs/heads/main-phase2`. The branch API also reports `protected: false`. Even if the ref condition is corrected, the current ruleset has no pull-request requirement and no required status checks. It therefore does not provide the intended PR/CI gate.
+This is active platform-level protection for the working branch. It is not a fully non-bypassable lock: the configured owner/admin bypass remains available. The ruleset does not currently require pull requests, human approvals, or branch-up-to-date checks. The branch API's classic protection object still reports `enabled: false`; the protection observed here comes from the repository ruleset, while the branch metadata correctly reports `protected: true`.
 
-The connected GitHub integration cannot read the classic branch-protection endpoint (HTTP 403) and exposes no ruleset create/update action. GitHub's repository-ruleset create/update endpoint requires repository **Administration: write** permission. Consequently, platform-level activation could not be completed through the currently connected integration. Do not describe the branch as protected.
+### Workflow compatibility
 
-There is also an automation dependency to resolve before requiring PRs: `.github/workflows/real-data-stress.yml` currently commits generated reports and manifests directly to `main-phase2` using `GITHUB_TOKEN`. A PR-only rule would block that write. Move generated outputs to a dedicated results branch/PR or keep them as release artifacts before enforcing a PR-only rule.
+The prior P2.2 workflow pushed generated reports directly to `main-phase2`, which conflicts with the new update/status-check rules because the `stress` job cannot successfully push before that same job has completed. The workflow was changed to:
 
-Recommended configuration, after the workflow is adjusted:
+- Keep generated report, manifest, checksum inventory, and source snapshots in the workflow workspace and run artifact.
+- Publish the reproducible outputs as release assets.
+- Tag the source commit without pushing generated results to `main-phase2`.
 
-1. Branch ruleset target `branch`, condition `include: ["refs/heads/main-phase2"]`, enforcement `active`.
-2. Rules: prevent deletion, prevent non-fast-forward updates, require pull requests, and require the verified CI contexts for `experiments-immutable` and the P2.2 contract-test workflow.
-3. Do not require a human approval from the sole owner account as the only approver; this can make owner-authored PRs unmergeable. Keep CODEOWNERS as review routing unless a distinct reviewer is added.
-4. Add a separate tag ruleset for `phase1-detector-freeze-v1.0` and the P2.2 release tag to prevent tag deletion or movement.
+This keeps the protected branch from depending on a direct bot write during its own required check. The updated workflow is being validated by the P2.2.1 run.
 
-The current ruleset is recorded for traceability, but its present target condition and limited rule set are insufficient. The existing CODEOWNERS file routes requests to `@uniqueteamyemen`; it does not enforce approval by itself.
+### Remaining protection gap
+
+No separate tag-targeted ruleset has been verified for `phase1-detector-freeze-v1.0` or `p2.2-historical-stress-v1.0.0`. The Phase 1 release is still reported as `immutable: false`; do not describe those tags/releases as platform-locked. Add a tag ruleset that blocks deletion and updates for the frozen Phase 1 and published P2.2 tags.
+
+The CI immutability guard at `.github/workflows/experiments-immutable.yml` remains in place. `CODEOWNERS` routes review requests to `@uniqueteamyemen`; it does not itself require a review.
