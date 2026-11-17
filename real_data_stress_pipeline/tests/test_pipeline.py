@@ -2,7 +2,7 @@ import unittest
 import numpy as np
 
 from real_data_stress_pipeline.run_pipeline import (
-    g0, longest_run, month, label_month, returns, stationary_sample, wilson, series_category, shock_eval,
+    g0, g1, boot, longest_run, month, label_month, returns, stationary_sample, wilson, series_category, shock_eval,
 )
 
 class StressPipelineContractTests(unittest.TestCase):
@@ -48,6 +48,35 @@ class StressPipelineContractTests(unittest.TestCase):
         self.assertLess(low, 0.05)
         self.assertGreater(high, 0.05)
         self.assertIsNone(wilson(0, 0))
+
+    def test_g1_passes_stationary_white_noise_screen(self):
+        values = np.random.default_rng(12).normal(0, 0.01, 540)
+        result = g1(values)
+        self.assertTrue(result["passed"], result)
+        self.assertLess(result["adf_p_value"], 0.05)
+        self.assertGreaterEqual(result["kpss_p_value"], 0.05)
+
+    def test_g1_rejects_trended_series(self):
+        values = np.linspace(0, 10, 540) + np.random.default_rng(12).normal(0, 0.01, 540)
+        result = g1(values)
+        self.assertFalse(result["passed"])
+        self.assertFalse(result["kpss_does_not_reject_level_stationarity"])
+
+    def test_g1_does_not_test_short_series(self):
+        result = g1(np.random.default_rng(4).normal(size=86))
+        self.assertFalse(result["passed"])
+        self.assertEqual(result["status"], "NOT_TESTED")
+
+    def test_stationary_bootstrap_is_skipped_when_g1_fails(self):
+        result = boot(
+            np.random.default_rng(4).normal(size=100),
+            "test-series",
+            12,
+            {"passed": False, "status": "SCREEN_FAIL"},
+        )
+        self.assertEqual(result["status"], "SKIPPED_G1_SCREEN_FAILED")
+        self.assertEqual(result["replicates"], 0)
+        self.assertTrue(all(mode["runs"] == 0 for mode in result["by_mode"].values()))
 
 
     def test_series_categories_respect_domain_terms(self):
