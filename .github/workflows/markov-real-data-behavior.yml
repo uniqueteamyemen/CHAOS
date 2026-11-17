@@ -1,0 +1,61 @@
+name: CHAOS P2.2.3 — Markov Real-Data Behavior Audit
+
+on:
+  push:
+    branches:
+      - diag/markov-real-data-behavior
+    paths:
+      - 'scripts/audits/p2_2_3_markov_real_data_behavior.py'
+      - 'tests/audits/**'
+      - '.github/workflows/markov-real-data-behavior.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  tests:
+    name: isolated-markov-audit-tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: diag/markov-real-data-behavior
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install pipeline requirements
+        run: python -m pip install -r real_data_stress_pipeline/requirements.txt
+      - name: Run focused tests
+        run: python -m unittest discover -s tests/audits -p 'test_p2_2_3_*.py' -v
+
+  exploratory-audit:
+    name: 200-replicate-real-commodity-audit
+    runs-on: ubuntu-latest
+    needs: tests
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: diag/markov-real-data-behavior
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install pipeline requirements
+        run: python -m pip install -r real_data_stress_pipeline/requirements.txt
+      - name: Run Markov audit (unbuffered)
+        env:
+          PYTHONUNBUFFERED: '1'
+          REPLICATES: '200'
+        run: |
+          python -u scripts/audits/p2_2_3_markov_real_data_behavior.py \
+            --replicates "$REPLICATES" \
+            --output-dir artifacts/markov_real_data_behavior
+      - name: Upload per-replicate audit outputs
+        uses: actions/upload-artifact@v4
+        with:
+          name: chaos-p2-2-3-markov-real-data-behavior
+          path: artifacts/markov_real_data_behavior/
+          if-no-files-found: error
+          retention-days: 90
