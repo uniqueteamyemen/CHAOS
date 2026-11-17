@@ -188,7 +188,7 @@ def gem(m):
   page=1;pages=1;groups=defaultdict(dict);names={};hashes=[]
   try:
    while page<=pages:
-    q=urllib.parse.urlencode({"source":15,"format":"json","per_page":20000,"page":page,"date":"1990M01:2023M12","frequency":"M"})
+    q=urllib.parse.urlencode({"source":15,"format":"json","per_page":20000,"page":page,"date":"1990M01:2023M12"})
     url=f"https://api.worldbank.org/v2/country/all/indicator/{code}?{q}"
     raw=get(url,3);obj=json.loads(raw)
     if not isinstance(obj,list) or len(obj)<2 or not isinstance(obj[0],dict):raise ValueError("unexpected API response")
@@ -206,10 +206,15 @@ def gem(m):
     if not q["passed"]:
      m["rejected"].append({"source":"gem","series":f"{code}:{iso}","quality":q});continue
     out.append({"id":f"gem:{code}:{iso}","source":"gem","source_name":"World Bank GEM","name":f"{desc} — {names[iso]}","cohort":"secondary_gem_monthly_87_plus","domain":"macro","frequency":"monthly","axis":axis,"values":vals,"sha256":hashes[0] if hashes else None,"points":len(ys),"quality":q})
-   m["gem_indicators"].append({"code":code,"description":desc,"date_query":"1990M01:2023M12","frequency_query":"M","records_with_monthly_dates":sum(map(len,groups.values())),"country_series":len(groups),"accepted":sum(1 for x in out if x["id"].startswith("gem:"+code+":")),"raw_hashes":hashes,"status":"monthly_data_found" if groups else "no_monthly_records_for_indicator"})
+   accepted_for_code=sum(1 for x in out if x["id"].startswith("gem:"+code+":"))
+   summary={"code":code,"description":desc,"date_query":"1990M01:2023M12","frequency_policy":"monthly-only by actual year-month response keys; frequency query parameter omitted because World Bank documents frequency as an MRV modifier","records_with_monthly_dates":sum(map(len,groups.values())),"country_series":len(groups),"accepted":accepted_for_code,"raw_hashes":hashes,"status":"monthly_data_found" if groups else "no_monthly_records_for_indicator"}
+   m["gem_indicators"].append(summary)
+   print("GEM",code,"monthly_records",summary["records_with_monthly_dates"],"country_series",summary["country_series"],"accepted",accepted_for_code)
   except Exception as e:
-   m["errors"].append({"provider":"World Bank GEM","indicator":code,"error":str(e),"time":stamp()})
-   m["gem_indicators"].append({"code":code,"status":"unavailable_or_nonmonthly","error":str(e)})
+   error_record={"provider":"World Bank GEM","indicator":code,"error":str(e),"time":stamp()}
+   m["errors"].append(error_record)
+   m["gem_indicators"].append({"code":code,"description":desc,"status":"api_error","error":str(e)})
+   print("GEM ERROR",code,type(e).__name__,str(e))
  return out
 def usgs_query(belt,start,end,m,depth=0):
  p={"format":"geojson","starttime":start,"endtime":end,"minmagnitude":MAG,"minlatitude":belt["minlatitude"],"maxlatitude":belt["maxlatitude"],"minlongitude":belt["minlongitude"],"maxlongitude":belt["maxlongitude"],"orderby":"time-asc","limit":20000}
@@ -260,7 +265,9 @@ def seismic(m):
    if not q["passed"]:
     m["rejected"].append({"source":"usgs","series":belt["id"],"quality":q});continue
    out.append({"id":"usgs:"+belt["id"],"source":"usgs","source_name":"USGS ComCat","name":belt["name"],"cohort":"seismic_event_interarrival","domain":"seismic","frequency":"event_interarrival","axis":[x.isoformat() for x in times[1:]],"values":vals,"sha256":hash_file(csvpath),"points":len(rows),"quality":q})
-  except Exception as e:m["errors"].append({"provider":"USGS ComCat","belt":belt["id"],"error":str(e),"time":stamp()})
+  except Exception as e:
+   m["errors"].append({"provider":"USGS ComCat","belt":belt["id"],"error":str(e),"time":stamp()})
+   print("USGS ERROR",belt["id"],type(e).__name__,str(e))
  return out
 def stationary_sample(x,rng,block):
  x=np.asarray(x,float);n=len(x);idx=np.empty(n,dtype=int);idx[0]=int(rng.integers(n));p=1/max(1,block)
