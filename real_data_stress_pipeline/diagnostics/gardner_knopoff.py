@@ -122,7 +122,8 @@ def gardner_knopoff_declustering(
         return [], {
             "method": "Gardner-Knopoff Type-I",
             "foreshock_time_fraction": fraction,
-            "events_input": 0, "mainshocks_retained": 0,
+            "events_input": 0, "retained_events": 0,
+            "cluster_mainshocks_retained": 0,
             "dependent_events_removed": 0, "clustered_events": 0,
             "cluster_count": 0, "regional_calibration_status": "NOT_ESTABLISHED",
         }
@@ -133,14 +134,19 @@ def gardner_knopoff_declustering(
     assigned: dict[int, dict[str, Any]] = {}
     cluster_id = 0
 
-    for main_index, main in enumerate(prepared):
+    # Match HMTK Type-I processing: scan magnitude-ranked events except the
+    # final row. A singleton remains unassigned and may be captured later by a
+    # lower-magnitude event's window. Only events assigned to a cluster leave
+    # the candidate set.
+    for main_index in range(max(0, len(prepared) - 1)):
         if main_index in assigned:
             continue
+        main = prepared[main_index]
         angular_radius = min(math.pi, main["space_km"] / EARTH_RADIUS_KM)
         chord_radius = 2.0 * math.sin(angular_radius / 2.0)
         candidates = tree.query_ball_point(xyz[main_index], chord_radius)
-        # OpenQuake HMTK represents these empirical windows in decimal years
-        # using the fixed 364.75-day conversion in GardnerKnopoffWindow.
+        # HMTK expresses the empirical window in decimal years, using 364.75
+        # days per year. Keep the same clock conversion as the reference.
         time_window_years = main["time_days"] / GK_DECIMAL_YEAR_DAYS
         backward_years = fraction * time_window_years
         members: list[int] = []
@@ -152,7 +158,6 @@ def gardner_knopoff_declustering(
             delta_years = candidate["decimal_year"] - main["decimal_year"]
             if delta_years < -backward_years or delta_years > time_window_years:
                 continue
-            delta_days = (candidate["epoch"] - main["epoch"]) / 86400.0
             distance = haversine_km(
                 main["latitude"], main["longitude"],
                 candidate["latitude"], candidate["longitude"],
@@ -160,15 +165,8 @@ def gardner_knopoff_declustering(
             if distance <= main["space_km"]:
                 members.append(candidate_index)
 
-        if len(members) == 1:
-            assigned[main_index] = {
-                "cluster_id": 0, "cluster_mainshock_id": main["id"],
-                "declustering_role": "BACKGROUND",
-                "time_delta_days_from_mainshock": 0.0,
-                "space_window_km": round(main["space_km"], 6),
-                "time_window_days": round(main["time_days"], 6),
-                "time_window_decimal_years": round(time_window_years, 9),
-            }
+        # Keep one-event candidates unassigned, matching HMTK's vcl == 0 scan.
+        if len(members) <= 1:
             continue
 
         cluster_id += 1
@@ -190,7 +188,17 @@ def gardner_knopoff_declustering(
     for index, item in enumerate(prepared):
         labels = assigned.get(index)
         if labels is None:
-            raise AssertionError(f"event_not_classified:{item['id']}")
+            labels = {
+                "cluster_id": 0,
+                "cluster_mainshock_id": item["id"],
+                "declustering_role": "BACKGROUND",
+                "time_delta_days_from_mainshock": 0.0,
+                "space_window_km": round(item["space_km"], 6),
+                "time_window_days": round(item["time_days"], 6),
+                "time_window_decimal_years": round(
+                    item["time_days"] / GK_DECIMAL_YEAR_DAYS, 9
+                ),
+            }
         output.append({**item["original"], **labels})
     output.sort(key=lambda row: (
         _as_utc_epoch(row.get("time", row.get("time_utc"))),
