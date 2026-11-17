@@ -3,7 +3,7 @@
 **Audit date:** 17 November 2026  
 **Repository:** `uniqueteamyemen/CHAOS`  
 **Branch reviewed:** `main-phase2`  
-**Branch head at verification:** `69320401e2ac73c6ded1b313022b6584c81c645f`
+**Branch head at verification:** `f3215a6ffb750c273b8e4898a56c2483613b660c`
 
 ## 1. Current observed GitHub state
 
@@ -38,7 +38,7 @@ The previous workflow attempted to push generated results directly to `main-phas
 
 The P2.2 workflow was changed so generated results remain in the workflow workspace/artifact and are attached to a new P2.2.1 GitHub Release. The workflow tags its source commit and does not push generated output commits to the protected branch. The validation run is:
 
-[GitHub Actions — P2.2.1 validation](https://github.com/uniqueteamyemen/CHAOS/actions/runs/44164220182)
+[GitHub Actions — P2.2.1 validation](https://github.com/uniqueteamyemen/CHAOS/actions/runs/44164671959)
 
 At the time of this audit, the full historical pipeline was still running; release publication is not considered complete until the workflow reports success and the release/tag assets are verified.
 
