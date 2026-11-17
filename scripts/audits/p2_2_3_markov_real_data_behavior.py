@@ -1,10 +1,14 @@
 #!/usr/bin/env python3
 """Isolated Markov behavior audit on World Bank Pink Sheet monthly returns."""
 from __future__ import annotations
-import argparse, gzip, hashlib, json, math, os, statistics, time
+import argparse, gzip, hashlib, json, math, os, statistics, sys, time
 from collections import defaultdict
 from pathlib import Path
 from typing import Any
+
+ROOT = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(ROOT))
+
 import numpy as np
 from real_data_stress_pipeline import run_pipeline as p2
 from structural_engine.isolated_break_detector_v1 import BreakDetectorV1, DEFAULT_MARKOV_THRESHOLD
