@@ -26,7 +26,7 @@ The following inventory was collected from the GitHub account's repository list 
 | 5 | [adapter-dictionary](https://github.com/uniqueteamyemen/adapter-dictionary) | Public | main | Absent | Absent |
 | 6 | [Yemen-Drug](https://github.com/uniqueteamyemen/Yemen-Drug) | Public | main | Absent | Absent |
 | 7 | [yemen-pharma-intelligence](https://github.com/uniqueteamyemen/yemen-pharma-intelligence) | Public | main | Absent | Absent |
-| 8 | [market-intelligence-engine](https://github.com/uniqueteamyemen/market-intelligence-engine) | Public | master | Absent | Absent |
+| 8 | [market-intelligence-engine](https://github.com/uniqueteamyemen/market-intelligence-engine) | Public | master | Present — Proprietary, All Rights Reserved, uniqueteamyemen | Present |
 | 9 | [ssdd-research](https://github.com/uniqueteamyemen/ssdd-research) | Public | main | Present — “All rights reserved”, Copyright Deterministic Solutions & Design | Absent |
 | 10 | [deterministic-solutions-design-website](https://github.com/uniqueteamyemen/deterministic-solutions-design-website) | Public | main | Absent | Absent |
 | 11 | [paylock-live-evidence](https://github.com/uniqueteamyemen/paylock-live-evidence) | Public | main | Absent | Absent |
@@ -74,7 +74,7 @@ CHAOS now contains:
 - `COPYRIGHT_AND_IP_NOTICE.md` — owner's sole-rights-holder declaration, AI/automation identity explanation, reserved commercial rights, provenance expectations, and third-party rights boundary.
 - `THIRD_PARTY_NOTICES.md` and `DATA_SOURCES.md` — source attribution and external-license controls.
 
-The same ownership declaration is reflected in the account-level inventory above. The other repositories have not been mass-relicensed by this change; their existing root license conditions and absent notices are shown transparently in the inventory.
+The same ownership declaration is reflected in the account-level inventory above. The default branches of both CHAOS and market-intelligence-engine now contain proprietary LICENSE and COPYRIGHT notices. The other repositories have not been mass-relicensed by this change; their existing root license conditions and absent notices are shown transparently in the inventory.
 
 ## 6. Recommended repository governance
 
