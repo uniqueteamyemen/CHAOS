@@ -428,52 +428,205 @@ def aggregate(results,contract):
  return out
 
 def make_report(m):
- z=m["aggregate"]
- lines=["# تقرير اختبار الضغط التاريخي — CHAOS P2.2","",f"وقت التشغيل UTC: {m['run_timestamp_utc']}  ",f"Commit المصدر: {m['git_commit']}  ","الكاشف المجمد: BreakDetectorV1؛ لا تعديل للمعادلات أو الثوابت.","","## ملخص الجلب والتأهيل","",f"- سلاسل Pink Sheet الطويلة (>500 نقطة): {m['pink_eligible']}.",f"- سلاسل GEM الشهرية الثانوية (≥87 نقطة): {m['gem_eligible']}.",f"- أحزمة USGS المستعلم عنها: {len(m['belts'])}/5؛ سلاسل الفواصل المؤهلة: {m['seismic_eligible']}.",f"- إجمالي السلاسل المشغلة: {len(m['series_results'])}.",f"- اجتاز فحص G1 (ADF وKPSS): {sum(1 for s in m['series_results'] if s['g1'].get('passed'))}؛ تم تجاوز Bootstrap للسلاسل التي لم تجتز G1: {sum(1 for s in m['series_results'] if not s['g1'].get('passed'))}.",f"- الاستبعادات: {len(m['rejected'])}؛ أخطاء المصادر: {len(m['errors'])}.","","## معدل الإنذار مقارنة بالـ Stationary Block-Bootstrap","", "يُشغّل Stationary Block-Bootstrap بـ999 إعادة توليد افتراضياً، ولا يُشغّل إلا بعد اجتياز G1: ADF يرفض جذر الوحدة عند 5% وKPSS لا يرفض استقرار المستوى عند 5%. اجتياز الاختبارين شاشة أولية لا برهان على الاستقرارية الصارمة. تُعرض السلاسل التي لم تجتز G1 دون Bootstrap بدلاً من إجبارها على نموذج عدم ملائم.","","| الوضع | السلاسل | G1 مؤهلة | الإنذارات المرصودة | إنذارات/عقد | غير مرتبطة بمرساة/عقد | Bootstrap FPR | Wilson 95% |","|---|---:|---:|---:|---:|---:|---:|---:|"]
+ z=m.get("aggregate",{})
+ lines=[
+  "# تقرير اختبار الضغط التاريخي — CHAOS P2.2",
+  "",
+  f"وقت التشغيل UTC: {m.get('run_timestamp_utc','—')}",
+  f"Commit المصدر: {m.get('git_commit','—')}",
+  f"الفرع: {m.get('branch','—')}",
+  "الكاشف المجمد: BreakDetectorV1؛ لم تتغير معادلاته أو ثوابته.",
+  "",
+  "## 1. ملخص الجلب والتأهيل",
+  "",
+  f"- سلاسل Pink Sheet الطويلة (>500 عائد شهري): {m.get('pink_eligible',0)}.",
+  f"- سلاسل GEM الشهرية الثانوية (≥87 مشاهدة): {m.get('gem_eligible',0)}.",
+  f"- أحزمة USGS المستعلم عنها: {len(m.get('belts',[]))}/5؛ سلاسل الزلازل المؤهلة: {m.get('seismic_eligible',0)}.",
+  f"- إجمالي السلاسل التي وصلت إلى الكاشف: {len(m.get('series_results',[]))}.",
+  f"- اجتازت G1 (ADF وKPSS): {sum(1 for s in m.get('series_results',[]) if s.get('g1',{}).get('passed'))}.",
+  f"- لم تجتز G1 وتجاوزت Bootstrap: {sum(1 for s in m.get('series_results',[]) if not s.get('g1',{}).get('passed'))}.",
+  f"- السلاسل المستبعدة: {len(m.get('rejected',[]))}؛ أخطاء المصادر: {len(m.get('errors',[]))}.",
+  "",
+  "## 2. G0 وG1 ومنهج Bootstrap",
+  "",
+  f"- G0: عدد النقاط وفق الفوج، تسلسل زمني متصل بلا ملء للفجوات، قيم منتهية، وMAD غير متدهور في نافذة الأساس الأولى.",
+  f"- Pink Sheet: يتطلب 501 عائد شهري على الأقل، أي 502 سعراً موجباً متصلاً على الأقل.",
+  f"- GEM وفواصل USGS: يتطلب كل فوج ثانوي 87 مشاهدة/فاصلاً على الأقل.",
+  "- G1: ADF يرفض جذر الوحدة (p < 0.05) وKPSS لا يرفض استقرار المستوى (p ≥ 0.05). هذا فحص أولي مزدوج وليس برهاناً على الاستقرارية الصارمة.",
+  f"- Stationary Block-Bootstrap: {REPS} إعادة توليد لكل سلسلة اجتازت G1 فقط؛ متوسط طول الكتلة الشهري {MONTH_BLOCK} شهراً، وللفواصل الزلزالية {EVENT_BLOCK} فواصل.",
+  "- إذا فشل G1، لا تُحسب FPR من Bootstrap لتلك السلسلة؛ تظهر حالة التجاوز صراحة في JSON.",
+  "- Bootstrap للفواصل الزلزالية تشخيص تسلسلي مشروط فقط، ولا يحل محل null قائم على نماذج point-process أو مراجعة declustering واكتمال الكتالوج.",
+  "",
+  "## 3. الإنذارات ومعدلها لكل عقد",
+  "",
+  "| الوضع | السلاسل | G1 مؤهلة | الإنذارات البنيوية | إنذارات/عقد | غير مرتبطة بالمراسي/عقد | Bootstrap FPR | Wilson 95% |",
+  "|---|---:|---:|---:|---:|---:|---:|---:|"
+ ]
  for mode,label in (("fast","Fast"),("markov_cusum","Markov CUSUM H=8.5"),("consensus","Consensus")):
-  x=z["by_mode"][mode];ci=x["bootstrap_wilson95"]
-  fpr=f"{x['bootstrap_fpr']*100:.2f}%" if x["bootstrap_fpr"] is not None else "—"
+  x=z.get("by_mode",{}).get(mode,{})
+  fpr=f"{x['bootstrap_fpr']*100:.2f}%" if x.get("bootstrap_fpr") is not None else "—"
+  ci=x.get("bootstrap_wilson95")
   ci_s=f"{ci[0]*100:.2f}–{ci[1]*100:.2f}%" if ci else "—"
-  rate=f"{x['alarms_per_decade']:.4f}" if x["alarms_per_decade"] is not None else "—";unassoc=f"{x['unassociated_structural_alarms_per_decade']:.4f}" if x["unassociated_structural_alarms_per_decade"] is not None else "—";lines.append(f"| {label} | {x['series']} | {x['g1_passed_series']} | {x['raw_alarms']} | {rate} | {unassoc} | {fpr} | {ci_s} |")
- lines += ["","Bootstrap FPR هو نسبة عينات العدم المعاد توليدها التي أصدرت إنذاراً بنيوياً واحداً على الأقل، ويُحسب فقط للسلاسل التي اجتازت فحص G1. الإنذارات غير المرتبطة بمراسي الصدمات المحددة ليست بالضرورة إنذارات كاذبة علمياً؛ فقد توجد تحولات حقيقية غير مدرجة في سجل المراسي.","","### التفصيل حسب فوج البيانات","","| الفوج | الوضع | السلاسل | الإنذارات | إنذارات/عقد | Bootstrap FPR |","|---|---|---:|---:|---:|---:|"]
- for cohort,by_mode in m["aggregate"]["by_cohort"].items():
+  rate=f"{x['alarms_per_decade']:.4f}" if x.get("alarms_per_decade") is not None else "—"
+  unmatched=f"{x['unassociated_structural_alarms_per_decade']:.4f}" if x.get("unassociated_structural_alarms_per_decade") is not None else "—"
+  lines.append(f"| {label} | {x.get('series',0)} | {x.get('g1_passed_series',0)} | {x.get('raw_alarms',0)} | {rate} | {unmatched} | {fpr} | {ci_s} |")
+ lines += [
+  "",
+  "Bootstrap FPR هنا هو نسبة عينات العدم المعاد توليدها التي أصدرت إنذاراً بنيوياً واحداً على الأقل، ويُحسب فقط للسلاسل التي اجتازت G1. أما الإنذارات غير المرتبطة بمراسي الصدمات فليست تلقائياً إيجابيات كاذبة علمياً؛ قد توجد تحولات حقيقية غير مدرجة في سجل المراسي. هذا المعدل يُعرض فقط للسلاسل الشهرية التي تنطبق عليها مراسي الاقتصاد الكلي، ولا تُقارن به السلاسل الزلزالية.",
+  "",
+  "### التفصيل حسب فوج البيانات",
+  "",
+  "| الفوج | الوضع | السلاسل | G1 مؤهلة | الإنذارات | إنذارات/عقد | Bootstrap FPR |",
+  "|---|---|---:|---:|---:|---:|---:|"
+ ]
+ for cohort,by_mode in z.get("by_cohort",{}).items():
   for mode,label in (("fast","Fast"),("markov_cusum","Markov"),("consensus","Consensus")):
-   x=by_mode[mode];fpr=f"{x['bootstrap_fpr']*100:.2f}%" if x["bootstrap_fpr"] is not None else "—"
-   rate=f"{x['alarms_per_decade']:.4f}" if x["alarms_per_decade"] is not None else "—"
-   lines.append(f"| {cohort} | {label} | {x['series']} | {x['alarms']} | {rate} | {fpr} |")
- lines += ["","## مطابقة مراسي الصدمات التاريخية","","تُحترم فئات الأحداث المثبتة مسبقاً في العقد، وتُطابق الإشارات واحداً لواحد ضمن ±12 شهراً؛ لا يمكن إعادة استخدام إنذار لمرساتين. نسبة الالتقاط هي نسبة السلاسل المؤهلة التي سجلت كشفاً داخل النافذة. نسبة ما قبل المرساة تقيس الإشارات التي سبقت التاريخ المرجعي فعلياً، ولا تعني وحدها إنذاراً تنبؤياً مستقلاً.","","| المرساة | الوضع | المؤهلة | المطابقة ±12 شهر | نسبة الالتقاط | قبل المرساة | نسبة السابق | نفس الشهر | بعد المرساة | وسيط lead |","|---|---|---:|---:|---:|---:|---:|---:|---:|---:|"]
- for eid,by in z["shocks"].items():
+   x=by_mode[mode]
+   fpr=f"{x['bootstrap_fpr']*100:.2f}%" if x.get("bootstrap_fpr") is not None else "—"
+   rate=f"{x['alarms_per_decade']:.4f}" if x.get("alarms_per_decade") is not None else "—"
+   lines.append(f"| {cohort} | {label} | {x['series']} | {x.get('g1_passed_series',0)} | {x['alarms']} | {rate} | {fpr} |")
+ lines += [
+  "",
+  "## 4. تشخيص سلاسل GEM",
+  "",
+  "| المؤشر | الحالة | سجلات شهرية | سلاسل البلدان | المقبولة |",
+  "|---|---|---:|---:|---:|"
+ ]
+ for item in m.get("gem_indicators",[]):
+  lines.append(f"| {item.get('code','—')} | {item.get('status','—')} | {item.get('records_with_monthly_dates',0)} | {item.get('country_series',0)} | {item.get('accepted',0)} |")
+ if not m.get("gem_indicators"):
+  lines.append("| — | لم تُنتج بيانات مؤشر | 0 | 0 | 0 |")
+ for error in m.get("errors",[]):
+  if error.get("provider")=="World Bank GEM":
+   lines.append(f"- خطأ GEM {error.get('indicator','')}: {error.get('error','')}")
+ lines += [
+  "",
+  "## 5. مطابقة مراسي الصدمات التاريخية",
+  "",
+  "المراسي الأربع محددة قبل تشغيل الكاشف. المطابقة فئوية وواحد لواحد ضمن ±12 شهراً، وتستخدم وقت الكشف الفعلي. المهلة الموجبة تعني أن الإشارة سبقت المرساة، والسالبة تعني كشفاً لاحقاً لا إنذاراً مبكراً.",
+  "",
+  "| المرساة | الوضع | السلاسل المؤهلة | المطابقات | نسبة الالتقاط | قبل المرساة | نسبة السابق | نفس الشهر | بعد المرساة | وسيط lead (شهر) |",
+  "|---|---|---:|---:|---:|---:|---:|---:|---:|---:|"
+ ]
+ for event_id,by in z.get("shocks",{}).items():
   for mode,label in (("fast","Fast"),("markov_cusum","Markov"),("consensus","Consensus")):
-   x=by[mode];cap=f"{x['capture_rate_pct']:.1f}%" if x["capture_rate_pct"] is not None else "—";pre=f"{x['pre_anchor_rate_pct']:.1f}%" if x["pre_anchor_rate_pct"] is not None else "—"
-   lines.append(f"| {eid} | {label} | {x['eligible_series']} | {x['matches']} | {cap} | {x['pre_anchor']} | {pre} | {x['same_month']} | {x['post_anchor']} | {x['median_lead'] if x['median_lead'] is not None else '—'} |")
- lines += ["","المراسي تواريخ سياقية عامة وليست ادعاءً أن جميع السلع تعرضت لصدمة في التاريخ نفسه. المطابقة لا تثبت السببية.","","## أحزمة USGS","","| الحزام | الأحداث | البداية | النهاية |","|---|---:|---|---|"]
- for b in m["belts"]:lines.append(f"| {b['name']} | {b['events']} | {b['start'] or '—'} | {b['end'] or '—'} |")
- lines += ["","تُختبر أحزمة USGS بتمثيلين مستقلين: الفواصل بين الأحداث بالأيام، والعدّ الشهري الثانوي داخل نافذة الاستعلام المكتملة. معدل الإنذار لكل عقد في سلسلة الفواصل يستخدم المدة الفعلية بين أول وآخر حدث. Stationary Bootstrap للفواصل تشخيص مشروط فقط، ويجب استكماله بتحليل اكتمال الكتالوج والتجمعات ونماذج point-process.","","## حدود الاستنتاج","","1. CONFIRMED قرار داخلي للكاشف وليس تحققاً مستقلاً من صدمة تاريخية.", "2. حساب المهلة يستخدم وقت الكشف الفعلي لا estimated onset.", "3. التواريخ التاريخية المنقحة حالياً لا تثبت أن البيانات ذاتها كانت متاحة في وقت الحدث؛ الاختبار الحقيقي يتطلب نسخ point-in-time.", "4. لا ينتج هذا التشغيل نموذجاً احتمالياً أو إنذاراً تشغيلياً.", "5. ملفات experiments والكاشف المجمد لم تُعدّل.", "6. GEM حد تغطيته المعلن 1990–2023؛ لذا يُعامل كفوج ثانوي ≥87 نقطة وليس ضمن فوج Pink Sheet الصارم >500 نقطة.","","## سجل التدقيق",f"- Manifest: {m['manifest_path']}",f"- Normalized inputs: {m['normalized']['path']} SHA-256 {m['normalized']['sha256']}",f"- Checksums: {m['checksums_path']}", "- Dependency inventory: {m.get('dependencies_path','—')}","- Raw API payloads: مرفقة ضمن GitHub Actions Artifact؛ ملف Pink Sheet الأصلي بقي في الذاكرة ولم يُنشر لعدم حسم ترخيص إعادة توزيعه.","",f"حالة التشغيل: {m['run_status']}",""]
+   x=by[mode]
+   capture=f"{x['capture_rate_pct']:.1f}%" if x.get("capture_rate_pct") is not None else "—"
+   pre_rate=f"{x['pre_anchor_rate_pct']:.1f}%" if x.get("pre_anchor_rate_pct") is not None else "—"
+   median=f"{x['median_lead']:.2f}" if x.get("median_lead") is not None else "—"
+   lines.append(f"| {event_id} | {label} | {x['eligible_series']} | {x['matches']} | {capture} | {x['pre_anchor']} | {pre_rate} | {x['same_month']} | {x['post_anchor']} | {median} |")
+ lines += [
+  "",
+  "هذه المراسي تواريخ سياقية عامة وليست ادعاءً بأن كل سلعة أو سلسلة تعرضت لصدمة في اليوم نفسه. المطابقة الزمنية لا تثبت السببية ولا تثبت أن الإشارة كانت متاحة في الزمن الحقيقي عند وقوع الحدث.",
+  "",
+  "## 6. أحزمة USGS",
+  "",
+  "| الحزام | الأحداث | أول حدث UTC | آخر حدث UTC |",
+  "|---|---:|---|---|"
+ ]
+ for belt in m.get("belts",[]):
+  lines.append(f"| {belt['name']} | {belt['events']} | {belt.get('start') or '—'} | {belt.get('end') or '—'} |")
+ lines += [
+  "",
+  "تُفحص أحزمة USGS بتمثيل الفواصل الزمنية بين الأحداث بالأيام، وبتمثيل العد الشهري الثانوي. معدل الإنذار لكل عقد لسلاسل الفواصل يستخدم المدة الفعلية بين أول وآخر حدث. النوافذ الجغرافية مربعات استعلام تقريبية وليست حدوداً تكتونية دقيقة.",
+  "",
+  "## 7. حدود الاستنتاج",
+  "",
+  "1. CONFIRMED حكم داخلي وفق قواعد الكاشف، وليس تحققاً مستقلاً من صدمة اقتصادية أو تحول جيولوجي.",
+  "2. Detection Delay بعد بدء الصدمة مختلف عن Warning Lead قبل الصدمة؛ لا يجوز عرض الكشف اللاحق على أنه إنذار مبكر.",
+  "3. البيانات التاريخية المنقحة حالياً لا تثبت أن القيم ذاتها كانت متاحة للمستخدم في تاريخ الحدث؛ ذلك يتطلب نسخ point-in-time.",
+  "4. لا ينتج هذا التشغيل نموذج احتمال أو إنذاراً تشغيلياً أو توقعاً زلزالياً.",
+  "5. سجل الصدمات محدود بأربعة مراسٍ عامة؛ الإنذارات غير المرتبطة بهذه المراسي لا تُصنف آلياً كإنذارات كاذبة.",
+  "6. تغطية GEM المعلنة 1990–2023 تضعه في الفوج الثانوي ≥87 نقطة، وليس فوج Pink Sheet الصارم >500 نقطة.",
+  "7. لم تُعدّل ملفات experiments أو معادلات BreakDetectorV1 المجمدة.",
+  "",
+  "## 8. أخطاء المصادر والاستبعادات"
+ ]
+ for error in m.get("errors",[]):
+  lines.append(f"- {error.get('provider','مصدر غير محدد')} {error.get('indicator',error.get('belt',''))}: {error.get('error','خطأ غير موصوف')}")
+ if not m.get("errors"):
+  lines.append("- لا توجد أخطاء مصادر مسجلة.")
+ lines += ["",f"- عدد السلاسل المستبعدة: {len(m.get('rejected',[]))}"]
+ lines += ["","## 9. سجل التدقيق",f"- Manifest: {m.get('manifest_path','—')}",f"- Normalized inputs: {m.get('normalized',{}).get('path','—')} SHA-256 {m.get('normalized',{}).get('sha256','—')}",f"- Dependency inventory: {m.get('dependencies_path','—')}",f"- Checksums: {m.get('checksums_path','—')}","- Raw source responses: ضمن GitHub Actions Artifact. Pink Sheet يبقى في الذاكرة فقط ما دامت شروط إعادة توزيع ملف XLSX غير محسومة.","",f"حالة التشغيل: {m.get('run_status','—')}",""]
  return "\n".join(lines)
+
+
 def main():
- for p in (RAW,DERIVED,OUT):p.mkdir(parents=True,exist_ok=True)
+ for path in (RAW,DERIVED,OUT):
+  path.mkdir(parents=True,exist_ok=True)
  contract=json.loads((HERE/"shock_event_contract.json").read_text(encoding="utf-8"))
- m={"version":"1.2","run_timestamp_utc":stamp(),"git_commit":os.getenv("GITHUB_SHA","local-unresolved"),"branch":os.getenv("GITHUB_REF_NAME","local"),"detector":"isolated_break_detector_v1","markov_H":H,"period":f"{Y0}-01/{Y1}-12","stationarity_screen":{"method":"ADF plus KPSS at 5% significance","bootstrap_policy":"run Stationary Block-Bootstrap only when ADF rejects a unit root and KPSS does not reject level stationarity"},"dependencies":dependency_inventory(),"bootstrap":{"method":"Politis-Romano Stationary Bootstrap","replicates":REPS,"monthly_mean_block":MONTH_BLOCK,"event_mean_block":EVENT_BLOCK},"shock_contract":contract,"sources":[],"gem_indicators":[],"belts":[],"errors":[],"rejected":[]}
- print("Pink Sheet");pink_items=pink(m);print("accepted",len(pink_items))
- print("GEM");gem_items=gem(m);print("accepted",len(gem_items))
- print("USGS belts");seismic_items=seismic(m);print("accepted",len(seismic_items))
+ dependencies=dependency_inventory()
+ DEPENDENCIES.write_text(json.dumps(dependencies,ensure_ascii=False,indent=2)+"\n",encoding="utf-8")
+ m={
+  "version":"1.3",
+  "run_timestamp_utc":stamp(),
+  "git_commit":os.getenv("GITHUB_SHA","local-unresolved"),
+  "branch":os.getenv("GITHUB_REF_NAME","local"),
+  "detector":"isolated_break_detector_v1",
+  "markov_H":H,
+  "period":f"{Y0}-01/{Y1}-12",
+  "stationarity_screen":{"method":"ADF plus KPSS at 5% significance","bootstrap_policy":"run Stationary Block-Bootstrap only when ADF rejects a unit root and KPSS does not reject level stationarity"},
+  "dependencies":dependencies,
+  "bootstrap":{"method":"Politis-Romano Stationary Bootstrap","replicates":REPS,"monthly_mean_block":MONTH_BLOCK,"event_mean_block":EVENT_BLOCK},
+  "shock_contract":contract,
+  "sources":[],
+  "gem_indicators":[],
+  "belts":[],
+  "errors":[],
+  "rejected":[]
+ }
+ print("Pink Sheet")
+ pink_items=pink(m)
+ print("PINK ACCEPTED",len(pink_items))
+ print("GEM")
+ gem_items=gem(m)
+ print("GEM ACCEPTED",len(gem_items))
+ print("USGS belts")
+ seismic_items=seismic(m)
+ print("USGS ACCEPTED",len(seismic_items))
  candidates=pink_items+gem_items+seismic_items
- m["pink_eligible"]=len(pink_items);m["gem_eligible"]=len(gem_items);m["seismic_eligible"]=len(seismic_items)
- if not pink_items or not seismic_items:
-  m["run_status"]="FAILED_REQUIRED_COHORT_MISSING";m["series_results"]=[];m["aggregate"]=aggregate([],contract);m["normalized"]={"path":"not-created","sha256":"none","rows":0}
-  m["manifest_path"]=str(MANIFEST.relative_to(ROOT));m["checksums_path"]=str(CHECKSUMS.relative_to(ROOT));MANIFEST.write_text(json.dumps(m,ensure_ascii=False,indent=2)+"\n",encoding="utf-8");REPORT.write_text(make_report(m),encoding="utf-8");return 2
+ m["pink_eligible"]=len(pink_items)
+ m["gem_eligible"]=len(gem_items)
+ m["seismic_eligible"]=len(seismic_items)
  results=[]
- for n,item in enumerate(candidates,1):
-  print(f"{n}/{len(candidates)} {item['id']} n={len(item['values'])}")
-  results.append(eval_series(item,contract))
- normalized=normalized_csv(candidates);m["normalized"]=normalized;m["series_results"]=results;m["aggregate"]=aggregate(results,contract);m["run_status"]="COMPLETED_WITH_SOURCE_WARNINGS" if m["errors"] else "COMPLETED"
+ if pink_items and seismic_items:
+  for index,item in enumerate(candidates,1):
+   print(f"{index}/{len(candidates)} {item['id']} n={len(item['values'])}")
+   results.append(eval_series(item,contract))
+  m["normalized"]=normalized_csv(candidates)
+  m["run_status"]="COMPLETED_WITH_SOURCE_WARNINGS" if m["errors"] else "COMPLETED"
+ else:
+  m["normalized"]={"path":"not-created","sha256":"none","rows":0}
+  m["run_status"]="FAILED_REQUIRED_COHORT_MISSING"
+ m["series_results"]=results
+ m["aggregate"]=aggregate(results,contract)
+ m["manifest_path"]=str(MANIFEST.relative_to(ROOT))
+ m["checksums_path"]=str(CHECKSUMS.relative_to(ROOT))
+ m["dependencies_path"]=str(DEPENDENCIES.relative_to(ROOT))
+ m["raw_snapshots"]=len(m["sources"])
+
+ sum_paths=[p for p in list(RAW.rglob("*"))+list(DERIVED.rglob("*")) if p.is_file()]
+ sum_paths += [
+  HERE/"run_pipeline.py",
+  HERE/"shock_event_contract.json",
+  HERE/"requirements.txt",
+  HERE/"tests"/"test_pipeline.py",
+  HERE/"config"/"pipeline.json",
+  HERE/"config"/"gem_indicators.json",
+  HERE/"config"/"seismic_belts.json",
+  HERE/"README_AR.md",
+  DEPENDENCIES,
+  ROOT/".github"/"workflows"/"real-data-stress.yml",
+  ROOT/"structural_engine"/"isolated_break_detector_v1"/"break_detector_v1.py",
+  ROOT/"structural_engine"/"isolated_break_detector_v1"/"engine_fast_ref.py",
+  ROOT/"structural_engine"/"isolated_break_detector_v1"/"engine_markov_cusum.py"
+ ]
  sums=[]
- for p in sorted([p for p in list(RAW.rglob("*"))+list(DERIVED.rglob("*")) if p.is_file()]):sums.append(f"{hash_file(p)}  {p.relative_to(ROOT).as_posix()}")
- for p in [HERE/"run_pipeline.py",HERE/"shock_event_contract.json",ROOT/"structural_engine/isolated_break_detector_v1/break_detector_v1.py",ROOT/"structural_engine/isolated_break_detector_v1/engine_fast_ref.py",ROOT/"structural_engine/isolated_break_detector_v1/engine_markov_cusum.py"]:
-  sums.append(f"{hash_file(p)}  {p.relative_to(ROOT).as_posix()}")
+ for path in sorted(set(path for path in sum_paths if path.exists())):
+  sums.append(f"{hash_file(path)}  {path.relative_to(ROOT).as_posix()}")
  CHECKSUMS.write_text("\n".join(sums)+"\n",encoding="utf-8")
- m["manifest_path"]=str(MANIFEST.relative_to(ROOT));m["checksums_path"]=str(CHECKSUMS.relative_to(ROOT));m["dependencies_path"]=str(DEPENDENCIES.relative_to(ROOT));m["raw_snapshots"]=len(m["sources"])
- MANIFEST.write_text(json.dumps(m,ensure_ascii=False,indent=2)+"\n",encoding="utf-8");REPORT.write_text(make_report(m),encoding="utf-8")
- print("STATUS",m["run_status"],"series",len(results),"errors",len(m["errors"]))
- return 0
+ MANIFEST.write_text(json.dumps(m,ensure_ascii=False,indent=2)+"\n",encoding="utf-8")
+ REPORT.write_text(make_report(m),encoding="utf-8")
+ print("STATUS",m["run_status"],"series",len(results),"errors",len(m["errors"]),"G1_PASS",sum(1 for series in results if series["g1"].get("passed")))
+ return 0 if m["run_status"] in {"COMPLETED","COMPLETED_WITH_SOURCE_WARNINGS"} else 2
 if __name__=="__main__":raise SystemExit(main())
