@@ -44,11 +44,23 @@ class GardnerKnopoffTests(unittest.TestCase):
         self.assertEqual(summary["dependent_events_removed"], 2)
 
     def test_backward_window_fraction(self):
-        catalog = [event("main", 0, 6.0), event("old", -100, 4.8)]
+        catalog = [event("main", 0, 6.0), event("old", -300, 4.8)]
         half, _ = gardner_knopoff_declustering(catalog, 0.5)
         full, _ = gardner_knopoff_declustering(catalog, 1.0)
         self.assertEqual({x["id"]: x["declustering_role"] for x in half}["old"], "BACKGROUND")
         self.assertEqual({x["id"]: x["declustering_role"] for x in full}["old"], "FORESHOCK")
+
+    def test_unclustered_larger_event_can_be_captured_by_later_cluster(self):
+        catalog = [
+            event("larger_singleton", 0, 6.0, lat=0.0, lon=0.0),
+            event("smaller_main", 1, 5.0, lat=0.0, lon=5.0),
+            event("smaller_aftershock", 2, 4.0, lat=0.02, lon=5.0),
+        ]
+        labeled, _ = gardner_knopoff_declustering(catalog)
+        rows = {row["id"]: row for row in labeled}
+        self.assertEqual(rows["larger_singleton"]["declustering_role"], "BACKGROUND")
+        self.assertEqual(rows["smaller_main"]["declustering_role"], "MAINSHOCK")
+        self.assertEqual(rows["smaller_aftershock"]["declustering_role"], "AFTERSHOCK")
 
     def test_deterministic_labels_for_equal_magnitudes(self):
         catalog = [event("z", 2, 5.0, 20, 20), event("a", 1, 5.0, -20, -20)]
