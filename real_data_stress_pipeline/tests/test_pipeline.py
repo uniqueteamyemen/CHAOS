@@ -2,7 +2,7 @@ import unittest
 import numpy as np
 
 from real_data_stress_pipeline.run_pipeline import (
-    g0, longest_run, month, label_month, returns, stationary_sample, wilson,
+    g0, longest_run, month, label_month, returns, stationary_sample, wilson, series_category, shock_eval,
 )
 
 class StressPipelineContractTests(unittest.TestCase):
@@ -48,6 +48,33 @@ class StressPipelineContractTests(unittest.TestCase):
         self.assertLess(low, 0.05)
         self.assertGreater(high, 0.05)
         self.assertIsNone(wilson(0, 0))
+
+
+    def test_series_categories_respect_domain_terms(self):
+        self.assertEqual(series_category({"domain": "commodity", "name": "Crude Oil, Brent"}), "energy")
+        self.assertEqual(series_category({"domain": "commodity", "name": "Copper"}), "metals")
+        self.assertEqual(series_category({"domain": "commodity", "name": "Cocoa"}), "agriculture_food")
+        self.assertEqual(series_category({"domain": "macro", "name": "CPI"}), "macro")
+
+    def test_oil_anchor_excludes_non_energy_series(self):
+        import json
+        from pathlib import Path
+        contract = json.loads((Path(__file__).resolve().parents[1] / "shock_event_contract.json").read_text(encoding="utf-8"))
+        copper = {"domain": "commodity", "name": "Copper", "axis": ["2014-06"]}
+        results = shock_eval(copper, [], contract)
+        oil = next(x for x in results if x["event_id"] == "OIL_2014")
+        self.assertFalse(oil["eligible"])
+
+    def test_alarm_is_not_reused_for_overlapping_anchor_windows(self):
+        import json
+        from pathlib import Path
+        contract = json.loads((Path(__file__).resolve().parents[1] / "shock_event_contract.json").read_text(encoding="utf-8"))
+        series = {"domain": "macro", "name": "GEM CPI", "axis": ["2021-02"]}
+        events = [{"detection_time": 0, "status": "CONFIRMED"}]
+        matches = shock_eval(series, events, contract)
+        matched = [x for x in matches if x["matched"]]
+        self.assertEqual(len(matched), 1)
+        self.assertEqual(matched[0]["event_id"], "COVID_2020")
 
 if __name__ == "__main__":
     unittest.main()
