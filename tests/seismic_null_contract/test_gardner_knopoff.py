@@ -39,7 +39,8 @@ class GardnerKnopoffTests(unittest.TestCase):
         self.assertEqual(rows["foreshock"]["declustering_role"], "FORESHOCK")
         self.assertEqual(rows["background"]["declustering_role"], "BACKGROUND")
         self.assertEqual(summary["events_input"], 4)
-        self.assertEqual(summary["mainshocks_retained"], 2)
+        self.assertEqual(summary["retained_events"], 2)
+        self.assertEqual(summary["cluster_mainshocks_retained"], 1)
         self.assertEqual(summary["dependent_events_removed"], 2)
 
     def test_backward_window_fraction(self):
