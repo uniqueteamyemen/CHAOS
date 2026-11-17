@@ -57,7 +57,40 @@ class MarkovAuditTests(unittest.TestCase):
             0.8,
         )
         self.assertNotIn("by_mode", report)
-        self.assertEqual(commodity["reported_rho_bias_correction_enabled_false"], 1)
+        self.assertEqual(
+            commodity["g1_passed_series_reporting_rho_bias_correction_enabled_false"], 1
+        )
+        self.assertEqual(
+            commodity["observed_alert_count_g1_passed_series"]["mean"], 1.0
+        )
+
+    def test_non_g1_series_is_not_in_bootstrap_comparison_denominator(self):
+        def make_series(passed, alarms, runs):
+            return {
+                "cohort": "strict_long_monthly",
+                "duration_years": 10.0,
+                "g1": {"passed": passed},
+                "detector": {
+                    mode: {"alarm_count": alarms, "diagnostics": {}}
+                    for mode in ("fast", "markov_cusum", "consensus")
+                },
+                "bootstrap": {
+                    "by_mode": {
+                        mode: {"alarms": 20, "runs": runs, "events": 30, "errors": 0}
+                        for mode in ("fast", "markov_cusum", "consensus")
+                    }
+                },
+            }
+
+        summary = summarize_cohort([
+            make_series(True, 1, 100),
+            make_series(False, 99, 0),
+        ])["by_mode"]["markov_cusum"]
+
+        self.assertEqual(summary["observed_alert_count_all_series"]["n"], 2)
+        self.assertEqual(summary["observed_alert_count_g1_passed_series"]["n"], 1)
+        self.assertEqual(summary["observed_alert_count_g1_passed_series"]["mean"], 1.0)
+        self.assertEqual(summary["bootstrap_eligible_series"], 1)
 
     def test_rejects_missing_cohort(self):
         with self.assertRaises(ValueError):
