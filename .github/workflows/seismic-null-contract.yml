@@ -1,0 +1,31 @@
+name: CHAOS P2.2.2 — Seismic Null Contract
+
+on:
+  push:
+    branches:
+      - p2.2.2-seismic-null-contract
+    paths:
+      - 'real_data_stress_pipeline/contracts/seismic_null_model_contract_v1.json'
+      - 'tests/seismic_null_contract/**'
+      - '.github/workflows/seismic-null-contract.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  contract-tests:
+    name: seismic-null-contract-tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout isolated seismic contract branch
+        uses: actions/checkout@v4
+        with:
+          ref: p2.2.2-seismic-null-contract
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Validate seismic null contract
+        run: python -m unittest discover -s tests/seismic_null_contract -p 'test_*.py' -v
