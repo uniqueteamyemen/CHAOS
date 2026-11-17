@@ -9,10 +9,11 @@ import numpy as np
 from scipy.spatial import cKDTree
 
 EARTH_RADIUS_KM = 6371.0088
+GK_DECIMAL_YEAR_DAYS = 364.75
 DEFAULT_FORESHOCK_TIME_FRACTION = 0.5
 
 
-def _as_utc_epoch(value: Any) -> float:
+def _as_utc_datetime(value: Any) -> datetime:
     if isinstance(value, datetime):
         parsed = value
     elif isinstance(value, str):
@@ -21,7 +22,21 @@ def _as_utc_epoch(value: Any) -> float:
         raise ValueError("event_time_must_be_iso8601_or_datetime")
     if parsed.tzinfo is None:
         raise ValueError("event_time_must_include_timezone")
-    return parsed.astimezone(timezone.utc).timestamp()
+    return parsed.astimezone(timezone.utc)
+
+
+def _as_utc_epoch(value: Any) -> float:
+    return _as_utc_datetime(value).timestamp()
+
+
+def decimal_year(value: Any) -> float:
+    """Match the decimal-year clock used by OpenQuake HMTK."""
+    parsed = _as_utc_datetime(value)
+    year_start = datetime(parsed.year, 1, 1, tzinfo=timezone.utc)
+    next_year = datetime(parsed.year + 1, 1, 1, tzinfo=timezone.utc)
+    elapsed = (parsed - year_start).total_seconds()
+    year_seconds = (next_year - year_start).total_seconds()
+    return parsed.year + elapsed / year_seconds
 
 
 def gardner_knopoff_windows(magnitude: float) -> tuple[float, float]:
@@ -97,6 +112,7 @@ def gardner_knopoff_declustering(
         space_km, time_days = gardner_knopoff_windows(magnitude)
         prepared.append({
             "original": dict(raw), "id": event_id, "epoch": epoch,
+            "decimal_year": decimal_year(raw.get("time", raw.get("time_utc"))),
             "magnitude": magnitude, "latitude": latitude, "longitude": longitude,
             "space_km": space_km, "time_days": time_days,
         })
@@ -123,16 +139,20 @@ def gardner_knopoff_declustering(
         angular_radius = min(math.pi, main["space_km"] / EARTH_RADIUS_KM)
         chord_radius = 2.0 * math.sin(angular_radius / 2.0)
         candidates = tree.query_ball_point(xyz[main_index], chord_radius)
-        backward_days = fraction * main["time_days"]
+        # OpenQuake HMTK represents these empirical windows in decimal years
+        # using the fixed 364.75-day conversion in GardnerKnopoffWindow.
+        time_window_years = main["time_days"] / GK_DECIMAL_YEAR_DAYS
+        backward_years = fraction * time_window_years
         members: list[int] = []
 
         for candidate_index in candidates:
             if candidate_index in assigned:
                 continue
             candidate = prepared[candidate_index]
-            delta_days = (candidate["epoch"] - main["epoch"]) / 86400.0
-            if delta_days < -backward_days or delta_days > main["time_days"]:
+            delta_years = candidate["decimal_year"] - main["decimal_year"]
+            if delta_years < -backward_years or delta_years > time_window_years:
                 continue
+            delta_days = (candidate["epoch"] - main["epoch"]) / 86400.0
             distance = haversine_km(
                 main["latitude"], main["longitude"],
                 candidate["latitude"], candidate["longitude"],
@@ -147,6 +167,7 @@ def gardner_knopoff_declustering(
                 "time_delta_days_from_mainshock": 0.0,
                 "space_window_km": round(main["space_km"], 6),
                 "time_window_days": round(main["time_days"], 6),
+                "time_window_decimal_years": round(time_window_years, 9),
             }
             continue
 
@@ -162,6 +183,7 @@ def gardner_knopoff_declustering(
                 "time_delta_days_from_mainshock": round(delta_days, 8),
                 "space_window_km": round(main["space_km"], 6),
                 "time_window_days": round(main["time_days"], 6),
+                "time_window_decimal_years": round(time_window_years, 9),
             }
 
     output: list[dict[str, Any]] = []
