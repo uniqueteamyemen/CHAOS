@@ -65,8 +65,9 @@ other external resources.
 Those inputs retain their own legal status, terms, attribution requirements, and limitations.
 In particular:
 
-- World Bank data must be attributed and reused under the applicable dataset terms (the
-  Commodity Price Data catalogue identifies CC BY 4.0 for the relevant commodity dataset).
+- World Bank GEM metadata identifies CC BY 4.0 for that dataset. The Pink Sheet page lists a
+  related monthly workbook, but its workbook-specific redistribution terms were not established
+  by this review; do not assume GEM's license applies to Pink Sheet.
 - USGS earthquake records are attributed to the USGS/ComCat source; the exact legal status of
   each event product or contributed material must be checked where relevant.
 - Software dependencies remain subject to their respective licenses, recorded in dependency
@@ -102,4 +103,4 @@ jurisdiction-specific legal advice or written agreements needed to establish cha
 For permissions, licensing, or rights enquiries, contact the repository owner through
 https://github.com/uniqueteamyemen.
 
-**Copyright (c) 2026 uniqueteamyemen. Proprietary — All Rights Reserved.**
+**Copyright (c) 2025–2026 uniqueteamyemen. Proprietary — All Rights Reserved.**
