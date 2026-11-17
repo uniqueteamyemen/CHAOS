@@ -4,7 +4,7 @@ from io import BytesIO
 from openpyxl import Workbook
 
 from real_data_stress_pipeline.run_pipeline import (
-    g0, g1, boot, parse_pink, longest_run, month, label_month, returns, stationary_sample, wilson, series_category, shock_eval,
+    g0, g1, boot, parse_pink, longest_run, month, label_month, returns, stationary_sample, wilson, series_category, shock_eval, applicable_shock_series,
 )
 
 class StressPipelineContractTests(unittest.TestCase):
@@ -132,6 +132,22 @@ class StressPipelineContractTests(unittest.TestCase):
         self.assertEqual(series_category({"domain": "commodity", "name": "OIL_BRENT"}), "energy")
         self.assertEqual(series_category({"domain": "commodity", "name": "iCOPPER"}), "metals")
         self.assertEqual(series_category({"domain": "commodity", "name": "iWHEAT_US_HRW"}), "agriculture_food")
+
+
+    def test_unrelated_commodity_is_excluded_from_shock_alarm_burden(self):
+        contract = {
+            "events": [
+                {"id": "GFC", "applicable_categories": ["macro", "energy"]},
+                {"id": "OIL", "applicable_categories": ["energy"]},
+            ]
+        }
+        item = {"source": "pink_sheet", "frequency": "monthly", "domain": "commodity", "name": "Rubber"}
+        self.assertFalse(applicable_shock_series(item, contract))
+
+    def test_macro_series_is_in_shock_matching_cohort(self):
+        contract = {"events": [{"id": "COVID", "applicable_categories": ["macro"]}]}
+        item = {"source": "gem", "frequency": "monthly", "domain": "macro", "name": "CPI"}
+        self.assertTrue(applicable_shock_series(item, contract))
 
 if __name__ == "__main__":
     unittest.main()
