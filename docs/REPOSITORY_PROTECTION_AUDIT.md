@@ -3,67 +3,71 @@
 **Audit date:** 17 November 2026  
 **Repository:** `uniqueteamyemen/CHAOS`  
 **Branch reviewed:** `main-phase2`  
-**Branch head at inspection:** `49f3030be6fa4610b2413ccd5700f9b0ec68848f`
+**Branch head at verification:** `69320401e2ac73c6ded1b313022b6584c81c645f`
 
-## Observed GitHub state
+## 1. Current observed GitHub state
 
-The branch metadata endpoint returned:
+The branch endpoint reports:
 
-- `protected: false`
-- branch head `49f3030be6fa4610b2413ccd5700f9b0ec68848f`
+- `protected: true`
+- Branch head `69320401e2ac73c6ded1b313022b6584c81c645f`
+- Classic protection object `enabled: false` (the active protection is through a repository ruleset)
 
-The repository ruleset collection returned one active ruleset:
+Repository ruleset `27488330` is active and explicitly targets `refs/heads/main-phase2`.
 
-| Field | Observed value |
+| Rule | Current value |
 |---|---|
-| Ruleset ID | `27488330` |
-| Name | `main-phase2` |
-| Target | `branch` |
 | Enforcement | `active` |
-| Ref include | `[]` |
-| Ref exclude | `[]` |
-| Rules | `deletion`, `non_fast_forward` |
-| Bypass actors | none |
+| Target pattern | `refs/heads/main-phase2` |
+| Prevent deletion | Enabled |
+| Prevent non-fast-forward updates | Enabled |
+| Required status check | `stress` (GitHub Actions integration ID 15368) |
+| Restrict updates | Enabled |
+| Strict status-check policy | `false` |
+| Require pull requests | Not configured |
+| Required human approvals | Not configured |
+| Bypass | Repository role and integration actors are listed; `current_user_can_bypass: always` |
 
-An active ruleset label does not prove that a particular branch is selected. GitHub's ruleset documentation states that one of the `ref_name.include` patterns must match for the condition to pass, and supports explicit patterns such as `refs/heads/main-phase2`, `~DEFAULT_BRANCH`, or `~ALL`. The observed empty `include` does not explicitly target `main-phase2`. Treat the current ruleset as ineffective for the working branch until the include condition is corrected and the effective rules are verified.
+**Conclusion:** `main-phase2` is protected by an active matching ruleset. The ruleset is not an administrator-proof lock: configured bypass actors, including repository roles, can bypass. It also does not force changes through pull requests or require independent human review. The current required check is the single job context `stress`.
 
-Even if the ref condition were corrected, the listed rules only prevent deletion and non-fast-forward updates. They do not require pull requests or status checks. Ordinary fast-forward pushes remain possible under those two rules.
+The ruleset details were re-read from GitHub after the owner-side settings changed. The connected GitHub integration still does not expose a ruleset mutation action, so no claim is made that this assistant created or edited the platform settings.
 
-## Integration limitation
+## 2. Workflow conflict and remediation
 
-The connected GitHub integration returned HTTP 403 for the classic branch-protection read endpoint. Its available `fetch` action is read-only, and no ruleset create/update action is exposed in the current tool connection. GitHub documents that creating or updating a repository ruleset requires repository **Administration: write** permission.
+The previous workflow attempted to push generated results directly to `main-phase2` before its own `stress` job had completed. That is incompatible with the newly active `update` and `required_status_checks` rules for a non-bypass automation actor.
 
-Therefore this audit did not change GitHub repository settings, and platform-level branch protection must not be reported as enabled. The owner can apply the settings through GitHub's repository Settings UI or reconnect an integration with the required Administration: write scope.
+The P2.2 workflow was changed so generated results remain in the workflow workspace/artifact and are attached to a new P2.2.1 GitHub Release. The workflow tags its source commit and does not push generated output commits to the protected branch. The validation run is:
 
-## Workflow compatibility issue
+[GitHub Actions — P2.2.1 validation](https://github.com/uniqueteamyemen/CHAOS/actions/runs/44164220182)
 
-Before enforcing a pull-request requirement, refactor `.github/workflows/real-data-stress.yml`. Its current successful-run path commits generated report and manifest files and executes:
+At the time of this audit, the full historical pipeline was still running; release publication is not considered complete until the workflow reports success and the release/tag assets are verified.
 
-```bash
-git push origin HEAD:main-phase2
-```
+## 3. Tag protection remains outstanding
 
-A PR-only ruleset would reject that direct bot push. Move generated results to a dedicated results branch and open a PR, or keep generated outputs in versioned release assets without writing them directly to `main-phase2`.
+No tag-targeted ruleset was verified for:
 
-The current `.github/CODEOWNERS` routes files to `@uniqueteamyemen`. Because the account owner is the sole owner, do not require a separate human approval from the same PR author; such a rule can make owner-authored changes unmergeable.
+- `phase1-detector-freeze-v1.0`
+- `p2.2-historical-stress-v1.0.0`
 
-## Recommended ruleset design
+The Phase 1 Release API reports `immutable: false`. These releases and tags must not be described as immutable or platform-locked. A separate tag ruleset should match those exact tag refs and prevent update/deletion.
 
-After the workflow change and after the CI check contexts have been observed on a test PR:
+## 4. Frozen-source protections
 
-1. Create an active branch ruleset with `ref_name.include = ["refs/heads/main-phase2"]`.
-2. Prevent branch deletion and non-fast-forward updates.
-3. Require pull requests for updates to `main-phase2`.
-4. Require the successful `experiments-immutable` check and a dedicated P2.2 contract-test check.
-5. Keep owner bypass disabled unless a documented emergency path is required.
-6. Add a separate tag-targeted ruleset for `phase1-detector-freeze-v1.0` and `p2.2-historical-stress-v1.0.0`, preventing their deletion or movement.
+The existing `.github/workflows/experiments-immutable.yml` checks changes to `experiments/**` on pull requests and direct pushes. `AGENTS.md` also forbids edits to the frozen experiments archive and `structural_engine/isolated_break_detector_v1/` in this workstream.
 
-Do not enable a required-check rule until the exact check names are present on a real PR. Do not turn on PR-only enforcement until the direct-push workflow has been redesigned.
+The current code changes are confined to:
 
-## Evidence links
+- `real_data_stress_pipeline/run_pipeline.py`
+- `real_data_stress_pipeline/tests/test_pipeline.py`
+- `.github/workflows/real-data-stress.yml`
+- Documentation and generated P2.2 reporting
 
-- [GitHub branch metadata](https://github.com/uniqueteamyemen/CHAOS/tree/main-phase2)
-- [Current ruleset](https://github.com/uniqueteamyemen/CHAOS/rules/27488330)
-- [CODEOWNERS](../.github/CODEOWNERS)
-- [P2.2 workflow](../.github/workflows/real-data-stress.yml)
-- [GitHub REST API ruleset documentation](https://docs.github.com/en/rest/repos/rules)
+No change was made to `experiments/**`, the frozen detector implementation, or its constants.
+
+## 5. Evidence
+
+- [Branch metadata](https://github.com/uniqueteamyemen/CHAOS/tree/main-phase2)
+- [Ruleset 27488330](https://github.com/uniqueteamyemen/CHAOS/rules/27488330)
+- [Updated P2.2 workflow](../.github/workflows/real-data-stress.yml)
+- [P2.2.1 validation run](https://github.com/uniqueteamyemen/CHAOS/actions/runs/44164220182)
+- [Archive and tag status](ARCHIVE_AND_TAG_STATUS.md)
