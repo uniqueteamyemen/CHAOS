@@ -70,6 +70,10 @@ class DomainNullAuditHelperTests(unittest.TestCase):
         )
         self.assertNotIn("FPR", json.dumps(result))
         self.assertEqual(result["catalog_completeness_status"], "NOT_ASSESSED")
+        self.assertFalse(result["inferential_goodness_of_fit_p_values_reported"])
+        self.assertNotIn("monthly_count_dispersion_two_sided_p", result)
+        if result["inter_event_exponential_ks"] is not None:
+            self.assertNotIn("p_value", result["inter_event_exponential_ks"])
 
 
 if __name__ == "__main__":
