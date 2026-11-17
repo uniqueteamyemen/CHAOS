@@ -6,7 +6,7 @@ on:
       - diag/markov-real-data-behavior
     paths:
       - 'scripts/audits/p2_2_3_markov_real_data_behavior.py'
-      - 'tests/audits/**'
+      - 'tests/audits/test_p2_2_3_markov_real_data_behavior.py'
       - '.github/workflows/markov-real-data-behavior.yml'
   workflow_dispatch:
 
