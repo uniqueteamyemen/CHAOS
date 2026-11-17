@@ -153,7 +153,7 @@ def gem(m):
   page=1;pages=1;groups=defaultdict(dict);names={};hashes=[]
   try:
    while page<=pages:
-    q=urllib.parse.urlencode({"source":15,"format":"json","per_page":20000,"page":page})
+    q=urllib.parse.urlencode({"source":15,"format":"json","per_page":20000,"page":page,"date":"1990M01:2023M12","frequency":"M"})
     url=f"https://api.worldbank.org/v2/country/all/indicator/{code}?{q}"
     raw=get(url,3);obj=json.loads(raw)
     if not isinstance(obj,list) or len(obj)<2 or not isinstance(obj[0],dict):raise ValueError("unexpected API response")
@@ -171,7 +171,7 @@ def gem(m):
     if not q["passed"]:
      m["rejected"].append({"source":"gem","series":f"{code}:{iso}","quality":q});continue
     out.append({"id":f"gem:{code}:{iso}","source":"gem","source_name":"World Bank GEM","name":f"{desc} — {names[iso]}","cohort":"secondary_gem_monthly_87_plus","domain":"macro","frequency":"monthly","axis":axis,"values":vals,"sha256":hashes[0] if hashes else None,"points":len(ys),"quality":q})
-   m["gem_indicators"].append({"code":code,"records_with_monthly_dates":sum(map(len,groups.values())),"country_series":len(groups),"accepted":sum(1 for x in out if x["id"].startswith("gem:"+code+":")),"raw_hashes":hashes})
+   m["gem_indicators"].append({"code":code,"description":desc,"date_query":"1990M01:2023M12","frequency_query":"M","records_with_monthly_dates":sum(map(len,groups.values())),"country_series":len(groups),"accepted":sum(1 for x in out if x["id"].startswith("gem:"+code+":")),"raw_hashes":hashes,"status":"monthly_data_found" if groups else "no_monthly_records_for_indicator"})
   except Exception as e:
    m["errors"].append({"provider":"World Bank GEM","indicator":code,"error":str(e),"time":stamp()})
    m["gem_indicators"].append({"code":code,"status":"unavailable_or_nonmonthly","error":str(e)})
