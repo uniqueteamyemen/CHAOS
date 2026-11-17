@@ -41,24 +41,50 @@ class MarkovRealDataBehaviorTests(unittest.TestCase):
 
     def test_summary_separates_cohort_length_and_transform(self):
         rows = [
-            {"category":"energy","sample_length":100,"input_variant":"raw",
+            {"series_id":"energy_a","category":"energy","sample_length":100,"input_variant":"raw",
              "has_any_alarm":True,"alarm_count":1,"cusum_peak":8.8,
              "cusum_updates":49,"rho_cusum_used":0.2},
-            {"category":"energy","sample_length":100,"input_variant":"raw",
+            {"series_id":"energy_a","category":"energy","sample_length":100,"input_variant":"raw",
              "has_any_alarm":False,"alarm_count":0,"cusum_peak":2.0,
              "cusum_updates":49,"rho_cusum_used":0.2},
-            {"category":"energy","sample_length":100,"input_variant":"rolling_mad_scale_only",
+            {"series_id":"energy_a","category":"energy","sample_length":100,"input_variant":"rolling_mad_scale_only",
              "has_any_alarm":False,"alarm_count":0,"cusum_peak":1.0,
              "cusum_updates":49,"rho_cusum_used":0.1},
-            {"category":"metals","sample_length":539,"input_variant":"raw",
+            {"series_id":"metal_b","category":"metals","sample_length":539,"input_variant":"raw",
              "has_any_alarm":True,"alarm_count":2,"cusum_peak":10.0,
              "cusum_updates":488,"rho_cusum_used":0.3},
         ]
         summary = summarize_records(rows)
-        self.assertEqual(summary["energy|n=100|raw"]["conditional_null_alarm_probability"], 0.5)
-        self.assertEqual(summary["energy|n=100|rolling_mad_scale_only"]["conditional_null_alarm_probability"], 0.0)
-        self.assertIn("metals|n=539|raw", summary)
+        raw = summary["per_series"]["energy_a|n=100|raw"]
+        normalized = summary["per_series"]["energy_a|n=100|rolling_mad_scale_only"]
+        self.assertEqual(raw["conditional_null_alarm_probability"], 0.5)
+        self.assertEqual(normalized["conditional_null_alarm_probability"], 0.0)
+        self.assertIn("metals|n=539|raw", summary["by_category_length_variant"])
+        self.assertEqual(
+            summary["by_category_length_variant"]["energy|n=100|raw"]["series_count"],
+            1,
+        )
 
+
+    def test_category_summary_uses_equal_series_weight_not_pooled_replicates(self):
+        rows = []
+        rows.extend([
+            {"series_id":"a","category":"energy","sample_length":100,"input_variant":"raw",
+             "has_any_alarm":True,"alarm_count":1,"cusum_peak":8.0,
+             "cusum_updates":50,"rho_cusum_used":0.2}
+            for _ in range(50)
+        ])
+        rows.extend([
+            {"series_id":"b","category":"energy","sample_length":100,"input_variant":"raw",
+             "has_any_alarm":False,"alarm_count":0,"cusum_peak":2.0,
+             "cusum_updates":50,"rho_cusum_used":0.2}
+            for _ in range(150)
+        ])
+        summary = summarize_records(rows)
+        category = summary["by_category_length_variant"]["energy|n=100|raw"]
+        self.assertEqual(category["series_count"], 2)
+        self.assertEqual(category["replicates_total"], 200)
+        self.assertEqual(category["conditional_null_alarm_probability_mean_across_series"], 0.5)
 
     def test_vectorized_rolling_mad_is_bitwise_identical_to_reference_loop(self):
         def reference(values, quiet_end=40, window=40):
