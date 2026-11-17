@@ -3,7 +3,7 @@
 **Audit date:** 17 November 2026  
 **Repository:** `uniqueteamyemen/CHAOS`  
 **Branch reviewed:** `main-phase2`  
-**Branch head at verification:** `f3215a6ffb750c273b8e4898a56c2483613b660c`
+**Branch head at verification:** `1b408ae63acaed1446ab1fe3d9394f196c0ddabf`
 
 ## 1. Current observed GitHub state
 
@@ -28,7 +28,7 @@ Repository ruleset `27488330` is active and explicitly targets `refs/heads/main-
 | Required human approvals | Not configured |
 | Bypass | Repository role and integration actors are listed; `current_user_can_bypass: always` |
 
-**Conclusion:** `main-phase2` is protected by an active matching ruleset. The ruleset is not an administrator-proof lock: configured bypass actors, including repository roles, can bypass. It also does not force changes through pull requests or require independent human review. The current required check is the single job context `stress`.
+**Conclusion:** `main-phase2` is protected by an active matching ruleset. The ruleset is not an administrator-proof lock: configured bypass actors, including repository roles, can bypass. It also does not force changes through pull requests or require independent human review. The current required check is the single job context `stress`. The `experiments-immutable` workflow exists and runs on its configured events, but it is not listed as a required status check in this ruleset.
 
 The ruleset details were re-read from GitHub after the owner-side settings changed. The connected GitHub integration still does not expose a ruleset mutation action, so no claim is made that this assistant created or edited the platform settings.
 
