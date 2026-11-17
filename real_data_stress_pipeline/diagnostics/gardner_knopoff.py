@@ -182,7 +182,10 @@ def gardner_knopoff_declustering(
     return output, {
         "method": "Gardner-Knopoff Type-I magnitude-ordered space-time windows",
         "foreshock_time_fraction": fraction,
-        "events_input": len(output), "mainshocks_retained": len(retained),
+        "events_input": len(output), "retained_events": len(retained),
+        "cluster_mainshocks_retained": sum(
+            row["declustering_role"] == "MAINSHOCK" for row in output
+        ),
         "dependent_events_removed": len(dependent),
         "clustered_events": len(output) - backgrounds,
         "background_singletons": backgrounds,
