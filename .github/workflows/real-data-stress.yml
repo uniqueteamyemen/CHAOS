@@ -153,7 +153,7 @@ jobs:
         if: success()
         env:
           GH_TOKEN: ${{ github.token }}
-          TAG_NAME: p2.2-historical-stress-v1.0.0
+          TAG_NAME: p2.2-historical-stress-v1.0.1
         run: |
           set -euo pipefail
           git fetch origin main-phase2
@@ -161,7 +161,7 @@ jobs:
           TAG_SHA="$(git rev-parse HEAD)"
           if ! git ls-remote --exit-code --tags origin "refs/tags/${TAG_NAME}" >/dev/null 2>&1; then
             git tag -a "${TAG_NAME}" "${TAG_SHA}" \
-              -m "CHAOS P2.2 historical sensor stress validation v1.0.0; commit ${TAG_SHA}"
+              -m "CHAOS P2.2.1 cohort-separated bootstrap audit v1.0.1; commit ${TAG_SHA}"
             git push origin "refs/tags/${TAG_NAME}"
           else
             existing="$(git ls-remote origin "refs/tags/${TAG_NAME}^{}" | awk '{print $1}')"
@@ -176,7 +176,7 @@ jobs:
           if ! gh release view "${TAG_NAME}" >/dev/null 2>&1; then
             gh release create "${TAG_NAME}" \
               --target "${TAG_SHA}" \
-              --title "CHAOS P2.2 — Automated Historical Sensor Stress Validation v1.0.0" \
+              --title "CHAOS P2.2.1 — Cohort-Separated Bootstrap Audit v1.0.1" \
               --notes-file REAL_DATA_STRESS_REPORT_AR.md
           fi
           gh release upload "${TAG_NAME}" \
