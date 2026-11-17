@@ -94,23 +94,78 @@ def distribution(values):
 
 
 def summarize_records(records):
-    grouped = defaultdict(list)
+    """Keep the series as the independent unit; aggregate categories equally by series."""
+    by_series = defaultdict(list)
     for row in records:
-        grouped[(row["category"], int(row["sample_length"]), row["input_variant"])].append(row)
-    result = {}
-    for (category, length, variant), rows in sorted(grouped.items()):
+        key = (
+            row["series_id"],
+            row["category"],
+            int(row["sample_length"]),
+            row["input_variant"],
+        )
+        by_series[key].append(row)
+
+    per_series = {}
+    category_groups = defaultdict(list)
+    for (series_id, category, length, variant), rows in sorted(by_series.items()):
         alarm_runs = sum(bool(row["has_any_alarm"]) for row in rows)
-        key = f"{category}|n={length}|{variant}"
-        result[key] = {
-            "category": category, "sample_length": length, "input_variant": variant,
-            "replicates": len(rows), "replicates_with_one_or_more_alarms": alarm_runs,
-            "conditional_null_alarm_probability": alarm_runs/len(rows) if rows else None,
-            "alarm_count_distribution": distribution([r["alarm_count"] for r in rows]),
-            "cusum_peak_distribution": distribution([r["cusum_peak"] for r in rows]),
-            "cusum_updates_distribution": distribution([r["cusum_updates"] for r in rows]),
-            "rho_cusum_used_distribution": distribution([r["rho_cusum_used"] for r in rows]),
+        probability = alarm_runs / len(rows) if rows else None
+        key = f"{series_id}|n={length}|{variant}"
+        series_summary = {
+            "series_id": series_id,
+            "category": category,
+            "sample_length": length,
+            "input_variant": variant,
+            "replicates": len(rows),
+            "replicates_with_one_or_more_alarms": alarm_runs,
+            "conditional_null_alarm_probability": probability,
+            "mean_alarm_count_per_replicate": statistics.fmean(
+                float(row["alarm_count"]) for row in rows
+            ) if rows else None,
+            "cusum_peak_distribution": distribution([row["cusum_peak"] for row in rows]),
+            "cusum_updates_distribution": distribution([row["cusum_updates"] for row in rows]),
+            "rho_cusum_used_distribution": distribution([row["rho_cusum_used"] for row in rows]),
         }
-    return result
+        per_series[key] = series_summary
+        category_groups[(category, length, variant)].append(series_summary)
+
+    by_category = {}
+    for (category, length, variant), series_rows in sorted(category_groups.items()):
+        probabilities = [
+            float(row["conditional_null_alarm_probability"])
+            for row in series_rows
+            if row["conditional_null_alarm_probability"] is not None
+        ]
+        key = f"{category}|n={length}|{variant}"
+        by_category[key] = {
+            "category": category,
+            "sample_length": length,
+            "input_variant": variant,
+            "aggregation_unit": "series",
+            "series_count": len(series_rows),
+            "replicates_total": sum(int(row["replicates"]) for row in series_rows),
+            "replicates_per_series_min": min(int(row["replicates"]) for row in series_rows),
+            "replicates_per_series_max": max(int(row["replicates"]) for row in series_rows),
+            "conditional_null_alarm_probability_mean_across_series": (
+                statistics.fmean(probabilities) if probabilities else None
+            ),
+            "conditional_null_alarm_probability_median_across_series": (
+                statistics.median(probabilities) if probabilities else None
+            ),
+            "per_series_conditional_null_alarm_probability_distribution": distribution(
+                probabilities
+            ),
+        }
+
+    return {
+        "aggregation_note": (
+            "Primary summaries are calculated per series. Category values are equal-weight "
+            "summaries of per-series probabilities; individual replicate records remain "
+            "available for paired and hierarchical analysis."
+        ),
+        "per_series": per_series,
+        "by_category_length_variant": by_category,
+    }
 
 
 def analyze_one(sample, sample_length, replicate_id, series_id, category,
