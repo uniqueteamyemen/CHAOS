@@ -1,0 +1,334 @@
+"""P2.2 real-data stress pipeline. Frozen BreakDetectorV1 is imported and never edited."""
+from __future__ import annotations
+import csv, hashlib, json, math, os, re, time, urllib.parse, urllib.request
+from collections import defaultdict, Counter
+from datetime import datetime, timezone
+from io import BytesIO
+from pathlib import Path
+import numpy as np
+from openpyxl import load_workbook
+from structural_engine.isolated_break_detector_v1 import BreakDetectorV1, DEFAULT_MARKOV_THRESHOLD
+
+ROOT=Path(__file__).resolve().parents[1]
+HERE=Path(__file__).resolve().parent
+RAW=ROOT/"artifacts"/"real_data_stress"/"raw"
+DERIVED=ROOT/"artifacts"/"real_data_stress"/"derived"
+OUT=HERE/"results"; REPORT=ROOT/"REAL_DATA_STRESS_REPORT_AR.md"
+MANIFEST=OUT/"real_data_stress_manifest.json"; CHECKSUMS=OUT/"SHA256SUMS.txt"
+Y0,Y1=1980,2024
+PINK_MIN=int(os.getenv("STRESS_MIN_COMMODITY_POINTS","501"))
+GEM_MIN=int(os.getenv("STRESS_MIN_GEM_POINTS","87"))
+SEISMIC_MIN=87
+REPS=int(os.getenv("STRESS_BOOTSTRAP_REPLICATES","199"))
+MONTH_BLOCK=int(os.getenv("STRESS_BOOTSTRAP_MEAN_BLOCK_MONTHS","12"))
+EVENT_BLOCK=int(os.getenv("STRESS_BOOTSTRAP_MEAN_BLOCK_EVENTS","25"))
+MAG=float(os.getenv("STRESS_USGS_MIN_MAGNITUDE","4.5"))
+H=DEFAULT_MARKOV_THRESHOLD
+UA="CHAOS-P2.2/1.0 https://github.com/uniqueteamyemen/CHAOS"
+LANDING="https://www.worldbank.org/en/research/commodity-markets"
+PINK_FALLBACK="https://thedocs.worldbank.org/en/doc/74e8be41ceb20fa0da750cda2f6b9e4e-0050012026/related/CMO-Historical-Data-Monthly.xlsx"
+GEM={
+ "CPTOTSAXN":"Consumer price index, total, seasonally adjusted",
+ "IPTOTSAKD":"Industrial production, total, seasonally adjusted",
+ "DXGSRMRCHSAXD":"Merchandise exports, seasonally adjusted, current US dollars",
+ "DXGSRMRCHNSKD":"Merchandise exports, seasonally adjusted, constant US dollars",
+}
+BELTS=[
+ {"id":"japan_kuril_kamchatka","name":"Japan–Kuril–Kamchatka","minlatitude":35,"maxlatitude":60,"minlongitude":140,"maxlongitude":180},
+ {"id":"sunda_andaman","name":"Sunda–Andaman","minlatitude":-15,"maxlatitude":20,"minlongitude":90,"maxlongitude":130},
+ {"id":"andes_subduction","name":"Andes subduction","minlatitude":-45,"maxlatitude":10,"minlongitude":-82,"maxlongitude":-65},
+ {"id":"alaska_aleutian","name":"Alaska–Aleutian","minlatitude":50,"maxlatitude":65,"minlongitude":-180,"maxlongitude":-130},
+ {"id":"hellenic_anatolian","name":"Hellenic–Anatolian","minlatitude":30,"maxlatitude":42,"minlongitude":18,"maxlongitude":35},
+]
+def stamp(): return datetime.now(timezone.utc).isoformat()
+def digest(b): return hashlib.sha256(b).hexdigest()
+def hash_file(p):
+ h=hashlib.sha256()
+ with p.open("rb") as f:
+  for x in iter(lambda:f.read(1024*1024),b""):h.update(x)
+ return h.hexdigest()
+def get(url,retries=4,timeout=90):
+ err=None
+ for i in range(retries):
+  try:
+   req=urllib.request.Request(url,headers={"User-Agent":UA,"Accept":"*/*"})
+   with urllib.request.urlopen(req,timeout=timeout) as r:
+    data=r.read()
+    if r.status!=200 or not data:raise RuntimeError(f"HTTP {r.status}, empty={not data}")
+    return data
+  except Exception as e:
+   err=e
+   if i+1<retries:time.sleep(2**i)
+ raise RuntimeError(f"GET failed {url}: {err}")
+def keep_raw(rel,data,provider,url,params=None):
+ p=RAW/rel;p.parent.mkdir(parents=True,exist_ok=True);p.write_bytes(data)
+ return {"path":str(p.relative_to(ROOT)),"sha256":digest(data),"bytes":len(data),"provider":provider,"url":url,"parameters":params or {},"retrieved_at_utc":stamp()}
+def clean(s):return re.sub(r"[^A-Za-z0-9_.-]+","_",str(s)).strip("._")[:100] or "series"
+def number(v):
+ if v is None:return None
+ if isinstance(v,(float,int)):x=float(v)
+ else:
+  s=str(v).strip().replace(",","")
+  if s in {"","...","..","—","-","NA","N/A"}:return None
+  try:x=float(s)
+  except ValueError:return None
+ return x if math.isfinite(x) else None
+def month(v):
+ s=str(v).strip()
+ m=re.fullmatch(r"(\d{4})\s*M\s*(\d{1,2})",s,re.I) or re.fullmatch(r"(\d{4})[-/](\d{1,2})",s) or re.fullmatch(r"(\d{4})(\d{2})",s)
+ if not m:return None
+ y,k=map(int,m.groups())
+ return y*12+k-1 if 1<=k<=12 else None
+def label_month(n):
+ y,m=divmod(int(n),12);return f"{y:04d}-{m+1:02d}"
+def mad(x):
+ a=np.asarray(x,dtype=float)
+ return float(np.median(np.abs(a-np.median(a)))) if a.size and np.all(np.isfinite(a)) else 0.
+def g0(x,n):
+ a=np.asarray(x,dtype=float)
+ if a.ndim!=1 or not np.all(np.isfinite(a)):return {"passed":False,"reason":"nonfinite_or_nonvector"}
+ if len(a)<n:return {"passed":False,"reason":"insufficient_observations","observations":len(a),"required":n}
+ if len(a)<52:return {"passed":False,"reason":"below_detector_minimum"}
+ dm,lm=mad(np.diff(a[:40])),mad(a[:40])
+ if dm<=1e-10:return {"passed":False,"reason":"degenerate_baseline_diff_mad","baseline_diff_mad":dm,"baseline_level_mad":lm}
+ if lm<=1e-10:return {"passed":False,"reason":"degenerate_baseline_level_mad","baseline_diff_mad":dm,"baseline_level_mad":lm}
+ return {"passed":True,"observations":len(a),"minimum":n,"baseline_diff_mad":dm,"baseline_level_mad":lm}
+def longest_run(mapping):
+ runs=[];r=[]
+ for k,v in sorted(mapping.items()):
+  if r and k!=r[-1][0]+1:runs.append(r);r=[]
+  r.append((k,v))
+ if r:runs.append(r)
+ r=max(runs,key=len) if runs else []
+ return [k for k,v in r],[v for k,v in r]
+def returns(months,levels):
+ if len(levels)<2 or any(v<=0 for v in levels):return [],[]
+ return [label_month(m) for m in months[1:]],[math.log(levels[i]/levels[i-1]) for i in range(1,len(levels))]
+def discover_pink():
+ try:
+  html=get(LANDING,2,40).decode("utf-8","replace")
+  links=re.findall(r"""href\s*=\s*["']([^"']*CMO-Historical-Data-Monthly\.xlsx[^"']*)["']""",html,re.I)
+  if links:return urllib.parse.urljoin(LANDING,links[0].replace("&amp;","&")),"dynamic_official_page_link"
+ except Exception:pass
+ return PINK_FALLBACK,"versioned_fallback_after_dynamic_discovery_failure"
+def parse_pink(data):
+ wb=load_workbook(BytesIO(data),read_only=True,data_only=True)
+ ws=next((s for s in wb.worksheets if s.title.strip().casefold()=="monthly prices"),None)
+ if ws is None:raise ValueError("Pink Sheet workbook does not contain Monthly Prices")
+ rows=list(ws.iter_rows(values_only=True));first=next((i for i,r in enumerate(rows) if r and month(r[0]) is not None),None)
+ if first is None:raise ValueError("Pink Sheet monthly date column not found")
+ header=rows[max(0,first-1)];out=defaultdict(dict);count=0
+ for row in rows[first:]:
+  if not row:continue
+  m=month(row[0])
+  if m is None or not Y0*12<=m<(Y1+1)*12:continue
+  count+=1
+  for j,v in enumerate(row[1:],1):
+   x=number(v)
+   if x is None:continue
+   name=str(header[j]).strip() if j<len(header) and header[j] is not None else f"column_{j}"
+   out[name][m]=x
+ wb.close()
+ return dict(out),{"sheet":"Monthly Prices","first_data_row":first+1,"monthly_rows":count,"series_columns":len(out)}
+def pink(m):
+ url,discovery=discover_pink()
+ try:
+  raw=get(url)
+  # The current Pink Sheet workbook's workbook-specific redistribution terms are
+  # not asserted here. Keep the bytes in-memory; publish only hash and derived
+  # audit outputs until terms are verified.
+  sh=digest(raw);parsed,layout=parse_pink(raw);items=[]
+  for name,mapping in sorted(parsed.items()):
+   xs,ys=longest_run(mapping);axis,vals=returns(xs,ys);q=g0(vals,PINK_MIN)
+   if not q["passed"]:
+    m["rejected"].append({"source":"pink_sheet","series":name,"source_points":len(ys),"quality":q});continue
+   items.append({"id":"pink:"+clean(name),"source":"pink_sheet","source_name":"World Bank Pink Sheet","name":name,"cohort":"strict_long_monthly","domain":"commodity","frequency":"monthly","axis":axis,"values":vals,"sha256":sh,"points":len(ys),"quality":q})
+  m["sources"].append({"provider":"World Bank Pink Sheet","url":url,"discovery":discovery,"sha256":sh,"bytes":len(raw),"retrieved_at_utc":stamp(),"raw_preserved":"in-memory only; workbook-specific redistribution terms not established","layout":layout,"accepted_series":len(items)})
+  return items
+ except Exception as e:
+  m["errors"].append({"provider":"World Bank Pink Sheet","url":url,"error":str(e),"time":stamp()});return []
+def gem(m):
+ out=[]
+ for code,desc in GEM.items():
+  page=1;pages=1;groups=defaultdict(dict);names={};hashes=[]
+  try:
+   while page<=pages:
+    q=urllib.parse.urlencode({"source":15,"format":"json","per_page":20000,"page":page})
+    url=f"https://api.worldbank.org/v2/country/all/indicator/{code}?{q}"
+    raw=get(url,3);obj=json.loads(raw)
+    if not isinstance(obj,list) or len(obj)<2 or not isinstance(obj[0],dict):raise ValueError("unexpected API response")
+    pages=int(obj[0].get("pages",1));rows=obj[1]
+    if not isinstance(rows,list):raise ValueError("API has no data rows")
+    rec=keep_raw(f"world_bank/gem/{code}_page_{page:03d}.json",raw,"World Bank GEM",url,{"source":15,"indicator":code,"page":page})
+    m["sources"].append(rec);hashes.append(rec["sha256"])
+    for row in rows:
+     k=month(row.get("date"));v=number(row.get("value"))
+     if k is None or v is None or not Y0*12<=k<(Y1+1)*12:continue
+     country=row.get("country") or {};iso=str(row.get("countryiso3code") or country.get("id") or "UNK");names[iso]=str(country.get("value") or iso);groups[iso][k]=v
+    page+=1
+   for iso,mapping in groups.items():
+    xs,ys=longest_run(mapping);axis,vals=returns(xs,ys);q=g0(vals,GEM_MIN)
+    if not q["passed"]:
+     m["rejected"].append({"source":"gem","series":f"{code}:{iso}","quality":q});continue
+    out.append({"id":f"gem:{code}:{iso}","source":"gem","source_name":"World Bank GEM","name":f"{desc} — {names[iso]}","cohort":"secondary_gem_monthly_87_plus","domain":"macro","frequency":"monthly","axis":axis,"values":vals,"sha256":hashes[0] if hashes else None,"points":len(ys),"quality":q})
+   m["gem_indicators"].append({"code":code,"records_with_monthly_dates":sum(map(len,groups.values())),"country_series":len(groups),"accepted":sum(1 for x in out if x["id"].startswith("gem:"+code+":")),"raw_hashes":hashes})
+  except Exception as e:
+   m["errors"].append({"provider":"World Bank GEM","indicator":code,"error":str(e),"time":stamp()})
+   m["gem_indicators"].append({"code":code,"status":"unavailable_or_nonmonthly","error":str(e)})
+ return out
+def usgs_query(belt,start,end,m,depth=0):
+ p={"format":"geojson","starttime":start,"endtime":end,"minmagnitude":MAG,"minlatitude":belt["minlatitude"],"maxlatitude":belt["maxlatitude"],"minlongitude":belt["minlongitude"],"maxlongitude":belt["maxlongitude"],"orderby":"time-asc","limit":20000}
+ url="https://earthquake.usgs.gov/fdsnws/event/1/query?"+urllib.parse.urlencode(p)
+ raw=get(url,4,120);r=keep_raw(f"usgs/{belt['id']}/{start.replace(':','_')}_{end.replace(':','_')}.geojson",raw,"USGS ComCat",url,p);m["sources"].append(r)
+ fs=json.loads(raw).get("features",[])
+ if len(fs)>=19999:
+  a=datetime.fromisoformat(start);b=datetime.fromisoformat(end)
+  if (b-a).total_seconds()<86400 or depth>=12:raise RuntimeError("catalog query remains saturated at minimum interval")
+  mid=(a+(b-a)/2).strftime("%Y-%m-%dT%H:%M:%S")
+  return usgs_query(belt,start,mid,m,depth+1)+usgs_query(belt,mid,end,m,depth+1)
+ return fs
+def seismic(m):
+ out=[]
+ for belt in BELTS:
+  try:
+   fs=usgs_query(belt,f"{Y0}-01-01T00:00:00",f"{Y1+1}-01-01T00:00:00",m);events={}
+   for f in fs:
+    p=f.get("properties") or {};g=f.get("geometry") or {};c=g.get("coordinates") or []
+    if p.get("time") is None or p.get("mag") is None or len(c)<2:continue
+    eid=str(f.get("id") or f"{p['time']}:{p['mag']}:{c[0]}:{c[1]}")
+    events[eid]={"id":eid,"time":datetime.fromtimestamp(p["time"]/1000,tz=timezone.utc).isoformat(),"epoch_ms":int(p["time"]),"magnitude":float(p["mag"]),"longitude":c[0],"latitude":c[1],"depth_km":c[2] if len(c)>2 else None,"place":p.get("place")}
+   rows=sorted(events.values(),key=lambda x:x["epoch_ms"])
+   csvpath=DERIVED/f"{belt['id']}_events.csv";csvpath.parent.mkdir(parents=True,exist_ok=True)
+   cols=["id","time","epoch_ms","magnitude","longitude","latitude","depth_km","place"]
+   with csvpath.open("w",newline="",encoding="utf-8") as f:
+    w=csv.DictWriter(f,fieldnames=cols);w.writeheader();w.writerows(rows)
+   rec={"id":belt["id"],"name":belt["name"],"bbox":{k:belt[k] for k in ("minlatitude","maxlatitude","minlongitude","maxlongitude")},"min_magnitude":MAG,"events":len(rows),"start":rows[0]["time"] if rows else None,"end":rows[-1]["time"] if rows else None,"csv_sha256":hash_file(csvpath)}
+   m["belts"].append(rec)
+   if len(rows)<SEISMIC_MIN+1:
+    m["rejected"].append({"source":"usgs","series":belt["id"],"quality":{"passed":False,"reason":"fewer_than_88_events_for_87_intervals","event_count":len(rows)}});continue
+   times=[datetime.fromisoformat(x["time"]) for x in rows]
+   gaps=[(times[i]-times[i-1]).total_seconds()/86400 for i in range(1,len(times))]
+   vals=[math.log1p(x) for x in gaps];q=g0(vals,SEISMIC_MIN)
+   if not q["passed"]:
+    m["rejected"].append({"source":"usgs","series":belt["id"],"quality":q});continue
+   out.append({"id":"usgs:"+belt["id"],"source":"usgs","source_name":"USGS ComCat","name":belt["name"],"cohort":"seismic_event_interarrival","domain":"seismic","frequency":"event_interarrival","axis":[x.isoformat() for x in times[1:]],"values":vals,"sha256":hash_file(csvpath),"points":len(rows),"quality":q})
+  except Exception as e:m["errors"].append({"provider":"USGS ComCat","belt":belt["id"],"error":str(e),"time":stamp()})
+ return out
+def stationary_sample(x,rng,block):
+ x=np.asarray(x,float);n=len(x);idx=np.empty(n,dtype=int);idx[0]=int(rng.integers(n));p=1/max(1,block)
+ for i in range(1,n):idx[i]=int(rng.integers(n)) if rng.random()<p else (idx[i-1]+1)%n
+ return x[idx]
+def wilson(k,n):
+ if not n:return None
+ z=1.959963984540054;p=k/n;d=1+z*z/n;c=(p+z*z/(2*n))/d;h=z*math.sqrt((p*(1-p)+z*z/(4*n))/n)/d
+ return [max(0,c-h),min(1,c+h)]
+def run_modes(x):
+ out={}
+ for mode in BreakDetectorV1.MODES:
+  r=BreakDetectorV1(mode=mode,markov_threshold=H).analyze(x);ev=r.get("structural_breaks",[])
+  out[mode]={"alarm_count":len(ev),"provisional_count":len(r.get("provisional_events",[])),"confirmed_count":len(r.get("confirmed_events",[])),"transient_count":len(r.get("transient_anomalies",[])),"unresolved_count":len(r.get("unresolved_alerts",[])),"pending_lifecycle":r.get("pending_lifecycle"),"diagnostics":r.get("diagnostics",{}),"sample_adequacy":r.get("sample_adequacy",{}),"events":ev}
+ return out
+def boot(x,seed,block):
+ rng=np.random.default_rng(int(hashlib.sha256(seed.encode()).hexdigest()[:16],16));r={k:{"alarms":0,"events":0,"runs":0,"errors":0} for k in BreakDetectorV1.MODES}
+ for _ in range(REPS):
+  s=stationary_sample(x,rng,block)
+  for mode in BreakDetectorV1.MODES:
+   try:
+    z=BreakDetectorV1(mode=mode,markov_threshold=H).analyze(s);ev=z.get("structural_breaks",[]);r[mode]["runs"]+=1;r[mode]["alarms"]+=int(bool(ev));r[mode]["events"]+=len(ev)
+   except Exception:r[mode]["errors"]+=1
+ for v in r.values():
+  v["fpr"]=v["alarms"]/v["runs"] if v["runs"] else None;v["wilson95"]=wilson(v["alarms"],v["runs"])
+ return {"method":"Politis-Romano stationary bootstrap","replicates":REPS,"mean_block_length":block,"by_mode":r,"seed_sha256":hashlib.sha256(seed.encode()).hexdigest(),"note":"Conditional resampling diagnostic; stationarity and domain-specific null assumptions require separate validation."}
+def shock_eval(axis,events,contract):
+ found=[]
+ for target in contract["events"]:
+  t=month(target["anchor_date"][:7]);poss=[]
+  for e in events:
+   if e.get("detection_time") is None:continue
+   try:i=int(e["detection_time"])
+   except Exception:continue
+   if not 0<=i<len(axis):continue
+   k=month(axis[i])
+   if k is None:continue
+   lead=t-k
+   if abs(lead)<=contract["window_months"]:poss.append((abs(lead),i,lead,e))
+  if not poss:found.append({"event_id":target["id"],"matched":False});continue
+  _,i,lead,e=min(poss,key=lambda z:(z[0],z[1]))
+  found.append({"event_id":target["id"],"matched":True,"detected_month":axis[i],"lead_months":lead,"classification":"pre_anchor_warning" if lead>0 else ("same_month" if lead==0 else "post_anchor_detection"),"detector_status":e.get("status")})
+ return found
+def eval_series(item,contract):
+ modes=run_modes(item["values"])
+ if item["frequency"]=="monthly":
+  duration=max(1,len(item["values"])/12)
+ else:
+  times=[datetime.fromisoformat(v) for v in item["axis"]]
+  duration=max(1e-9,(times[-1]-times[0]).total_seconds()/(86400*365.2425))
+ for mode,v in modes.items():
+  v["alarms_per_decade"]=v["alarm_count"]/duration*10
+  v["shock_matches"]=shock_eval(item["axis"],v["events"],contract) if item["frequency"]=="monthly" else []
+ block=MONTH_BLOCK if item["frequency"]=="monthly" else EVENT_BLOCK
+ return {"id":item["id"],"source":item["source"],"name":item["name"],"cohort":item["cohort"],"domain":item["domain"],"frequency":item["frequency"],"observations":len(item["values"]),"duration_years":duration,"first":item["axis"][0],"last":item["axis"][-1],"sha256":item["sha256"],"quality":item["quality"],"detector":modes,"bootstrap":boot(item["values"],item["id"]+str(item["sha256"]),block)}
+def normalized_csv(items):
+ p=DERIVED/"normalized_detector_inputs.csv";p.parent.mkdir(parents=True,exist_ok=True)
+ with p.open("w",newline="",encoding="utf-8") as f:
+  w=csv.writer(f);w.writerow(["series_id","source","cohort","index","time","value","source_sha256"])
+  for x in items:
+   for i,(t,v) in enumerate(zip(x["axis"],x["values"])):w.writerow([x["id"],x["source"],x["cohort"],i,t,format(float(v),".17g"),x["sha256"]])
+ return {"path":str(p.relative_to(ROOT)),"sha256":hash_file(p),"rows":sum(len(x["values"]) for x in items)}
+def aggregate(results,contract):
+ out={"by_mode":{},"shocks":{}}
+ for mode in BreakDetectorV1.MODES:
+  a=years=hits=total=0
+  for s in results:
+   a+=s["detector"][mode]["alarm_count"];years+=s["duration_years"]
+   b=s["bootstrap"]["by_mode"][mode];hits+=b["alarms"];total+=b["runs"]
+  out["by_mode"][mode]={"series":len(results),"raw_alarms":a,"alarms_per_decade":a/years*10 if years else None,"bootstrap_fpr":hits/total if total else None,"bootstrap_wilson95":wilson(hits,total),"bootstrap_alarm_replicates":hits,"bootstrap_replicates":total}
+ for t in contract["events"]:
+  out["shocks"][t["id"]]={}
+  for mode in BreakDetectorV1.MODES:
+   ms=[x for s in results for x in s["detector"][mode]["shock_matches"] if x["event_id"]==t["id"] and x["matched"]]
+   out["shocks"][t["id"]][mode]={"matches":len(ms),"pre_anchor":sum(x["lead_months"]>0 for x in ms),"same_month":sum(x["lead_months"]==0 for x in ms),"post_anchor":sum(x["lead_months"]<0 for x in ms),"median_lead":float(np.median([x["lead_months"] for x in ms])) if ms else None,"series_matches":ms}
+ return out
+def make_report(m):
+ z=m["aggregate"]
+ lines=["# تقرير اختبار الضغط التاريخي — CHAOS P2.2","",f"وقت التشغيل UTC: {m['run_timestamp_utc']}  ",f"Commit المصدر: {m['git_commit']}  ","الكاشف المجمد: BreakDetectorV1؛ لا تعديل للمعادلات أو الثوابت.","","## ملخص الجلب والتأهيل","",f"- سلاسل Pink Sheet الطويلة (>500 نقطة): {m['pink_eligible']}.",f"- سلاسل GEM الشهرية الثانوية (≥87 نقطة): {m['gem_eligible']}.",f"- أحزمة USGS المستعلم عنها: {len(m['belts'])}/5؛ سلاسل الفواصل المؤهلة: {m['seismic_eligible']}.",f"- إجمالي السلاسل المشغلة: {len(m['series_results'])}.",f"- الاستبعادات: {len(m['rejected'])}؛ أخطاء المصادر: {len(m['errors'])}.","","## معدل الإنذار مقارنة بالـ Stationary Block-Bootstrap","","| الوضع | السلاسل | الإنذارات المرصودة | الإنذارات لكل عقد | Bootstrap FPR | Wilson 95% |","|---|---:|---:|---:|---:|---:|"]
+ for mode,label in (("fast","Fast"),("markov_cusum","Markov CUSUM H=8.5"),("consensus","Consensus")):
+  x=z["by_mode"][mode];ci=x["bootstrap_wilson95"]
+  fpr=f"{x['bootstrap_fpr']*100:.2f}%" if x["bootstrap_fpr"] is not None else "—"
+  ci_s=f"{ci[0]*100:.2f}–{ci[1]*100:.2f}%" if ci else "—"
+  lines.append(f"| {label} | {x['series']} | {x['raw_alarms']} | {x['alarms_per_decade']:.4f} | {fpr} | {ci_s} |")
+ lines += ["","FPR هو نسبة العينات المعاد توليدها التي أصدرت إنذاراً بنيوياً واحداً على الأقل. هذا تقدير عدمي مشروط بالسلسلة، وليس إثباتاً بأن السلسلة الأصلية مستقرة.","","## مطابقة مراسي الصدمات التاريخية","","المطابقة ضمن ±12 شهراً من المراسي المحددة قبل التشغيل. المهلة الموجبة تعني كشفاً قبل المرساة؛ الكشف اللاحق تأخير وليس إنذاراً مبكراً.","","| المرساة | الوضع | السلاسل المطابقة | قبل المرساة | الشهر نفسه | بعد المرساة | وسيط المهلة |","|---|---|---:|---:|---:|---:|---:|"]
+ for eid,by in z["shocks"].items():
+  for mode,label in (("fast","Fast"),("markov_cusum","Markov"),("consensus","Consensus")):
+   x=by[mode];lines.append(f"| {eid} | {label} | {x['matches']} | {x['pre_anchor']} | {x['same_month']} | {x['post_anchor']} | {x['median_lead'] if x['median_lead'] is not None else '—'} |")
+ lines += ["","المراسي تواريخ سياقية عامة وليست ادعاءً أن جميع السلع تعرضت لصدمة في التاريخ نفسه. المطابقة لا تثبت السببية.","","## أحزمة USGS","","| الحزام | الأحداث | البداية | النهاية |","|---|---:|---|---|"]
+ for b in m["belts"]:lines.append(f"| {b['name']} | {b['events']} | {b['start'] or '—'} | {b['end'] or '—'} |")
+ lines += ["","الفواصل الزلزالية محسوبة بالأيام؛ وتُحسب الإنذارات لكل عقد باستخدام المدة الزمنية الفعلية بين أول وآخر حدث، لا بقسمة عدد الأحداث على 12. Stationary Bootstrap للفواصل تشخيص مشروط فقط، ويجب استكماله بتحليل اكتمال الكتالوج والتجمعات ونماذج point-process.","","## حدود الاستنتاج","","1. CONFIRMED قرار داخلي للكاشف وليس تحققاً مستقلاً من صدمة تاريخية.", "2. حساب المهلة يستخدم وقت الكشف الفعلي لا estimated onset.", "3. التواريخ التاريخية المنقحة حالياً لا تثبت أن البيانات ذاتها كانت متاحة في وقت الحدث؛ الاختبار الحقيقي يتطلب نسخ point-in-time.", "4. لا ينتج هذا التشغيل نموذجاً احتمالياً أو إنذاراً تشغيلياً.", "5. ملفات experiments والكاشف المجمد لم تُعدّل.", "6. GEM حد تغطيته المعلن 1990–2023؛ لذا يُعامل كفوج ثانوي ≥87 نقطة وليس ضمن فوج Pink Sheet الصارم >500 نقطة.","","## سجل التدقيق",f"- Manifest: {m['manifest_path']}",f"- Normalized inputs: {m['normalized']['path']} SHA-256 {m['normalized']['sha256']}",f"- Checksums: {m['checksums_path']}","- Raw API payloads: مرفقة ضمن GitHub Actions Artifact؛ ملف Pink Sheet الأصلي بقي في الذاكرة ولم يُنشر لعدم حسم ترخيص إعادة توزيعه.","",f"حالة التشغيل: {m['run_status']}",""]
+ return "\n".join(lines)
+def main():
+ for p in (RAW,DERIVED,OUT):p.mkdir(parents=True,exist_ok=True)
+ contract=json.loads((HERE/"shock_event_contract.json").read_text(encoding="utf-8"))
+ m={"version":"1.0","run_timestamp_utc":stamp(),"git_commit":os.getenv("GITHUB_SHA","local-unresolved"),"branch":os.getenv("GITHUB_REF_NAME","local"),"detector":"isolated_break_detector_v1","markov_H":H,"period":f"{Y0}-01/{Y1}-12","bootstrap":{"method":"Politis-Romano Stationary Bootstrap","replicates":REPS,"monthly_mean_block":MONTH_BLOCK,"event_mean_block":EVENT_BLOCK},"shock_contract":contract,"sources":[],"gem_indicators":[],"belts":[],"errors":[],"rejected":[]}
+ print("Pink Sheet");pink_items=pink(m);print("accepted",len(pink_items))
+ print("GEM");gem_items=gem(m);print("accepted",len(gem_items))
+ print("USGS belts");seismic_items=seismic(m);print("accepted",len(seismic_items))
+ candidates=pink_items+gem_items+seismic_items
+ m["pink_eligible"]=len(pink_items);m["gem_eligible"]=len(gem_items);m["seismic_eligible"]=len(seismic_items)
+ if not pink_items or not seismic_items:
+  m["run_status"]="FAILED_REQUIRED_COHORT_MISSING";m["series_results"]=[];m["aggregate"]=aggregate([],contract);m["normalized"]={"path":"not-created","sha256":"none","rows":0}
+  m["manifest_path"]=str(MANIFEST.relative_to(ROOT));m["checksums_path"]=str(CHECKSUMS.relative_to(ROOT));MANIFEST.write_text(json.dumps(m,ensure_ascii=False,indent=2)+"\n",encoding="utf-8");REPORT.write_text(make_report(m),encoding="utf-8");return 2
+ results=[]
+ for n,item in enumerate(candidates,1):
+  print(f"{n}/{len(candidates)} {item['id']} n={len(item['values'])}")
+  results.append(eval_series(item,contract))
+ normalized=normalized_csv(candidates);m["normalized"]=normalized;m["series_results"]=results;m["aggregate"]=aggregate(results,contract);m["run_status"]="COMPLETED_WITH_SOURCE_WARNINGS" if m["errors"] else "COMPLETED"
+ sums=[]
+ for p in sorted([p for p in list(RAW.rglob("*"))+list(DERIVED.rglob("*")) if p.is_file()]):sums.append(f"{hash_file(p)}  {p.relative_to(ROOT).as_posix()}")
+ for p in [HERE/"run_pipeline.py",HERE/"shock_event_contract.json",ROOT/"structural_engine/isolated_break_detector_v1/break_detector_v1.py",ROOT/"structural_engine/isolated_break_detector_v1/engine_fast_ref.py",ROOT/"structural_engine/isolated_break_detector_v1/engine_markov_cusum.py"]:
+  sums.append(f"{hash_file(p)}  {p.relative_to(ROOT).as_posix()}")
+ CHECKSUMS.write_text("\n".join(sums)+"\n",encoding="utf-8")
+ m["manifest_path"]=str(MANIFEST.relative_to(ROOT));m["checksums_path"]=str(CHECKSUMS.relative_to(ROOT));m["raw_snapshots"]=len(m["sources"])
+ MANIFEST.write_text(json.dumps(m,ensure_ascii=False,indent=2)+"\n",encoding="utf-8");REPORT.write_text(make_report(m),encoding="utf-8")
+ print("STATUS",m["run_status"],"series",len(results),"errors",len(m["errors"]))
+ return 0
+if __name__=="__main__":raise SystemExit(main())
