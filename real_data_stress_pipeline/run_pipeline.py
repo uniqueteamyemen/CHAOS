@@ -204,6 +204,19 @@ def seismic(m):
     w=csv.DictWriter(f,fieldnames=cols);w.writeheader();w.writerows(rows)
    rec={"id":belt["id"],"name":belt["name"],"bbox":{k:belt[k] for k in ("minlatitude","maxlatitude","minlongitude","maxlongitude")},"min_magnitude":MAG,"events":len(rows),"start":rows[0]["time"] if rows else None,"end":rows[-1]["time"] if rows else None,"csv_sha256":hash_file(csvpath)}
    m["belts"].append(rec)
+   # Secondary monthly event-count representation; empty months are zero only
+   # inside the fully queried USGS catalog window.
+   month_counts={k:0 for k in range(Y0*12,(Y1+1)*12)}
+   for event in rows:
+    k=month(event["time"][:7])
+    if k in month_counts:month_counts[k]+=1
+   monthly_axis=[label_month(k) for k in month_counts]
+   monthly_values=[math.log1p(month_counts[k]) for k in month_counts]
+   monthly_quality=g0(monthly_values,87)
+   if monthly_quality["passed"]:
+    out.append({"id":"usgs_monthly_counts:"+belt["id"],"source":"usgs","source_name":"USGS ComCat","name":belt["name"]+" monthly event counts","cohort":"seismic_monthly_counts","domain":"seismic","frequency":"monthly","axis":monthly_axis,"values":monthly_values,"sha256":hash_file(csvpath),"points":len(rows),"quality":monthly_quality})
+   else:
+    m["rejected"].append({"source":"usgs","series":belt["id"]+":monthly_counts","quality":monthly_quality})
    if len(rows)<SEISMIC_MIN+1:
     m["rejected"].append({"source":"usgs","series":belt["id"],"quality":{"passed":False,"reason":"fewer_than_88_events_for_87_intervals","event_count":len(rows)}});continue
    times=[datetime.fromisoformat(x["time"]) for x in rows]
@@ -265,7 +278,7 @@ def eval_series(item,contract):
   duration=max(1e-9,(times[-1]-times[0]).total_seconds()/(86400*365.2425))
  for mode,v in modes.items():
   v["alarms_per_decade"]=v["alarm_count"]/duration*10
-  v["shock_matches"]=shock_eval(item["axis"],v["events"],contract) if item["frequency"]=="monthly" else []
+  v["shock_matches"]=shock_eval(item["axis"],v["events"],contract) if item["frequency"]=="monthly" and item["source"]!="usgs" else []
  block=MONTH_BLOCK if item["frequency"]=="monthly" else EVENT_BLOCK
  return {"id":item["id"],"source":item["source"],"name":item["name"],"cohort":item["cohort"],"domain":item["domain"],"frequency":item["frequency"],"observations":len(item["values"]),"duration_years":duration,"first":item["axis"][0],"last":item["axis"][-1],"sha256":item["sha256"],"quality":item["quality"],"detector":modes,"bootstrap":boot(item["values"],item["id"]+str(item["sha256"]),block)}
 def normalized_csv(items):
@@ -273,7 +286,7 @@ def normalized_csv(items):
  with p.open("w",newline="",encoding="utf-8") as f:
   w=csv.writer(f);w.writerow(["series_id","source","cohort","index","time","value","source_sha256"])
   for x in items:
-   for i,(t,v) in enumerate(zip(x["axis"],x["values"])):w.writerow([x["id"],x["source"],x["cohort"],i,t,format(float(v),".17g"),x["sha256"]])
+   for i,(t,v) in enumerate(zip(x["axis"],x["values"])):w.writerow([x["id"],x["source"],x["cohort"],i,t,("" if x["source"]=="pink_sheet" else format(float(v),".17g")),x["sha256"]])
  return {"path":str(p.relative_to(ROOT)),"sha256":hash_file(p),"rows":sum(len(x["values"]) for x in items)}
 def aggregate(results,contract):
  out={"by_mode":{},"shocks":{}}
@@ -288,6 +301,19 @@ def aggregate(results,contract):
   for mode in BreakDetectorV1.MODES:
    ms=[x for s in results for x in s["detector"][mode]["shock_matches"] if x["event_id"]==t["id"] and x["matched"]]
    out["shocks"][t["id"]][mode]={"matches":len(ms),"pre_anchor":sum(x["lead_months"]>0 for x in ms),"same_month":sum(x["lead_months"]==0 for x in ms),"post_anchor":sum(x["lead_months"]<0 for x in ms),"median_lead":float(np.median([x["lead_months"] for x in ms])) if ms else None,"series_matches":ms}
+ out["by_cohort"]={}
+ for cohort in sorted({series["cohort"] for series in results}):
+  subset=[series for series in results if series["cohort"]==cohort]
+  cohort_stats={}
+  for mode in BreakDetectorV1.MODES:
+   alarms=0;years=0.0;hits=0;total=0
+   for series in subset:
+    alarms+=series["detector"][mode]["alarm_count"]
+    years+=series["duration_years"]
+    boot_result=series["bootstrap"]["by_mode"][mode]
+    hits+=boot_result["alarms"];total+=boot_result["runs"]
+   cohort_stats[mode]={"series":len(subset),"alarms":alarms,"alarms_per_decade":alarms/years*10 if years else None,"bootstrap_fpr":hits/total if total else None,"bootstrap_wilson95":wilson(hits,total)}
+  out["by_cohort"][cohort]=cohort_stats
  return out
 def make_report(m):
  z=m["aggregate"]
@@ -297,13 +323,19 @@ def make_report(m):
   fpr=f"{x['bootstrap_fpr']*100:.2f}%" if x["bootstrap_fpr"] is not None else "—"
   ci_s=f"{ci[0]*100:.2f}–{ci[1]*100:.2f}%" if ci else "—"
   lines.append(f"| {label} | {x['series']} | {x['raw_alarms']} | {x['alarms_per_decade']:.4f} | {fpr} | {ci_s} |")
- lines += ["","FPR هو نسبة العينات المعاد توليدها التي أصدرت إنذاراً بنيوياً واحداً على الأقل. هذا تقدير عدمي مشروط بالسلسلة، وليس إثباتاً بأن السلسلة الأصلية مستقرة.","","## مطابقة مراسي الصدمات التاريخية","","المطابقة ضمن ±12 شهراً من المراسي المحددة قبل التشغيل. المهلة الموجبة تعني كشفاً قبل المرساة؛ الكشف اللاحق تأخير وليس إنذاراً مبكراً.","","| المرساة | الوضع | السلاسل المطابقة | قبل المرساة | الشهر نفسه | بعد المرساة | وسيط المهلة |","|---|---|---:|---:|---:|---:|---:|"]
+ lines += ["","FPR هو نسبة العينات المعاد توليدها التي أصدرت إنذاراً بنيوياً واحداً على الأقل. هذا تقدير عدمي مشروط بالسلسلة، وليس إثباتاً بأن السلسلة الأصلية مستقرة.","","### التفصيل حسب فوج البيانات","","| الفوج | الوضع | السلاسل | الإنذارات | إنذارات/عقد | Bootstrap FPR |","|---|---|---:|---:|---:|---:|"]
+ for cohort,by_mode in m["aggregate"]["by_cohort"].items():
+  for mode,label in (("fast","Fast"),("markov_cusum","Markov"),("consensus","Consensus")):
+   x=by_mode[mode];fpr=f"{x['bootstrap_fpr']*100:.2f}%" if x["bootstrap_fpr"] is not None else "—"
+   rate=f"{x['alarms_per_decade']:.4f}" if x["alarms_per_decade"] is not None else "—"
+   lines.append(f"| {cohort} | {label} | {x['series']} | {x['alarms']} | {rate} | {fpr} |")
+ lines += ["","## مطابقة مراسي الصدمات التاريخية","","المطابقة ضمن ±12 شهراً من المراسي المحددة قبل التشغيل. المهلة الموجبة تعني كشفاً قبل المرساة؛ الكشف اللاحق تأخير وليس إنذاراً مبكراً.","","| المرساة | الوضع | السلاسل المطابقة | قبل المرساة | الشهر نفسه | بعد المرساة | وسيط المهلة |","|---|---|---:|---:|---:|---:|---:|"]
  for eid,by in z["shocks"].items():
   for mode,label in (("fast","Fast"),("markov_cusum","Markov"),("consensus","Consensus")):
    x=by[mode];lines.append(f"| {eid} | {label} | {x['matches']} | {x['pre_anchor']} | {x['same_month']} | {x['post_anchor']} | {x['median_lead'] if x['median_lead'] is not None else '—'} |")
  lines += ["","المراسي تواريخ سياقية عامة وليست ادعاءً أن جميع السلع تعرضت لصدمة في التاريخ نفسه. المطابقة لا تثبت السببية.","","## أحزمة USGS","","| الحزام | الأحداث | البداية | النهاية |","|---|---:|---|---|"]
  for b in m["belts"]:lines.append(f"| {b['name']} | {b['events']} | {b['start'] or '—'} | {b['end'] or '—'} |")
- lines += ["","الفواصل الزلزالية محسوبة بالأيام؛ وتُحسب الإنذارات لكل عقد باستخدام المدة الزمنية الفعلية بين أول وآخر حدث، لا بقسمة عدد الأحداث على 12. Stationary Bootstrap للفواصل تشخيص مشروط فقط، ويجب استكماله بتحليل اكتمال الكتالوج والتجمعات ونماذج point-process.","","## حدود الاستنتاج","","1. CONFIRMED قرار داخلي للكاشف وليس تحققاً مستقلاً من صدمة تاريخية.", "2. حساب المهلة يستخدم وقت الكشف الفعلي لا estimated onset.", "3. التواريخ التاريخية المنقحة حالياً لا تثبت أن البيانات ذاتها كانت متاحة في وقت الحدث؛ الاختبار الحقيقي يتطلب نسخ point-in-time.", "4. لا ينتج هذا التشغيل نموذجاً احتمالياً أو إنذاراً تشغيلياً.", "5. ملفات experiments والكاشف المجمد لم تُعدّل.", "6. GEM حد تغطيته المعلن 1990–2023؛ لذا يُعامل كفوج ثانوي ≥87 نقطة وليس ضمن فوج Pink Sheet الصارم >500 نقطة.","","## سجل التدقيق",f"- Manifest: {m['manifest_path']}",f"- Normalized inputs: {m['normalized']['path']} SHA-256 {m['normalized']['sha256']}",f"- Checksums: {m['checksums_path']}","- Raw API payloads: مرفقة ضمن GitHub Actions Artifact؛ ملف Pink Sheet الأصلي بقي في الذاكرة ولم يُنشر لعدم حسم ترخيص إعادة توزيعه.","",f"حالة التشغيل: {m['run_status']}",""]
+ lines += ["","تُختبر أحزمة USGS بتمثيلين مستقلين: الفواصل بين الأحداث بالأيام، والعدّ الشهري الثانوي داخل نافذة الاستعلام المكتملة. معدل الإنذار لكل عقد في سلسلة الفواصل يستخدم المدة الفعلية بين أول وآخر حدث. Stationary Bootstrap للفواصل تشخيص مشروط فقط، ويجب استكماله بتحليل اكتمال الكتالوج والتجمعات ونماذج point-process.","","## حدود الاستنتاج","","1. CONFIRMED قرار داخلي للكاشف وليس تحققاً مستقلاً من صدمة تاريخية.", "2. حساب المهلة يستخدم وقت الكشف الفعلي لا estimated onset.", "3. التواريخ التاريخية المنقحة حالياً لا تثبت أن البيانات ذاتها كانت متاحة في وقت الحدث؛ الاختبار الحقيقي يتطلب نسخ point-in-time.", "4. لا ينتج هذا التشغيل نموذجاً احتمالياً أو إنذاراً تشغيلياً.", "5. ملفات experiments والكاشف المجمد لم تُعدّل.", "6. GEM حد تغطيته المعلن 1990–2023؛ لذا يُعامل كفوج ثانوي ≥87 نقطة وليس ضمن فوج Pink Sheet الصارم >500 نقطة.","","## سجل التدقيق",f"- Manifest: {m['manifest_path']}",f"- Normalized inputs: {m['normalized']['path']} SHA-256 {m['normalized']['sha256']}",f"- Checksums: {m['checksums_path']}","- Raw API payloads: مرفقة ضمن GitHub Actions Artifact؛ ملف Pink Sheet الأصلي بقي في الذاكرة ولم يُنشر لعدم حسم ترخيص إعادة توزيعه.","",f"حالة التشغيل: {m['run_status']}",""]
  return "\n".join(lines)
 def main():
  for p in (RAW,DERIVED,OUT):p.mkdir(parents=True,exist_ok=True)
