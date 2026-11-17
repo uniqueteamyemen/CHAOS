@@ -1,0 +1,60 @@
+{
+  "config_version": "1.0",
+  "provider": "USGS ComCat FDSN Event Web Service",
+  "api_base": "https://earthquake.usgs.gov/fdsnws/event/1/query",
+  "format": "geojson",
+  "starttime": "1980-01-01T00:00:00",
+  "endtime": "2024-12-31T23:59:59",
+  "min_magnitude": 4.5,
+  "magnitude_sensitivity_levels": [4.5, 5.0, 5.5],
+  "query_limit": 20000,
+  "orderby": "time-asc",
+  "note": "These non-overlapping rectangular query windows are reproducible spatial proxies for broad seismic belts. They are not exact tectonic plate-boundary polygons and must not be described as such.",
+  "belts": [
+    {
+      "id": "japan_kuril_kamchatka",
+      "label_ar": "حزام اليابان–الكوريل–كامتشاتكا",
+      "label": "Japan–Kuril–Kamchatka",
+      "minlatitude": 30.0,
+      "maxlatitude": 60.0,
+      "minlongitude": 130.0,
+      "maxlongitude": 180.0
+    },
+    {
+      "id": "sunda_banda",
+      "label_ar": "حزام سوندا–باندا",
+      "label": "Sunda–Banda",
+      "minlatitude": -15.0,
+      "maxlatitude": 20.0,
+      "minlongitude": 95.0,
+      "maxlongitude": 140.0
+    },
+    {
+      "id": "andes",
+      "label_ar": "حزام الأنديز",
+      "label": "Andes",
+      "minlatitude": -55.0,
+      "maxlatitude": 15.0,
+      "minlongitude": -82.0,
+      "maxlongitude": -65.0
+    },
+    {
+      "id": "alpine_himalayan",
+      "label_ar": "الحزام الألبي–الهيمالايا",
+      "label": "Alpine–Himalayan",
+      "minlatitude": 20.0,
+      "maxlatitude": 50.0,
+      "minlongitude": 25.0,
+      "maxlongitude": 95.0
+    },
+    {
+      "id": "east_african_rift",
+      "label_ar": "الأخدود الإفريقي الشرقي",
+      "label": "East African Rift",
+      "minlatitude": -20.0,
+      "maxlatitude": 15.0,
+      "minlongitude": 25.0,
+      "maxlongitude": 45.0
+    }
+  ]
+}
