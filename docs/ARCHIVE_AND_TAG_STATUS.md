@@ -13,7 +13,7 @@
 
 ## Phase 1 tag and GitHub Release
 
-<badge>Created and verified</badge>
+**Status: created and verified**
 
 - Annotated tag: [`phase1-detector-freeze-v1.0`](https://github.com/uniqueteamyemen/CHAOS/releases/tag/phase1-detector-freeze-v1.0)
 - Tag object SHA: `96301238ef79acd7ef39ec91e84ddd945f22b4aa`
