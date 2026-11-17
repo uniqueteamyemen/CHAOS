@@ -1,36 +1,61 @@
 {
-  "contract_version": "1.0",
+  "contract_version": "1.1",
   "frozen_before_detector_execution": true,
-  "purpose": "Calendar anchors for retrospective temporal matching only; not universal per-series shock onset claims.",
+  "purpose": "Retrospective macro-market calendar anchors only. These anchors are not universal per-series shock onset claims or proof of causal impact.",
   "matching_window_months": 12,
+  "matching_rules": {
+    "detection_timestamp": "Use the actual detector availability timestamp derived from detection_time; never use estimated_onset for real-time lead claims.",
+    "lead_sign": "warning_lead_months > 0 means detector signal predates anchor; negative means post-anchor lag.",
+    "matching": "Greedy minimum-absolute-calendar-distance one-to-one matching per series and mode; an alarm cannot match more than one anchor and an anchor cannot reuse an alarm.",
+    "seismic": "Macro shock anchors are not matched to seismic belts. Seismic event-time series are evaluated separately.",
+    "causality": "A temporal match does not establish causation or series-specific physical impact."
+  },
   "events": [
     {
       "id": "GFC_2008",
       "anchor_date": "2008-09-15",
-      "label": "Lehman Brothers bankruptcy / global financial-crisis anchor",
+      "label": "Lehman Brothers bankruptcy / global financial-crisis calendar anchor",
       "domain_scope": "global macro-financial context",
-      "interpretation": "calendar anchor; commodity-specific impact dates may differ"
+      "applicable_categories": ["energy", "metals", "agriculture_food", "other_commodity", "macro"],
+      "reference_urls": [
+        "https://www.federalreservehistory.org/essays/great-recession-of-200709"
+      ],
+      "interpretation": "Historical calendar anchor; commodity-specific impacts and turning points may differ."
     },
     {
       "id": "OIL_2014",
       "anchor_date": "2014-06-01",
-      "label": "2014 oil-price decline anchor",
-      "domain_scope": "energy and related commodities",
-      "interpretation": "calendar anchor; not assumed to be the onset for every commodity"
+      "label": "2014 crude-oil price decline calendar anchor",
+      "domain_scope": "energy commodities",
+      "applicable_categories": ["energy"],
+      "reference_urls": [
+        "https://www.eia.gov/dnav/pet/hist/LeafHandler.ashx?n=PET&s=RBRTE&f=M",
+        "https://www.eia.gov/finance/markets/crudeoil/"
+      ],
+      "interpretation": "Start-of-decline calendar reference for the international oil-price episode; not assumed to be the impact date for every energy series."
     },
     {
       "id": "COVID_2020",
       "anchor_date": "2020-03-11",
-      "label": "WHO pandemic characterization anchor",
+      "label": "WHO characterization of COVID-19 as a pandemic",
       "domain_scope": "global macro and commodity context",
-      "interpretation": "calendar anchor; pandemic effects vary by series"
+      "applicable_categories": ["energy", "metals", "agriculture_food", "other_commodity", "macro"],
+      "reference_urls": [
+        "https://www.who.int/director-general/speeches/detail/who-director-general-s-opening-remarks-at-the-media-briefing-on-covid-19---11-march-2020"
+      ],
+      "interpretation": "Official global calendar anchor; country and commodity effects were staggered and may predate or postdate this date."
     },
     {
       "id": "UKRAINE_2022",
       "anchor_date": "2022-02-24",
-      "label": "Ukraine invasion / commodity-supply shock anchor",
-      "domain_scope": "energy, metals, food and macro context",
-      "interpretation": "calendar anchor; not causal attribution"
+      "label": "Beginning of Russia's full-scale invasion of Ukraine / commodity-supply shock anchor",
+      "domain_scope": "energy, metals, agriculture and food commodities",
+      "applicable_categories": ["energy", "metals", "agriculture_food"],
+      "reference_urls": [
+        "https://news.un.org/en/story/2022/02/1112602",
+        "https://www.un.org/en/ga/77/resolutions.shtml"
+      ],
+      "interpretation": "Calendar anchor for the geopolitical supply shock; not causal attribution to any particular series."
     }
   ]
 }
