@@ -20,7 +20,7 @@ permissions:
   contents: write
 
 concurrency:
-  group: chaos-p2-2-stress-\${{ github.ref }}
+  group: chaos-p2-2-stress-${{ github.ref }}
   cancel-in-progress: false
 
 jobs:
@@ -36,31 +36,31 @@ jobs:
 
       - name: Create and publish the immutable Phase 1 annotated tag and release
         env:
-          GH_TOKEN: \${{ github.token }}
+          GH_TOKEN: ${{ github.token }}
           BASELINE_SHA: 51e4278309b7d32917b85903323a63f81d9e9b6a
           TAG_NAME: phase1-detector-freeze-v1.0
         run: |
           set -euo pipefail
           git config user.name "uniqueteamyemen"
           git config user.email "uniqueteamyemen@gmail.com"
-          git cat-file -e "\${BASELINE_SHA}^{commit}"
-          if ! git ls-remote --exit-code --tags origin "refs/tags/\${TAG_NAME}" >/dev/null 2>&1; then
-            git tag -a "\${TAG_NAME}" "\${BASELINE_SHA}" \
-              -m "CHAOS Phase 1 frozen detector archive; canonical commit \${BASELINE_SHA}"
-            git push origin "refs/tags/\${TAG_NAME}"
+          git cat-file -e "${BASELINE_SHA}^{commit}"
+          if ! git ls-remote --exit-code --tags origin "refs/tags/${TAG_NAME}" >/dev/null 2>&1; then
+            git tag -a "${TAG_NAME}" "${BASELINE_SHA}" \
+              -m "CHAOS Phase 1 frozen detector archive; canonical commit ${BASELINE_SHA}"
+            git push origin "refs/tags/${TAG_NAME}"
           else
-            existing="$(git ls-remote origin "refs/tags/\${TAG_NAME}^{}" | awk '{print $1}')"
-            if [ -z "\${existing}" ]; then
-              existing="$(git ls-remote origin "refs/tags/\${TAG_NAME}" | awk '{print $1}')"
+            existing="$(git ls-remote origin "refs/tags/${TAG_NAME}^{}" | awk '{print $1}')"
+            if [ -z "${existing}" ]; then
+              existing="$(git ls-remote origin "refs/tags/${TAG_NAME}" | awk '{print $1}')"
             fi
-            if [ "\${existing}" != "\${BASELINE_SHA}" ]; then
-              echo "Existing Phase 1 tag points to a different commit: \${existing}" >&2
+            if [ "${existing}" != "${BASELINE_SHA}" ]; then
+              echo "Existing Phase 1 tag points to a different commit: ${existing}" >&2
               exit 1
             fi
           fi
-          if ! gh release view "\${TAG_NAME}" >/dev/null 2>&1; then
-            gh release create "\${TAG_NAME}" \
-              --target "\${BASELINE_SHA}" \
+          if ! gh release view "${TAG_NAME}" >/dev/null 2>&1; then
+            gh release create "${TAG_NAME}" \
+              --target "${BASELINE_SHA}" \
               --title "CHAOS Phase 1 — Frozen Detector Archive" \
               --notes-file docs/PHASE1_DETECTOR_FREEZE.md
           fi
@@ -77,14 +77,14 @@ jobs:
 
       - name: Verify historical experiments archive is unchanged
         env:
-          BEFORE_SHA: \${{ github.event.before }}
-          CURRENT_SHA: \${{ github.sha }}
+          BEFORE_SHA: ${{ github.event.before }}
+          CURRENT_SHA: ${{ github.sha }}
         run: |
           set -euo pipefail
-          if [ -n "\${BEFORE_SHA}" ] && [ "\${BEFORE_SHA}" != "0000000000000000000000000000000000000000" ]; then
+          if [ -n "${BEFORE_SHA}" ] && [ "${BEFORE_SHA}" != "0000000000000000000000000000000000000000" ]; then
             python scripts/guards/check_experiments_immutable.py \
-              --base "\${BEFORE_SHA}" \
-              --head "\${CURRENT_SHA}"
+              --base "${BEFORE_SHA}" \
+              --head "${CURRENT_SHA}"
           fi
 
       - name: Run pipeline contract tests
@@ -92,7 +92,7 @@ jobs:
 
       - name: Execute real historical stress pipeline
         env:
-          GITHUB_SHA: \${{ github.sha }}
+          GITHUB_SHA: ${{ github.sha }}
           STRESS_BOOTSTRAP_REPLICATES: '199'
           STRESS_BOOTSTRAP_MEAN_BLOCK_MONTHS: '12'
           STRESS_BOOTSTRAP_MEAN_BLOCK_EVENTS: '25'
@@ -105,7 +105,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: chaos-p2-2-stress-\${{ github.run_id }}-\${{ github.run_attempt }}
+          name: chaos-p2-2-stress-${{ github.run_id }}-${{ github.run_attempt }}
           retention-days: 90
           if-no-files-found: warn
           path: |
@@ -129,30 +129,30 @@ jobs:
       - name: Create and publish the P2.2 annotated tag and release
         if: success()
         env:
-          GH_TOKEN: \${{ github.token }}
+          GH_TOKEN: ${{ github.token }}
           TAG_NAME: p2.2-historical-stress-v1.0.0
         run: |
           set -euo pipefail
           git fetch origin main-phase2
           git checkout -B main-phase2 origin/main-phase2
           TAG_SHA="$(git rev-parse HEAD)"
-          if ! git ls-remote --exit-code --tags origin "refs/tags/\${TAG_NAME}" >/dev/null 2>&1; then
-            git tag -a "\${TAG_NAME}" "\${TAG_SHA}" \
-              -m "CHAOS P2.2 historical sensor stress validation v1.0.0; commit \${TAG_SHA}"
-            git push origin "refs/tags/\${TAG_NAME}"
+          if ! git ls-remote --exit-code --tags origin "refs/tags/${TAG_NAME}" >/dev/null 2>&1; then
+            git tag -a "${TAG_NAME}" "${TAG_SHA}" \
+              -m "CHAOS P2.2 historical sensor stress validation v1.0.0; commit ${TAG_SHA}"
+            git push origin "refs/tags/${TAG_NAME}"
           else
-            existing="$(git ls-remote origin "refs/tags/\${TAG_NAME}^{}" | awk '{print $1}')"
-            if [ -z "\${existing}" ]; then
-              existing="$(git ls-remote origin "refs/tags/\${TAG_NAME}" | awk '{print $1}')"
+            existing="$(git ls-remote origin "refs/tags/${TAG_NAME}^{}" | awk '{print $1}')"
+            if [ -z "${existing}" ]; then
+              existing="$(git ls-remote origin "refs/tags/${TAG_NAME}" | awk '{print $1}')"
             fi
-            if [ "\${existing}" != "\${TAG_SHA}" ]; then
-              echo "Existing P2.2 tag points to a different commit: \${existing}" >&2
+            if [ "${existing}" != "${TAG_SHA}" ]; then
+              echo "Existing P2.2 tag points to a different commit: ${existing}" >&2
               exit 1
             fi
           fi
-          if ! gh release view "\${TAG_NAME}" >/dev/null 2>&1; then
-            gh release create "\${TAG_NAME}" \
-              --target "\${TAG_SHA}" \
+          if ! gh release view "${TAG_NAME}" >/dev/null 2>&1; then
+            gh release create "${TAG_NAME}" \
+              --target "${TAG_SHA}" \
               --title "CHAOS P2.2 — Automated Historical Sensor Stress Validation v1.0.0" \
               --notes-file REAL_DATA_STRESS_REPORT_AR.md \
               REAL_DATA_STRESS_REPORT_AR.md \
