@@ -75,7 +75,7 @@ def number(v):
  return x if math.isfinite(x) else None
 def month(v):
  s=str(v).strip()
- m=re.fullmatch(r"(\d{4})\s*M\s*(\d{1,2})",s,re.I) or re.fullmatch(r"(\d{4})[-/](\d{1,2})",s) or re.fullmatch(r"(\d{4})(\d{2})",s)
+ m=re.fullmatch(r"(\d{4})[-/]?\s*M\s*(\d{1,2})",s,re.I) or re.fullmatch(r"(\d{4})[-/](\d{1,2})",s) or re.fullmatch(r"(\d{4})(\d{2})",s)
  if not m:return None
  y,k=map(int,m.groups())
  return y*12+k-1 if 1<=k<=12 else None
