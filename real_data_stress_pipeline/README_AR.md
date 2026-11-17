@@ -53,12 +53,12 @@ python -m real_data_stress_pipeline.run_pipeline
 
 Configuration is available through environment variables:
 
-- `STRESS_BOOTSTRAP_REPLICATES` (default 199; set to 999 for a higher-resolution follow-up)
+- `STRESS_BOOTSTRAP_REPLICATES` (default 999)
 - `STRESS_BOOTSTRAP_MEAN_BLOCK_MONTHS` (default 12)
 - `STRESS_MIN_COMMODITY_POINTS` (default 501 log-return observations; at least 502 contiguous monthly prices)
 - `STRESS_USGS_MIN_MAGNITUDE` (default 4.5)
 
-USGS and GEM API raw responses are written to `artifacts/real_data_stress/raw/` and attached to the private workflow artifact; they are not committed to the source tree. The Pink Sheet workbook remains in memory only while its workbook-specific redistribution terms are unverified; only its SHA-256 and derived detector event audit are recorded. Numeric Pink Sheet observations are redacted from the public normalized CSV. GitHub Actions uploads permitted raw responses, report, manifest, and SHA-256 inventory as a versioned artifact. The generated Arabic report is also committed at repository root.
+USGS and GEM API raw responses are written to `artifacts/real_data_stress/raw/`; they are not committed to the source tree. After a successful run they are packaged with derived event records, the manifest, and checksums into a permanent P2.2 GitHub Release asset (`chaos-p2-2-source-snapshots.tar.gz`) with its own SHA-256 sidecar. The 90-day Actions artifact is an additional convenience copy. The Pink Sheet workbook remains in memory only while workbook-specific redistribution terms are not independently established; only its SHA-256 and derived detector audit are recorded. Numeric Pink Sheet observations are redacted from the public normalized CSV. The generated Arabic report and JSON manifest are also committed to the branch.
 
 ## Interpretation limits
 
