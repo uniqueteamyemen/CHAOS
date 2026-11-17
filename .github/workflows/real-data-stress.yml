@@ -110,6 +110,18 @@ jobs:
           STRESS_USGS_MIN_MAGNITUDE: '4.5'
         run: python -m real_data_stress_pipeline.run_pipeline
 
+      - name: Package reproducible source snapshots for permanent release
+        if: success()
+        run: |
+          set -euo pipefail
+          tar -czf chaos-p2-2-source-snapshots.tar.gz \
+            artifacts/real_data_stress/raw/ \
+            artifacts/real_data_stress/derived/ \
+            real_data_stress_pipeline/results/real_data_stress_manifest.json \
+            real_data_stress_pipeline/results/SHA256SUMS.txt
+          sha256sum chaos-p2-2-source-snapshots.tar.gz > chaos-p2-2-source-snapshots.tar.gz.sha256
+          ls -lh chaos-p2-2-source-snapshots.tar.gz chaos-p2-2-source-snapshots.tar.gz.sha256
+
       - name: Upload raw source responses and complete numerical audit
         if: always()
         uses: actions/upload-artifact@v4
@@ -122,6 +134,8 @@ jobs:
             artifacts/real_data_stress/derived/
             REAL_DATA_STRESS_REPORT_AR.md
             real_data_stress_pipeline/results/
+            chaos-p2-2-source-snapshots.tar.gz
+            chaos-p2-2-source-snapshots.tar.gz.sha256
 
       - name: Commit report, manifest, and checksum inventory
         if: success()
@@ -163,8 +177,12 @@ jobs:
             gh release create "${TAG_NAME}" \
               --target "${TAG_SHA}" \
               --title "CHAOS P2.2 — Automated Historical Sensor Stress Validation v1.0.0" \
-              --notes-file REAL_DATA_STRESS_REPORT_AR.md \
-              REAL_DATA_STRESS_REPORT_AR.md \
-              real_data_stress_pipeline/results/real_data_stress_manifest.json \
-              real_data_stress_pipeline/results/SHA256SUMS.txt
+              --notes-file REAL_DATA_STRESS_REPORT_AR.md
           fi
+          gh release upload "${TAG_NAME}" \
+            REAL_DATA_STRESS_REPORT_AR.md \
+            real_data_stress_pipeline/results/real_data_stress_manifest.json \
+            real_data_stress_pipeline/results/SHA256SUMS.txt \
+            chaos-p2-2-source-snapshots.tar.gz \
+            chaos-p2-2-source-snapshots.tar.gz.sha256 \
+            --clobber
