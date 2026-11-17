@@ -20,8 +20,8 @@ permissions:
   contents: write
 
 concurrency:
-  group: chaos-p2-2-stress-v3-${{ github.ref }}
-  cancel-in-progress: false
+  group: chaos-p2-2-stress-v4-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   stress:
@@ -31,7 +31,7 @@ jobs:
       - name: Checkout phase2 branch with history
         uses: actions/checkout@v4
         with:
-          ref: main-phase2
+          ref: ${{ github.sha }}
           fetch-depth: 0
 
       - name: Create and publish the Phase 1 annotated tag and release
@@ -64,10 +64,14 @@ jobs:
               --title "CHAOS Phase 1 — Frozen Detector Archive" \
               --notes-file docs/PHASE1_DETECTOR_FREEZE.md
           fi
+          mkdir -p /tmp/chaos-phase1-release
+          git show "${BASELINE_SHA}:docs/PHASE1_DETECTOR_FREEZE.md" > /tmp/chaos-phase1-release/PHASE1_DETECTOR_FREEZE.md
+          git show "${BASELINE_SHA}:structural_engine/isolated_break_detector_v1/results/real_data_transition_scan.json" > /tmp/chaos-phase1-release/real_data_transition_scan.json
+          git show "${BASELINE_SHA}:structural_engine/isolated_break_detector_v1/results/SHA256SUMS.txt" > /tmp/chaos-phase1-release/SHA256SUMS.txt
           gh release upload "${TAG_NAME}" \
-            docs/PHASE1_DETECTOR_FREEZE.md \
-            structural_engine/isolated_break_detector_v1/results/real_data_transition_scan.json \
-            structural_engine/isolated_break_detector_v1/results/SHA256SUMS.txt \
+            /tmp/chaos-phase1-release/PHASE1_DETECTOR_FREEZE.md \
+            /tmp/chaos-phase1-release/real_data_transition_scan.json \
+            /tmp/chaos-phase1-release/SHA256SUMS.txt \
             --clobber
 
       - name: Set up Python
@@ -98,7 +102,7 @@ jobs:
       - name: Execute real historical stress pipeline
         env:
           GITHUB_SHA: ${{ github.sha }}
-          STRESS_BOOTSTRAP_REPLICATES: '199'
+          STRESS_BOOTSTRAP_REPLICATES: '999'
           STRESS_BOOTSTRAP_MEAN_BLOCK_MONTHS: '12'
           STRESS_BOOTSTRAP_MEAN_BLOCK_EVENTS: '25'
           STRESS_MIN_COMMODITY_POINTS: '501'
