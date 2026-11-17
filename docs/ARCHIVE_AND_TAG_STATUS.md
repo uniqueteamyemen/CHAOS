@@ -37,13 +37,29 @@ The workflow step re-applies these release assets with `gh release upload --clob
 - The Phase 1 report, transition scan, and SHA-256 inventory remain the baseline evidence.
 - A Git tag is a ref to an immutable Git object, but the tag ref itself can be moved unless a repository tag ruleset protects it.
 
-## Protection status
+## Protection status — verified 17 November 2026
 
-The CI immutability guard is maintained at `.github/workflows/experiments-immutable.yml`. It detects changes to `experiments/**` on pull requests and direct pushes to `main-phase2`; the workflow has passed once for the phase2 setup commit.
+The CI immutability guard remains at `.github/workflows/experiments-immutable.yml`. It checks the frozen `experiments/**` tree on pull requests and direct pushes to `main-phase2`.
 
-The connected GitHub integration returned HTTP 403 for branch-protection reads and does not expose a branch-protection/ruleset mutation action. Therefore:
-- The CI guard exists and runs, but a GitHub ruleset requiring that check has **not** been enabled or verified.
-- No GitHub tag ruleset protecting Phase 1 or P2.2 tags has been enabled or verified.
-- CODEOWNERS routes review requests to `@uniqueteamyemen`, but does not itself enforce approval.
+A repository ruleset is now visible:
 
-For platform-level protection, configure GitHub repository rulesets for `main-phase2` and the release tags: require the `experiments-immutable` check, block force-push and deletion, and require owner review for protected files and paths.
+- Ruleset ID: `27488330`
+- Name: `main-phase2`
+- Enforcement: `active`
+- Rules: `deletion`, `non_fast_forward`
+- Ref condition: `include: []`, `exclude: []`
+
+**This is not verified as effective protection for `main-phase2`.** GitHub's ruleset condition requires at least one included ref pattern to match; the current empty include list does not explicitly select `refs/heads/main-phase2`. The branch API also reports `protected: false`. Even if the ref condition is corrected, the current ruleset has no pull-request requirement and no required status checks. It therefore does not provide the intended PR/CI gate.
+
+The connected GitHub integration cannot read the classic branch-protection endpoint (HTTP 403) and exposes no ruleset create/update action. GitHub's repository-ruleset create/update endpoint requires repository **Administration: write** permission. Consequently, platform-level activation could not be completed through the currently connected integration. Do not describe the branch as protected.
+
+There is also an automation dependency to resolve before requiring PRs: `.github/workflows/real-data-stress.yml` currently commits generated reports and manifests directly to `main-phase2` using `GITHUB_TOKEN`. A PR-only rule would block that write. Move generated outputs to a dedicated results branch/PR or keep them as release artifacts before enforcing a PR-only rule.
+
+Recommended configuration, after the workflow is adjusted:
+
+1. Branch ruleset target `branch`, condition `include: ["refs/heads/main-phase2"]`, enforcement `active`.
+2. Rules: prevent deletion, prevent non-fast-forward updates, require pull requests, and require the verified CI contexts for `experiments-immutable` and the P2.2 contract-test workflow.
+3. Do not require a human approval from the sole owner account as the only approver; this can make owner-authored PRs unmergeable. Keep CODEOWNERS as review routing unless a distinct reviewer is added.
+4. Add a separate tag ruleset for `phase1-detector-freeze-v1.0` and the P2.2 release tag to prevent tag deletion or movement.
+
+The current ruleset is recorded for traceability, but its present target condition and limited rule set are insufficient. The existing CODEOWNERS file routes requests to `@uniqueteamyemen`; it does not enforce approval by itself.
