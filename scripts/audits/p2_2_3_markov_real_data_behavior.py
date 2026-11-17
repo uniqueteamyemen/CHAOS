@@ -49,20 +49,30 @@ def rolling_mad_volatility_normalize(values, quiet_end=40, window=ROLLING_WINDOW
         raise ValueError("insufficient_values_for_rolling_mad_calibration")
     quiet_scale = 1.4826 * robust_mad(x[:quiet_end])
     floor = max(abs(quiet_scale) * scale_floor_ratio, 1e-12)
-
-    # For t >= quiet_end, the legacy loop used x[t-window:t].
-    # sliding_window_view aligns row 0 with exactly x[0:window], so row
-    # (t-window) is the historical scale used for observation t.
-    windows = sliding_window_view(x, window_shape=window)
-    centers = np.median(windows, axis=1)
-    rolling_scales = 1.4826 * np.median(
-        np.abs(windows - centers[:, None]), axis=1
-    )
-    rolling_scales = np.maximum(rolling_scales, floor)
-
     result = np.empty_like(x)
     result[:quiet_end] = x[:quiet_end] / max(quiet_scale, floor)
-    result[quiet_end:] = x[quiet_end:] / rolling_scales[:x.size - quiet_end]
+
+    # The historical reference permits a growing prefix if quiet_end < window.
+    # This short prefix remains a loop; the full rolling region is vectorized.
+    first_full_window = max(quiet_end, window)
+    prefix_end = min(first_full_window, x.size)
+    for index in range(quiet_end, prefix_end):
+        scale = 1.4826 * robust_mad(x[max(0, index-window):index])
+        result[index] = x[index] / max(scale, floor)
+
+    if prefix_end < x.size:
+        windows = sliding_window_view(x, window_shape=window)
+        centers = np.median(windows, axis=1)
+        rolling_scales = 1.4826 * np.median(
+            np.abs(windows - centers[:, None]), axis=1
+        )
+        rolling_scales = np.maximum(rolling_scales, floor)
+        # Window row (t-window) exactly matches x[t-window:t].
+        first_window_row = prefix_end - window
+        count = x.size - prefix_end
+        result[prefix_end:] = (
+            x[prefix_end:] / rolling_scales[first_window_row:first_window_row+count]
+        )
 
     if not np.all(np.isfinite(result)):
         raise ArithmeticError("rolling_mad_produced_nonfinite_values")
