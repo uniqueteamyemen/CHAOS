@@ -33,7 +33,7 @@ from structural_engine.isolated_break_detector_v1 import (
     DEFAULT_MARKOV_THRESHOLD,
 )
 
-WB_PER_PAGE = 1000
+WB_PER_PAGE = 20000
 WB_WORKERS = 4
 WB_PERIOD = "1990M01:2023M12"
 WB_INDICATORS = {
@@ -207,57 +207,172 @@ def save_raw(output_dir: Path, relative: str, raw: bytes) -> dict[str, Any]:
     }
 
 
-def fetch_world_bank_gem(output_dir: Path) -> dict[str, Any]:
+def load_world_bank_gem_snapshot(
+    snapshot_dir: Path,
+    output_dir: Path,
+) -> tuple[
+    dict[str, dict[int, list[dict[str, Any]]]],
+    dict[str, dict[int, dict[str, Any]]],
+    dict[str, int],
+    dict[str, Any],
+]:
+    """Load published P2.2.1 GEM pages after strict manifest and SHA-256 checks."""
+    manifest_path = (
+        snapshot_dir
+        / "real_data_stress_pipeline"
+        / "results"
+        / "real_data_stress_manifest.json"
+    )
+    if not manifest_path.is_file():
+        raise FileNotFoundError("p2_2_1_source_manifest_missing")
+
+    manifest_bytes = manifest_path.read_bytes()
+    manifest = json.loads(manifest_bytes)
+    gem_config = manifest.get("gem_config") or {}
+    if (
+        int(gem_config.get("world_bank_source_id", -1)) != 15
+        or gem_config.get("period_window") != WB_PERIOD
+    ):
+        raise ValueError("p2_2_1_gem_source_contract_mismatch")
+
+    indicators = {
+        str(item.get("code")): item
+        for item in manifest.get("gem_indicators", [])
+        if isinstance(item, dict) and item.get("code")
+    }
+    if set(indicators) != set(WB_INDICATORS):
+        raise ValueError("p2_2_1_gem_indicator_set_mismatch")
+
+    source_raw_dir = (
+        snapshot_dir
+        / "artifacts"
+        / "real_data_stress"
+        / "raw"
+        / "world_bank"
+        / "gem"
+    )
+    pages_by_indicator: dict[str, dict[int, list[dict[str, Any]]]] = defaultdict(dict)
+    hashes_by_indicator: dict[str, dict[int, dict[str, Any]]] = defaultdict(dict)
+    page_counts: dict[str, int] = {}
+    observed_per_page: set[int] = set()
+
+    for code in sorted(WB_INDICATORS):
+        expected_hashes = indicators[code].get("raw_hashes")
+        if not isinstance(expected_hashes, list) or not expected_hashes:
+            raise ValueError(f"p2_2_1_gem_hash_list_missing:{code}")
+
+        page_counts[code] = len(expected_hashes)
+        for page_number, expected_hash in enumerate(expected_hashes, start=1):
+            filename = f"{code}_page_{page_number:03d}.json"
+            source_path = source_raw_dir / filename
+            if not source_path.is_file():
+                raise FileNotFoundError(f"p2_2_1_gem_page_missing:{filename}")
+
+            raw = source_path.read_bytes()
+            if sha256_bytes(raw) != str(expected_hash):
+                raise ValueError(f"p2_2_1_gem_sha256_mismatch:{filename}")
+
+            meta, rows = parse_world_bank_page(raw)
+            if int(meta.get("page", page_number)) != page_number:
+                raise ValueError(f"p2_2_1_gem_page_index_mismatch:{filename}")
+            if int(meta.get("pages", len(expected_hashes))) != len(expected_hashes):
+                raise ValueError(f"p2_2_1_gem_page_count_mismatch:{filename}")
+            if meta.get("per_page") is not None:
+                observed_per_page.add(int(meta["per_page"]))
+
+            pages_by_indicator[code][page_number] = rows
+            hashes_by_indicator[code][page_number] = save_raw(
+                output_dir,
+                f"world_bank_gem/{filename}",
+                raw,
+            )
+
+    if len(observed_per_page) > 1:
+        raise ValueError("p2_2_1_gem_per_page_inconsistent")
+
+    source_info = {
+        "mode": "REUSED_VERIFIED_P2_2_1_RELEASE_SNAPSHOT",
+        "release_tag": "p2.2-historical-stress-v1.0.1",
+        "source_repository_commit": manifest.get("git_commit"),
+        "source_run_timestamp_utc": manifest.get("run_timestamp_utc"),
+        "source_manifest_sha256": sha256_bytes(manifest_bytes),
+        "source_id": 15,
+        "period": WB_PERIOD,
+        "indicators": sorted(WB_INDICATORS),
+        "pages_verified": sum(page_counts.values()),
+        "per_page": next(iter(observed_per_page), None),
+    }
+    return pages_by_indicator, hashes_by_indicator, page_counts, source_info
+
+
+def fetch_world_bank_gem(
+    output_dir: Path,
+    snapshot_dir: Path | None = None,
+) -> dict[str, Any]:
     raw_dir = output_dir / "raw" / "world_bank_gem"
     raw_dir.mkdir(parents=True, exist_ok=True)
-    first_requests = [
-        (code, 1) for code in sorted(WB_INDICATORS)
-    ]
-
-    def fetch_page(task: tuple[str, int]) -> tuple[str, int, bytes, dict[str, Any], list[dict[str, Any]]]:
-        code, page = task
-        params = urllib.parse.urlencode({
-            "source": 15,
-            "format": "json",
-            "per_page": WB_PER_PAGE,
-            "page": page,
-            "date": WB_PERIOD,
-        })
-        url = f"https://api.worldbank.org/v2/country/all/indicator/{code}?{params}"
-        raw = fetch_bytes(url, timeout=75)
-        meta, rows = parse_world_bank_page(raw)
-        return code, page, raw, meta, rows
 
     pages_by_indicator: dict[str, dict[int, list[dict[str, Any]]]] = defaultdict(dict)
     hashes_by_indicator: dict[str, dict[int, dict[str, Any]]] = defaultdict(dict)
     page_counts: dict[str, int] = {}
+    source_snapshot: dict[str, Any] | None = None
 
-    with ThreadPoolExecutor(max_workers=WB_WORKERS) as executor:
-        first_futures = [executor.submit(fetch_page, task) for task in first_requests]
-        first_results = [future.result() for future in as_completed(first_futures)]
+    if snapshot_dir is not None:
+        (
+            pages_by_indicator,
+            hashes_by_indicator,
+            page_counts,
+            source_snapshot,
+        ) = load_world_bank_gem_snapshot(snapshot_dir, output_dir)
+    else:
+        first_requests = [(code, 1) for code in sorted(WB_INDICATORS)]
 
-        remaining_tasks: list[tuple[str, int]] = []
-        for code, page, raw, meta, rows in first_results:
-            pages_total = max(1, int(meta.get("pages", 1) or 1))
-            page_counts[code] = pages_total
-            pages_by_indicator[code][page] = rows
-            hashes_by_indicator[code][page] = save_raw(
-                output_dir, f"world_bank_gem/{code}_page_{page:04d}.json", raw
-            )
-            remaining_tasks.extend(
-                (code, page_number)
-                for page_number in range(2, pages_total + 1)
-            )
+        def fetch_page(
+            task: tuple[str, int],
+        ) -> tuple[str, int, bytes, dict[str, Any], list[dict[str, Any]]]:
+            code, page = task
+            params = urllib.parse.urlencode({
+                "source": 15,
+                "format": "json",
+                "per_page": WB_PER_PAGE,
+                "page": page,
+                "date": WB_PERIOD,
+            })
+            url = f"https://api.worldbank.org/v2/country/all/indicator/{code}?{params}"
+            raw = fetch_bytes(url, timeout=75)
+            meta, rows = parse_world_bank_page(raw)
+            return code, page, raw, meta, rows
 
-        remaining_futures = [
-            executor.submit(fetch_page, task) for task in remaining_tasks
-        ]
-        for future in as_completed(remaining_futures):
-            code, page, raw, _meta, rows = future.result()
-            pages_by_indicator[code][page] = rows
-            hashes_by_indicator[code][page] = save_raw(
-                output_dir, f"world_bank_gem/{code}_page_{page:04d}.json", raw
-            )
+        with ThreadPoolExecutor(max_workers=WB_WORKERS) as executor:
+            first_futures = [executor.submit(fetch_page, task) for task in first_requests]
+            first_results = [future.result() for future in as_completed(first_futures)]
+
+            remaining_tasks: list[tuple[str, int]] = []
+            for code, page, raw, meta, rows in first_results:
+                pages_total = max(1, int(meta.get("pages", 1) or 1))
+                page_counts[code] = pages_total
+                pages_by_indicator[code][page] = rows
+                hashes_by_indicator[code][page] = save_raw(
+                    output_dir, f"world_bank_gem/{code}_page_{page:04d}.json", raw
+                )
+                remaining_tasks.extend(
+                    (code, page_number)
+                    for page_number in range(2, pages_total + 1)
+                )
+
+            remaining_futures = [
+                executor.submit(fetch_page, task) for task in remaining_tasks
+            ]
+            for future in as_completed(remaining_futures):
+                code, page, raw, _meta, rows = future.result()
+                pages_by_indicator[code][page] = rows
+                hashes_by_indicator[code][page] = save_raw(
+                    output_dir, f"world_bank_gem/{code}_page_{page:04d}.json", raw
+                )
+
+    source_status = (
+        "REUSED_VERIFIED_SNAPSHOT" if source_snapshot is not None else "FETCHED"
+    )
 
     indicator_results: list[dict[str, Any]] = []
     country_series_results: list[dict[str, Any]] = []
@@ -306,7 +421,7 @@ def fetch_world_bank_gem(output_dir: Path) -> dict[str, Any]:
         indicator_results.append({
             "indicator": code,
             "description": WB_INDICATORS[code],
-            "status": "FETCHED",
+            "status": source_status,
             "per_page": WB_PER_PAGE,
             "pages": page_counts.get(code, 0),
             "records_returned": total_rows,
@@ -321,12 +436,13 @@ def fetch_world_bank_gem(output_dir: Path) -> dict[str, Any]:
 
     write_json(output_dir / "world_bank_gem_country_series_qa.json", country_series_results)
     return {
-        "status": "FETCHED",
+        "status": source_status,
         "period": WB_PERIOD,
         "per_page": WB_PER_PAGE,
         "parallel_workers": WB_WORKERS,
         "indicators": indicator_results,
         "country_series_qa_path": "world_bank_gem_country_series_qa.json",
+        "source_snapshot": source_snapshot,
     }
 
 
@@ -772,14 +888,51 @@ def audit_belt(
     }
 
 
-def run_audit(output_dir: Path, poisson_replicates: int) -> dict[str, Any]:
+def required_source_gate(
+    gem_result: dict[str, Any],
+    usgs_result: dict[str, Any],
+    seismic_belts: list[dict[str, Any]],
+) -> dict[str, Any]:
+    gem_indicators = gem_result.get("indicators") or []
+    gem_codes = {
+        item.get("indicator")
+        for item in gem_indicators
+        if isinstance(item, dict)
+        and item.get("status") in {"FETCHED", "REUSED_VERIFIED_SNAPSHOT"}
+    }
+    gem_complete = (
+        gem_result.get("status") in {"FETCHED", "REUSED_VERIFIED_SNAPSHOT"}
+        and gem_codes == set(WB_INDICATORS)
+    )
+    usgs_complete = (
+        usgs_result.get("status") == "COMPLETED"
+        and not usgs_result.get("errors")
+    )
+    belts_complete = (
+        len(seismic_belts) == len(p2.BELTS)
+        and all(int(item.get("source_events", 0)) > 0 for item in seismic_belts)
+    )
+    return {
+        "world_bank_gem": gem_complete,
+        "usgs_comcat": usgs_complete,
+        "five_seismic_belts": belts_complete,
+        "passed": gem_complete and usgs_complete and belts_complete,
+        "optional_sources": ["FRED", "EIA"],
+    }
+
+
+def run_audit(
+    output_dir: Path,
+    poisson_replicates: int,
+    gem_snapshot_dir: Path | None = None,
+) -> dict[str, Any]:
     output_dir.mkdir(parents=True, exist_ok=True)
     source_meta: dict[str, Any] = {"sources": [], "errors": [], "rejected": [], "belts": []}
 
     # Independent source ingestion runs concurrently; no source writes into the P2.2 manifest.
     with ThreadPoolExecutor(max_workers=4) as executor:
         seismic_future = executor.submit(p2.seismic, source_meta)
-        gem_future = executor.submit(fetch_world_bank_gem, output_dir)
+        gem_future = executor.submit(fetch_world_bank_gem, output_dir, gem_snapshot_dir)
         fred_future = executor.submit(fetch_fred, output_dir, os.getenv("FRED_API_KEY"))
         eia_future = executor.submit(fetch_eia, output_dir, os.getenv("EIA_API_KEY"))
 
@@ -797,6 +950,7 @@ def run_audit(output_dir: Path, poisson_replicates: int) -> dict[str, Any]:
             gem_result = {
                 "status": "ERROR",
                 "error_type": type(exc).__name__,
+                "error": str(exc),
                 "per_page": WB_PER_PAGE,
             }
         try:
@@ -822,9 +976,18 @@ def run_audit(output_dir: Path, poisson_replicates: int) -> dict[str, Any]:
             audit_belt(belt, events, output_dir, poisson_replicates)
         )
 
+    usgs_result = {
+        "status": "COMPLETED_WITH_ERRORS" if source_meta["errors"] else "COMPLETED",
+        "belts_queried": source_meta["belts"],
+        "raw_sources": source_meta["sources"],
+        "errors": source_meta["errors"],
+        "rejected": source_meta["rejected"],
+    }
+    source_gate = required_source_gate(gem_result, usgs_result, belt_results)
     result = {
         "audit_id": "CHAOS-P2.2.3-DOMAIN-NULL-DECLUSTERING",
-        "status": "completed",
+        "status": "completed" if source_gate["passed"] else "incomplete",
+        "required_source_gate": source_gate,
         "repository_commit": os.getenv("GITHUB_SHA", "local-unresolved"),
         "detector": {
             "name": "BreakDetectorV1",
@@ -841,13 +1004,7 @@ def run_audit(output_dir: Path, poisson_replicates: int) -> dict[str, Any]:
         "world_bank_gem": gem_result,
         "fred": fred_result,
         "eia": eia_result,
-        "usgs_source_ingestion": {
-            "status": "COMPLETED_WITH_ERRORS" if source_meta["errors"] else "COMPLETED",
-            "belts_queried": source_meta["belts"],
-            "raw_sources": source_meta["sources"],
-            "errors": source_meta["errors"],
-            "rejected": source_meta["rejected"],
-        },
+        "usgs_source_ingestion": usgs_result,
         "seismic_belts": belt_results,
         "interpretation_limits": [
             "Gardner-Knopoff windows were empirically calibrated in Southern California; transfer to these belts is unvalidated.",
@@ -866,18 +1023,26 @@ def main() -> int:
     parser.add_argument("--output-dir", type=Path,
                         default=Path("artifacts/domain_null_and_declustering"))
     parser.add_argument("--poisson-replicates", type=int, default=200)
+    parser.add_argument("--gem-snapshot-dir", type=Path, default=None)
     args = parser.parse_args()
     if args.poisson_replicates < 1:
         parser.error("--poisson-replicates must be positive")
     try:
         started = time.monotonic()
-        result = run_audit(args.output_dir, args.poisson_replicates)
+        result = run_audit(
+            args.output_dir,
+            args.poisson_replicates,
+            args.gem_snapshot_dir,
+        )
         print(
             "DOMAIN_NULL_AUDIT_COMPLETE "
             f"belts={len(result['seismic_belts'])} "
-            f"elapsed_seconds={round(time.monotonic() - started, 3)}",
+            f"elapsed_seconds={round(time.monotonic() - started, 3)} "
+            f"source_gate={result['required_source_gate']['passed']}",
             flush=True,
         )
+        if not result["required_source_gate"]["passed"]:
+            return 2
     except Exception as exc:
         parser.exit(2, f"DOMAIN NULL AUDIT ERROR: {type(exc).__name__}: {exc}\n")
     return 0
