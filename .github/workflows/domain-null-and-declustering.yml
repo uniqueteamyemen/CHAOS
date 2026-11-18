@@ -33,7 +33,7 @@ jobs:
       - name: Checkout isolated domain branch
         uses: actions/checkout@v4
         with:
-          ref: diag/domain-null-and-declustering
+          ref: ${{ github.ref }}
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
@@ -61,7 +61,7 @@ jobs:
       - name: Checkout isolated domain branch
         uses: actions/checkout@v4
         with:
-          ref: diag/domain-null-and-declustering
+          ref: ${{ github.ref }}
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
@@ -75,6 +75,16 @@ jobs:
             ${{ runner.os }}-python-3.11-pip-
       - name: Install pipeline requirements
         run: python -m pip install -r real_data_stress_pipeline/requirements.txt
+      - name: Download and verify P2.2.1 source snapshot
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p "$RUNNER_TEMP/chaos-p2-2-1-source"
+          gh release download p2.2-historical-stress-v1.0.1 --repo uniqueteamyemen/CHAOS --pattern 'chaos-p2-2-source-snapshots.tar.gz*' --dir "$RUNNER_TEMP/chaos-p2-2-1-source"
+          cd "$RUNNER_TEMP/chaos-p2-2-1-source"
+          sha256sum -c chaos-p2-2-source-snapshots.tar.gz.sha256
+          tar -xzf chaos-p2-2-source-snapshots.tar.gz
+          test -s real_data_stress_pipeline/results/real_data_stress_manifest.json
       - name: Run domain null and declustering audit
         env:
           PYTHONUNBUFFERED: '1'
@@ -82,10 +92,9 @@ jobs:
           EIA_API_KEY: ${{ secrets.EIA_API_KEY }}
           EIA_SERIES_IDS: ${{ vars.EIA_SERIES_IDS }}
           POISSON_REPLICATES: ${{ inputs.poisson_replicates || '200' }}
+          GEM_SNAPSHOT_DIR: ${{ runner.temp }}/chaos-p2-2-1-source
         run: |
-          python -u scripts/audits/p2_2_3_domain_null_and_declustering.py \
-            --poisson-replicates "$POISSON_REPLICATES" \
-            --output-dir artifacts/domain_null_and_declustering
+          python -u scripts/audits/p2_2_3_domain_null_and_declustering.py --poisson-replicates "$POISSON_REPLICATES" --gem-snapshot-dir "$GEM_SNAPSHOT_DIR" --output-dir artifacts/domain_null_and_declustering
       - name: Upload domain audit outputs and preserved labeled catalogs
         if: always()
         uses: actions/upload-artifact@v4
