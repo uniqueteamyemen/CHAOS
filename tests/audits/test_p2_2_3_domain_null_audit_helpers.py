@@ -1,6 +1,9 @@
 import unittest
 from datetime import datetime, timezone
+import hashlib
 import json
+import tempfile
+from pathlib import Path
 
 import numpy as np
 
@@ -9,7 +12,10 @@ from scripts.audits.p2_2_3_domain_null_and_declustering import (
     fetch_eia,
     fetch_fred,
     homogeneous_poisson_fit_diagnostics,
+    load_world_bank_gem_snapshot,
     parse_world_bank_page,
+    required_source_gate,
+    WB_INDICATORS,
     redact_secret_payload,
 )
 
@@ -53,6 +59,72 @@ class DomainNullAuditHelperTests(unittest.TestCase):
     def test_fred_and_eia_are_optional_without_secrets(self):
         self.assertEqual(fetch_fred(None, None)["status"], "SKIPPED_SECRET_MISSING")
         self.assertEqual(fetch_eia(None, None)["status"], "SKIPPED_SECRET_MISSING")
+
+
+    def test_p2_2_1_gem_snapshot_is_loaded_only_after_manifest_and_page_hash_checks(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            raw_dir = root / "artifacts/real_data_stress/raw/world_bank/gem"
+            raw_dir.mkdir(parents=True)
+            indicators = []
+            for code in sorted(WB_INDICATORS):
+                payload = [
+                    {"page": 1, "pages": 1, "per_page": 20000, "total": 1},
+                    [{
+                        "countryiso3code": "USA",
+                        "country": {"id": "USA", "value": "United States"},
+                        "date": "1990M01",
+                        "value": 100.0,
+                    }],
+                ]
+                raw = json.dumps(payload).encode("utf-8")
+                (raw_dir / f"{code}_page_001.json").write_bytes(raw)
+                indicators.append({
+                    "code": code,
+                    "raw_hashes": [hashlib.sha256(raw).hexdigest()],
+                })
+
+            manifest_dir = root / "real_data_stress_pipeline/results"
+            manifest_dir.mkdir(parents=True)
+            manifest = {
+                "git_commit": "verified-source-commit",
+                "run_timestamp_utc": "2026-11-18T00:00:00+00:00",
+                "gem_config": {
+                    "world_bank_source_id": 15,
+                    "period_window": "1990M01:2023M12",
+                },
+                "gem_indicators": indicators,
+            }
+            (manifest_dir / "real_data_stress_manifest.json").write_text(
+                json.dumps(manifest), encoding="utf-8"
+            )
+
+            pages, hashes, page_counts, source = load_world_bank_gem_snapshot(
+                root, root / "audit"
+            )
+            self.assertEqual(set(pages), set(WB_INDICATORS))
+            self.assertEqual(set(page_counts.values()), {1})
+            self.assertEqual(source["source_repository_commit"], "verified-source-commit")
+            self.assertEqual(source["pages_verified"], len(WB_INDICATORS))
+            self.assertEqual(len(hashes), len(WB_INDICATORS))
+
+            damaged = raw_dir / f"{sorted(WB_INDICATORS)[0]}_page_001.json"
+            damaged.write_bytes(b'{"tampered":true}')
+            with self.assertRaisesRegex(ValueError, "sha256_mismatch"):
+                load_world_bank_gem_snapshot(root, root / "audit_retry")
+
+    def test_required_source_gate_rejects_missing_gem(self):
+        usgs = {"status": "COMPLETED", "errors": []}
+        belts = [{"source_events": 1} for _ in range(5)]
+        gate = required_source_gate(
+            {"status": "ERROR", "indicators": []},
+            usgs,
+            belts,
+        )
+        self.assertFalse(gate["passed"])
+        self.assertFalse(gate["world_bank_gem"])
+        self.assertTrue(gate["usgs_comcat"])
+        self.assertTrue(gate["five_seismic_belts"])
 
     def test_poisson_diagnostics_are_explicitly_benchmark_only(self):
         counts = np.asarray([0, 1, 0, 2, 1, 0, 0, 1, 2, 0, 1, 0], dtype=np.int64)
