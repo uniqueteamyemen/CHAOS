@@ -3,7 +3,7 @@ name: CHAOS P2.2.3 — Domain Null and Seismic Declustering
 on:
   push:
     branches:
-      - diag/domain-null-and-declustering
+      - fix/p2-2-3-gem-snapshot
     paths:
       - 'real_data_stress_pipeline/diagnostics/**'
       - 'real_data_stress_pipeline/contracts/seismic_declustering_contract_v1.json'
