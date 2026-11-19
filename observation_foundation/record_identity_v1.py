@@ -258,7 +258,7 @@ def prepare_source_record(record: Mapping[str, Any]) -> dict[str, Any]:
         "source_record_id": source_record_id,
         "logical_key": logical_key,
         "source_revision": source_revision,
-        "value": canonical_value,
+        "value": value,
         "unit": unit,
         "logical_record_id": logical_record_id,
         "canonical_record_id": canonical_record_id,
@@ -437,6 +437,15 @@ def build_epoch_snapshot(
         canonical_id = record.get("canonical_record_id")
         if not isinstance(canonical_id, str) or not canonical_id.startswith("crid:v1:sha256:"):
             raise ValueError(f"epoch_canonical_record_id_invalid:index={index}")
+        source_payload = {
+            key: value for key, value in record.items()
+            if key in ALLOWED_RECORD_FIELDS
+        }
+        recomputed = prepare_source_record(source_payload)
+        if recomputed["canonical_record_id"] != canonical_id:
+            raise ValueError(f"epoch_canonical_record_content_mismatch:index={index}")
+        if recomputed["logical_record_id"] != record.get("logical_record_id"):
+            raise ValueError(f"epoch_logical_record_identity_mismatch:index={index}")
 
     selection = select_vintages_as_of(source_records, decision_time)
     selected = selection["selected"]
@@ -444,12 +453,8 @@ def build_epoch_snapshot(
 
     lineage_pairs = {
         (str(item["source_namespace"]), str(item["dataset_id"]))
-        for item in selected
+        for item in source_records
     }
-    lineage_pairs.update(
-        (str(item["source_namespace"]), str(item["dataset_id"]))
-        for item in ambiguous
-    )
     source_lineage = [
         {"source_namespace": source, "dataset_id": dataset}
         for source, dataset in sorted(lineage_pairs)
