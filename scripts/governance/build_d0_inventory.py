@@ -102,7 +102,17 @@ def read_text(path: str) -> str | None:
         return None
 
 
-def classify_contracts(tracked: list[str]) -> dict[str, Any]:
+def version_family(stem: str) -> str:
+    family = stem
+    for marker in ("_V", "_v", "-v", "_DRAFT", "_REVIEW", "_draft", "_review"):
+        position = family.find(marker)
+        if position > 12:
+            family = family[:position]
+            break
+    return family
+
+
+def classify_contracts(tracked: list[str], texts: dict[str, str]) -> dict[str, Any]:
     roots = (
         "experimental_contracts/",
         "catalog_first/experimental_contracts/",
@@ -110,15 +120,10 @@ def classify_contracts(tracked: list[str]) -> dict[str, Any]:
     )
     contract_paths = [
         p for p in tracked
-        if p.startswith(roots) and Path(p).suffix.lower() in {".json", ".md"}
+        if p.startswith(roots)
+        and Path(p).suffix.lower() in {".json", ".md"}
         and any(token in Path(p).name.lower() for token in ("contract", "schema", "ledger", "dictionary", "amendment"))
     ]
-    searchable = [
-        p for p in tracked
-        if not p.startswith("experiments/") and is_text_source(p)
-    ]
-    texts = {p: read_text(p) for p in searchable}
-    texts = {p: t for p, t in texts.items() if t is not None}
     rows = []
     families: dict[str, list[str]] = defaultdict(list)
 
@@ -126,39 +131,29 @@ def classify_contracts(tracked: list[str]) -> dict[str, Any]:
         name = Path(contract).name
         stem = Path(contract).stem
         references = []
-        token = name.lower()
-        stem_token = stem.lower()
-        for source_path, content in texts.items():
+        for source_path, body in texts.items():
             if source_path == contract:
                 continue
-            low = content.lower()
-            if token in low or (len(stem_token) >= 18 and stem_token in low):
+            lower = body.lower()
+            if name.lower() in lower or (len(stem) >= 18 and stem.lower() in lower):
                 references.append(source_path)
 
-        low_name = name.lower()
-        if "draft" in low_name or "/draft" in contract.lower():
+        lower_name = name.lower()
+        if "draft" in lower_name or "/draft" in contract.lower():
             status = "draft"
-        elif "review" in low_name or "amendment" in low_name:
+        elif "review" in lower_name or "amendment" in lower_name:
             status = "review_or_amendment"
-        elif any(p.startswith((".github/workflows/", "structural_engine/", "real_data_stress_pipeline/", "chaos_governance_kernel/", "scripts/")) for p in references):
+        elif any(
+            path.startswith((".github/workflows/", "structural_engine/", "real_data_stress_pipeline/", "chaos_governance_kernel/", "scripts/"))
+            for path in references
+        ):
             status = "referenced_by_executable_or_workflow"
         elif references:
             status = "documented_reference_only"
         else:
             status = "unreferenced_candidate"
 
-        family = stem
-        for marker in ("_V", "_v", "-v", "_DRAFT", "_REVIEW", "_draft", "_review"):
-            position = family.find(marker)
-            if position > 12:
-                family = family[:position]
-                break
-        family = stem
-        for marker in ("_V", "_v", "-v", "_DRAFT", "_REVIEW", "_draft", "_review"):
-            position = family.find(marker)
-            if position > 12:
-                family = family[:position]
-                break
+        family = version_family(stem)
         families[family].append(contract)
         rows.append({
             "path": contract,
@@ -168,27 +163,19 @@ def classify_contracts(tracked: list[str]) -> dict[str, Any]:
             "version_family": family,
         })
 
-    related = [
-        {"family": family, "members": members}
-        for family, members in sorted(families.items()) if len(members) > 1
-    ]
     return {
-        "classification_rule": "Path/name and literal references in tracked non-experiment sources; this is a routing inventory, not semantic approval.",
+        "classification_rule": "Path/name and literal references in tracked non-experiment sources. This is a routing inventory, not semantic approval.",
         "contract_count": len(rows),
         "counts_by_classification": dict(Counter(row["classification"] for row in rows)),
-        "version_or_name_families": related,
+        "version_or_name_families": [
+            {"family": family, "members": members}
+            for family, members in sorted(families.items()) if len(members) > 1
+        ],
         "items": rows,
     }
 
 
-def build_runtime_map(tracked: list[str]) -> dict[str, Any]:
-    source_paths = [
-        p for p in tracked
-        if not p.startswith("experiments/") and is_text_source(p)
-    ]
-    texts = {p: read_text(p) for p in source_paths}
-    texts = {p: t for p, t in texts.items() if t is not None}
-
+def build_runtime_map(tracked: list[str], texts: dict[str, str]) -> dict[str, Any]:
     symbols = {
         "python_frozen_detector": [
             "BreakDetectorV1", "structural_engine.isolated_break_detector_v1"
@@ -214,28 +201,33 @@ def build_runtime_map(tracked: list[str]) -> dict[str, Any]:
     }
     callsites = {}
     for component, needles in symbols.items():
-        matches = []
-        for path, content in texts.items():
-            if path.startswith("experiments/"):
-                continue
-            if any(needle in content for needle in needles):
-                matches.append(path)
-        callsites[component] = matches
+        callsites[component] = [
+            path for path, body in texts.items()
+            if any(needle in body for needle in needles)
+        ]
 
     workflow_commands = []
     for path in tracked:
-        if not path.startswith(".github/workflows/") or Path(path).suffix not in {".yml", ".yaml"}:
+        if not path.startswith(".github/workflows/") or Path(path).suffix.lower() not in {".yml", ".yaml"}:
             continue
-        content = texts.get(path, "")
+        body = texts.get(path, "")
         commands = []
         in_run = False
-        for number, line in enumerate(content.splitlines(), 1):
-            if re.match(r"\\s*run:\\s*\\|?", line):
+        for number, line in enumerate(body.splitlines(), 1):
+            stripped = line.strip()
+            if line.startswith("      - "):
+                in_run = False
+            if stripped.startswith("run:"):
                 in_run = True
-            elif line.startswith("      - ") or (line.startswith("    ") and not line.startswith("          ")):
+                inline = stripped[len("run:"):].strip()
+                if inline and inline != "|":
+                    if any(token in inline for token in ("python ", "pytest", "npm ", "npx ", "node ", "docker ", "unittest")):
+                        commands.append({"line": number, "command": inline[:240]})
+                continue
+            if in_run and line.startswith("        ") and not line.startswith("          "):
                 in_run = False
             if in_run and any(token in line for token in ("python ", "pytest", "npm ", "npx ", "node ", "docker ", "unittest")):
-                commands.append({"line": number, "command": line.strip()[:240]})
+                commands.append({"line": number, "command": stripped[:240]})
         workflow_commands.append({"workflow": path, "commands": commands})
 
     return {
@@ -245,7 +237,7 @@ def build_runtime_map(tracked: list[str]) -> dict[str, Any]:
         "runtime_interpretation": {
             "python": "research and authoritative computation, detectors, data pipeline, governance validation",
             "typescript": "browser UI and legacy/demo calculations; not authoritative for new scientific results",
-            "warning": "Static references do not prove that every referenced path is exercised in production."
+            "warning": "Static references show wiring, not necessarily runtime reachability for every code path."
         },
     }
 
@@ -256,18 +248,28 @@ def build() -> dict[str, Any]:
     if missing:
         raise RuntimeError(f"D0 core inventory paths are missing or untracked: {missing}")
 
+    text_paths = [
+        path for path in tracked
+        if not path.startswith("experiments/") and is_text_source(path)
+    ]
+    texts = {path: body for path in text_paths if (body := read_text(path)) is not None}
+    contract_inventory = classify_contracts(tracked, texts)
+    runtime_inventory = build_runtime_map(tracked, texts)
+
+    source_roles = dict(CORE_ARTIFACTS)
+    for item in contract_inventory["items"]:
+        source_roles.setdefault(item["path"], "contract_inventory")
     source_entries = [
         registry_entry(ROOT / path, ROOT, role)
-        for path, role in sorted(CORE_ARTIFACTS.items())
+        for path, role in sorted(source_roles.items())
     ]
+
     suffixes = Counter(Path(path).suffix.lower() or "[no extension]" for path in tracked)
     workflows = [
-        p for p in tracked if p.startswith(".github/workflows/")
-        and Path(p).suffix.lower() in {".yml", ".yaml"}
+        path for path in tracked
+        if path.startswith(".github/workflows/")
+        and Path(path).suffix.lower() in {".yml", ".yaml"}
     ]
-    contract_inventory = classify_contracts(tracked)
-    runtime_inventory = build_runtime_map(tracked)
-
     checkout = {
         "commit": git_output("rev-parse", "HEAD"),
         "branch": os.getenv("GITHUB_HEAD_REF") or os.getenv("GITHUB_REF_NAME") or git_output("branch", "--show-current"),
@@ -276,20 +278,19 @@ def build() -> dict[str, Any]:
         "pr_base_sha": os.getenv("PR_BASE_SHA") or None,
         "pr_head_sha": os.getenv("PR_HEAD_SHA") or None,
         "working_tree": git_output("status", "--porcelain"),
-        "note": "On pull_request workflows, commit is the tested merge commit; PR head/base SHAs are recorded separately.",
+        "note": "For pull_request workflows, commit is the tested merge commit; PR head/base SHAs are recorded separately.",
     }
-
     counts = {
         "tracked_files": len(tracked),
         "python_files": suffixes[".py"],
         "typescript_and_tsx_files": suffixes[".ts"] + suffixes[".tsx"],
         "javascript_files": suffixes[".js"] + suffixes[".jsx"],
         "workflow_files": len(workflows),
-        "experimental_contract_files": contract_inventory["contract_count"],
-        "experiment_tree_files": sum(p.startswith("experiments/") for p in tracked),
+        "contract_inventory_files": contract_inventory["contract_count"],
+        "experiment_tree_files": sum(path.startswith("experiments/") for path in tracked),
         "test_named_files": sum(
-            Path(p).name.startswith("test_") or "test" in Path(p).stem.lower()
-            for p in tracked
+            Path(path).name.startswith("test_") or "test" in Path(path).stem.lower()
+            for path in tracked
         ),
     }
 
@@ -339,15 +340,12 @@ def build() -> dict[str, Any]:
             "tag_protection": "not verified; remains an explicit repository-governance blocker"
         },
         "inventory_artifacts": [
-            {
-                "path": entry.path, "role": entry.role,
-                "sha256": entry.sha256, "bytes": entry.bytes
-            }
+            {"path": entry.path, "role": entry.role, "sha256": entry.sha256, "bytes": entry.bytes}
             for entry in source_entries
         ],
         "limitations": [
             "P0 performs static inventory and does not execute research workflows or certify scientific validity.",
-            "Static references show wiring, not necessarily runtime reachability for every code path.",
+            "Static source references show wiring, not necessarily runtime reachability for every code path.",
             "Branch-protection read endpoint was unavailable through the connected integration; ruleset state was read directly.",
             "Ruleset/tag protection changes are not made by this workflow.",
             "The inventory must be regenerated after relevant source or governance changes."
@@ -363,10 +361,7 @@ def build() -> dict[str, Any]:
         "decision_status": "baseline_captured",
         "generated_at": utc_now(),
         "artifacts": [
-            {
-                "path": entry.path, "role": entry.role,
-                "sha256": entry.sha256, "bytes": entry.bytes
-            }
+            {"path": entry.path, "role": entry.role, "sha256": entry.sha256, "bytes": entry.bytes}
             for entry in [*source_entries, inventory_entry]
         ],
         "decision": {
