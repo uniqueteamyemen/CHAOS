@@ -1,6 +1,6 @@
 # P1 — Source Record Identity and Vintage Contract V1
 
-**Status:** isolated implementation candidate; unit-tested locally, awaiting repository CI.
+**Status:** isolated implementation candidate; deterministic tests are committed; repository CI result is not yet verified.
 **Branch:** \`fix/p2-2-3-gem-snapshot\`
 
 ## Purpose
@@ -38,8 +38,21 @@ Identical content can legitimately produce the same canonical ID more than once.
 3. Selects the latest available vintage for each stable logical ID.
 4. Returns an ambiguity instead of a lexical or arrival-order tie-break if different canonical versions share the latest \`available_at\`.
 5. Retains unlinked records as standalone observations; it cannot infer their revision chains.
+6. Compares availability timestamps as actual UTC instants, not lexical ISO strings; subsecond vintages remain correctly ordered.
 
-## Local verification
+## Epoch snapshot V1
+
+`build_epoch_snapshot(records, decision_time)` creates a deterministic, content-addressed point-in-time manifest:
+
+- Applies the as-of vintage selector and preserves every selected occurrence, including repeated canonical IDs for event/count multiplicity.
+- Records source namespace/dataset lineage, decision time, selected canonical IDs, unlinked occurrence count, conflicting same-time vintages, and exclusions for unknown/future availability.
+- Recomputes each source record identity before snapshotting; a record whose content no longer matches its canonical digest is rejected.
+- Computes `epoch_id = epoch:v1:sha256:<digest>` from the canonical manifest. Input order and transport metadata do not affect the digest; selected multiplicity and decision time do.
+- Returns the selected normalized records alongside the manifest so downstream computation can consume exactly the frozen point-in-time set.
+
+This is a deterministic snapshot builder, not yet a storage service or integration with every source adapter. Adapter wiring and immutable artifact persistence remain subsequent P1 integration work.
+
+## Verification commands
 
 \`\`\`bash
 python -m unittest discover -s tests/observation_foundation -v
@@ -47,7 +60,7 @@ python -m py_compile observation_foundation/record_identity_v1.py
 python -m json.tool observation_foundation/contracts/source_record_observation_v1.schema.json
 \`\`\`
 
-The local unit suite currently covers identity stability across re-imports, revisions, natural-key ordering, missing stable keys, multiplicity, numeric/time normalization, and point-in-time selection. Passing these tests verifies the helper's specified behavior, not yet its integration with every CHAOS source adapter.
+The committed unit suite covers identity stability across re-imports, revisions, natural-key ordering, missing stable keys, multiplicity, numeric/time normalization, subsecond vintage ordering, point-in-time selection, epoch digest stability, stale-content rejection, and exclusion accounting. A green CI run is required before calling these checks passed; adapter integration remains separate.
 
 
 ## Additional P1 rule — periodic measurement slot identity
