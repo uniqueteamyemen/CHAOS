@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "CHAOS_SOURCE_RECORD_OBSERVATION_V1",
+  "title": "CHAOS Source Record Observation V1",
+  "description": "Versioned source observation with separate logical identity and content-version identity. Transport metadata is excluded from both identities.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "source_namespace", "dataset_id", "series_semantics", "entity_id", "metric_id",
+    "event_time", "available_at", "value", "unit", "observation_status"
+  ],
+  "properties": {
+    "source_namespace": {"type": "string", "minLength": 1},
+    "dataset_id": {"type": "string", "minLength": 1},
+    "series_semantics": {"enum": ["periodic_measurement", "event_stream", "period_count"]},
+    "entity_id": {"type": "string", "minLength": 1},
+    "metric_id": {"type": "string", "minLength": 1},
+    "event_time": {"type": "string", "minLength": 1, "description": "Native event or observation time; may be YYYY, YYYY-MM, YYYY-MM-DD, or timezone-aware ISO-8601."},
+    "available_at": {"type": ["string", "null"], "format": "date-time", "description": "When this exact vintage became available to the system. Null means point-in-time eligibility is unknown."},
+    "source_record_id": {"type": ["string", "null"], "minLength": 1, "description": "Stable source identifier, when the provider guarantees its stability across revisions."},
+    "logical_key": {"type": ["object", "null"], "minProperties": 1, "additionalProperties": {"type": ["string", "number", "integer", "boolean", "null"]}, "description": "Explicitly declared natural key. Never inferred from row order or ingestion metadata."},
+    "source_revision": {"type": ["string", "integer", "null"]},
+    "value": {"type": ["number", "null"]},
+    "unit": {"type": ["string", "null"]},
+    "observation_status": {"enum": ["observed", "missing", "not_applicable", "pending", "invalid"]},
+    "transport_metadata": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "retrieved_at": {"type": ["string", "null"], "format": "date-time"},
+        "ingest_batch_id": {"type": ["string", "null"]},
+        "row_number": {"type": ["integer", "null"], "minimum": 1}
+      },
+      "description": "Audit-only metadata. Never contributes to logical_record_id or canonical_record_id."
+    }
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"observation_status": {"const": "observed"}}, "required": ["observation_status"]},
+      "then": {"properties": {"value": {"type": "number"}}}
+    },
+    {
+      "if": {"properties": {"observation_status": {"enum": ["missing", "not_applicable", "pending", "invalid"]}}, "required": ["observation_status"]},
+      "then": {"properties": {"value": {"type": "null"}}}
+    }
+  ]
+}
