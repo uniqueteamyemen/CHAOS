@@ -48,3 +48,8 @@ python -m json.tool observation_foundation/contracts/source_record_observation_v
 \`\`\`
 
 The local unit suite currently covers identity stability across re-imports, revisions, natural-key ordering, missing stable keys, multiplicity, numeric/time normalization, and point-in-time selection. Passing these tests verifies the helper's specified behavior, not yet its integration with every CHAOS source adapter.
+
+
+## Additional P1 rule — periodic measurement slot identity
+
+When series_semantics is periodic_measurement and neither a stable source ID nor an explicit natural key is provided, the contract derives the logical slot from entity_id + metric_id + event_time, scoped by source_namespace + dataset_id. This is valid only for the declared one-value-per-series-period semantics. It is not applied to event_stream or period_count, where occurrence multiplicity must remain intact.
