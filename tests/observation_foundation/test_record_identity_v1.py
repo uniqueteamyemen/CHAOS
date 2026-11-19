@@ -85,6 +85,27 @@ class SourceRecordIdentityTests(unittest.TestCase):
             [item["canonical_record_id"] for item in second],
         )
 
+    def test_periodic_measurement_has_stable_declared_series_slot_identity(self):
+        base = base_record(
+            series_semantics="periodic_measurement", source_record_id=None,
+            logical_key=None, metric_id="monthly-output", event_time="2026-01",
+        )
+        first = prepare_source_record(base)
+        revised = prepare_source_record(dict(base, value=99.0, source_revision="r2",
+                                             available_at="2026-02-05T00:00:00Z"))
+        self.assertEqual(first["logical_record_id"], revised["logical_record_id"])
+        self.assertNotEqual(first["canonical_record_id"], revised["canonical_record_id"])
+        self.assertEqual(first["identity_basis"], "periodic_series_key")
+
+    def test_event_stream_without_explicit_key_remains_unlinked(self):
+        prepared = prepare_source_record(base_record(source_record_id=None, logical_key=None))
+        self.assertIsNone(prepared["logical_record_id"])
+
+    def test_unicode_normalized_logical_key_collision_is_rejected(self):
+        key = {"é": "first", "e\\u0301": "second"}
+        with self.assertRaisesRegex(ValueError, "collision_after_unicode"):
+            prepare_source_record(base_record(source_record_id=None, logical_key=key))
+
     def test_no_stable_key_is_explicitly_unresolved(self):
         record = base_record(source_record_id=None, logical_key=None)
         prepared = prepare_source_record(record)
