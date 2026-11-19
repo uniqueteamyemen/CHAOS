@@ -5,6 +5,7 @@ from observation_foundation.record_identity_v1 import (
     prepare_source_records,
     build_vintage_chains,
     select_vintages_as_of,
+    build_epoch_snapshot,
 )
 
 
@@ -218,6 +219,69 @@ class SourceRecordIdentityTests(unittest.TestCase):
     def test_unrecognized_transport_fields_are_rejected(self):
         with self.assertRaisesRegex(ValueError, "unexpected_transport_fields"):
             prepare_source_record(base_record(transport_metadata={"row_number": 1, "cursor": "abc"}))
+
+
+    def test_epoch_snapshot_is_independent_of_input_order_and_transport_metadata(self):
+        a = prepare_source_record(base_record(source_record_id="event-A"))
+        b = prepare_source_record(base_record(
+            source_record_id="event-B",
+            event_time="2026-01-02T00:00:00Z",
+            available_at="2026-01-02T01:00:00Z",
+        ))
+        first = build_epoch_snapshot([a, b], "2026-01-03T00:00:00Z")
+        second = build_epoch_snapshot([dict(b), dict(a)], "2026-01-03T00:00:00Z")
+        self.assertEqual(first["epoch_id"], second["epoch_id"])
+        self.assertEqual(first["snapshot_sha256"], second["snapshot_sha256"])
+
+    def test_epoch_snapshot_preserves_identical_event_multiplicity(self):
+        record = prepare_source_record(base_record(source_record_id="event-duplicate"))
+        single = build_epoch_snapshot([record], "2026-01-03T00:00:00Z")
+        repeated = build_epoch_snapshot([record, dict(record)], "2026-01-03T00:00:00Z")
+        self.assertEqual(single["manifest"]["selected_occurrence_count"], 1)
+        self.assertEqual(repeated["manifest"]["selected_occurrence_count"], 2)
+        self.assertEqual(
+            repeated["manifest"]["selected_canonical_record_ids"],
+            [record["canonical_record_id"], record["canonical_record_id"]],
+        )
+        self.assertNotEqual(single["snapshot_sha256"], repeated["snapshot_sha256"])
+
+    def test_epoch_snapshot_records_future_and_unknown_availability_exclusions(self):
+        known = prepare_source_record(base_record(source_record_id="known"))
+        future = prepare_source_record(base_record(
+            source_record_id="future",
+            event_time="2026-01-02T00:00:00Z",
+            available_at="2026-02-01T00:00:00Z",
+        ))
+        unknown = prepare_source_record(base_record(
+            source_record_id="unknown",
+            event_time="2026-01-03T00:00:00Z",
+            available_at=None,
+        ))
+        epoch = build_epoch_snapshot([known, future, unknown], "2026-01-10T00:00:00Z")
+        self.assertEqual(epoch["manifest"]["selected_occurrence_count"], 1)
+        self.assertEqual(epoch["manifest"]["future_available_at_excluded"], 1)
+        self.assertEqual(epoch["manifest"]["missing_available_at_excluded"], 1)
+
+    def test_epoch_snapshot_hash_changes_with_decision_time(self):
+        record = prepare_source_record(base_record())
+        morning = build_epoch_snapshot([record], "2026-01-02T00:00:00Z")
+        later = build_epoch_snapshot([record], "2026-01-03T00:00:00Z")
+        self.assertNotEqual(morning["epoch_id"], later["epoch_id"])
+
+    def test_epoch_snapshot_retains_same_time_vintage_ambiguity(self):
+        first = prepare_source_record(base_record(
+            available_at="2026-01-01T01:00:00Z", value=5.2
+        ))
+        competing = prepare_source_record(base_record(
+            available_at="2026-01-01T01:00:00Z", source_revision="r2", value=5.8
+        ))
+        epoch = build_epoch_snapshot([first, competing], "2026-01-02T00:00:00Z")
+        self.assertEqual(epoch["selected_records"], [])
+        self.assertEqual(len(epoch["manifest"]["ambiguous"]), 1)
+        self.assertEqual(
+            epoch["manifest"]["ambiguous"][0]["status"],
+            "AMBIGUOUS_SAME_AVAILABLE_AT",
+        )
 
 
 if __name__ == "__main__":
