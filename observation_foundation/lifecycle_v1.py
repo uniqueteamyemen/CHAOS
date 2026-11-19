@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 from copy import deepcopy
-from datetime import datetime
+from datetime import datetime, timezone
 import unicodedata
 from typing import Any, Mapping
 
@@ -63,9 +63,7 @@ def _validate_trigger_shift(trigger_shift: Mapping[str, Any]) -> dict[str, str]:
         raise ValueError("trigger_shift_observed_at_invalid") from exc
     if parsed.tzinfo is None:
         raise ValueError("trigger_shift_observed_at_requires_timezone")
-    result["observed_at"] = parsed.astimezone().astimezone(
-        __import__("datetime").timezone.utc
-    ).isoformat(timespec="auto").replace("+00:00", "Z")
+    result["observed_at"] = parsed.astimezone(timezone.utc).isoformat(timespec="auto").replace("+00:00", "Z")
     return result
 
 
