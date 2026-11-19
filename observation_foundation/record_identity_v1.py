@@ -427,12 +427,22 @@ def build_epoch_snapshot(
         "source_namespace", "dataset_id", "entity_id", "metric_id",
         "event_time", "available_at", "canonical_record_id",
     }
+    derived_fields = {
+        "logical_record_id", "canonical_record_id", "identity_basis",
+        "multiplicity_policy",
+    }
     for index, record in enumerate(source_records):
         missing = sorted(required_identity_fields - set(record))
         if missing:
             raise ValueError(
                 f"epoch_record_identity_fields_missing:index={index}:"
                 + ",".join(missing)
+            )
+        unexpected = sorted(set(record) - ALLOWED_RECORD_FIELDS - derived_fields)
+        if unexpected:
+            raise ValueError(
+                f"epoch_record_fields_invalid:index={index}:"
+                + ",".join(unexpected)
             )
         canonical_id = record.get("canonical_record_id")
         if not isinstance(canonical_id, str) or not canonical_id.startswith("crid:v1:sha256:"):
