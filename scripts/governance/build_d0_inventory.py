@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import json
 import os
-import re
 import subprocess
 import sys
 from collections import Counter, defaultdict
@@ -83,7 +82,7 @@ def tracked_paths() -> list[str]:
         ["git", "ls-files", "-z"], cwd=ROOT, check=True,
         capture_output=True,
     ).stdout
-    return [part.decode("utf-8") for part in raw.split(b"\\0") if part]
+    return [part.decode("utf-8") for part in raw.split(bytes([0])) if part]
 
 
 def is_text_source(path: str) -> bool:
@@ -148,8 +147,18 @@ def classify_contracts(tracked: list[str]) -> dict[str, Any]:
         else:
             status = "unreferenced_candidate"
 
-        family = re.sub(r"(?i)(?:[_-](?:v)?\\d+(?:[_\\.-]\\d+)*)+$", "", stem)
-        family = re.sub(r"(?i)(?:[_-](?:draft|review))+$", "", family)
+        family = stem
+        for marker in ("_V", "_v", "-v", "_DRAFT", "_REVIEW", "_draft", "_review"):
+            position = family.find(marker)
+            if position > 12:
+                family = family[:position]
+                break
+        family = stem
+        for marker in ("_V", "_v", "-v", "_DRAFT", "_REVIEW", "_draft", "_review"):
+            position = family.find(marker)
+            if position > 12:
+                family = family[:position]
+                break
         families[family].append(contract)
         rows.append({
             "path": contract,
@@ -223,9 +232,9 @@ def build_runtime_map(tracked: list[str]) -> dict[str, Any]:
         for number, line in enumerate(content.splitlines(), 1):
             if re.match(r"\\s*run:\\s*\\|?", line):
                 in_run = True
-            elif re.match(r"\\s*[A-Za-z0-9_-]+:", line) and not line.startswith(" " * 10):
+            elif line.startswith("      - ") or (line.startswith("    ") and not line.startswith("          ")):
                 in_run = False
-            if in_run and re.search(r"\\b(python|pytest|npm|npx|node|docker|unittest)\\b", line):
+            if in_run and any(token in line for token in ("python ", "pytest", "npm ", "npx ", "node ", "docker ", "unittest")):
                 commands.append({"line": number, "command": line.strip()[:240]})
         workflow_commands.append({"workflow": path, "commands": commands})
 
