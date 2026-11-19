@@ -64,5 +64,47 @@ class HypothesisLifecycleTests(unittest.TestCase):
             validate_input_disposition("input://row/88", "LOCKED_REJECTED", "invalid cross-domain state")
 
 
+    def test_threshold_change_cannot_be_disguised_with_data_wording(self):
+        trigger = {
+            "kind": "threshold_change",
+            "observed_at": "2026-11-19T10:00:00Z",
+            "evidence_ref": "ledger://change/threshold-2",
+            "description": "threshold changed after reviewing new data and source regime",
+        }
+        with self.assertRaisesRegex(ValueError, "threshold_only_change"):
+            create_triggered_hypothesis_version(self.hypothesis, trigger)
+
+    def test_unknown_trigger_kind_is_rejected(self):
+        trigger = {
+            "kind": "analyst_judgment",
+            "observed_at": "2026-11-19T10:00:00Z",
+            "evidence_ref": "ledger://change/manual",
+            "description": "Analyst believes the hypothesis should be reopened",
+        }
+        with self.assertRaisesRegex(ValueError, "trigger_shift_kind_invalid"):
+            create_triggered_hypothesis_version(self.hypothesis, trigger)
+
+    def test_trigger_timestamp_is_normalized_to_utc(self):
+        trigger = {
+            "kind": "source_vintage_changed",
+            "observed_at": "2026-11-19T13:00:00+03:00",
+            "evidence_ref": "sha256:source-vintage-3",
+            "description": "provider published a new immutable source vintage",
+        }
+        new = create_triggered_hypothesis_version(self.hypothesis, trigger)
+        self.assertEqual(new["trigger_shift"]["observed_at"], "2026-11-19T10:00:00Z")
+
+    def test_unknown_trigger_fields_are_rejected(self):
+        trigger = {
+            "kind": "source_vintage_changed",
+            "observed_at": "2026-11-19T10:00:00Z",
+            "evidence_ref": "sha256:source-vintage-3",
+            "description": "provider published a new immutable source vintage",
+            "arrival_order": 3,
+        }
+        with self.assertRaisesRegex(ValueError, "trigger_shift_fields_invalid"):
+            create_triggered_hypothesis_version(self.hypothesis, trigger)
+
+
 if __name__ == "__main__":
     unittest.main()
