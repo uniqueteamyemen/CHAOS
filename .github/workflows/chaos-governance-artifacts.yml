@@ -37,6 +37,12 @@ jobs:
         with:
           python-version: '3.11'
       - name: Build D0 inventory through the existing governance kernel
+        env:
+          GITHUB_EVENT_NAME: ${{ github.event_name }}
+          GITHUB_HEAD_REF: ${{ github.head_ref }}
+          GITHUB_BASE_REF: ${{ github.base_ref }}
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
         run: python scripts/governance/build_d0_inventory.py
       - name: Validate generated D0 manifest
         run: |
