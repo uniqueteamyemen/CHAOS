@@ -185,5 +185,40 @@ class SourceRecordIdentityTests(unittest.TestCase):
         self.assertIsNone(result["selected"][0]["logical_record_id"])
 
 
+    def test_as_of_orders_subsecond_vintages_by_actual_time(self):
+        older = prepare_source_record(base_record(
+            available_at="2026-01-01T01:00:00Z", value=5.2
+        ))
+        newer = prepare_source_record(base_record(
+            available_at="2026-01-01T01:00:00.1Z", source_revision="r2", value=5.3
+        ))
+        result = select_vintages_as_of([newer, older], "2026-01-01T01:00:01Z")
+        self.assertEqual(len(result["selected"]), 1)
+        self.assertEqual(result["selected"][0]["source_revision"], "r2")
+
+    def test_vintage_chain_orders_subsecond_versions_by_actual_time(self):
+        older = prepare_source_record(base_record(
+            available_at="2026-01-01T01:00:00Z", value=5.2
+        ))
+        newer = prepare_source_record(base_record(
+            available_at="2026-01-01T01:00:00.1Z", source_revision="r2", value=5.3
+        ))
+        chains = build_vintage_chains([newer, older])
+        versions = chains["chains"][older["logical_record_id"]]
+        self.assertEqual([item["source_revision"] for item in versions], ["r1", "r2"])
+
+    def test_numeric_string_is_rejected_by_runtime_contract(self):
+        with self.assertRaisesRegex(ValueError, "finite_number"):
+            prepare_source_record(base_record(value="5.2"))
+
+    def test_unrecognized_observation_fields_are_rejected(self):
+        with self.assertRaisesRegex(ValueError, "unexpected_record_fields"):
+            prepare_source_record(base_record(retrieved_at="2026-01-02T00:00:00Z"))
+
+    def test_unrecognized_transport_fields_are_rejected(self):
+        with self.assertRaisesRegex(ValueError, "unexpected_transport_fields"):
+            prepare_source_record(base_record(transport_metadata={"row_number": 1, "cursor": "abc"}))
+
+
 if __name__ == "__main__":
     unittest.main()
