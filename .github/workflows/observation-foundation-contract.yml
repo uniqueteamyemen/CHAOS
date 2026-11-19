@@ -31,5 +31,9 @@ jobs:
         run: python -m py_compile observation_foundation/record_identity_v1.py
       - name: Validate contract JSON syntax
         run: python -m json.tool observation_foundation/contracts/source_record_observation_v1.schema.json
-      - name: Run deterministic identity and vintage tests
+      - name: Validate hypothesis lifecycle contract JSON
+        run: python -m json.tool observation_foundation/contracts/hypothesis_lifecycle_v1.schema.json
+      - name: Validate input disposition contract JSON
+        run: python -m json.tool observation_foundation/contracts/input_disposition_v1.schema.json
+      - name: Run deterministic identity and lifecycle tests
         run: python -m unittest discover -s tests/observation_foundation -v
