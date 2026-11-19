@@ -17,6 +17,12 @@ from typing import Any, Iterable, Mapping
 CONTRACT_VERSION = "source-record-identity-v1"
 VALID_SEMANTICS = {"periodic_measurement", "event_stream", "period_count"}
 VALID_STATUSES = {"observed", "missing", "not_applicable", "pending", "invalid"}
+ALLOWED_RECORD_FIELDS = {
+    "source_namespace", "dataset_id", "series_semantics", "entity_id", "metric_id",
+    "event_time", "available_at", "source_record_id", "logical_key", "source_revision",
+    "value", "unit", "observation_status", "transport_metadata",
+}
+ALLOWED_TRANSPORT_FIELDS = {"retrieved_at", "ingest_batch_id", "row_number"}
 
 
 def _nfc(value: str) -> str:
@@ -24,7 +30,7 @@ def _nfc(value: str) -> str:
 
 
 def _canonical_decimal(value: Any) -> str:
-    if isinstance(value, bool) or value is None:
+    if isinstance(value, bool) or not isinstance(value, (int, float, Decimal)):
         raise ValueError("value_must_be_finite_number_or_null")
     try:
         number = Decimal(str(value))
@@ -114,6 +120,28 @@ def prepare_source_record(record: Mapping[str, Any]) -> dict[str, Any]:
     missing = [name for name in required if name not in record]
     if missing:
         raise ValueError("required_fields_missing:" + ",".join(missing))
+    unknown = sorted(set(record) - ALLOWED_RECORD_FIELDS)
+    if unknown:
+        raise ValueError("unexpected_record_fields:" + ",".join(unknown))
+
+    transport = record.get("transport_metadata")
+    if "transport_metadata" in record:
+        if not isinstance(transport, Mapping):
+            raise ValueError("transport_metadata_must_be_object")
+        unknown_transport = sorted(set(transport) - ALLOWED_TRANSPORT_FIELDS)
+        if unknown_transport:
+            raise ValueError("unexpected_transport_fields:" + ",".join(unknown_transport))
+        retrieved_at = transport.get("retrieved_at")
+        if retrieved_at is not None:
+            _canonical_event_time(retrieved_at, require_instant=True)
+        batch_id = transport.get("ingest_batch_id")
+        if batch_id is not None and not isinstance(batch_id, str):
+            raise ValueError("ingest_batch_id_must_be_string_or_null")
+        row_number = transport.get("row_number")
+        if row_number is not None and (
+            not isinstance(row_number, int) or isinstance(row_number, bool) or row_number < 1
+        ):
+            raise ValueError("row_number_must_be_positive_integer_or_null")
 
     normalized: dict[str, Any] = dict(record)
     for field in ("source_namespace", "dataset_id", "entity_id", "metric_id"):
@@ -240,13 +268,34 @@ def prepare_source_record(record: Mapping[str, Any]) -> dict[str, Any]:
     return normalized
 
 
-def canonical_order_key(record: Mapping[str, Any]) -> tuple[str, ...]:
+def _parse_instant(value: str) -> datetime:
+    normalized = _canonical_event_time(value, require_instant=True)
+    return datetime.fromisoformat(normalized.replace("Z", "+00:00")).astimezone(timezone.utc)
+
+
+def _event_time_sort_key(value: str) -> tuple[datetime, int]:
+    """Chronological sort key for native period labels and UTC instants."""
+    normalized = _canonical_event_time(value)
+    if len(normalized) == 4 and normalized.isdigit():
+        return datetime(int(normalized), 1, 1, tzinfo=timezone.utc), 0
+    if len(normalized) == 7 and normalized[4] == "-":
+        year, month = (int(part) for part in normalized.split("-"))
+        return datetime(year, month, 1, tzinfo=timezone.utc), 1
+    if len(normalized) == 10 and normalized[4] == "-":
+        year, month, day = (int(part) for part in normalized.split("-"))
+        return datetime(year, month, day, tzinfo=timezone.utc), 2
+    return _parse_instant(normalized), 3
+
+
+def canonical_order_key(record: Mapping[str, Any]) -> tuple[Any, ...]:
     """Order independent of ingest time, row number, and arrival sequence."""
+    available_at = record.get("available_at")
+    available_key = (1, datetime.max.replace(tzinfo=timezone.utc)) if available_at is None else (0, _parse_instant(str(available_at)))
     return (
         str(record["entity_id"]),
         str(record["metric_id"]),
-        str(record["event_time"]),
-        str(record.get("available_at") or ""),
+        _event_time_sort_key(str(record["event_time"])),
+        available_key,
         str(record["source_namespace"]),
         str(record["dataset_id"]),
         str(record.get("logical_record_id") or ""),
@@ -283,7 +332,9 @@ def build_vintage_chains(records: Iterable[Mapping[str, Any]]) -> dict[str, Any]
             versions,
             key=lambda item: (
                 item.get("available_at") is None,
-                str(item.get("available_at") or ""),
+                datetime.max.replace(tzinfo=timezone.utc)
+                if item.get("available_at") is None
+                else _parse_instant(str(item["available_at"])),
                 str(item.get("canonical_record_id") or ""),
             ),
         )
@@ -307,8 +358,8 @@ def select_vintages_as_of(
     as ambiguous rather than broken by lexical revision or ingest order.
     """
     cutoff = _canonical_event_time(decision_time, require_instant=True)
-    cutoff_dt = datetime.fromisoformat(cutoff.replace("Z", "+00:00"))
-    grouped: dict[str, list[dict[str, Any]]] = defaultdict(list)
+    cutoff_dt = _parse_instant(cutoff)
+    grouped: dict[str, list[tuple[datetime, dict[str, Any]]]] = defaultdict(list)
     standalone: list[dict[str, Any]] = []
     missing_available_at = 0
 
@@ -319,7 +370,7 @@ def select_vintages_as_of(
             missing_available_at += 1
             continue
         normalized_available = _canonical_event_time(available_at, require_instant=True)
-        available_dt = datetime.fromisoformat(normalized_available.replace("Z", "+00:00"))
+        available_dt = _parse_instant(normalized_available)
         if available_dt > cutoff_dt:
             continue
         record["available_at"] = normalized_available
@@ -327,18 +378,18 @@ def select_vintages_as_of(
         if logical_id is None:
             standalone.append(record)
         else:
-            grouped[str(logical_id)].append(record)
+            grouped[str(logical_id)].append((available_dt, record))
 
     selected: list[dict[str, Any]] = list(standalone)
     ambiguous: list[dict[str, Any]] = []
     for logical_id, versions in sorted(grouped.items()):
-        latest_time = max(item["available_at"] for item in versions)
-        latest = [item for item in versions if item["available_at"] == latest_time]
+        latest_time = max(available_dt for available_dt, _ in versions)
+        latest = [record for available_dt, record in versions if available_dt == latest_time]
         canonical_ids = {str(item["canonical_record_id"]) for item in latest}
         if len(canonical_ids) > 1:
             ambiguous.append({
                 "logical_record_id": logical_id,
-                "available_at": latest_time,
+                "available_at": latest[0]["available_at"],
                 "competing_canonical_record_ids": sorted(canonical_ids),
                 "status": "AMBIGUOUS_SAME_AVAILABLE_AT",
             })
