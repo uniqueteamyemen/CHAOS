@@ -284,5 +284,25 @@ class SourceRecordIdentityTests(unittest.TestCase):
         )
 
 
+    def test_prepared_numeric_value_remains_numeric(self):
+        prepared = prepare_source_record(base_record(value=5.2))
+        self.assertIsInstance(prepared["value"], float)
+        self.assertEqual(prepared["value"], 5.2)
+
+    def test_epoch_snapshot_rejects_content_mutated_after_identity(self):
+        prepared = prepare_source_record(base_record())
+        mutated = dict(prepared, value=5.9)
+        with self.assertRaisesRegex(ValueError, "canonical_record_content_mismatch"):
+            build_epoch_snapshot([mutated], "2026-01-02T00:00:00Z")
+
+    def test_epoch_snapshot_rejects_uncontracted_record_fields(self):
+        prepared = prepare_source_record(base_record())
+        with self.assertRaisesRegex(ValueError, "epoch_record_fields_invalid"):
+            build_epoch_snapshot(
+                [dict(prepared, untracked_metadata="not in source contract")],
+                "2026-01-02T00:00:00Z",
+            )
+
+
 if __name__ == "__main__":
     unittest.main()
