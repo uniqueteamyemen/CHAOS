@@ -43,7 +43,11 @@ def _canonical_event_time(value: Any, *, require_instant: bool = False) -> str:
         raise ValueError("event_time_or_available_at_missing")
     raw = _nfc(value.strip())
     if not require_instant and len(raw) == 4 and raw.isdigit():
-        return raw
+        try:
+            datetime.strptime(raw, "%Y")
+            return raw
+        except ValueError as exc:
+            raise ValueError("event_time_invalid") from exc
     if not require_instant and len(raw) == 7 and raw[4] == "-":
         try:
             datetime.strptime(raw, "%Y-%m")
@@ -159,13 +163,26 @@ def prepare_source_record(record: Mapping[str, Any]) -> dict[str, Any]:
         for key, item in logical_key.items():
             if not isinstance(key, str) or not key.strip():
                 raise ValueError("logical_key_field_names_must_be_nonempty_strings")
-            normalized_key[_nfc(key.strip())] = _canonical_scalar(item)
+            canonical_key = _nfc(key.strip())
+            if canonical_key in normalized_key:
+                raise ValueError("logical_key_field_name_collision_after_unicode_normalization")
+            normalized_key[canonical_key] = _canonical_scalar(item)
         logical_key = dict(sorted(normalized_key.items()))
 
     if source_record_id is not None:
         logical_basis = {"kind": "source_record_id", "value": source_record_id}
     elif logical_key is not None:
         logical_basis = {"kind": "declared_natural_key", "value": logical_key}
+    elif semantics == "periodic_measurement":
+        # One observation slot per entity/metric/time is the declared periodic key.
+        logical_basis = {
+            "kind": "periodic_series_key",
+            "value": {
+                "entity_id": normalized["entity_id"],
+                "metric_id": normalized["metric_id"],
+                "event_time": event_time,
+            },
+        }
     else:
         logical_basis = None
 
