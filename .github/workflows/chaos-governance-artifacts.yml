@@ -1,0 +1,63 @@
+name: CHAOS Governed Artifacts
+
+on:
+  pull_request:
+    branches:
+      - main-phase2
+    paths:
+      - 'scripts/governance/**'
+      - 'chaos_governance_kernel/**'
+      - 'docs/CHAOS_EXECUTION_PLAN_V2_AR.md'
+      - '.github/workflows/chaos-governance-artifacts.yml'
+  push:
+    branches:
+      - main-phase2
+    paths:
+      - 'scripts/governance/**'
+      - 'chaos_governance_kernel/**'
+      - 'docs/CHAOS_EXECUTION_PLAN_V2_AR.md'
+      - '.github/workflows/chaos-governance-artifacts.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  d0-baseline:
+    name: d0-baseline-artifact-validation
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Build D0 inventory through the existing governance kernel
+        run: python scripts/governance/build_d0_inventory.py
+      - name: Validate generated D0 manifest
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          from chaos_governance_kernel.core import validate_manifest
+          result = validate_manifest(
+              Path("governance/artifacts/D0_BASELINE_MANIFEST_V1.json"),
+              Path.cwd(),
+          )
+          print(result)
+          if result["status"] != "pass":
+              raise SystemExit(1)
+          PY
+      - name: Upload governed D0 artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: chaos-d0-baseline-${{ github.sha }}
+          path: |
+            governance/artifacts/D0_BASELINE_INVENTORY_V1.json
+            governance/artifacts/D0_BASELINE_MANIFEST_V1.json
+            governance/artifacts/D0_VALIDATION_REPORT_V1.json
+          if-no-files-found: error
+          retention-days: 90
