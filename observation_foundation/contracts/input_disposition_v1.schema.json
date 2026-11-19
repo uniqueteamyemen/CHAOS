@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "CHAOS_INPUT_DISPOSITION_V1",
+  "title": "CHAOS Input Disposition V1",
+  "description": "Input/evidence eligibility only. It is not a hypothesis outcome or lifecycle state.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["input_ref", "status", "reason"],
+  "properties": {
+    "input_ref": {"type": "string", "minLength": 1},
+    "status": {"enum": ["ACCEPT", "ABSTAIN", "QUARANTINE", "REJECT"]},
+    "reason": {"type": "string", "minLength": 1}
+  }
+}
