@@ -18,7 +18,7 @@
     "event_time": {"type": "string", "minLength": 1, "description": "Native event or observation time; may be YYYY, YYYY-MM, YYYY-MM-DD, or timezone-aware ISO-8601."},
     "available_at": {"type": ["string", "null"], "format": "date-time", "description": "When this exact vintage became available to the system. Null means point-in-time eligibility is unknown."},
     "source_record_id": {"type": ["string", "null"], "minLength": 1, "description": "Stable source identifier, when the provider guarantees its stability across revisions."},
-    "logical_key": {"type": ["object", "null"], "minProperties": 1, "additionalProperties": {"type": ["string", "number", "integer", "boolean", "null"]}, "description": "Explicitly declared natural key. Never inferred from row order or ingestion metadata."},
+    "logical_key": {"type": ["object", "null"], "minProperties": 1, "additionalProperties": {"type": ["string", "number", "integer", "boolean", "null"]}, "description": "Explicitly declared natural key. For periodic_measurement only, entity_id + metric_id + event_time is the canonical default slot key. Event streams and period counts have no inferred logical key."},
     "source_revision": {"type": ["string", "integer", "null"]},
     "value": {"type": ["number", "null"]},
     "unit": {"type": ["string", "null"]},
