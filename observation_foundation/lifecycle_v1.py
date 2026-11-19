@@ -22,6 +22,18 @@ _ALLOWED_TRANSITIONS = {
     "UNRESOLVED": set(),
 }
 _TRIGGER_FIELDS = ("kind", "observed_at", "evidence_ref", "description")
+VALID_TRIGGER_KINDS = {
+    "source_vintage_changed",
+    "source_schema_changed",
+    "source_namespace_changed",
+    "dataset_scope_changed",
+    "domain_definition_changed",
+    "observation_contract_changed",
+    "external_system_changed",
+    "catalog_completeness_changed",
+    "measurement_regime_changed",
+    "independent_evidence_added",
+}
 
 
 def _required_text(value: Any, field: str) -> str:
@@ -33,10 +45,17 @@ def _required_text(value: Any, field: str) -> str:
 def _validate_trigger_shift(trigger_shift: Mapping[str, Any]) -> dict[str, str]:
     if not isinstance(trigger_shift, Mapping):
         raise ValueError("trigger_shift_required_for_new_hypothesis_version")
+    unknown = sorted(set(trigger_shift) - set(_TRIGGER_FIELDS))
+    if unknown:
+        raise ValueError("trigger_shift_fields_invalid:" + ",".join(unknown))
     result = {
         field: _required_text(trigger_shift.get(field), f"trigger_shift_{field}")
         for field in _TRIGGER_FIELDS
     }
+    if result["kind"] not in VALID_TRIGGER_KINDS:
+        if "threshold" in result["kind"].casefold():
+            raise ValueError("threshold_only_change_is_not_trigger_shift")
+        raise ValueError("trigger_shift_kind_invalid")
     stamp = result["observed_at"].replace("Z", "+00:00")
     try:
         parsed = datetime.fromisoformat(stamp)
@@ -44,6 +63,9 @@ def _validate_trigger_shift(trigger_shift: Mapping[str, Any]) -> dict[str, str]:
         raise ValueError("trigger_shift_observed_at_invalid") from exc
     if parsed.tzinfo is None:
         raise ValueError("trigger_shift_observed_at_requires_timezone")
+    result["observed_at"] = parsed.astimezone().astimezone(
+        __import__("datetime").timezone.utc
+    ).isoformat(timespec="auto").replace("+00:00", "Z")
     return result
 
 
@@ -69,18 +91,12 @@ def create_triggered_hypothesis_version(
     """Create a new candidate version after a documented trigger/data shift.
 
     The previous record is left unchanged and is referenced through supersedes.
-    A threshold-only adjustment is not an accepted trigger-shift description.
+    Trigger kinds are allowlisted; descriptions cannot promote a threshold edit.
     """
     current = previous.get("status")
     if current not in HYPOTHESIS_STATES:
         raise ValueError("hypothesis_status_invalid")
     trigger = _validate_trigger_shift(trigger_shift)
-    kind_text = trigger["kind"].casefold()
-    description = trigger["description"].casefold()
-    if "threshold" in kind_text and not any(
-        token in description for token in ("data", "source", "contract", "regime", "scope")
-    ):
-        raise ValueError("threshold_only_change_is_not_trigger_shift")
     hypothesis_id = _required_text(previous.get("hypothesis_id"), "hypothesis_id")
     version = previous.get("hypothesis_version")
     if not isinstance(version, int) or isinstance(version, bool) or version < 1:
