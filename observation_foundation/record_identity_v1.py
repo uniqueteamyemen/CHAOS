@@ -362,6 +362,7 @@ def select_vintages_as_of(
     grouped: dict[str, list[tuple[datetime, dict[str, Any]]]] = defaultdict(list)
     standalone: list[dict[str, Any]] = []
     missing_available_at = 0
+    future_available_at = 0
 
     for raw in records:
         record = dict(raw)
@@ -372,6 +373,7 @@ def select_vintages_as_of(
         normalized_available = _canonical_event_time(available_at, require_instant=True)
         available_dt = _parse_instant(normalized_available)
         if available_dt > cutoff_dt:
+            future_available_at += 1
             continue
         record["available_at"] = normalized_available
         logical_id = record.get("logical_record_id")
@@ -389,6 +391,8 @@ def select_vintages_as_of(
         if len(canonical_ids) > 1:
             ambiguous.append({
                 "logical_record_id": logical_id,
+                "source_namespace": latest[0]["source_namespace"],
+                "dataset_id": latest[0]["dataset_id"],
                 "available_at": latest[0]["available_at"],
                 "competing_canonical_record_ids": sorted(canonical_ids),
                 "status": "AMBIGUOUS_SAME_AVAILABLE_AT",
@@ -403,5 +407,80 @@ def select_vintages_as_of(
         "selected": selected,
         "ambiguous": ambiguous,
         "missing_available_at_excluded": missing_available_at,
+        "future_available_at_excluded": future_available_at,
         "selection_policy": "LATEST_AVAILABLE_AT_PER_STABLE_LOGICAL_ID; NO_INGEST_ORDER_TIEBREAK; PRESERVE_MULTIPLICITY",
+    }
+
+
+def build_epoch_snapshot(
+    records: Iterable[Mapping[str, Any]], decision_time: str
+) -> dict[str, Any]:
+    """Build a deterministic, content-addressed point-in-time epoch manifest.
+
+    Every selected occurrence contributes one canonical_record_id entry, so
+    repeated events/counts remain multiplicity-preserving in the epoch digest.
+    The returned selected_records are the exact normalized records for use by
+    downstream computations; the manifest contains only stable lineage/IDs.
+    """
+    source_records = [dict(record) for record in records]
+    required_identity_fields = {
+        "source_namespace", "dataset_id", "entity_id", "metric_id",
+        "event_time", "available_at", "canonical_record_id",
+    }
+    for index, record in enumerate(source_records):
+        missing = sorted(required_identity_fields - set(record))
+        if missing:
+            raise ValueError(
+                f"epoch_record_identity_fields_missing:index={index}:"
+                + ",".join(missing)
+            )
+        canonical_id = record.get("canonical_record_id")
+        if not isinstance(canonical_id, str) or not canonical_id.startswith("crid:v1:sha256:"):
+            raise ValueError(f"epoch_canonical_record_id_invalid:index={index}")
+
+    selection = select_vintages_as_of(source_records, decision_time)
+    selected = selection["selected"]
+    ambiguous = selection["ambiguous"]
+
+    lineage_pairs = {
+        (str(item["source_namespace"]), str(item["dataset_id"]))
+        for item in selected
+    }
+    lineage_pairs.update(
+        (str(item["source_namespace"]), str(item["dataset_id"]))
+        for item in ambiguous
+    )
+    source_lineage = [
+        {"source_namespace": source, "dataset_id": dataset}
+        for source, dataset in sorted(lineage_pairs)
+    ]
+    manifest_payload = {
+        "contract": "chaos-epoch-snapshot-v1",
+        "decision_time": selection["decision_time"],
+        "selection_policy": selection["selection_policy"],
+        "source_lineage": source_lineage,
+        "selected_occurrence_count": len(selected),
+        "selected_canonical_record_ids": [
+            str(item["canonical_record_id"]) for item in selected
+        ],
+        "unlinked_selected_occurrence_count": sum(
+            item.get("logical_record_id") is None for item in selected
+        ),
+        "ambiguous": sorted(
+            ambiguous,
+            key=lambda item: (
+                str(item["source_namespace"]),
+                str(item["dataset_id"]),
+                str(item["logical_record_id"]),
+            ),
+        ),
+        "missing_available_at_excluded": selection["missing_available_at_excluded"],
+        "future_available_at_excluded": selection["future_available_at_excluded"],
+    }
+    snapshot_sha256 = hashlib.sha256(_canonical_json(manifest_payload)).hexdigest()
+    return {
+        "epoch_id": f"epoch:v1:sha256:{snapshot_sha256}",
+        "snapshot_sha256": snapshot_sha256,
+        "manifest": manifest_payload,
+        "selected_records": selected,
     }
