@@ -36,3 +36,31 @@ jobs:
           python-version: '3.11'
       - name: Run read-only diagnostic utility tests
         run: python -m unittest discover -s tests/audits -p 'test_*.py' -v
+
+  historical-manifest-audit:
+    name: historical-markov-manifest-audit
+    runs-on: ubuntu-latest
+    needs: audit-contract
+    timeout-minutes: 5
+    steps:
+      - name: Checkout exact pull request head
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.ref || github.ref_name }}
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Audit the existing historical manifest without modifying it
+        run: |
+          mkdir -p artifacts/p2_2_2_markov_diagnostics
+          python -u scripts/audits/p2_2_2_markov_diagnostics.py \
+            real_data_stress_pipeline/results/real_data_stress_manifest.json \
+            --output artifacts/p2_2_2_markov_diagnostics/summary.json
+      - name: Upload historical diagnostic report
+        uses: actions/upload-artifact@v4
+        with:
+          name: chaos-p2-2-2-markov-historical-diagnostic-report
+          path: artifacts/p2_2_2_markov_diagnostics/summary.json
+          if-no-files-found: error
+          retention-days: 90
