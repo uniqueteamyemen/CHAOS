@@ -103,7 +103,7 @@ class SourceRecordIdentityTests(unittest.TestCase):
         self.assertIsNone(prepared["logical_record_id"])
 
     def test_unicode_normalized_logical_key_collision_is_rejected(self):
-        key = {"é": "first", "e\\u0301": "second"}
+        key = {"é": "first", "é": "second"}
         with self.assertRaisesRegex(ValueError, "collision_after_unicode"):
             prepare_source_record(base_record(source_record_id=None, logical_key=key))
 
