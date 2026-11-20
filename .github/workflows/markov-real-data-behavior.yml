@@ -1,6 +1,13 @@
 name: CHAOS P2.2.3 — Markov Real-Data Behavior Audit
 
 on:
+  pull_request:
+    branches:
+      - diag/markov-real-data-behavior
+    paths:
+      - 'scripts/audits/p2_2_3_markov_real_data_behavior.py'
+      - 'tests/audits/test_p2_2_3_markov_real_data_behavior.py'
+      - '.github/workflows/markov-real-data-behavior.yml'
   push:
     branches:
       - diag/markov-real-data-behavior
@@ -22,7 +29,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ github.ref_name }}
+          ref: ${{ github.event.pull_request.head.ref || github.ref_name }}
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
@@ -46,7 +53,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ github.ref_name }}
+          ref: ${{ github.event.pull_request.head.ref || github.ref_name }}
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
