@@ -144,6 +144,7 @@ def detector_power_record(
         ),
         "cusum_peak": diagnostics.get("cusum_peak"),
         "cusum_updates": diagnostics.get("cusum_updates"),
+        "rho_cusum_bias_correction_enabled": diagnostics.get("rho_cusum_bias_correction_enabled"),
         **extract_markov_rho_diagnostics(diagnostics),
     }
 
@@ -303,6 +304,20 @@ def summarize_records(records: list[dict[str, Any]]) -> dict[str, Any]:
             "rho_raw_distribution": distribution([row.get("rho_raw") for row in rows]),
             "rho_clipped_distribution": distribution([row.get("rho_clipped") for row in rows]),
             "rho_cusum_used_distribution": distribution([row.get("rho_cusum_used") for row in rows]),
+            "rho_cusum_bias_correction_enabled_true_replicates": sum(
+                row.get("rho_cusum_bias_correction_enabled") is True for row in rows
+            ),
+            "rho_cusum_bias_correction_enabled_false_replicates": sum(
+                row.get("rho_cusum_bias_correction_enabled") is False for row in rows
+            ),
+            "rho_cusum_bias_correction_enabled_missing_or_invalid_replicates": sum(
+                not isinstance(row.get("rho_cusum_bias_correction_enabled"), bool)
+                for row in rows
+            ),
+            "rho_cusum_bias_correction_enabled_true_fraction": (
+                sum(row.get("rho_cusum_bias_correction_enabled") is True for row in rows)
+                / len(rows) if rows else None
+            ),
         }
         per_series[key] = value
         category_groups[(category, length, scenario, variant)].append(value)
@@ -346,6 +361,23 @@ def summarize_records(records: list[dict[str, Any]]) -> dict[str, Any]:
             "rho_cusum_used_per_series_median_distribution": distribution([
                 row["rho_cusum_used_distribution"]["median"] for row in rows
             ]),
+            "rho_cusum_bias_correction_enabled_true_fraction_mean_across_series": (
+                statistics.fmean(
+                    row["rho_cusum_bias_correction_enabled_true_fraction"] for row in rows
+                    if row["rho_cusum_bias_correction_enabled_true_fraction"] is not None
+                ) if any(
+                    row["rho_cusum_bias_correction_enabled_true_fraction"] is not None
+                    for row in rows
+                ) else None
+            ),
+            "rho_cusum_bias_correction_enabled_true_fraction_distribution_across_series": distribution([
+                row["rho_cusum_bias_correction_enabled_true_fraction"] for row in rows
+                if row["rho_cusum_bias_correction_enabled_true_fraction"] is not None
+            ]),
+            "rho_cusum_bias_correction_enabled_missing_or_invalid_series": sum(
+                row["rho_cusum_bias_correction_enabled_missing_or_invalid_replicates"] > 0
+                for row in rows
+            ),
         }
 
     return {
