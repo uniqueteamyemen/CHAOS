@@ -216,7 +216,7 @@ CHAOS محرك عام لاكتشاف البنية الزمنية داخل الس
 - أُصلح اختبار Unicode NFC لاستخدام مفتاح decomposed فعلياً؛ نجح Workflow `observation-foundation-contract.yml` على commit `e7b4767cb98729caa38c67459aa54a3389a5b48a`.
 - أضيف `revision_status` إلى نسخة سجل المصدر وبصمتها، وأضيف `time_support` المعلن إلى عقد المحاذاة وmanifest اللقطة. يظل ترتيب نسخ المصدر ذات `available_at` المتساوي غامضاً عند تعارض المحتوى؛ لا يُفرض ترتيب lexicographic أو ترتيب وصول.
 - حُسم اختلاف `domain_neutral.py` بقرار `KEEP_BOTH_ARCHIVED`: يحتفظ الأرشيف التجريبي بالنسختين وبصمتيهما؛ نسخة residual-contract هي مرشح بحثي مستقبلي فقط، وليست معتمدة ولا تُستبدل بها النسخة الأخرى داخل `experiments/**`.
-- بقي P0 مفتوحاً بعد تحديث Ruleset 27488330: أصبح `experiments-immutable` مطلوباً إلى جانب `stress`، وقد نجح الفحصان على رأس PR الحالي. ما زال إنشاء حماية `refs/tags/*` وإزالة bypass الدائم، وإضافة قاعدة PR/مراجعة مستقلة قابلة للفرض، ضمن متطلبات الخروج المفتوحة.
+- بقي P0 مفتوحاً بعد تحديث Ruleset 27488330: أصبح `experiments-immutable` مطلوباً ونجح على رأس PR الحالي. أما `stress` فهو مطلوب أيضاً لكنه غير موجود ضمن checks على رأس PR الحالي؛ أحدث نجاح موثق له كان على commit مختلف `2109bf875d1b238ad04d55a4d385a54b7c5f14e5` على `main-phase2`، ولا يجوز نقله إلى commit آخر. ما زال إنشاء حماية `refs/tags/*` وإزالة bypass الدائم، وإضافة قاعدة PR/مراجعة مستقلة قابلة للفرض، ضمن متطلبات الخروج المفتوحة.
 - اكتمل ربط P1.5: يسجل `append_lifecycle_decision` أهلية المدخل وانتقال الفرضية في حدث `pattern_decision` واحد داخل `governance/ledger/RESEARCH_LEDGER_V1.jsonl`، مع SHA-256 حتمي، وكتابة append-only، وقفل للكاتب، وإعادة محاولة idempotent. لا يُنشأ سجل تجريبي تلقائياً.
 - نجح Workflow Observation Foundation بعد إدخال الكاتب المشترك وعقد Research Ledger: 48 اختباراً ناجحاً على الفرع `fix/p2-2-3-gem-snapshot`؛ مرجع التشغيل `44765714889` على commit `ef584501bdcb36bc200bcde5feaea8d357d15188`.
 
@@ -229,6 +229,7 @@ CHAOS محرك عام لاكتشاف البنية الزمنية داخل الس
 تبقى عناصر الحماية التالية غير مكتملة في القراءة الحالية:
 - `bypass_actors` ما زالت تتضمن أدوار RepositoryRole وتكاملات بوضع `always`، كما أن `current_user_can_bypass = always`.
 - لا توجد قاعدة `pull_request` في Ruleset الحالي؛ لم يثبت فرض PR أو موافقة مستقلة.
+- فحص `stress` مطلوب في Ruleset لكنه غير موجود على رأس PR #21 `061367cd15a4de23dd1a7e3cd814a4bb3857ee20`. Workflow `real-data-stress.yml` يعمل عند push إلى `main-phase2` فقط أو `workflow_dispatch`، ولا يشغّل stress على PR head؛ نجاحه السابق على `2109bf875d1b238ad04d55a4d385a54b7c5f14e5` لا يفي بشرط commit الحالي. لا نشغّل stress تجريبياً أثناء P0؛ يلزم تصحيح قاعدة check/بوابة PR بطريقة لا تنتحل نجاح تجربة غير منفذة.
 - لا توجد Ruleset مخصصة لـ`refs/tags/*` في قائمة Rulesets المرصودة.
 - قراءة Classic Branch Protection لا تزال تُرجع 403 من تكامل GitHub؛ لذلك لا يُستنتج منها غياب أو وجود حماية إضافية.
 
