@@ -77,6 +77,7 @@ jobs:
       - name: Run paired power and delay audit (unbuffered)
         env:
           PYTHONUNBUFFERED: '1'
+          AUDIT_SOURCE_COMMIT: ${{ github.event.pull_request.head.sha || github.sha }}
           REPLICATES: ${{ inputs.replicates || '100' }}
         run: |
           python -u scripts/audits/p2_2_4_markov_injected_break_power.py \
