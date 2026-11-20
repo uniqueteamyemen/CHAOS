@@ -116,6 +116,11 @@ def extract_markov_rho_diagnostics(diagnostics: dict[str, Any]) -> dict[str, flo
                 f"markov_rho_diagnostic_missing_or_nonfinite:{source_name}"
             )
         result[output_name] = float(value)
+    expected_clipped = min(0.88, max(0.0, result["rho_raw"]))
+    if not math.isclose(
+        result["rho_clipped"], expected_clipped, rel_tol=0.0, abs_tol=1e-6
+    ):
+        raise ArithmeticError("markov_rho_clipped_inconsistent_with_raw")
     return result
 
 
