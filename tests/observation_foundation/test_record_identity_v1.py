@@ -21,6 +21,7 @@ def base_record(**changes):
         "source_record_id": "us7000abcd",
         "logical_key": None,
         "source_revision": "r1",
+        "revision_status": None,
         "value": 5.2,
         "unit": "Mw",
         "observation_status": "observed",
@@ -52,6 +53,18 @@ class SourceRecordIdentityTests(unittest.TestCase):
         ))
         self.assertEqual(first["logical_record_id"], revised["logical_record_id"])
         self.assertNotEqual(first["canonical_record_id"], revised["canonical_record_id"])
+
+    def test_revision_status_keeps_logical_id_and_changes_version_id(self):
+        first = prepare_source_record(base_record(revision_status=None))
+        revised = prepare_source_record(base_record(
+            revision_status="corrected", source_revision="r2"
+        ))
+        self.assertEqual(first["logical_record_id"], revised["logical_record_id"])
+        self.assertNotEqual(first["canonical_record_id"], revised["canonical_record_id"])
+
+    def test_revision_status_is_unicode_normalized(self):
+        prepared = prepare_source_record(base_record(revision_status="e\\u0301"))
+        self.assertEqual(prepared["revision_status"], "é")
 
     def test_declared_natural_key_is_order_independent(self):
         a = prepare_source_record(base_record(
@@ -232,6 +245,34 @@ class SourceRecordIdentityTests(unittest.TestCase):
         second = build_epoch_snapshot([dict(b), dict(a)], "2026-01-03T00:00:00Z")
         self.assertEqual(first["epoch_id"], second["epoch_id"])
         self.assertEqual(first["snapshot_sha256"], second["snapshot_sha256"])
+
+    def test_epoch_snapshot_binds_source_declared_time_support(self):
+        record = prepare_source_record(base_record())
+        support = {
+            "observation_period_start": "2026-01-01",
+            "observation_period_end": "2026-12-31",
+            "native_frequency": "event",
+        }
+        snapshot = build_epoch_snapshot([record], "2026-02-01T00:00:00Z", time_support=support)
+        self.assertEqual(snapshot["manifest"]["time_support_status"], "DECLARED")
+        self.assertEqual(snapshot["manifest"]["time_support"]["native_frequency"], "event")
+        self.assertEqual(
+            snapshot["manifest"]["time_support"]["observation_period_end"],
+            "2026-12-31",
+        )
+
+    def test_epoch_snapshot_rejects_reversed_time_support(self):
+        record = prepare_source_record(base_record())
+        with self.assertRaisesRegex(ValueError, "time_support_start_after_end"):
+            build_epoch_snapshot(
+                [record],
+                "2026-02-01T00:00:00Z",
+                time_support={
+                    "observation_period_start": "2026-12-31",
+                    "observation_period_end": "2026-01-01",
+                    "native_frequency": "daily",
+                },
+            )
 
     def test_epoch_snapshot_preserves_identical_event_multiplicity(self):
         record = prepare_source_record(base_record(source_record_id="event-duplicate"))
