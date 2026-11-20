@@ -85,6 +85,8 @@ def summarize_cohort(series: list[dict[str, Any]]) -> dict[str, Any]:
         rho_cusum_missing_g1 = 0
         rho_clipped_inconsistent_g1 = 0
         correction_flag_g1: list[bool] = []
+        cusum_correction_flag_g1: list[bool] = []
+        cusum_correction_flag_missing_g1 = 0
         bootstrap_runs = 0
         bootstrap_errors = 0
         for item in series:
@@ -144,6 +146,13 @@ def summarize_cohort(series: list[dict[str, Any]]) -> dict[str, Any]:
                     else:
                         rho_cusum_missing_g1 += 1
 
+                    # This is the structural correction switch used by the AR innovation.
+                    structural_flag = diagnostics.get("rho_cusum_bias_correction_enabled")
+                    if isinstance(structural_flag, bool):
+                        cusum_correction_flag_g1.append(structural_flag)
+                    else:
+                        cusum_correction_flag_missing_g1 += 1
+
             bootstrap = item.get("bootstrap", {}).get("by_mode", {}).get(mode, {})
             runs = int(bootstrap.get("runs", 0) or 0)
             bootstrap_runs += runs
@@ -175,9 +184,14 @@ def summarize_cohort(series: list[dict[str, Any]]) -> dict[str, Any]:
                 "rho_clipped_inconsistent_with_raw": rho_clipped_inconsistent_g1,
                 "rho_cusum_used_available": len(rho_cusum_used_g1),
                 "rho_cusum_used_missing_or_invalid": rho_cusum_missing_g1,
+                "rho_cusum_bias_correction_flag_true": cusum_correction_flag_g1.count(True),
+                "rho_cusum_bias_correction_flag_false": cusum_correction_flag_g1.count(False),
+                "rho_cusum_bias_correction_flag_missing_or_invalid": cusum_correction_flag_missing_g1,
             },
             "g1_passed_series_reporting_rho_bias_correction_enabled_false": correction_flag_g1.count(False),
             "g1_passed_series_reporting_rho_bias_correction_enabled_true": correction_flag_g1.count(True),
+            "g1_passed_markov_series_reporting_rho_cusum_bias_correction_enabled_false": cusum_correction_flag_g1.count(False),
+            "g1_passed_markov_series_reporting_rho_cusum_bias_correction_enabled_true": cusum_correction_flag_g1.count(True),
             "bootstrap_eligible_series": len(conditional_probabilities),
             "bootstrap_replicates_total": bootstrap_runs,
             "bootstrap_errors_total": bootstrap_errors,
