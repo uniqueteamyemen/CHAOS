@@ -11,7 +11,6 @@ on:
   push:
     branches:
       - diag/markov-real-data-behavior
-      - fix/p2-2-3-rho-observability-v1
     paths:
       - 'scripts/audits/p2_2_3_markov_real_data_behavior.py'
       - 'tests/audits/test_p2_2_3_markov_real_data_behavior.py'
