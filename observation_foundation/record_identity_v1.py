@@ -20,7 +20,7 @@ VALID_STATUSES = {"observed", "missing", "not_applicable", "pending", "invalid"}
 ALLOWED_RECORD_FIELDS = {
     "source_namespace", "dataset_id", "series_semantics", "entity_id", "metric_id",
     "event_time", "available_at", "source_record_id", "logical_key", "source_revision",
-    "value", "unit", "observation_status", "transport_metadata",
+    "revision_status", "value", "unit", "observation_status", "transport_metadata",
 }
 ALLOWED_TRANSPORT_FIELDS = {"retrieved_at", "ingest_batch_id", "row_number"}
 
@@ -114,7 +114,7 @@ def prepare_source_record(record: Mapping[str, Any]) -> dict[str, Any]:
     """
     required = (
         "source_namespace", "dataset_id", "series_semantics", "entity_id",
-        "metric_id", "event_time", "available_at", "value", "unit",
+        "metric_id", "event_time", "available_at", "revision_status", "value", "unit",
         "observation_status",
     )
     missing = [name for name in required if name not in record]
@@ -163,6 +163,12 @@ def prepare_source_record(record: Mapping[str, Any]) -> dict[str, Any]:
         None if available_at is None
         else _canonical_event_time(available_at, require_instant=True)
     )
+
+    revision_status = record["revision_status"]
+    if revision_status is not None:
+        if not isinstance(revision_status, str) or not revision_status.strip():
+            raise ValueError("revision_status_must_be_nonempty_string_or_null")
+        revision_status = _nfc(revision_status.strip())
 
     value = record["value"]
     if status == "observed":
@@ -241,6 +247,7 @@ def prepare_source_record(record: Mapping[str, Any]) -> dict[str, Any]:
         "event_time": event_time,
         "available_at": available_at,
         "source_revision": source_revision,
+        "revision_status": revision_status,
         "value": {"$number": canonical_value} if canonical_value is not None else None,
         "unit": unit,
         "observation_status": status,
@@ -258,6 +265,7 @@ def prepare_source_record(record: Mapping[str, Any]) -> dict[str, Any]:
         "source_record_id": source_record_id,
         "logical_key": logical_key,
         "source_revision": source_revision,
+        "revision_status": revision_status,
         "value": value,
         "unit": unit,
         "logical_record_id": logical_record_id,
@@ -266,6 +274,43 @@ def prepare_source_record(record: Mapping[str, Any]) -> dict[str, Any]:
         "multiplicity_policy": multiplicity_policy,
     })
     return normalized
+
+
+def normalize_time_support(time_support: Mapping[str, Any]) -> dict[str, str]:
+    """Validate source-declared series coverage in its native frequency.
+
+    This metadata belongs to a series/collection, not to an individual record.
+    Boundaries are never inferred from the first/last rows.
+    """
+    if not isinstance(time_support, Mapping):
+        raise ValueError("time_support_must_be_object")
+    allowed = {
+        "observation_period_start", "observation_period_end",
+        "native_frequency", "boundary_semantics",
+    }
+    unknown = sorted(set(time_support) - allowed)
+    if unknown:
+        raise ValueError("time_support_fields_invalid:" + ",".join(unknown))
+    required = ("observation_period_start", "observation_period_end", "native_frequency")
+    missing = [name for name in required if name not in time_support]
+    if missing:
+        raise ValueError("time_support_fields_missing:" + ",".join(missing))
+    start = _canonical_event_time(time_support["observation_period_start"])
+    end = _canonical_event_time(time_support["observation_period_end"])
+    frequency = time_support["native_frequency"]
+    if not isinstance(frequency, str) or not frequency.strip():
+        raise ValueError("time_support_native_frequency_must_be_nonempty_string")
+    if _event_time_sort_key(start) > _event_time_sort_key(end):
+        raise ValueError("time_support_start_after_end")
+    semantics = time_support.get("boundary_semantics", "SOURCE_DECLARED")
+    if not isinstance(semantics, str) or not semantics.strip():
+        raise ValueError("time_support_boundary_semantics_must_be_nonempty_string")
+    return {
+        "observation_period_start": start,
+        "observation_period_end": end,
+        "native_frequency": _nfc(frequency.strip()),
+        "boundary_semantics": _nfc(semantics.strip()),
+    }
 
 
 def _parse_instant(value: str) -> datetime:
@@ -413,7 +458,9 @@ def select_vintages_as_of(
 
 
 def build_epoch_snapshot(
-    records: Iterable[Mapping[str, Any]], decision_time: str
+    records: Iterable[Mapping[str, Any]],
+    decision_time: str,
+    time_support: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Build a deterministic, content-addressed point-in-time epoch manifest.
 
@@ -469,8 +516,13 @@ def build_epoch_snapshot(
         {"source_namespace": source, "dataset_id": dataset}
         for source, dataset in sorted(lineage_pairs)
     ]
+    normalized_time_support = (
+        normalize_time_support(time_support) if time_support is not None else None
+    )
     manifest_payload = {
         "contract": "chaos-epoch-snapshot-v1",
+        "time_support_status": "DECLARED" if normalized_time_support is not None else "NOT_DECLARED",
+        "time_support": normalized_time_support,
         "decision_time": selection["decision_time"],
         "selection_policy": selection["selection_policy"],
         "source_lineage": source_lineage,
