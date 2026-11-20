@@ -181,7 +181,7 @@ class DomainNullAuditHelperTests(unittest.TestCase):
             self.assertEqual(ingestion["events_quarantined"], 1)
             self.assertEqual(ingestion["magnitude_type_counts"], {"mb": 1, "mww": 1})
             self.assertFalse(ingestion["magnitude_type_homogeneous"])
-            self.assertFalse(ingestion["pooled_frequency_magnitude_eligible"])
+            self.assertFalse(ingestion["single_magnitude_type_precheck_pass"])
             self.assertEqual(ingestion["duplicate_features_deduplicated"], 0)
             self.assertEqual(ingestion["catalog_integrity_status"], "PASS_WITH_QUARANTINE")
             anomaly = next(row for row in metadata["rejected"] if row.get("event_id") == "nc21364840")
@@ -310,7 +310,7 @@ class DomainNullAuditHelperTests(unittest.TestCase):
         ])
         self.assertEqual(summary["magnitude_type_counts"], {"mb": 1, "mww": 1})
         self.assertEqual(summary["pooled_frequency_magnitude_status"], "MIXED_MAGNITUDE_TYPES")
-        self.assertFalse(summary["pooled_frequency_magnitude_eligible"])
+        self.assertFalse(summary["single_magnitude_type_precheck_pass"])
 
     def test_magnitude_type_summary_marks_missing_metadata_ineligible(self):
         summary = summarize_magnitude_metadata([
@@ -322,7 +322,7 @@ class DomainNullAuditHelperTests(unittest.TestCase):
             summary["pooled_frequency_magnitude_status"],
             "MAGNITUDE_TYPE_MISSING_OR_UNAVAILABLE",
         )
-        self.assertFalse(summary["pooled_frequency_magnitude_eligible"])
+        self.assertFalse(summary["single_magnitude_type_precheck_pass"])
 
     def test_magnitude_type_summary_allows_only_single_complete_scale(self):
         summary = summarize_magnitude_metadata([
@@ -330,7 +330,7 @@ class DomainNullAuditHelperTests(unittest.TestCase):
             {"mag_type": "mb", "mag_source": "ci"},
         ])
         self.assertTrue(summary["magnitude_type_homogeneous"])
-        self.assertTrue(summary["pooled_frequency_magnitude_eligible"])
+        self.assertTrue(summary["single_magnitude_type_precheck_pass"])
 
     def test_post_ingest_catalog_validation_accepts_reconciled_clean_catalog(self):
         belt = {
