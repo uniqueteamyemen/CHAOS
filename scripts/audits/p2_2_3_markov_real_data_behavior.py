@@ -93,6 +93,32 @@ def distribution(values):
             "q75": q(.75), "max": max(clean)}
 
 
+def extract_markov_rho_diagnostics(diagnostics: dict[str, Any]) -> dict[str, float]:
+    """Expose three distinct coefficients without changing frozen BreakDetectorV1.
+
+    V1's legacy rho_used is the raw coefficient clipped to [0.0, 0.88].
+    It is published here as rho_clipped; rho_cusum_used remains separate.
+    """
+    source_fields = {
+        "rho_raw": "rho_raw",
+        "rho_clipped": "rho_used",
+        "rho_cusum_used": "rho_cusum_used",
+    }
+    result: dict[str, float] = {}
+    for output_name, source_name in source_fields.items():
+        value = diagnostics.get(source_name)
+        if (
+            isinstance(value, bool)
+            or not isinstance(value, (int, float))
+            or not math.isfinite(float(value))
+        ):
+            raise ArithmeticError(
+                f"markov_rho_diagnostic_missing_or_nonfinite:{source_name}"
+            )
+        result[output_name] = float(value)
+    return result
+
+
 def summarize_records(records):
     """Keep the series as the independent unit; aggregate categories equally by series."""
     by_series = defaultdict(list)
@@ -124,6 +150,8 @@ def summarize_records(records):
             ) if rows else None,
             "cusum_peak_distribution": distribution([row["cusum_peak"] for row in rows]),
             "cusum_updates_distribution": distribution([row["cusum_updates"] for row in rows]),
+            "rho_raw_distribution": distribution([row["rho_raw"] for row in rows]),
+            "rho_clipped_distribution": distribution([row["rho_clipped"] for row in rows]),
             "rho_cusum_used_distribution": distribution([row["rho_cusum_used"] for row in rows]),
         }
         per_series[key] = series_summary
@@ -155,6 +183,15 @@ def summarize_records(records):
             "per_series_conditional_null_alarm_probability_distribution": distribution(
                 probabilities
             ),
+            "rho_raw_per_series_median_distribution": distribution([
+                row["rho_raw_distribution"]["median"] for row in series_rows
+            ]),
+            "rho_clipped_per_series_median_distribution": distribution([
+                row["rho_clipped_distribution"]["median"] for row in series_rows
+            ]),
+            "rho_cusum_used_per_series_median_distribution": distribution([
+                row["rho_cusum_used_distribution"]["median"] for row in series_rows
+            ]),
         }
 
     return {
@@ -185,7 +222,7 @@ def analyze_one(sample, sample_length, replicate_id, series_id, category,
         "first_alarm_index": min(times) if times else None,
         "cusum_peak": d.get("cusum_peak"), "cusum_updates": d.get("cusum_updates"),
         "cusum_directional_resets": d.get("cusum_directional_resets"),
-        "rho_raw": d.get("rho_raw"), "rho_cusum_used": d.get("rho_cusum_used"),
+        **extract_markov_rho_diagnostics(d),
         "rho_cusum_bias_correction_enabled": d.get("rho_cusum_bias_correction_enabled"),
     }
 
@@ -272,7 +309,7 @@ def run_audit(replicates, max_series=None, workers=None):
             observed[variant] = {
                 "alarm_count": len(events), "cusum_peak": diag.get("cusum_peak"),
                 "cusum_updates": diag.get("cusum_updates"),
-                "rho_raw": diag.get("rho_raw"), "rho_cusum_used": diag.get("rho_cusum_used"),
+                **extract_markov_rho_diagnostics(diag),
             }
         series_summaries.append({
             "series_id": series_id, "name": item["name"], "category": category,
@@ -340,6 +377,15 @@ def run_audit(replicates, max_series=None, workers=None):
             "parallelism_unit": "one complete series per process",
             "seed_derivation": "SHA256(series_id|sample_length|replicate_id|audit_version)",
             "g1_gate_required_for_stationary_resampling": True,
+            "rho_diagnostic_mapping": {
+                "rho_raw": "detector diagnostics.rho_raw",
+                "rho_clipped": (
+                    "detector diagnostics.rho_used; legacy V1 field clipped from "
+                    "rho_raw to [0.0, 0.88]"
+                ),
+                "rho_cusum_used": "detector diagnostics.rho_cusum_used",
+                "detector_modified": False,
+            },
             "metric_name": "conditional_null_alarm_probability", "not_fpr": True,
             "skipped_g1_series": skipped,
         },
