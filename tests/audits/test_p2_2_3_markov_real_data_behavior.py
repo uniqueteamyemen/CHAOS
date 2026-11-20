@@ -22,6 +22,14 @@ class MarkovRealDataBehaviorTests(unittest.TestCase):
             },
         )
 
+    def test_rho_diagnostic_contract_rejects_inconsistent_clipped_value(self):
+        with self.assertRaisesRegex(ArithmeticError, "inconsistent_with_raw"):
+            extract_markov_rho_diagnostics({
+                "rho_raw": 0.94,
+                "rho_used": 0.70,
+                "rho_cusum_used": 0.71,
+            })
+
     def test_rho_diagnostic_contract_fails_closed_when_a_source_field_is_missing(self):
         with self.assertRaisesRegex(ArithmeticError, "rho_used"):
             extract_markov_rho_diagnostics({
