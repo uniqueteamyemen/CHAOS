@@ -217,4 +217,7 @@ CHAOS محرك عام لاكتشاف البنية الزمنية داخل الس
 - أضيف `revision_status` إلى نسخة سجل المصدر وبصمتها، وأضيف `time_support` المعلن إلى عقد المحاذاة وmanifest اللقطة. يظل ترتيب نسخ المصدر ذات `available_at` المتساوي غامضاً عند تعارض المحتوى؛ لا يُفرض ترتيب lexicographic أو ترتيب وصول.
 - حُسم اختلاف `domain_neutral.py` بقرار `KEEP_BOTH_ARCHIVED`: يحتفظ الأرشيف التجريبي بالنسختين وبصمتيهما؛ نسخة residual-contract هي مرشح بحثي مستقبلي فقط، وليست معتمدة ولا تُستبدل بها النسخة الأخرى داخل `experiments/**`.
 - لم يُغلق P0: ما زال فرض `experiments-immutable` كـrequired check، وإنشاء حماية `refs/tags/*`، وإزالة bypass الدائم ضمن Ruleset 27488330 متطلبات خروج مفتوحة.
+- اكتمل ربط P1.5: يسجل `append_lifecycle_decision` أهلية المدخل وانتقال الفرضية في حدث `pattern_decision` واحد داخل `governance/ledger/RESEARCH_LEDGER_V1.jsonl`، مع SHA-256 حتمي، وكتابة append-only، وقفل للكاتب، وإعادة محاولة idempotent. لا يُنشأ سجل تجريبي تلقائياً.
+- نجح Workflow Observation Foundation بعد إدخال الكاتب المشترك وعقد Research Ledger: 48 اختباراً ناجحاً على الفرع `fix/p2-2-3-gem-snapshot`؛ مرجع التشغيل `44765714889` على commit `ef584501bdcb36bc200bcde5feaea8d357d15188`.
+
 
