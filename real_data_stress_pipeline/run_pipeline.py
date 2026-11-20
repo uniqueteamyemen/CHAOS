@@ -304,6 +304,8 @@ def seismic(m):
    rejected_count=0
    duplicate_count=0
    rejected_by_reason=Counter()
+   magnitude_type_counts=Counter()
+   magnitude_source_counts=Counter()
    for feature_index,feature in enumerate(fs):
     if not isinstance(feature,dict):
      feature={}
@@ -320,6 +322,10 @@ def seismic(m):
     latitude=coordinates[1] if len(coordinates)>=2 else None
     raw_time=properties.get("time")
     raw_magnitude=properties.get("mag")
+    raw_mag_type=properties.get("magType")
+    mag_type=str(raw_mag_type).strip().lower() if raw_mag_type is not None and str(raw_mag_type).strip() else "missing"
+    raw_mag_source=properties.get("magSource")
+    mag_source=str(raw_mag_source).strip() if raw_mag_source is not None and str(raw_mag_source).strip() else "missing"
     reasons=usgs_record_rejection_reasons(
      belt,latitude,longitude,raw_magnitude,raw_time,MAG
     )
@@ -357,6 +363,7 @@ def seismic(m):
      "epoch_ms":epoch,"magnitude":magnitude,
      "longitude":longitude,"latitude":latitude,
      "depth_km":depth,"place":properties.get("place"),
+     "mag_type":mag_type,"mag_source":mag_source,
     }
     previous=events.get(event_id)
     if previous is not None:
@@ -374,9 +381,11 @@ def seismic(m):
      })
      continue
     events[event_id]=event
+    magnitude_type_counts[mag_type]+=1
+    magnitude_source_counts[mag_source]+=1
    rows=sorted(events.values(),key=lambda x:x["epoch_ms"])
    csvpath=DERIVED/f"{belt['id']}_events.csv";csvpath.parent.mkdir(parents=True,exist_ok=True)
-   cols=["id","time","epoch_ms","magnitude","longitude","latitude","depth_km","place"]
+   cols=["id","time","epoch_ms","magnitude","longitude","latitude","depth_km","place","mag_type","mag_source"]
    with csvpath.open("w",newline="",encoding="utf-8") as handle:
     writer=csv.DictWriter(handle,fieldnames=cols);writer.writeheader();writer.writerows(rows)
    catalog_integrity_status="PASS_WITH_QUARANTINE" if rejected_count else "PASS"
@@ -388,6 +397,11 @@ def seismic(m):
     "events_quarantined":rejected_count,
     "duplicate_features_deduplicated":duplicate_count,
     "rejected_by_reason":dict(sorted(rejected_by_reason.items())),
+    "magnitude_type_counts":dict(sorted(magnitude_type_counts.items())),
+    "magnitude_source_counts":dict(sorted(magnitude_source_counts.items())),
+    "magnitude_type_missing_events":magnitude_type_counts.get("missing",0),
+    "magnitude_type_homogeneous":len([k for k in magnitude_type_counts if k!="missing"])==1 and magnitude_type_counts.get("missing",0)==0,
+    "pooled_frequency_magnitude_eligible":len(magnitude_type_counts)==1 and "missing" not in magnitude_type_counts,
     "catalog_integrity_status":catalog_integrity_status,
     "client_side_validation":"coordinates_magnitude_and_analysis_time_rechecked",
     "start":rows[0]["time"] if rows else None,
