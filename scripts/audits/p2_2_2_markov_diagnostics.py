@@ -83,6 +83,7 @@ def summarize_cohort(series: list[dict[str, Any]]) -> dict[str, Any]:
         rho_cusum_used_g1: list[float] = []
         rho_g1_series_count = 0
         rho_cusum_missing_g1 = 0
+        rho_cusum_out_of_range_g1 = 0
         rho_clipped_inconsistent_g1 = 0
         correction_flag_g1: list[bool] = []
         cusum_correction_flag_g1: list[bool] = []
@@ -142,7 +143,11 @@ def summarize_cohort(series: list[dict[str, Any]]) -> dict[str, Any]:
                         else:
                             rho_clipped_inconsistent_g1 += 1
                     if cusum_valid:
-                        rho_cusum_used_g1.append(float(cusum_value))
+                        numeric_cusum = float(cusum_value)
+                        if 0.0 <= numeric_cusum <= 0.88:
+                            rho_cusum_used_g1.append(numeric_cusum)
+                        else:
+                            rho_cusum_out_of_range_g1 += 1
                     else:
                         rho_cusum_missing_g1 += 1
 
@@ -183,7 +188,9 @@ def summarize_cohort(series: list[dict[str, Any]]) -> dict[str, Any]:
                 "rho_clipped_available_and_consistent_with_raw": len(rho_clipped_g1),
                 "rho_clipped_inconsistent_with_raw": rho_clipped_inconsistent_g1,
                 "rho_cusum_used_available": len(rho_cusum_used_g1),
-                "rho_cusum_used_missing_or_invalid": rho_cusum_missing_g1,
+                "rho_cusum_used_missing_or_invalid": rho_cusum_missing_g1 + rho_cusum_out_of_range_g1,
+                "rho_cusum_used_missing_invalid_or_out_of_range": rho_cusum_missing_g1 + rho_cusum_out_of_range_g1,
+                "rho_cusum_used_out_of_range": rho_cusum_out_of_range_g1,
                 "rho_cusum_bias_correction_flag_true": cusum_correction_flag_g1.count(True),
                 "rho_cusum_bias_correction_flag_false": cusum_correction_flag_g1.count(False),
                 "rho_cusum_bias_correction_flag_missing_or_invalid": cusum_correction_flag_missing_g1,
