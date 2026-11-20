@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - diag/markov-real-data-behavior
+      - fix/p2-2-3-rho-observability-v1
     paths:
       - 'scripts/audits/p2_2_3_markov_real_data_behavior.py'
       - 'tests/audits/test_p2_2_3_markov_real_data_behavior.py'
@@ -21,7 +22,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: diag/markov-real-data-behavior
+          ref: ${{ github.ref_name }}
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
@@ -45,7 +46,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: diag/markov-real-data-behavior
+          ref: ${{ github.ref_name }}
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
