@@ -235,6 +235,11 @@ def distribution(values: list[float | int]) -> dict[str, float | int | None]:
     }
 
 
+def resolve_audit_source_commit() -> str:
+    """Prefer the exact checked-out ref over GitHub's synthetic PR merge SHA."""
+    return os.getenv("AUDIT_SOURCE_COMMIT") or os.getenv("GITHUB_SHA", "local-unresolved")
+
+
 def extract_markov_rho_diagnostics(diagnostics: dict[str, Any]) -> dict[str, float]:
     """Expose raw, clipped and structural-CUSUM rho without touching frozen V1."""
     source_fields = {
@@ -411,7 +416,7 @@ def run_audit(
     result = {
         "audit_id": "CHAOS-P2.2.4-MARKOV-INJECTED-BREAK-POWER",
         "status": "completed",
-        "repository_commit": os.getenv("GITHUB_SHA", "local-unresolved"),
+        "repository_commit": resolve_audit_source_commit(),
         "source": {
             "provider": "World Bank Pink Sheet",
             "retrieved_at_utc": metadata["sources"][0].get("retrieved_at_utc")
