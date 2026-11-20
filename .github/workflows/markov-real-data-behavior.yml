@@ -68,6 +68,7 @@ jobs:
       - name: Run Markov audit (unbuffered)
         env:
           PYTHONUNBUFFERED: '1'
+          AUDIT_SOURCE_COMMIT: ${{ github.event.pull_request.head.sha || github.sha }}
           REPLICATES: '200'
         run: |
           python -u scripts/audits/p2_2_3_markov_real_data_behavior.py \
