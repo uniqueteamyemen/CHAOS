@@ -63,7 +63,7 @@ class SourceRecordIdentityTests(unittest.TestCase):
         self.assertNotEqual(first["canonical_record_id"], revised["canonical_record_id"])
 
     def test_revision_status_is_unicode_normalized(self):
-        prepared = prepare_source_record(base_record(revision_status="e\\u0301"))
+        prepared = prepare_source_record(base_record(revision_status="é"))
         self.assertEqual(prepared["revision_status"], "é")
 
     def test_declared_natural_key_is_order_independent(self):
