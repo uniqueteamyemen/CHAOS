@@ -8,6 +8,8 @@ on:
     paths:
       - '.github/workflows/domain-null-and-declustering.yml'
       - 'real_data_stress_pipeline/run_pipeline.py'
+      - 'real_data_stress_pipeline/config/seismic_belts.json'
+      - 'real_data_stress_pipeline/config/pipeline.json'
       - 'real_data_stress_pipeline/diagnostics/**'
       - 'real_data_stress_pipeline/contracts/seismic_declustering_contract_v1.json'
       - 'scripts/audits/p2_2_3_domain_null_and_declustering.py'
@@ -21,6 +23,8 @@ on:
       - 'real_data_stress_pipeline/diagnostics/**'
       - 'real_data_stress_pipeline/contracts/seismic_declustering_contract_v1.json'
       - 'real_data_stress_pipeline/run_pipeline.py'
+      - 'real_data_stress_pipeline/config/seismic_belts.json'
+      - 'real_data_stress_pipeline/config/pipeline.json'
       - 'scripts/audits/p2_2_3_domain_null_and_declustering.py'
       - 'tests/seismic_null_contract/**'
       - 'tests/audits/test_p2_2_3_domain_null_audit_helpers.py'
