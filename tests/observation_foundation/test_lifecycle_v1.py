@@ -1,6 +1,10 @@
+import json
+from pathlib import Path
+from tempfile import TemporaryDirectory
 import unittest
 
 from observation_foundation.lifecycle_v1 import (
+    append_lifecycle_decision,
     create_triggered_hypothesis_version,
     transition_hypothesis,
     validate_input_disposition,
@@ -93,6 +97,71 @@ class HypothesisLifecycleTests(unittest.TestCase):
         }
         new = create_triggered_hypothesis_version(self.hypothesis, trigger)
         self.assertEqual(new["trigger_shift"]["observed_at"], "2026-11-19T10:00:00Z")
+
+    def test_input_and_hypothesis_are_appended_to_one_idempotent_research_ledger(self):
+        before = dict(self.hypothesis, status="UNDER_TEST")
+        after = transition_hypothesis(before, "DISCOVERED")
+        arguments = {
+            "input_disposition": {
+                "input_ref": "source://wdi/snapshot-2026",
+                "status": "ACCEPT",
+                "reason": "source vintage and coverage contract verified",
+            },
+            "hypothesis_before": before,
+            "hypothesis_after": after,
+            "decision_at_utc": "2026-11-20T10:00:00Z",
+            "source_refs": ["source://wdi/snapshot-2026"],
+            "input_hashes": {"source://wdi/snapshot-2026": "a" * 64},
+            "output_refs": ["pattern://PATTERN-017/v3"],
+            "notes": "Discovery candidate entered validation.",
+        }
+        with TemporaryDirectory() as directory:
+            ledger = Path(directory) / "RESEARCH_LEDGER_V1.jsonl"
+            first = append_lifecycle_decision(**arguments, ledger_path=ledger)
+            second = append_lifecycle_decision(**arguments, ledger_path=ledger)
+            records = [json.loads(line) for line in ledger.read_text(encoding="utf-8").splitlines()]
+        self.assertEqual(first["status"], "appended")
+        self.assertEqual(second["status"], "already_recorded")
+        self.assertEqual(len(records), 1)
+        context = records[0]["decision_context"]
+        self.assertEqual(context["input_disposition"]["status"], "ACCEPT")
+        self.assertEqual(context["hypothesis_transition"]["status_before"], "UNDER_TEST")
+        self.assertEqual(context["hypothesis_transition"]["status_after"], "DISCOVERED")
+        self.assertEqual(records[0]["record_type"], "pattern_decision")
+
+    def test_ledger_records_triggered_version_without_reopening_locked_record(self):
+        before = dict(self.hypothesis)
+        trigger = {
+            "kind": "source_vintage_changed",
+            "observed_at": "2026-11-20T09:00:00Z",
+            "evidence_ref": "sha256:source-vintage-4",
+            "description": "Provider published a separately versioned historical vintage.",
+        }
+        after = create_triggered_hypothesis_version(before, trigger)
+        with TemporaryDirectory() as directory:
+            ledger = Path(directory) / "RESEARCH_LEDGER_V1.jsonl"
+            result = append_lifecycle_decision(
+                input_disposition={
+                    "input_ref": "source://wdi/vintage-4",
+                    "status": "QUARANTINE",
+                    "reason": "new vintage requires independent review",
+                },
+                hypothesis_before=before,
+                hypothesis_after=after,
+                decision_at_utc="2026-11-20T09:00:00Z",
+                source_refs=["source://wdi/vintage-4"],
+                input_hashes={"source://wdi/vintage-4": "b" * 64},
+                output_refs=[],
+                notes="New version opened by documented source-vintage shift.",
+                ledger_path=ledger,
+            )
+            record = json.loads(ledger.read_text(encoding="utf-8").splitlines()[0])
+        self.assertEqual(result["status"], "appended")
+        self.assertEqual(record["decision_context"]["input_disposition"]["status"], "QUARANTINE")
+        self.assertEqual(record["decision_context"]["hypothesis_transition"]["status_before"], "LOCKED_REJECTED")
+        self.assertEqual(record["decision_context"]["hypothesis_transition"]["status_after"], "CANDIDATE")
+        self.assertEqual(record["decision_context"]["hypothesis_transition"]["version_after"], 4)
+        self.assertIn("supersedes", record["decision_context"]["hypothesis_transition"])
 
     def test_unknown_trigger_fields_are_rejected(self):
         trigger = {
