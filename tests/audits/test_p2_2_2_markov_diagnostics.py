@@ -25,7 +25,8 @@ class MarkovAuditTests(unittest.TestCase):
                         "diagnostics": (
                             {"rho_raw": 0.1, "rho_used": 0.1,
                              "rho_cusum_used": 0.07,
-                             "rho_bias_correction_enabled": False}
+                             "rho_bias_correction_enabled": False,
+                             "rho_cusum_bias_correction_enabled": True}
                             if mode == "markov_cusum" else {}
                         ),
                     }
@@ -63,6 +64,18 @@ class MarkovAuditTests(unittest.TestCase):
         self.assertNotIn("by_mode", report)
         self.assertEqual(
             commodity["g1_passed_series_reporting_rho_bias_correction_enabled_false"], 1
+        )
+        self.assertEqual(
+            commodity["g1_passed_markov_series_reporting_rho_cusum_bias_correction_enabled_true"],
+            1,
+        )
+        self.assertEqual(
+            commodity["g1_passed_markov_series_reporting_rho_cusum_bias_correction_enabled_false"],
+            0,
+        )
+        self.assertEqual(
+            commodity["rho_diagnostic_completeness"]["rho_cusum_bias_correction_flag_missing_or_invalid"],
+            0,
         )
         self.assertEqual(
             commodity["observed_alert_count_g1_passed_series"]["mean"], 1.0
@@ -126,6 +139,10 @@ class MarkovAuditTests(unittest.TestCase):
         self.assertEqual(summary["rho_cusum_used_g1_passed"]["n"], 0)
         self.assertEqual(
             summary["rho_diagnostic_completeness"]["rho_cusum_used_missing_or_invalid"], 1
+        )
+        self.assertEqual(
+            summary["rho_diagnostic_completeness"]["rho_cusum_bias_correction_flag_missing_or_invalid"],
+            1,
         )
 
     def test_inconsistent_legacy_rho_used_is_not_reported_as_clipped(self):
