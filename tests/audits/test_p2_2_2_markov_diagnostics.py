@@ -22,8 +22,12 @@ class MarkovAuditTests(unittest.TestCase):
                 "detector": {
                     mode: {
                         "alarm_count": 1,
-                        "diagnostics": {"rho_raw": 0.1, "rho_used": 0.2,
-                                        "rho_bias_correction_enabled": False},
+                        "diagnostics": (
+                            {"rho_raw": 0.1, "rho_used": 0.1,
+                             "rho_cusum_used": 0.07,
+                             "rho_bias_correction_enabled": False}
+                            if mode == "markov_cusum" else {}
+                        ),
                     }
                     for mode in ("fast", "markov_cusum", "consensus")
                 },
@@ -63,6 +67,16 @@ class MarkovAuditTests(unittest.TestCase):
         self.assertEqual(
             commodity["observed_alert_count_g1_passed_series"]["mean"], 1.0
         )
+        self.assertEqual(commodity["rho_raw_g1_passed"]["median"], 0.1)
+        self.assertEqual(commodity["rho_clipped_g1_passed"]["median"], 0.1)
+        self.assertEqual(commodity["rho_cusum_used_g1_passed"]["median"], 0.07)
+        self.assertEqual(
+            commodity["rho_diagnostic_completeness"]["rho_cusum_used_available"], 1
+        )
+        self.assertEqual(
+            report["by_cohort"]["strict_long_monthly"]["by_mode"]["fast"]
+            ["rho_cusum_used_g1_passed"]["n"], 0
+        )
 
     def test_non_g1_series_is_not_in_bootstrap_comparison_denominator(self):
         def make_series(passed, alarms, runs):
@@ -91,6 +105,43 @@ class MarkovAuditTests(unittest.TestCase):
         self.assertEqual(summary["observed_alert_count_g1_passed_series"]["n"], 1)
         self.assertEqual(summary["observed_alert_count_g1_passed_series"]["mean"], 1.0)
         self.assertEqual(summary["bootstrap_eligible_series"], 1)
+
+    def test_legacy_manifest_missing_rho_cusum_used_is_reported_not_imputed(self):
+        legacy_series = {
+            "cohort": "strict_long_monthly",
+            "g1": {"passed": True},
+            "detector": {
+                "markov_cusum": {
+                    "alarm_count": 0,
+                    "diagnostics": {"rho_raw": 0.92, "rho_used": 0.88},
+                }
+            },
+            "bootstrap": {"by_mode": {"markov_cusum": {
+                "alarms": 0, "runs": 10, "events": 0, "errors": 0,
+            }}},
+        }
+        summary = summarize_cohort([legacy_series])["by_mode"]["markov_cusum"]
+        self.assertEqual(summary["rho_raw_g1_passed"]["median"], 0.92)
+        self.assertEqual(summary["rho_clipped_g1_passed"]["median"], 0.88)
+        self.assertEqual(summary["rho_cusum_used_g1_passed"]["n"], 0)
+        self.assertEqual(
+            summary["rho_diagnostic_completeness"]["rho_cusum_used_missing_or_invalid"], 1
+        )
+
+    def test_inconsistent_legacy_rho_used_is_not_reported_as_clipped(self):
+        series = {
+            "g1": {"passed": True},
+            "detector": {"markov_cusum": {
+                "diagnostics": {
+                    "rho_raw": 0.92, "rho_used": 0.70, "rho_cusum_used": 0.65,
+                },
+            }},
+        }
+        summary = summarize_cohort([series])["by_mode"]["markov_cusum"]
+        self.assertEqual(summary["rho_clipped_g1_passed"]["n"], 0)
+        self.assertEqual(
+            summary["rho_diagnostic_completeness"]["rho_clipped_inconsistent_with_raw"], 1
+        )
 
     def test_rejects_missing_cohort(self):
         with self.assertRaises(ValueError):
