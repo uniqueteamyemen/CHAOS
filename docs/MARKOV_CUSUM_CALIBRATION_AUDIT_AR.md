@@ -56,8 +56,11 @@
 | `rho_raw` | `diagnostics.rho_raw` | تقدير معامل الارتباط الخام قبل القص |
 | `rho_clipped` | `diagnostics.rho_used` | قيمة `rho_raw` بعد القص إلى `[0.0, 0.88]` وفق V1 |
 | `rho_cusum_used` | `diagnostics.rho_cusum_used` | معامل AR الفعلي المستخدم في ابتكار CUSUM البنيوي |
+| `rho_cusum_bias_correction_enabled` | `diagnostics.rho_cusum_bias_correction_enabled` | حالة تصحيح معامل AR البنيوي المستخدم في CUSUM |
 
 لا يجوز استخدام `rho_used` مرادفاً لـ`rho_cusum_used`. يحتفظ التقرير بالحقل التاريخي `rho_used_reported_by_manifest_g1_passed` للتوافق، ويصدر معه `rho_clipped_g1_passed` بعد التحقق من أن القيمة تطابق قصّ `rho_raw` ضمن سماحية عددية مقدارها (10^{-6}).
+
+ويُفصل علم التصحيح القديم `rho_bias_correction_enabled` عن العلم البنيوي الصحيح `rho_cusum_bias_correction_enabled`. يحتفظ التقرير بعدّادات العلم القديم للتوافق التاريخي، ويصدر عدّادات مستقلة للعلم البنيوي وعدد السجلات التي تفتقده. لا يُستنتج العلم البنيوي من العلم القديم؛ فالاثنان لا يصفان الحالة نفسها.
 
 يقتصر تفسير هذه المعاملات على وضع `markov_cusum`؛ ولا تُنسب إلى `fast` أو `consensus`. ويعرض `rho_diagnostic_completeness` عدد السجلات التي احتوت كل حقل، وعدد القيم المفقودة/غير الصالحة، وعدد حالات عدم اتساق القصّ. إذا غاب `rho_cusum_used` من manifest تاريخي، يبقى مفقوداً ويظهر نقصه في التقرير؛ لا يُشتق أو يُقدّر من الحقلين الآخرين.
 
