@@ -6,6 +6,10 @@ import tempfile
 from pathlib import Path
 
 import numpy as np
+import csv
+from unittest.mock import patch
+
+from real_data_stress_pipeline import run_pipeline as p2
 from real_data_stress_pipeline.run_pipeline import usgs_record_rejection_reasons
 
 from scripts.audits.p2_2_3_domain_null_and_declustering import (
@@ -114,6 +118,65 @@ class DomainNullAuditHelperTests(unittest.TestCase):
             damaged.write_bytes(b'{"tampered":true}')
             with self.assertRaisesRegex(ValueError, "sha256_mismatch"):
                 load_world_bank_gem_snapshot(root, root / "audit_retry")
+
+    def test_usgs_seismic_ingestion_preserves_raw_and_quarantines_contamination(self):
+        belt = {
+            "id": "sunda_andaman_test",
+            "name": "Sunda-Andaman test",
+            "minlatitude": -15, "maxlatitude": 20,
+            "minlongitude": 90, "maxlongitude": 130,
+        }
+        valid_epoch = int(datetime(2004, 5, 18, tzinfo=timezone.utc).timestamp() * 1000)
+        invalid_epoch = int(datetime(2004, 5, 17, 21, 41, 12, tzinfo=timezone.utc).timestamp() * 1000)
+        payload = json.dumps({
+            "features": [
+                {
+                    "id": "valid-sunda-event",
+                    "properties": {"time": valid_epoch, "mag": 5.1, "place": "Sunda test"},
+                    "geometry": {"coordinates": [110.0, 0.0, 10.0]},
+                },
+                {
+                    "id": "nc21364840",
+                    "properties": {"time": invalid_epoch, "mag": 3.38, "place": "12 km NNE of Cayucos, California"},
+                    "geometry": {"coordinates": [-120.8448333, 35.5446667, 8.0]},
+                },
+            ]
+        }).encode("utf-8")
+
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            raw_root = root / "raw"
+            derived_root = root / "derived"
+            metadata = {"belts": [], "sources": [], "rejected": [], "errors": []}
+            with (
+                patch.object(p2, "ROOT", root),
+                patch.object(p2, "RAW", raw_root),
+                patch.object(p2, "DERIVED", derived_root),
+                patch.object(p2, "BELTS", [belt]),
+                patch.object(p2, "get", return_value=payload),
+            ):
+                p2.seismic(metadata)
+
+            catalog_path = derived_root / "sunda_andaman_test_events.csv"
+            with catalog_path.open("r", encoding="utf-8", newline="") as handle:
+                accepted = list(csv.DictReader(handle))
+            self.assertEqual(len(accepted), 1)
+            self.assertEqual(accepted[0]["id"], "valid-sunda-event")
+
+            raw_files = list(raw_root.rglob("*.geojson"))
+            self.assertEqual(len(raw_files), 1)
+            self.assertEqual(raw_files[0].read_bytes(), payload)
+            self.assertEqual(metadata["sources"][0]["sha256"], hashlib.sha256(payload).hexdigest())
+
+            ingestion = metadata["belts"][0]
+            self.assertEqual(ingestion["events_received"], 2)
+            self.assertEqual(ingestion["events_accepted"], 1)
+            self.assertEqual(ingestion["events_quarantined"], 1)
+            self.assertEqual(ingestion["duplicate_features_deduplicated"], 0)
+            self.assertEqual(ingestion["catalog_integrity_status"], "PASS_WITH_QUARANTINE")
+            anomaly = next(row for row in metadata["rejected"] if row.get("event_id") == "nc21364840")
+            self.assertIn("OUTSIDE_BELT_LONGITUDE_BOUNDS", anomaly["reasons"])
+            self.assertIn("BELOW_QUERY_MINIMUM_MAGNITUDE", anomaly["reasons"])
 
     def test_usgs_catalog_accepts_event_inside_belt_and_source_window(self):
         belt = {
