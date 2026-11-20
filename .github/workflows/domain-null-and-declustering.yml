@@ -15,7 +15,6 @@ on:
   push:
     branches:
       - fix/p2-2-3-gem-snapshot
-      - fix/p2-2-3-usgs-catalog-integrity-v1
     paths:
       - '.github/workflows/domain-null-and-declustering.yml'
       - 'real_data_stress_pipeline/diagnostics/**'
