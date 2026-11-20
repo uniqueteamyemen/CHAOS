@@ -37,6 +37,9 @@ CORE_ARTIFACTS = {
     "docs/PREDICTIVE_EARLY_WARNING_ENGINE_PLAN_AR.md": "forecasting_plan",
     "docs/SEVEN_STEP_EXECUTION_STATUS_AR.md": "legacy_research_sequence",
     "docs/REPOSITORY_PROTECTION_AUDIT.md": "repository_protection_audit",
+    "docs/BRANCH_CONFLICT_RESOLUTION_P0_1_AR.md": "immutable_branch_conflict_decision",
+    "docs/P1_HYPOTHESIS_AND_INPUT_LIFECYCLE_V1_AR.md": "hypothesis_input_lifecycle_contract",
+    "docs/P1_SOURCE_RECORD_IDENTITY_V1_AR.md": "source_record_identity_contract",
     "structural_engine/isolated_break_detector_v1/break_detector_v1.py": "frozen_detector_adapter",
     "structural_engine/isolated_break_detector_v1/engine_fast_ref.py": "frozen_fast_detector",
     "structural_engine/isolated_break_detector_v1/engine_markov_cusum.py": "frozen_markov_detector",
@@ -53,6 +56,14 @@ CORE_ARTIFACTS = {
     "experimental_contracts/RESEARCH_RUNTIME_SANDBOX_CONTRACT_V1.json": "research_runtime_contract",
     "experimental_contracts/REGIME_LOCKED_TEST_CONTRACT_V1.json": "locked_test_contract",
     "experimental_contracts/RESEARCH_LEDGER_CONTRACT_V1.json": "research_ledger_contract",
+    "observation_foundation/__init__.py": "observation_foundation_package",
+    "observation_foundation/record_identity_v1.py": "deterministic_record_identity_and_vintages",
+    "observation_foundation/lifecycle_v1.py": "hypothesis_and_input_lifecycle",
+    "observation_foundation/contracts/source_record_observation_v1.schema.json": "source_record_observation_contract",
+    "observation_foundation/contracts/hypothesis_lifecycle_v1.schema.json": "hypothesis_lifecycle_contract",
+    "observation_foundation/contracts/input_disposition_v1.schema.json": "input_disposition_contract",
+    "tests/observation_foundation/test_record_identity_v1.py": "record_identity_tests",
+    "tests/observation_foundation/test_lifecycle_v1.py": "lifecycle_tests",
     "src/App.tsx": "web_ui_entrypoint",
     "src/components/ChaosRuntimeView.tsx": "legacy_runtime_ui",
     "src/components/DiscoveryEngineView.tsx": "legacy_discovery_ui",
@@ -117,6 +128,7 @@ def classify_contracts(tracked: list[str], texts: dict[str, str]) -> dict[str, A
         "experimental_contracts/",
         "catalog_first/experimental_contracts/",
         "campaigns/CAMPAIGN_SHARED_GATE_V1/",
+        "observation_foundation/contracts/",
     )
     contract_paths = [
         p for p in tracked
@@ -185,6 +197,12 @@ def build_runtime_map(tracked: list[str], texts: dict[str, str]) -> dict[str, An
         ],
         "python_governance_kernel": [
             "chaos_governance_kernel.core", "validate_manifest(", "build_graph("
+        ],
+        "python_observation_identity": [
+            "prepare_source_record(", "select_vintages_as_of(", "build_epoch_snapshot("
+        ],
+        "python_hypothesis_lifecycle": [
+            "transition_hypothesis(", "create_triggered_hypothesis_version(", "validate_input_disposition("
         ],
         "typescript_runtime": [
             "executeChaosRuntimeV1", "chaosRuntimeV1"
@@ -303,6 +321,11 @@ def build() -> dict[str, Any]:
         "audited_refs": {
             "main_phase2": "1b941282a4a415230a65098e066043fbd6a19155",
             "archive_phase1_detector_freeze": "51e4278309b7d32917b85903323a63f81d9e9b6a",
+            "governance_p0_baseline_audit": "ee4090140c168529620d023b6927fc174df0d170",
+            "fix_p2_2_3_gem_snapshot": "e7b4767cb98729caa38c67459aa54a3389a5b48a",
+            "diag_markov_real_data_behavior": "ec84b3f1aca1e43121588031ed7efe4375679cfb",
+            "domain_neutral_observation_kernel": "e9c58c74296481af6553e13610ae1a7e37071b3a",
+            "domain_neutral_residual_contract": "825212d385016877be94d0d03f79d0435dd270b9",
         },
         "repository_counts": dict(counts),
         "canonical_runtime_decision": {
@@ -319,6 +342,17 @@ def build() -> dict[str, Any]:
         },
         "runtime_inventory": runtime_inventory,
         "contract_inventory": contract_inventory,
+        "branch_conflict_resolution": {
+            "path": "experiments/identity_lab/exp_p_engine/domain_neutral.py",
+            "decision": "KEEP_BOTH_ARCHIVED",
+            "variants": [
+                {"ref": "feat/domain-neutral-observation-kernel-v1", "commit": "e9c58c74296481af6553e13610ae1a7e37071b3a", "blob_sha": "d282e0d3a24b23d74bae5640e3e25f4ce3c52d38"},
+                {"ref": "feat/domain-neutral-residual-contract-v1", "commit": "825212d385016877be94d0d03f79d0435dd270b9", "blob_sha": "1cf99b18451f7d3dadf185ce0aa3616e1ba92588"}
+            ],
+            "preferred_research_candidate": "feat/domain-neutral-residual-contract-v1",
+            "promotion_status": "NOT_APPROVED; requires P2 competition and independent review",
+            "reason": "Both variants are inside experiments/** and remain immutable; retain both historical artifacts and extract future candidates only to a new non-experiment path."
+        },
         "observed_governance": {
             "ruleset_id": 27488330,
             "ruleset_name": "main-phase2",
@@ -348,7 +382,8 @@ def build() -> dict[str, Any]:
             "Static source references show wiring, not necessarily runtime reachability for every code path.",
             "Branch-protection read endpoint was unavailable through the connected integration; ruleset state was read directly.",
             "Ruleset/tag protection changes are not made by this workflow.",
-            "The inventory must be regenerated after relevant source or governance changes."
+            "The inventory must be regenerated after relevant source or governance changes.",
+            "The domain_neutral.py branch divergence is resolved as KEEP_BOTH_ARCHIVED; neither experiments/** variant is changed or promoted."
         ],
     }
 
