@@ -153,6 +153,16 @@ class DomainNullAuditHelperTests(unittest.TestCase):
         self.assertIn("INVALID_OR_MISSING_COORDINATES", reasons)
         self.assertIn("OUTSIDE_ANALYSIS_TIME_WINDOW", reasons)
 
+    def test_usgs_catalog_rejects_fractional_epoch_milliseconds(self):
+        belt = {
+            "minlatitude": -15, "maxlatitude": 20,
+            "minlongitude": 90, "maxlongitude": 130,
+        }
+        reasons = usgs_record_rejection_reasons(
+            belt, 0.0, 110.0, 5.0, 946684800000.5, min_magnitude=4.5
+        )
+        self.assertIn("INVALID_OR_MISSING_EVENT_TIME", reasons)
+
     def test_usgs_longitude_validation_supports_antimeridian_belts(self):
         belt = {
             "minlatitude": 50, "maxlatitude": 65,
