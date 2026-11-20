@@ -6,10 +6,19 @@ from scripts.audits.p2_2_4_markov_injected_break_power import (
     planned_break_index,
     summarize_records,
     extract_markov_rho_diagnostics,
+    resolve_audit_source_commit,
 )
 
 
 class MarkovInjectedBreakPowerTests(unittest.TestCase):
+    def test_audit_metadata_prefers_exact_checked_out_source_commit(self):
+        from unittest.mock import patch
+        with patch.dict("os.environ", {
+            "AUDIT_SOURCE_COMMIT": "checked-out-head-sha",
+            "GITHUB_SHA": "synthetic-merge-sha",
+        }):
+            self.assertEqual(resolve_audit_source_commit(), "checked-out-head-sha")
+
     def test_rho_diagnostics_expose_three_distinct_coefficients(self):
         self.assertEqual(
             extract_markov_rho_diagnostics({
