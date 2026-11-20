@@ -3,10 +3,19 @@ import numpy as np
 from scripts.audits.p2_2_3_markov_real_data_behavior import (
     rolling_mad_volatility_normalize, summarize_records,
     run_bootstrap_jobs, extract_markov_rho_diagnostics,
+    resolve_audit_source_commit,
 )
 
 
 class MarkovRealDataBehaviorTests(unittest.TestCase):
+    def test_audit_metadata_prefers_exact_checked_out_source_commit(self):
+        from unittest.mock import patch
+        with patch.dict("os.environ", {
+            "AUDIT_SOURCE_COMMIT": "checked-out-head-sha",
+            "GITHUB_SHA": "synthetic-merge-sha",
+        }):
+            self.assertEqual(resolve_audit_source_commit(), "checked-out-head-sha")
+
     def test_rho_diagnostic_contract_exposes_three_distinct_coefficients(self):
         diagnostics = {
             "rho_raw": 0.94,
