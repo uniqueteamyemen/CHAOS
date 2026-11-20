@@ -1,6 +1,13 @@
 name: CHAOS P2.2.2 — Markov Diagnostic Contract
 
 on:
+  pull_request:
+    branches:
+      - p2.2.2-markov-calibration-audit
+    paths:
+      - 'scripts/audits/p2_2_2_markov_diagnostics.py'
+      - 'tests/audits/**'
+      - '.github/workflows/markov-diagnostic-audit.yml'
   push:
     branches:
       - p2.2.2-markov-calibration-audit
@@ -22,7 +29,7 @@ jobs:
       - name: Checkout isolated diagnostic branch
         uses: actions/checkout@v4
         with:
-          ref: p2.2.2-markov-calibration-audit
+          ref: ${{ github.event.pull_request.head.ref || github.ref_name }}
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
