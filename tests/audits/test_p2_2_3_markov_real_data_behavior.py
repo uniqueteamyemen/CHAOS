@@ -2,11 +2,61 @@ import unittest
 import numpy as np
 from scripts.audits.p2_2_3_markov_real_data_behavior import (
     rolling_mad_volatility_normalize, summarize_records,
-    run_bootstrap_jobs,
+    run_bootstrap_jobs, extract_markov_rho_diagnostics,
 )
 
 
 class MarkovRealDataBehaviorTests(unittest.TestCase):
+    def test_rho_diagnostic_contract_exposes_three_distinct_coefficients(self):
+        diagnostics = {
+            "rho_raw": 0.94,
+            "rho_used": 0.88,
+            "rho_cusum_used": 0.71,
+        }
+        self.assertEqual(
+            extract_markov_rho_diagnostics(diagnostics),
+            {
+                "rho_raw": 0.94,
+                "rho_clipped": 0.88,
+                "rho_cusum_used": 0.71,
+            },
+        )
+
+    def test_rho_diagnostic_contract_fails_closed_when_a_source_field_is_missing(self):
+        with self.assertRaisesRegex(ArithmeticError, "rho_used"):
+            extract_markov_rho_diagnostics({
+                "rho_raw": 0.94,
+                "rho_cusum_used": 0.71,
+            })
+
+    def test_rho_summary_keeps_raw_clipped_and_cusum_distributions_separate(self):
+        rows = [
+            {
+                "series_id": "energy_rho", "category": "energy",
+                "sample_length": 100, "input_variant": "raw",
+                "has_any_alarm": False, "alarm_count": 0,
+                "cusum_peak": 1.0, "cusum_updates": 50,
+                "rho_raw": 0.94, "rho_clipped": 0.88, "rho_cusum_used": 0.71,
+            },
+            {
+                "series_id": "energy_rho", "category": "energy",
+                "sample_length": 100, "input_variant": "raw",
+                "has_any_alarm": False, "alarm_count": 0,
+                "cusum_peak": 1.2, "cusum_updates": 50,
+                "rho_raw": 0.91, "rho_clipped": 0.88, "rho_cusum_used": 0.68,
+            },
+        ]
+        summary = summarize_records(rows)
+        per_series = summary["per_series"]["energy_rho|n=100|raw"]
+        self.assertEqual(per_series["rho_raw_distribution"]["median"], 0.925)
+        self.assertEqual(per_series["rho_clipped_distribution"]["median"], 0.88)
+        self.assertEqual(per_series["rho_cusum_used_distribution"]["median"], 0.695)
+        category = summary["by_category_length_variant"]["energy|n=100|raw"]
+        self.assertEqual(
+            category["rho_cusum_used_per_series_median_distribution"]["median"],
+            0.695,
+        )
+
     def test_rolling_mad_is_finite_and_preserves_length(self):
         values = np.random.default_rng(11).normal(0.0, 0.03, 160)
         result = rolling_mad_volatility_normalize(values)
