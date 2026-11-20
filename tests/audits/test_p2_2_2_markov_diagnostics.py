@@ -145,6 +145,28 @@ class MarkovAuditTests(unittest.TestCase):
             1,
         )
 
+    def test_legacy_manifest_out_of_range_rho_cusum_used_is_reported_invalid(self):
+        series = {
+            "g1": {"passed": True},
+            "detector": {"markov_cusum": {
+                "diagnostics": {
+                    "rho_raw": 0.92,
+                    "rho_used": 0.88,
+                    "rho_cusum_used": 0.91,
+                },
+            }},
+        }
+        summary = summarize_cohort([series])["by_mode"]["markov_cusum"]
+        self.assertEqual(summary["rho_cusum_used_g1_passed"]["n"], 0)
+        self.assertEqual(
+            summary["rho_diagnostic_completeness"]["rho_cusum_used_out_of_range"],
+            1,
+        )
+        self.assertEqual(
+            summary["rho_diagnostic_completeness"]["rho_cusum_used_missing_or_invalid"],
+            1,
+        )
+
     def test_inconsistent_legacy_rho_used_is_not_reported_as_clipped(self):
         series = {
             "g1": {"passed": True},
