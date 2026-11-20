@@ -6,6 +6,7 @@ import tempfile
 from pathlib import Path
 
 import numpy as np
+from real_data_stress_pipeline.run_pipeline import usgs_record_rejection_reasons
 
 from scripts.audits.p2_2_3_domain_null_and_declustering import (
     contiguous_transformed_series,
@@ -112,6 +113,63 @@ class DomainNullAuditHelperTests(unittest.TestCase):
             damaged.write_bytes(b'{"tampered":true}')
             with self.assertRaisesRegex(ValueError, "sha256_mismatch"):
                 load_world_bank_gem_snapshot(root, root / "audit_retry")
+
+    def test_usgs_catalog_accepts_event_inside_belt_and_source_window(self):
+        belt = {
+            "minlatitude": -15, "maxlatitude": 20,
+            "minlongitude": 90, "maxlongitude": 130,
+        }
+        epoch_ms = int(datetime(2000, 1, 1, tzinfo=timezone.utc).timestamp() * 1000)
+        self.assertEqual(
+            usgs_record_rejection_reasons(
+                belt, 0.0, 110.0, 4.5, epoch_ms, min_magnitude=4.5
+            ),
+            [],
+        )
+
+    def test_usgs_catalog_quarantines_geographic_and_magnitude_contamination(self):
+        belt = {
+            "minlatitude": -15, "maxlatitude": 20,
+            "minlongitude": 90, "maxlongitude": 130,
+        }
+        epoch_ms = int(datetime(2004, 5, 17, tzinfo=timezone.utc).timestamp() * 1000)
+        reasons = usgs_record_rejection_reasons(
+            belt, 35.5446667, -120.8448333, 3.38, epoch_ms, min_magnitude=4.5
+        )
+        self.assertIn("OUTSIDE_BELT_LATITUDE_BOUNDS", reasons)
+        self.assertIn("OUTSIDE_BELT_LONGITUDE_BOUNDS", reasons)
+        self.assertIn("BELOW_QUERY_MINIMUM_MAGNITUDE", reasons)
+
+    def test_usgs_catalog_rejects_invalid_coordinates_and_time_outside_window(self):
+        belt = {
+            "minlatitude": 30, "maxlatitude": 42,
+            "minlongitude": 18, "maxlongitude": 35,
+        }
+        outside_epoch = int(datetime(2025, 1, 1, tzinfo=timezone.utc).timestamp() * 1000)
+        reasons = usgs_record_rejection_reasons(
+            belt, float("nan"), 200.0, 5.0, outside_epoch, min_magnitude=4.5
+        )
+        self.assertIn("INVALID_OR_MISSING_COORDINATES", reasons)
+        self.assertIn("OUTSIDE_ANALYSIS_TIME_WINDOW", reasons)
+
+    def test_usgs_longitude_validation_supports_antimeridian_belts(self):
+        belt = {
+            "minlatitude": 50, "maxlatitude": 65,
+            "minlongitude": 170, "maxlongitude": -170,
+        }
+        epoch_ms = int(datetime(2000, 1, 1, tzinfo=timezone.utc).timestamp() * 1000)
+        self.assertEqual(
+            usgs_record_rejection_reasons(
+                belt, 55.0, 179.0, 5.0, epoch_ms, min_magnitude=4.5
+            ),
+            [],
+        )
+        self.assertIn(
+            "OUTSIDE_BELT_LONGITUDE_BOUNDS",
+            usgs_record_rejection_reasons(
+                belt, 55.0, -130.0, 5.0, epoch_ms, min_magnitude=4.5
+            ),
+        )
 
     def test_required_source_gate_rejects_missing_gem(self):
         usgs = {"status": "COMPLETED", "errors": []}
