@@ -331,6 +331,8 @@ class DomainNullAuditHelperTests(unittest.TestCase):
         ])
         self.assertTrue(summary["magnitude_type_homogeneous"])
         self.assertTrue(summary["single_magnitude_type_precheck_pass"])
+        self.assertFalse(summary["magnitude_source_homogeneous"])
+        self.assertTrue(summary["magnitude_source_mixture_requires_calibration_review"])
 
     def test_post_ingest_catalog_validation_accepts_reconciled_clean_catalog(self):
         belt = {
