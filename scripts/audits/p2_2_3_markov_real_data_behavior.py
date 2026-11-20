@@ -155,9 +155,9 @@ def summarize_records(records):
             ) if rows else None,
             "cusum_peak_distribution": distribution([row["cusum_peak"] for row in rows]),
             "cusum_updates_distribution": distribution([row["cusum_updates"] for row in rows]),
-            "rho_raw_distribution": distribution([row["rho_raw"] for row in rows]),
-            "rho_clipped_distribution": distribution([row["rho_clipped"] for row in rows]),
-            "rho_cusum_used_distribution": distribution([row["rho_cusum_used"] for row in rows]),
+            "rho_raw_distribution": distribution([row.get("rho_raw") for row in rows]),
+            "rho_clipped_distribution": distribution([row.get("rho_clipped") for row in rows]),
+            "rho_cusum_used_distribution": distribution([row.get("rho_cusum_used") for row in rows]),
         }
         per_series[key] = series_summary
         category_groups[(category, length, variant)].append(series_summary)
