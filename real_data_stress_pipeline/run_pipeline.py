@@ -310,8 +310,13 @@ def seismic(m):
     reasons=usgs_record_rejection_reasons(
      belt,latitude,longitude,raw_magnitude,raw_time,MAG
     )
-    fallback_identity=f"{raw_time}:{raw_magnitude}:{longitude}:{latitude}"
-    event_id=str(feature.get("id") or fallback_identity or f"feature-index:{feature_index}")
+    raw_event_id=feature.get("id")
+    if raw_event_id is not None and str(raw_event_id).strip():
+     event_id=str(raw_event_id).strip()
+    elif any(value is not None for value in (raw_time,raw_magnitude,longitude,latitude)):
+     event_id=f"fallback:{raw_time}:{raw_magnitude}:{longitude}:{latitude}"
+    else:
+     event_id=f"feature-index:{feature_index}"
     if reasons:
      rejected_count+=1
      for reason in reasons:rejected_by_reason[reason]+=1
