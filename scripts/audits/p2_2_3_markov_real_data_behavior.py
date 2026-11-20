@@ -93,6 +93,11 @@ def distribution(values):
             "q75": q(.75), "max": max(clean)}
 
 
+def resolve_audit_source_commit() -> str:
+    """Prefer the exact checked-out ref over GitHub's synthetic PR merge SHA."""
+    return os.getenv("AUDIT_SOURCE_COMMIT") or os.getenv("GITHUB_SHA", "local-unresolved")
+
+
 def extract_markov_rho_diagnostics(diagnostics: dict[str, Any]) -> dict[str, float]:
     """Expose three distinct coefficients without changing frozen BreakDetectorV1.
 
@@ -354,7 +359,7 @@ def run_audit(replicates, max_series=None, workers=None):
     result = {
         "audit_id": "CHAOS-P2.2.3-MARKOV-REAL-DATA-BEHAVIOR",
         "status": "completed",
-        "repository_commit": os.getenv("GITHUB_SHA", "local-unresolved"),
+        "repository_commit": resolve_audit_source_commit(),
         "method": "per-series Stationary Bootstrap; no cross-series pooling",
         "source": {
             "provider": "World Bank Pink Sheet",
