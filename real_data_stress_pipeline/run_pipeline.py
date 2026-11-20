@@ -279,7 +279,12 @@ def usgs_record_rejection_reasons(
   if mag<threshold:reasons.append("BELOW_QUERY_MINIMUM_MAGNITUDE")
  try:
   if isinstance(epoch_ms,bool) or epoch_ms is None:raise ValueError
-  event_ms=int(epoch_ms)
+  if isinstance(epoch_ms,int):event_ms=epoch_ms
+  elif isinstance(epoch_ms,float) and math.isfinite(epoch_ms) and epoch_ms.is_integer():
+   event_ms=int(epoch_ms)
+  elif isinstance(epoch_ms,str) and epoch_ms.strip().lstrip("+-").isdigit():
+   event_ms=int(epoch_ms.strip())
+  else:raise ValueError
  except (TypeError,ValueError,OverflowError):
   reasons.append("INVALID_OR_MISSING_EVENT_TIME")
  else:
@@ -300,9 +305,17 @@ def seismic(m):
    duplicate_count=0
    rejected_by_reason=Counter()
    for feature_index,feature in enumerate(fs):
-    properties=feature.get("properties") or {}
-    geometry=feature.get("geometry") or {}
-    coordinates=geometry.get("coordinates") or []
+    if not isinstance(feature,dict):
+     feature={}
+    properties=feature.get("properties")
+    if not isinstance(properties,dict):
+     properties={}
+    geometry=feature.get("geometry")
+    if not isinstance(geometry,dict):
+     geometry={}
+    coordinates=geometry.get("coordinates")
+    if not isinstance(coordinates,(list,tuple)):
+     coordinates=[]
     longitude=coordinates[0] if len(coordinates)>=2 else None
     latitude=coordinates[1] if len(coordinates)>=2 else None
     raw_time=properties.get("time")
