@@ -24,6 +24,7 @@ MANIFEST_PATH = OUTPUT / "D0_BASELINE_MANIFEST_V1.json"
 VALIDATION_PATH = OUTPUT / "D0_VALIDATION_REPORT_V1.json"
 
 CORE_ARTIFACTS = {
+    ".gitignore": "repository_ignore_policy",
     "AGENTS.md": "integrity_policy",
     "README.md": "repository_entrypoint",
     "package.json": "typescript_ui_dependencies",
@@ -72,11 +73,14 @@ CORE_ARTIFACTS = {
     "src/utils/discoveryEngineCore.ts": "legacy_typescript_discovery",
     "src/utils/futureForecastEngine.ts": "legacy_typescript_forecast",
     "src/utils/governanceKernel.ts": "browser_governance_adapter",
+    ".github/workflows/chaos-governance-artifacts.yml": "governance_artifact_workflow",
+    ".github/workflows/observation-foundation-contract.yml": "observation_foundation_contract_workflow",
     ".github/workflows/real-data-stress.yml": "real_data_workflow",
     ".github/workflows/experiments-immutable.yml": "experiment_immutability_workflow",
     ".github/workflows/phase1-detector-real-data.yml": "phase1_workflow",
     ".github/CODEOWNERS": "review_ownership",
     "scripts/guards/check_experiments_immutable.py": "experiment_immutability_guard",
+    "scripts/governance/build_d0_inventory.py": "d0_inventory_builder",
 }
 
 
@@ -321,7 +325,7 @@ def build() -> dict[str, Any]:
         "audited_refs": {
             "main_phase2": "1b941282a4a415230a65098e066043fbd6a19155",
             "archive_phase1_detector_freeze": "51e4278309b7d32917b85903323a63f81d9e9b6a",
-            "fix_p2_2_3_gem_snapshot": "e7b4767cb98729caa38c67459aa54a3389a5b48a",
+            "fix_p2_2_3_gem_snapshot": "094ab649394f0675b0d2ff2883c322612c548855",
             "diag_markov_real_data_behavior": "ec84b3f1aca1e43121588031ed7efe4375679cfb",
             "domain_neutral_observation_kernel": "e9c58c74296481af6553e13610ae1a7e37071b3a",
             "domain_neutral_residual_contract": "825212d385016877be94d0d03f79d0435dd270b9",
