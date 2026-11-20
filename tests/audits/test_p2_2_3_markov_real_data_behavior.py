@@ -54,6 +54,7 @@ class MarkovRealDataBehaviorTests(unittest.TestCase):
                 "has_any_alarm": False, "alarm_count": 0,
                 "cusum_peak": 1.0, "cusum_updates": 50,
                 "rho_raw": 0.94, "rho_clipped": 0.88, "rho_cusum_used": 0.71,
+                "rho_cusum_bias_correction_enabled": True,
             },
             {
                 "series_id": "energy_rho", "category": "energy",
@@ -61,6 +62,7 @@ class MarkovRealDataBehaviorTests(unittest.TestCase):
                 "has_any_alarm": False, "alarm_count": 0,
                 "cusum_peak": 1.2, "cusum_updates": 50,
                 "rho_raw": 0.91, "rho_clipped": 0.88, "rho_cusum_used": 0.68,
+                "rho_cusum_bias_correction_enabled": False,
             },
         ]
         summary = summarize_records(rows)
@@ -68,10 +70,18 @@ class MarkovRealDataBehaviorTests(unittest.TestCase):
         self.assertAlmostEqual(per_series["rho_raw_distribution"]["median"], 0.925)
         self.assertAlmostEqual(per_series["rho_clipped_distribution"]["median"], 0.88)
         self.assertAlmostEqual(per_series["rho_cusum_used_distribution"]["median"], 0.695)
+        self.assertEqual(per_series["rho_cusum_bias_correction_enabled_true_replicates"], 1)
+        self.assertEqual(per_series["rho_cusum_bias_correction_enabled_false_replicates"], 1)
+        self.assertEqual(per_series["rho_cusum_bias_correction_enabled_missing_or_invalid_replicates"], 0)
+        self.assertAlmostEqual(per_series["rho_cusum_bias_correction_enabled_true_fraction"], 0.5)
         category = summary["by_category_length_variant"]["energy|n=100|raw"]
         self.assertAlmostEqual(
             category["rho_cusum_used_per_series_median_distribution"]["median"],
             0.695,
+        )
+        self.assertAlmostEqual(
+            category["rho_cusum_bias_correction_enabled_true_fraction_mean_across_series"],
+            0.5,
         )
 
     def test_rolling_mad_is_finite_and_preserves_length(self):
