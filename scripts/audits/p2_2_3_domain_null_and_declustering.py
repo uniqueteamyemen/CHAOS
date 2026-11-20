@@ -781,12 +781,103 @@ def detector_on_seismic_representation(values: np.ndarray) -> dict[str, Any]:
     return result
 
 
+def validate_usgs_belt_catalog(
+    belt: dict[str, Any],
+    events: list[dict[str, Any]],
+    ingestion_record: dict[str, Any] | None,
+) -> dict[str, Any]:
+    """Fail closed if ingestion accounting or any accepted event violates the source query."""
+    errors: list[dict[str, Any]] = []
+    rejected: list[dict[str, Any]] = []
+    if not isinstance(ingestion_record, dict):
+        errors.append({"reason": "INGESTION_RECORD_MISSING"})
+        ingestion_record = {}
+
+    def nonnegative_int(name: str) -> int | None:
+        value = ingestion_record.get(name)
+        if isinstance(value, bool) or not isinstance(value, int) or value < 0:
+            errors.append({"reason": "INGESTION_COUNT_INVALID", "field": name})
+            return None
+        return value
+
+    received = nonnegative_int("events_received")
+    accepted = nonnegative_int("events_accepted")
+    quarantined = nonnegative_int("events_quarantined")
+    duplicates = nonnegative_int("duplicate_features_deduplicated")
+
+    if ingestion_record.get("catalog_integrity_status") not in {"PASS", "PASS_WITH_QUARANTINE"}:
+        errors.append({
+            "reason": "INGESTION_INTEGRITY_STATUS_INVALID",
+            "status": ingestion_record.get("catalog_integrity_status"),
+        })
+    if accepted is not None and accepted != len(events):
+        errors.append({
+            "reason": "ACCEPTED_COUNT_DOES_NOT_MATCH_ANALYTICAL_CATALOG",
+            "reported": accepted,
+            "actual": len(events),
+        })
+
+    if None not in (received, accepted, quarantined, duplicates):
+        reconciled = accepted + quarantined + duplicates == received
+        if not reconciled:
+            errors.append({
+                "reason": "INGESTION_ACCOUNTING_DOES_NOT_RECONCILE",
+                "events_received": received,
+                "events_accepted": accepted,
+                "events_quarantined": quarantined,
+                "duplicate_features_deduplicated": duplicates,
+            })
+    else:
+        reconciled = False
+
+    for event in events:
+        reasons = p2.usgs_record_rejection_reasons(
+            belt, event.get("latitude"), event.get("longitude"),
+            event.get("magnitude"), event.get("epoch_ms"),
+            min_magnitude=p2.MAG,
+        )
+        if reasons:
+            rejected.append({"event_id": str(event.get("id", "")), "reasons": reasons})
+
+    if rejected:
+        errors.append({
+            "reason": "POST_INGESTION_VALIDATION_REJECTED_EVENTS",
+            "count": len(rejected),
+        })
+
+    return {
+        "status": "PASS" if not errors else "FAIL",
+        "post_ingest_validation_status": "PASS" if not rejected else "FAIL",
+        "catalog_integrity_status": ingestion_record.get("catalog_integrity_status"),
+        "events_received": received,
+        "events_accepted": accepted,
+        "events_quarantined": quarantined,
+        "duplicate_features_deduplicated": duplicates,
+        "analytical_catalog_events": len(events),
+        "accounting_reconciled": reconciled,
+        "post_ingest_rejected_events": rejected,
+        "errors": errors,
+    }
+
+
 def audit_belt(
     belt: dict[str, Any],
     events: list[dict[str, Any]],
     output_dir: Path,
     poisson_replicates: int,
+    ingestion_record: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
+    catalog_integrity = validate_usgs_belt_catalog(belt, events, ingestion_record)
+    if catalog_integrity["status"] != "PASS":
+        return {
+            "belt_id": belt["id"],
+            "belt_name": belt["name"],
+            "status": "CATALOG_POST_INGEST_VALIDATION_FAILED",
+            "source_events": len(events),
+            "catalog_integrity": catalog_integrity,
+            "catalog_completeness_status": "NOT_ASSESSED",
+        }
+
     baseline_counts = monthly_counts(events)
     intervals_before = interval_series(events)
     baseline_monthly = detector_on_seismic_representation(np.log1p(baseline_counts))
@@ -851,6 +942,8 @@ def audit_belt(
         "analysis_period": f"{p2.Y0}-01 through {p2.Y1}-12",
         "query_minimum_magnitude": p2.MAG,
         "catalog_completeness_status": "NOT_ASSESSED",
+        "status": "COMPLETED",
+        "catalog_integrity": catalog_integrity,
         "before_declustering": {
             "event_count": len(events),
             "monthly_event_counts": {
@@ -912,11 +1005,22 @@ def required_source_gate(
         len(seismic_belts) == len(p2.BELTS)
         and all(int(item.get("source_events", 0)) > 0 for item in seismic_belts)
     )
+    catalog_integrity_complete = (
+        len(seismic_belts) == len(p2.BELTS)
+        and all(
+            isinstance(item.get("catalog_integrity"), dict)
+            and item["catalog_integrity"].get("status") == "PASS"
+            and item["catalog_integrity"].get("post_ingest_validation_status") == "PASS"
+            and item["catalog_integrity"].get("accounting_reconciled") is True
+            for item in seismic_belts
+        )
+    )
     return {
         "world_bank_gem": gem_complete,
         "usgs_comcat": usgs_complete,
+        "usgs_catalog_integrity": catalog_integrity_complete,
         "five_seismic_belts": belts_complete,
-        "passed": gem_complete and usgs_complete and belts_complete,
+        "passed": gem_complete and usgs_complete and catalog_integrity_complete and belts_complete,
         "optional_sources": ["FRED", "EIA"],
     }
 
@@ -963,17 +1067,31 @@ def run_audit(
             eia_result = {"status": "ERROR", "error_type": type(exc).__name__}
 
     belt_results: list[dict[str, Any]] = []
+    ingestion_by_belt = {
+        str(item.get("id")): item
+        for item in source_meta["belts"]
+        if isinstance(item, dict) and item.get("id")
+    }
     for belt in p2.BELTS:
         catalog_path = p2.DERIVED / f"{belt['id']}_events.csv"
         if not catalog_path.exists():
             belt_results.append({
                 "belt_id": belt["id"],
                 "status": "CATALOG_NOT_AVAILABLE",
+                "catalog_integrity": {
+                    "status": "FAIL",
+                    "post_ingest_validation_status": "FAIL",
+                    "accounting_reconciled": False,
+                    "errors": [{"reason": "ANALYTICAL_CATALOG_MISSING"}],
+                },
             })
             continue
         events = read_usgs_csv(catalog_path)
         belt_results.append(
-            audit_belt(belt, events, output_dir, poisson_replicates)
+            audit_belt(
+                belt, events, output_dir, poisson_replicates,
+                ingestion_record=ingestion_by_belt.get(belt["id"]),
+            )
         )
 
     usgs_result = {
@@ -982,6 +1100,7 @@ def run_audit(
         "raw_sources": source_meta["sources"],
         "errors": source_meta["errors"],
         "rejected": source_meta["rejected"],
+        "belts": source_meta["belts"],
     }
     source_gate = required_source_gate(gem_result, usgs_result, belt_results)
     result = {

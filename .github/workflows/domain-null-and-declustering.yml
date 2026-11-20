@@ -1,6 +1,20 @@
 name: CHAOS P2.2.3 — Domain Null and Seismic Declustering
 
 on:
+  pull_request:
+    branches:
+      - fix/p2-2-3-gem-snapshot
+      - fix/p2-2-3-usgs-catalog-integrity-v1
+    paths:
+      - '.github/workflows/domain-null-and-declustering.yml'
+      - 'real_data_stress_pipeline/run_pipeline.py'
+      - 'real_data_stress_pipeline/config/seismic_belts.json'
+      - 'real_data_stress_pipeline/config/pipeline.json'
+      - 'real_data_stress_pipeline/diagnostics/**'
+      - 'real_data_stress_pipeline/contracts/seismic_declustering_contract_v1.json'
+      - 'scripts/audits/p2_2_3_domain_null_and_declustering.py'
+      - 'tests/seismic_null_contract/**'
+      - 'tests/audits/test_p2_2_3_domain_null_audit_helpers.py'
   push:
     branches:
       - fix/p2-2-3-gem-snapshot
@@ -8,6 +22,9 @@ on:
       - '.github/workflows/domain-null-and-declustering.yml'
       - 'real_data_stress_pipeline/diagnostics/**'
       - 'real_data_stress_pipeline/contracts/seismic_declustering_contract_v1.json'
+      - 'real_data_stress_pipeline/run_pipeline.py'
+      - 'real_data_stress_pipeline/config/seismic_belts.json'
+      - 'real_data_stress_pipeline/config/pipeline.json'
       - 'scripts/audits/p2_2_3_domain_null_and_declustering.py'
       - 'tests/seismic_null_contract/**'
       - 'tests/audits/test_p2_2_3_domain_null_audit_helpers.py'
@@ -34,7 +51,7 @@ jobs:
       - name: Checkout isolated domain branch
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.ref }}
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
@@ -54,6 +71,7 @@ jobs:
         run: python -m unittest discover -s tests/audits -p 'test_p2_2_3_domain_null_audit_helpers.py' -v
 
   domain-audit:
+    if: ${{ github.event_name == 'workflow_dispatch' || github.ref_name == 'fix/p2-2-3-gem-snapshot' }}
     name: usgs-declustering-poisson-and-economic-source-audit
     runs-on: ubuntu-latest
     needs: contract-and-unit-tests
@@ -62,7 +80,7 @@ jobs:
       - name: Checkout isolated domain branch
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.ref }}
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
