@@ -401,7 +401,7 @@ def seismic(m):
     "magnitude_source_counts":dict(sorted(magnitude_source_counts.items())),
     "magnitude_type_missing_events":magnitude_type_counts.get("missing",0),
     "magnitude_type_homogeneous":len([k for k in magnitude_type_counts if k!="missing"])==1 and magnitude_type_counts.get("missing",0)==0,
-    "pooled_frequency_magnitude_eligible":len(magnitude_type_counts)==1 and "missing" not in magnitude_type_counts,
+    "single_magnitude_type_precheck_pass":len(magnitude_type_counts)==1 and "missing" not in magnitude_type_counts,
     "catalog_integrity_status":catalog_integrity_status,
     "client_side_validation":"coordinates_magnitude_and_analysis_time_rechecked",
     "start":rows[0]["time"] if rows else None,
