@@ -359,22 +359,26 @@ def build() -> dict[str, Any]:
         "observed_governance": {
             "ruleset_id": 27488330,
             "ruleset_name": "main-phase2",
+            "ruleset_updated_at": "2026-11-20T18:48:16.764+03:00",
             "enforcement": "active",
             "target": "refs/heads/main-phase2",
-            "required_status_checks": ["stress"],
+            "required_status_checks": ["stress", "experiments-immutable"],
             "experiments_immutable_workflow_exists": True,
-            "experiments_immutable_is_required_check": False,
+            "experiments_immutable_is_required_check": True,
             "governance_artifact_workflow_exists": True,
             "governance_artifact_workflow_is_required_check": False,
             "require_pull_request": False,
             "require_independent_approval": False,
             "bypass_available": True,
+            "bypass_mode": "always",
             "tag_refs_observed": [
                 "p2.2-historical-stress-v1.0.0",
                 "p2.2-historical-stress-v1.0.1",
                 "phase1-detector-freeze-v1.0"
             ],
-            "tag_protection": "not verified; remains an explicit repository-governance blocker"
+            "tag_rulesets_observed": [],
+            "tag_protection": "not verified; remains an explicit repository-governance blocker",
+            "branch_protection_endpoint": "not readable through current GitHub App integration (403); do not infer classic branch-protection state"
         },
         "inventory_artifacts": [
             {"path": entry.path, "role": entry.role, "sha256": entry.sha256, "bytes": entry.bytes}
@@ -385,6 +389,7 @@ def build() -> dict[str, Any]:
             "Static source references show wiring, not necessarily runtime reachability for every code path.",
             "Branch-protection read endpoint was unavailable through the connected integration; ruleset state was read directly.",
             "Ruleset/tag protection changes are not made by this workflow.",
+            "The 2026-11-20 ruleset read shows experiments-immutable newly required; permanent bypass and missing PR/approval rules remain unresolved.",
             "The inventory must be regenerated after relevant source or governance changes.",
             "The domain_neutral.py branch divergence is resolved as KEEP_BOTH_ARCHIVED; neither experiments/** variant is changed or promoted."
         ],
