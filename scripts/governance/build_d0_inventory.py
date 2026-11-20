@@ -321,7 +321,6 @@ def build() -> dict[str, Any]:
         "audited_refs": {
             "main_phase2": "1b941282a4a415230a65098e066043fbd6a19155",
             "archive_phase1_detector_freeze": "51e4278309b7d32917b85903323a63f81d9e9b6a",
-            "governance_p0_baseline_audit": "ee4090140c168529620d023b6927fc174df0d170",
             "fix_p2_2_3_gem_snapshot": "e7b4767cb98729caa38c67459aa54a3389a5b48a",
             "diag_markov_real_data_behavior": "ec84b3f1aca1e43121588031ed7efe4375679cfb",
             "domain_neutral_observation_kernel": "e9c58c74296481af6553e13610ae1a7e37071b3a",
