@@ -3,8 +3,11 @@ from __future__ import annotations
 
 from copy import deepcopy
 from datetime import datetime, timezone
+from pathlib import Path
 import unicodedata
 from typing import Any, Mapping
+
+from chaos_governance_kernel.core import append_research_ledger_record, canonical_sha256
 
 HYPOTHESIS_STATES = {
     "CANDIDATE", "UNDER_TEST", "DISCOVERED", "VALIDATION_PENDING",
@@ -122,3 +125,142 @@ def validate_input_disposition(
         "status": status,
         "reason": _required_text(reason, "reason"),
     }
+
+
+DEFAULT_RESEARCH_LEDGER_PATH = Path("governance/ledger/RESEARCH_LEDGER_V1.jsonl")
+RESEARCH_LEDGER_CONTRACT_REF = "experimental_contracts/RESEARCH_LEDGER_CONTRACT_V1.json"
+
+
+def _normalize_decision_time(value: str) -> str:
+    stamp = _required_text(value, "decision_at_utc").replace("Z", "+00:00")
+    try:
+        parsed = datetime.fromisoformat(stamp)
+    except ValueError as exc:
+        raise ValueError("decision_at_utc_invalid") from exc
+    if parsed.tzinfo is None:
+        raise ValueError("decision_at_utc_requires_timezone")
+    return parsed.astimezone(timezone.utc).isoformat(timespec="auto").replace("+00:00", "Z")
+
+
+def build_lifecycle_ledger_record(
+    *,
+    input_disposition: Mapping[str, Any],
+    hypothesis_before: Mapping[str, Any],
+    hypothesis_after: Mapping[str, Any],
+    decision_at_utc: str,
+    source_refs: list[str],
+    input_hashes: Mapping[str, str],
+    output_refs: list[str],
+    notes: str,
+    contract_refs: list[str] | None = None,
+) -> dict[str, Any]:
+    """Build one ledger entry containing separate input and hypothesis decisions.
+
+    Same-version transitions are validated against the allowlisted lifecycle.
+    New versions are accepted only when they exactly match a documented trigger
+    shift and preserve the old hypothesis through the supersedes reference.
+    """
+    disposition = validate_input_disposition(
+        input_disposition.get("input_ref"),
+        input_disposition.get("status"),
+        input_disposition.get("reason"),
+    )
+    before = deepcopy(dict(hypothesis_before))
+    after = deepcopy(dict(hypothesis_after))
+    if after.get("hypothesis_id") != before.get("hypothesis_id"):
+        raise ValueError("ledger_hypothesis_identity_changed")
+    before_version = before.get("hypothesis_version")
+    after_version = after.get("hypothesis_version")
+    if before_version == after_version:
+        expected_after = transition_hypothesis(before, str(after.get("status")))
+        if expected_after != after:
+            raise ValueError("ledger_hypothesis_transition_payload_mismatch")
+        trigger_shift = None
+    elif (
+        isinstance(before_version, int) and not isinstance(before_version, bool)
+        and after_version == before_version + 1
+    ):
+        trigger_shift = after.get("trigger_shift")
+        expected_after = create_triggered_hypothesis_version(before, trigger_shift)
+        if expected_after != after:
+            raise ValueError("ledger_hypothesis_version_payload_mismatch")
+    else:
+        raise ValueError("ledger_hypothesis_version_transition_invalid")
+
+    decision_time = _normalize_decision_time(decision_at_utc)
+    refs = sorted({_required_text(item, "source_ref") for item in source_refs} | {disposition["input_ref"]})
+    outputs = sorted({_required_text(item, "output_ref") for item in output_refs})
+    if not outputs:
+        outputs = [f"hypothesis://{before['hypothesis_id']}/v{after_version}"]
+    hashes: dict[str, str] = {}
+    for reference, digest in input_hashes.items():
+        source_ref = _required_text(reference, "input_hash_ref")
+        if not isinstance(digest, str) or len(digest) != 64:
+            raise ValueError("ledger_input_hash_must_be_sha256")
+        if any(ch not in "0123456789abcdefABCDEF" for ch in digest):
+            raise ValueError("ledger_input_hash_must_be_sha256")
+        hashes[source_ref] = digest.lower()
+    if not hashes:
+        raise ValueError("ledger_input_hashes_required")
+    note = _required_text(notes, "notes")
+    contexts = sorted(set(contract_refs or []) | {
+        "observation_foundation/contracts/input_disposition_v1.schema.json",
+        "observation_foundation/contracts/hypothesis_lifecycle_v1.schema.json",
+    })
+    for ref in contexts:
+        _required_text(ref, "contract_ref")
+
+    decision_context = {
+        "input_disposition": disposition,
+        "hypothesis_transition": {
+            "hypothesis_id": before["hypothesis_id"],
+            "version_before": before_version,
+            "version_after": after_version,
+            "status_before": before["status"],
+            "status_after": after["status"],
+            "supersedes": after.get("supersedes"),
+            "trigger_shift": trigger_shift,
+        },
+        "contract_refs": contexts,
+    }
+    payload = {
+        "record_type": "pattern_decision",
+        "created_at_utc": decision_time,
+        "source_refs": refs,
+        "contract_ref": RESEARCH_LEDGER_CONTRACT_REF,
+        "input_hashes": hashes,
+        "output_refs": outputs,
+        "status": "RECORDED",
+        "notes": note,
+        "decision_context": decision_context,
+    }
+    ledger_id = "ledger:v1:sha256:" + canonical_sha256(payload)
+    return {"ledger_id": ledger_id, **payload}
+
+
+def append_lifecycle_decision(
+    *,
+    input_disposition: Mapping[str, Any],
+    hypothesis_before: Mapping[str, Any],
+    hypothesis_after: Mapping[str, Any],
+    decision_at_utc: str,
+    source_refs: list[str],
+    input_hashes: Mapping[str, str],
+    output_refs: list[str],
+    notes: str,
+    ledger_path: Path = DEFAULT_RESEARCH_LEDGER_PATH,
+    contract_refs: list[str] | None = None,
+) -> dict[str, Any]:
+    """Persist both decisions as one append-only entry in the shared Research Ledger."""
+    record = build_lifecycle_ledger_record(
+        input_disposition=input_disposition,
+        hypothesis_before=hypothesis_before,
+        hypothesis_after=hypothesis_after,
+        decision_at_utc=decision_at_utc,
+        source_refs=source_refs,
+        input_hashes=input_hashes,
+        output_refs=output_refs,
+        notes=notes,
+        contract_refs=contract_refs,
+    )
+    return append_research_ledger_record(ledger_path, record)
