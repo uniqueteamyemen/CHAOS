@@ -20,6 +20,7 @@ from scripts.audits.p2_2_3_domain_null_and_declustering import (
     load_world_bank_gem_snapshot,
     parse_world_bank_page,
     required_source_gate,
+    summarize_magnitude_metadata,
     validate_usgs_belt_catalog,
     WB_INDICATORS,
     redact_secret_payload,
@@ -132,12 +133,17 @@ class DomainNullAuditHelperTests(unittest.TestCase):
             "features": [
                 {
                     "id": "valid-sunda-event",
-                    "properties": {"time": valid_epoch, "mag": 5.1, "place": "Sunda test"},
+                    "properties": {"time": valid_epoch, "mag": 5.1, "magType": "mb", "magSource": "us", "place": "Sunda test"},
                     "geometry": {"coordinates": [110.0, 0.0, 10.0]},
                 },
                 {
+                    "id": "valid-sunda-event-mww",
+                    "properties": {"time": valid_epoch + 86400000, "mag": 5.2, "magType": "mww", "magSource": "us", "place": "Sunda second test"},
+                    "geometry": {"coordinates": [111.0, 1.0, 12.0]},
+                },
+                {
                     "id": "nc21364840",
-                    "properties": {"time": invalid_epoch, "mag": 3.38, "place": "12 km NNE of Cayucos, California"},
+                    "properties": {"time": invalid_epoch, "mag": 3.38, "magType": "mb", "magSource": "ci", "place": "12 km NNE of Cayucos, California"},
                     "geometry": {"coordinates": [-120.8448333, 35.5446667, 8.0]},
                 },
             ]
@@ -160,8 +166,9 @@ class DomainNullAuditHelperTests(unittest.TestCase):
             catalog_path = derived_root / "sunda_andaman_test_events.csv"
             with catalog_path.open("r", encoding="utf-8", newline="") as handle:
                 accepted = list(csv.DictReader(handle))
-            self.assertEqual(len(accepted), 1)
-            self.assertEqual(accepted[0]["id"], "valid-sunda-event")
+            self.assertEqual(len(accepted), 2)
+            self.assertEqual({row["id"] for row in accepted}, {"valid-sunda-event", "valid-sunda-event-mww"})
+            self.assertEqual({row["mag_type"] for row in accepted}, {"mb", "mww"})
 
             raw_files = list(raw_root.rglob("*.geojson"))
             self.assertEqual(len(raw_files), 1)
@@ -169,9 +176,12 @@ class DomainNullAuditHelperTests(unittest.TestCase):
             self.assertEqual(metadata["sources"][0]["sha256"], hashlib.sha256(payload).hexdigest())
 
             ingestion = metadata["belts"][0]
-            self.assertEqual(ingestion["events_received"], 2)
-            self.assertEqual(ingestion["events_accepted"], 1)
+            self.assertEqual(ingestion["events_received"], 3)
+            self.assertEqual(ingestion["events_accepted"], 2)
             self.assertEqual(ingestion["events_quarantined"], 1)
+            self.assertEqual(ingestion["magnitude_type_counts"], {"mb": 1, "mww": 1})
+            self.assertFalse(ingestion["magnitude_type_homogeneous"])
+            self.assertFalse(ingestion["pooled_frequency_magnitude_eligible"])
             self.assertEqual(ingestion["duplicate_features_deduplicated"], 0)
             self.assertEqual(ingestion["catalog_integrity_status"], "PASS_WITH_QUARANTINE")
             anomaly = next(row for row in metadata["rejected"] if row.get("event_id") == "nc21364840")
@@ -292,6 +302,35 @@ class DomainNullAuditHelperTests(unittest.TestCase):
         )
         self.assertFalse(gate["passed"])
         self.assertFalse(gate["usgs_catalog_integrity"])
+
+    def test_magnitude_type_summary_disqualifies_mixed_scales_for_pooled_fmd(self):
+        summary = summarize_magnitude_metadata([
+            {"mag_type": "mb", "mag_source": "us"},
+            {"mag_type": "mww", "mag_source": "us"},
+        ])
+        self.assertEqual(summary["magnitude_type_counts"], {"mb": 1, "mww": 1})
+        self.assertEqual(summary["pooled_frequency_magnitude_status"], "MIXED_MAGNITUDE_TYPES")
+        self.assertFalse(summary["pooled_frequency_magnitude_eligible"])
+
+    def test_magnitude_type_summary_marks_missing_metadata_ineligible(self):
+        summary = summarize_magnitude_metadata([
+            {"mag_type": "mb", "mag_source": "us"},
+            {"mag_type": None, "mag_source": None},
+        ])
+        self.assertEqual(summary["magnitude_type_missing_events"], 1)
+        self.assertEqual(
+            summary["pooled_frequency_magnitude_status"],
+            "MAGNITUDE_TYPE_MISSING_OR_UNAVAILABLE",
+        )
+        self.assertFalse(summary["pooled_frequency_magnitude_eligible"])
+
+    def test_magnitude_type_summary_allows_only_single_complete_scale(self):
+        summary = summarize_magnitude_metadata([
+            {"mag_type": "mb", "mag_source": "us"},
+            {"mag_type": "mb", "mag_source": "ci"},
+        ])
+        self.assertTrue(summary["magnitude_type_homogeneous"])
+        self.assertTrue(summary["pooled_frequency_magnitude_eligible"])
 
     def test_post_ingest_catalog_validation_accepts_reconciled_clean_catalog(self):
         belt = {
