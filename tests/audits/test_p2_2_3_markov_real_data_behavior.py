@@ -56,11 +56,11 @@ class MarkovRealDataBehaviorTests(unittest.TestCase):
         ]
         summary = summarize_records(rows)
         per_series = summary["per_series"]["energy_rho|n=100|raw"]
-        self.assertEqual(per_series["rho_raw_distribution"]["median"], 0.925)
-        self.assertEqual(per_series["rho_clipped_distribution"]["median"], 0.88)
-        self.assertEqual(per_series["rho_cusum_used_distribution"]["median"], 0.695)
+        self.assertAlmostEqual(per_series["rho_raw_distribution"]["median"], 0.925)
+        self.assertAlmostEqual(per_series["rho_clipped_distribution"]["median"], 0.88)
+        self.assertAlmostEqual(per_series["rho_cusum_used_distribution"]["median"], 0.695)
         category = summary["by_category_length_variant"]["energy|n=100|raw"]
-        self.assertEqual(
+        self.assertAlmostEqual(
             category["rho_cusum_used_per_series_median_distribution"]["median"],
             0.695,
         )
