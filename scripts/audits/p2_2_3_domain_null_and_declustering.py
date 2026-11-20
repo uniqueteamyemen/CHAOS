@@ -795,16 +795,23 @@ def summarize_magnitude_metadata(events: list[dict[str, Any]]) -> dict[str, Any]
 
     observed_types = sorted(t for t in type_counts if t != "missing")
     missing = type_counts.get("missing", 0)
+    observed_sources = sorted(t for t in source_counts if t != "missing")
+    source_missing = source_counts.get("missing", 0)
     homogeneous = len(observed_types) == 1 and missing == 0
+    source_homogeneous = len(observed_sources) == 1 and source_missing == 0
     return {
         "magnitude_type_counts": dict(sorted(type_counts.items())),
         "magnitude_source_counts": dict(sorted(source_counts.items())),
         "magnitude_type_missing_events": missing,
         "observed_magnitude_types": observed_types,
+        "magnitude_source_missing_events": source_missing,
+        "observed_magnitude_sources": observed_sources,
+        "magnitude_source_homogeneous": source_homogeneous,
+        "magnitude_source_mixture_requires_calibration_review": len(observed_sources) > 1 or source_missing > 0,
         "magnitude_type_homogeneous": homogeneous,
-        "pooled_frequency_magnitude_eligible": homogeneous,
+        "single_magnitude_type_precheck_pass": homogeneous,
         "pooled_frequency_magnitude_status": (
-            "SINGLE_MAGNITUDE_TYPE"
+            "SINGLE_MAGNITUDE_TYPE_PRECHECK_PASS"
             if homogeneous
             else "MIXED_MAGNITUDE_TYPES"
             if len(observed_types) > 1
