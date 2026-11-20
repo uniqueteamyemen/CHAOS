@@ -16,6 +16,7 @@ from scripts.audits.p2_2_3_domain_null_and_declustering import (
     load_world_bank_gem_snapshot,
     parse_world_bank_page,
     required_source_gate,
+    validate_usgs_belt_catalog,
     WB_INDICATORS,
     redact_secret_payload,
 )
@@ -171,9 +172,19 @@ class DomainNullAuditHelperTests(unittest.TestCase):
             ),
         )
 
-    def test_required_source_gate_rejects_missing_gem(self):
+    def test_required_source_gate_rejects_missing_gem_but_reports_valid_usgs_integrity(self):
         usgs = {"status": "COMPLETED", "errors": []}
-        belts = [{"source_events": 1} for _ in range(5)]
+        belts = [
+            {
+                "source_events": 1,
+                "catalog_integrity": {
+                    "status": "PASS",
+                    "post_ingest_validation_status": "PASS",
+                    "accounting_reconciled": True,
+                },
+            }
+            for _ in range(5)
+        ]
         gate = required_source_gate(
             {"status": "ERROR", "indicators": []},
             usgs,
@@ -183,6 +194,94 @@ class DomainNullAuditHelperTests(unittest.TestCase):
         self.assertFalse(gate["world_bank_gem"])
         self.assertTrue(gate["usgs_comcat"])
         self.assertTrue(gate["five_seismic_belts"])
+        self.assertTrue(gate["usgs_catalog_integrity"])
+
+    def test_required_source_gate_rejects_unvalidated_usgs_catalogs(self):
+        usgs = {"status": "COMPLETED", "errors": []}
+        belts = [
+            {
+                "source_events": 1,
+                "catalog_integrity": {
+                    "status": "FAIL",
+                    "post_ingest_validation_status": "FAIL",
+                    "accounting_reconciled": False,
+                },
+            }
+            for _ in range(5)
+        ]
+        gate = required_source_gate(
+            {"status": "REUSED_VERIFIED_SNAPSHOT", "indicators": [
+                {"indicator": code, "status": "REUSED_VERIFIED_SNAPSHOT"}
+                for code in WB_INDICATORS
+            ]},
+            usgs,
+            belts,
+        )
+        self.assertFalse(gate["passed"])
+        self.assertFalse(gate["usgs_catalog_integrity"])
+
+    def test_post_ingest_catalog_validation_accepts_reconciled_clean_catalog(self):
+        belt = {
+            "minlatitude": -15, "maxlatitude": 20,
+            "minlongitude": 90, "maxlongitude": 130,
+        }
+        epoch_ms = int(datetime(2000, 1, 1, tzinfo=timezone.utc).timestamp() * 1000)
+        events = [{
+            "id": "event-1", "latitude": 0.0, "longitude": 110.0,
+            "magnitude": 5.0, "epoch_ms": epoch_ms,
+        }]
+        ingestion = {
+            "events_received": 1, "events_accepted": 1,
+            "events_quarantined": 0, "duplicate_features_deduplicated": 0,
+            "catalog_integrity_status": "PASS",
+        }
+        result = validate_usgs_belt_catalog(belt, events, ingestion)
+        self.assertEqual(result["status"], "PASS")
+        self.assertTrue(result["accounting_reconciled"])
+        self.assertEqual(result["post_ingest_rejected_events"], [])
+
+    def test_post_ingest_catalog_validation_fails_closed_on_outside_event(self):
+        belt = {
+            "minlatitude": -15, "maxlatitude": 20,
+            "minlongitude": 90, "maxlongitude": 130,
+        }
+        epoch_ms = int(datetime(2004, 5, 17, tzinfo=timezone.utc).timestamp() * 1000)
+        events = [{
+            "id": "nc21364840", "latitude": 35.5446667,
+            "longitude": -120.8448333, "magnitude": 3.38,
+            "epoch_ms": epoch_ms,
+        }]
+        ingestion = {
+            "events_received": 1, "events_accepted": 1,
+            "events_quarantined": 0, "duplicate_features_deduplicated": 0,
+            "catalog_integrity_status": "PASS",
+        }
+        result = validate_usgs_belt_catalog(belt, events, ingestion)
+        self.assertEqual(result["status"], "FAIL")
+        self.assertEqual(result["post_ingest_validation_status"], "FAIL")
+        self.assertIn(
+            "OUTSIDE_BELT_LONGITUDE_BOUNDS",
+            result["post_ingest_rejected_events"][0]["reasons"],
+        )
+
+    def test_post_ingest_catalog_validation_fails_on_accounting_mismatch(self):
+        belt = {
+            "minlatitude": -15, "maxlatitude": 20,
+            "minlongitude": 90, "maxlongitude": 130,
+        }
+        epoch_ms = int(datetime(2000, 1, 1, tzinfo=timezone.utc).timestamp() * 1000)
+        events = [{
+            "id": "event-1", "latitude": 0.0, "longitude": 110.0,
+            "magnitude": 5.0, "epoch_ms": epoch_ms,
+        }]
+        ingestion = {
+            "events_received": 4, "events_accepted": 1,
+            "events_quarantined": 1, "duplicate_features_deduplicated": 1,
+            "catalog_integrity_status": "PASS_WITH_QUARANTINE",
+        }
+        result = validate_usgs_belt_catalog(belt, events, ingestion)
+        self.assertEqual(result["status"], "FAIL")
+        self.assertFalse(result["accounting_reconciled"])
 
     def test_poisson_diagnostics_are_explicitly_benchmark_only(self):
         counts = np.asarray([0, 1, 0, 2, 1, 0, 0, 1, 2, 0, 1, 0], dtype=np.int64)
