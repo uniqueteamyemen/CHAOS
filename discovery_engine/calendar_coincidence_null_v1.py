@@ -147,8 +147,9 @@ def run_conditional_calendar_null(
         "minimum_segment_observations", "point_reference_observations_each_side",
         "minimum_entity_support", "input_year_range",
     }
+    allowed = required | {"conditioning_policy", "test_family", "inference_limits"}
     missing = sorted(required - set(contract))
-    unknown = sorted(set(contract) - required)
+    unknown = sorted(set(contract) - allowed)
     if missing or unknown:
         raise CalendarNullError(
             f"calendar_null_contract_fields_invalid:missing={missing}:unknown={unknown}"
