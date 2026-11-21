@@ -1,7 +1,7 @@
 # P1 — Source Record Identity and Vintage Contract V1
 
-**Status:** isolated implementation candidate; deterministic tests are committed; repository CI result is not yet verified.
-**Branch:** \`fix/p2-2-3-gem-snapshot\`
+**Status:** source identity integrated into the WDI Trade DomainState builder; CI passed for the integration path. Point-in-time eligibility remains unknown because the committed WDI extract does not expose historical availability/vintage metadata.
+**Branch:** `discovery/d1-domainstate-integrity-v1`
 
 ## Purpose
 
@@ -73,3 +73,33 @@ The committed unit suite covers identity stability across re-imports, revisions,
 ## Additional P1 rule — periodic measurement slot identity
 
 When series_semantics is periodic_measurement and neither a stable source ID nor an explicit natural key is provided, the contract derives the logical slot from entity_id + metric_id + event_time, scoped by source_namespace + dataset_id. This is valid only for the declared one-value-per-series-period semantics. It is not applied to event_stream or period_count, where occurrence multiplicity must remain intact.
+
+## WDI Trade source-identity integration — 2026-11-21
+
+The identity contract is now applied **to the raw WDI observation row before the DomainState is emitted**, not reconstructed from the derived DomainState.
+
+Implementation:
+- Adapter: `scripts/adapters/build_wdi_trade_domain_states.py`.
+- Source namespace: `world_bank`.
+- Stable dataset identifier: `wdi_country_annual_indicators`.
+- Semantics: `periodic_measurement`.
+- Logical slot: country code + indicator code + source year, scoped by source namespace and dataset.
+- Canonical version identity: the logical slot plus the numeric value, source unit, event time and declared version fields.
+- Original source value lexeme remains untouched in `source_observations.value_raw`.
+- The JSON numeric value is accepted only when `Decimal(str(float(value)))` exactly round-trips to the parsed source decimal. A value that would lose decimal precision fails closed.
+- The DomainState carries `source_record_identity` with logical ID, canonical ID, identity basis, and explicit point-in-time eligibility.
+
+Verified output:
+- 29,004 DomainStates, 259 entities, five indicators, annual 2000–2024.
+- 29,004 unique logical slots and 29,004 unique canonical versions.
+- Zero duplicate source slots.
+- Source-declared coverage envelope: 2000–2024, annual.
+- Workflow `44943154074` passed: 8 adapter tests, deterministic build, and the central DomainState registry audit command.
+- Output SHA-256: `c4f836acc9f57c35f605447def2e0dc412d1363a917b534f0ffde30932729554`.
+
+Important source limitation:
+- All 29,004 observations have `available_at = null`; none exposes a usable historical release/vintage timestamp in the committed extract.
+- The identity is valid for stable source-slot and content-version lineage, but these observations are **not point-in-time eligible** for an as-of historical information set. No retrieval date was substituted for an unavailable release date.
+- The source extract exposes no revision ID/status, so those fields remain null. A later data vintage must be ingested as a new version only when its source availability/revision evidence is known.
+
+The registry audit saw 94,231 records and zero invalid records, but its overall result remained `BLOCKED_INCOMPLETE_ASSET_SET`: six registered files are absent (four IMF IMTS shards, the WHO daily DomainState artifact, and the WGI institutional DomainState artifact). This is a multi-domain asset-coverage blocker, not a failure of the WDI adapter. The missing assets remain visible; none were fabricated or silently removed.
