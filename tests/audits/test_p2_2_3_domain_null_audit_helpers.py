@@ -19,6 +19,7 @@ from scripts.audits.p2_2_3_domain_null_and_declustering import (
     homogeneous_poisson_fit_diagnostics,
     load_world_bank_gem_snapshot,
     parse_world_bank_page,
+    read_usgs_csv,
     required_source_gate,
     summarize_magnitude_metadata,
     validate_usgs_belt_catalog,
@@ -302,6 +303,56 @@ class DomainNullAuditHelperTests(unittest.TestCase):
         )
         self.assertFalse(gate["passed"])
         self.assertFalse(gate["usgs_catalog_integrity"])
+
+    def test_usgs_csv_reader_preserves_magnitude_type_and_source(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "events.csv"
+            with path.open("w", encoding="utf-8", newline="") as handle:
+                writer = csv.DictWriter(handle, fieldnames=[
+                    "id", "time", "epoch_ms", "magnitude", "longitude",
+                    "latitude", "depth_km", "place", "mag_type", "mag_source",
+                ])
+                writer.writeheader()
+                writer.writerow({
+                    "id": "event-1", "time": "2000-01-01T00:00:00Z",
+                    "epoch_ms": "946684800000", "magnitude": "5.1",
+                    "longitude": "110.0", "latitude": "0.0",
+                    "depth_km": "10.0", "place": "test location",
+                    "mag_type": "mww", "mag_source": "us",
+                })
+
+            events = read_usgs_csv(path)
+
+        self.assertEqual(events[0]["mag_type"], "mww")
+        self.assertEqual(events[0]["mag_source"], "us")
+        summary = summarize_magnitude_metadata(events)
+        self.assertEqual(summary["magnitude_type_counts"], {"mww": 1})
+        self.assertEqual(summary["magnitude_source_counts"], {"us": 1})
+        self.assertTrue(summary["single_magnitude_type_precheck_pass"])
+
+    def test_usgs_csv_reader_keeps_legacy_files_compatible(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "legacy-events.csv"
+            with path.open("w", encoding="utf-8", newline="") as handle:
+                writer = csv.DictWriter(handle, fieldnames=[
+                    "id", "time", "epoch_ms", "magnitude", "longitude",
+                    "latitude", "depth_km", "place",
+                ])
+                writer.writeheader()
+                writer.writerow({
+                    "id": "legacy-event", "time": "2000-01-01T00:00:00Z",
+                    "epoch_ms": "946684800000", "magnitude": "5.1",
+                    "longitude": "110.0", "latitude": "0.0",
+                    "depth_km": "", "place": "legacy location",
+                })
+
+            events = read_usgs_csv(path)
+
+        self.assertIsNone(events[0]["mag_type"])
+        self.assertIsNone(events[0]["mag_source"])
+        summary = summarize_magnitude_metadata(events)
+        self.assertEqual(summary["magnitude_type_missing_events"], 1)
+        self.assertEqual(summary["magnitude_source_missing_events"], 1)
 
     def test_magnitude_type_summary_disqualifies_mixed_scales_for_pooled_fmd(self):
         summary = summarize_magnitude_metadata([
