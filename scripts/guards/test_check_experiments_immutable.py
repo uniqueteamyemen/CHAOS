@@ -14,8 +14,8 @@ class FrozenPathGuardTests(unittest.TestCase):
             args=["git", "diff"],
             returncode=0,
             stdout=(
-                "M\\texperiments/identity_lab/result.json\\n"
-                "A\\tstructural_engine/isolated_break_detector_v1/new.py\\n"
+                "M\texperiments/identity_lab/result.json\n"
+                "A\tstructural_engine/isolated_break_detector_v1/new.py\n"
             ),
             stderr="",
         )
