@@ -28,7 +28,7 @@ permissions:
   contents: write
 
 concurrency:
-  group: chaos-behavioral-discovery-v1-${{ github.ref }}
+  group: chaos-discovery-artifact-writers-${{ github.ref }}
   cancel-in-progress: false
 
 jobs:

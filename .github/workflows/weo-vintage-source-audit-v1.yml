@@ -22,7 +22,7 @@ permissions:
   contents: write
 
 concurrency:
-  group: chaos-weo-vintage-audit-${{ github.ref }}
+  group: chaos-discovery-artifact-writers-${{ github.ref }}
   cancel-in-progress: false
 
 jobs:
