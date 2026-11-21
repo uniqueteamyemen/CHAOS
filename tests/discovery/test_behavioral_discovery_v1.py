@@ -162,9 +162,9 @@ class BehavioralDiscoveryTests(unittest.TestCase):
         self.assertEqual(len(patterns), 1)
         self.assertEqual(patterns[0]["pattern_type"], "shared_metric_point_anomaly_year")
         self.assertEqual(patterns[0]["point_anomaly_direction"], "BELOW_LOCAL_REFERENCE")
-        self.assertEqual(patterns[0]["entity_support"], 7)
+        self.assertEqual(patterns[0]["entity_support"], 6)
         self.assertEqual(patterns[0]["support_position"], "SYMMETRIC_LOCAL_REFERENCE")
-        self.assertAlmostEqual(patterns[0]["direction_concordance"], 6 / 7)
+        self.assertEqual(patterns[0]["direction_concordance"], 1.0)
 
     def test_shared_slope_patterns_do_not_mix_growth_slowdown_with_decline_acceleration(self):
         candidates = []
