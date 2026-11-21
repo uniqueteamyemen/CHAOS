@@ -47,7 +47,7 @@ class WdiTradeDomainStateBuilderTests(unittest.TestCase):
             })
 
         extract = root / "extract.json"
-        extract.write_text(json.dumps({"observed_rows": 2, "external_raw_sha256": "a" * 64}), encoding="utf-8")
+        extract.write_text(json.dumps({\n            "observed_rows": 2,\n            "entities": 1,\n            "indicator_codes": ["NE.TRD.GNFS.ZS", "NE.EXP.GNFS.ZS"],\n            "years": [2000, 2001],\n            "external_raw_sha256": "a" * 64,\n        }), encoding="utf-8")
         return source, metadata, extract
 
     def test_build_preserves_raw_value_lexemes_and_native_time(self):
@@ -66,10 +66,72 @@ class WdiTradeDomainStateBuilderTests(unittest.TestCase):
             if item["source_observations"]["indicator_code"] == "NE.TRD.GNFS.ZS"
         )
         self.assertEqual(trade_record["source_observations"]["value_raw"], "001.2300")
+        identity = trade_record["source_observations"]["source_record_identity"]
+        self.assertTrue(identity["logical_record_id"].startswith("lrid:v1:sha256:"))
+        self.assertTrue(identity["canonical_record_id"].startswith("crid:v1:sha256:"))
+        self.assertEqual(identity["identity_basis"], "periodic_series_key")
+        self.assertIsNone(identity["available_at"])
+        self.assertEqual(identity["point_in_time_eligibility"], "UNKNOWN")
         self.assertEqual(trade_record["timestamp"], 2000)
+        self.assertEqual(summary["time_support"], {
+            "observation_period_start": "2000",
+            "observation_period_end": "2001",
+            "native_frequency": "annual",
+            "boundary_semantics": "SOURCE_EXTRACT_DECLARED",
+        })
+        self.assertEqual(summary["source_observation_identity"]["records"], 2)
+        self.assertEqual(summary["source_observation_identity"]["unknown_available_at"], 2)
+        self.assertEqual(summary["source_observation_identity"]["known_available_at"], 0)
         self.assertIsNone(trade_record["state_probability"])
         self.assertEqual(trade_record["edge_status"], "not_testable")
         self.assertFalse(summary["edge_evaluation_performed"])
+
+
+    def test_logical_slot_is_stable_across_value_revisions_and_numeric_lexemes(self):
+        from scripts.adapters.build_wdi_trade_domain_states import canonical_record
+
+        metadata = {
+            "NE.TRD.GNFS.ZS": {
+                "indicator_name": "Trade (% of GDP)",
+                "unit_of_measure": "%",
+            }
+        }
+        base = {
+            "Country Name": "Testland",
+            "Country Code": "TST",
+            "Indicator Name": "Trade (% of GDP)",
+            "Indicator Code": "NE.TRD.GNFS.ZS",
+            "year": "2000",
+            "value_raw": "001.2300",
+        }
+        first = canonical_record(dict(base), metadata)["source_observations"]["source_record_identity"]
+        equivalent = canonical_record(dict(base, value_raw="1.23"), metadata)["source_observations"]["source_record_identity"]
+        revised = canonical_record(dict(base, value_raw="2.5"), metadata)["source_observations"]["source_record_identity"]
+
+        self.assertEqual(first["logical_record_id"], equivalent["logical_record_id"])
+        self.assertEqual(first["logical_record_id"], revised["logical_record_id"])
+        self.assertEqual(first["canonical_record_id"], equivalent["canonical_record_id"])
+        self.assertNotEqual(first["canonical_record_id"], revised["canonical_record_id"])
+
+    def test_decimal_precision_that_cannot_roundtrip_to_json_number_is_rejected(self):
+        from scripts.adapters.build_wdi_trade_domain_states import canonical_record
+
+        metadata = {
+            "NE.TRD.GNFS.ZS": {
+                "indicator_name": "Trade (% of GDP)",
+                "unit_of_measure": "%",
+            }
+        }
+        row = {
+            "Country Name": "Testland",
+            "Country Code": "TST",
+            "Indicator Name": "Trade (% of GDP)",
+            "Indicator Code": "NE.TRD.GNFS.ZS",
+            "year": "2000",
+            "value_raw": "0.1234567890123456789012345678",
+        }
+        with self.assertRaisesRegex(ValueError, "source_value_not_roundtrip_safe"):
+            canonical_record(row, metadata)
 
     def test_output_is_byte_deterministic_for_same_inputs(self):
         with TemporaryDirectory() as directory:
