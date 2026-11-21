@@ -101,7 +101,7 @@ These successful runs belong to the specific historical run SHAs, not to the lat
 
 ### P0 PR overlap
 
-Open PR #21 (P0 execution plan and D0 inventory) modifies several files also changed by Discovery, including:
+Former PR #21 (P0 execution plan and D0 inventory) modified several files also changed by Discovery, including:
 - `chaos_governance_kernel/core.py`
 - `experimental_contracts/RESEARCH_LEDGER_CONTRACT_V1.json`
 - `experimental_contracts/TEMPORAL_ALIGNMENT_CONTRACT_V1.json`
@@ -111,7 +111,7 @@ Open PR #21 (P0 execution plan and D0 inventory) modifies several files also cha
 - `docs/P1_HYPOTHESIS_AND_INPUT_LIFECYCLE_V1_AR.md`
 - shared workflows and `.gitignore`.
 
-The Discovery branch is therefore not to be merged while PR #21 remains unreconciled. Compare the overlapping blobs and retain the more complete, tested implementation while preserving the unique D0 inventory deliverable. The correct result may be to update PR #21 after Discovery integration or close it as superseded only after its unique content is incorporated.
+PR #21 was closed as superseded after verifying that the Discovery branch is a descendant of the P0 governance branch (merge base equals P0 head), and that PR #28 contains all 19 paths changed by PR #21, including `scripts/governance/build_d0_inventory.py`. Thus the overlap is already represented in branch ancestry, not an unresolved divergence. The D0 inventory remains part of the Discovery candidate and must pass the exact-PR-head CI and artifact checks.
 
 ### USGS-labelled branch assessment
 
@@ -131,8 +131,9 @@ Branch names are not proof of current usefulness. Preserve commit history; archi
 | `archive/phase1-detector-freeze-v1.0`, `phase1-detector-freeze-phase2-real-data` | Frozen Phase 1 references | Preserve as archive references. |
 
 Open PRs observed at audit time:
-- #21: P0/D0 governance; active but overlaps Discovery.
+- #21: P0/D0 governance; closed as superseded by #28 after ancestry and changed-path verification.
 - #24: Markov observability diagnostics; separate review path, not a reason to alter the frozen detector.
+- #28: Discovery V1 integration; open as draft pending exact-head CI and final integration review.
 - #20, #9, #2, #4, #3: P-engine/ERP/benchmark/fault-injection proposals. Their file lists include paths under `experiments/**`, which conflicts with the current immutability rule for integration into `main-phase2`. Keep unmerged. Close only after confirming that each proposal is superseded or intentionally retired; closing a PR does not delete its branch or commits.
 
 ## 7. Ordered integration plan
