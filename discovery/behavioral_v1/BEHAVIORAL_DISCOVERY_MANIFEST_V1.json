@@ -22,7 +22,7 @@
       "bytes": 3957,
       "path": "discovery/behavioral_v1/BEHAVIORAL_DISCOVERY_SUMMARY_V1.json",
       "role": "behavioral_discovery_summary_v1",
-      "sha256": "2f1876806aeda00a769a8baf1f0fa9698536c3c37cc7a999602097ccc2a38eb6"
+      "sha256": "e1c0cd5bcfa9e33d515df28a0c88bdbd44b8f666bdeaad40103f1de46d34d2c6"
     }
   ],
   "bundle_id": "CHAOS_BEHAVIORAL_DISCOVERY_V1",
@@ -37,11 +37,11 @@
     "status": "CANDIDATES_REQUIRE_SOURCE_SPECIFIC_NULL_AND_INDEPENDENT_REVIEW",
     "summary": "Descriptive candidate generation only; no inferential admission or forecast."
   },
-  "generated_at_utc": "2026-11-21T20:05:53Z",
+  "generated_at_utc": "2026-11-21T20:06:10Z",
   "inputs": {
     "contract_sha256": "0c44ff9066208378ae0a3d4bc955324d6c738a46938721c1abdaca6c546f3496",
     "panel_sha256": "015736245ac4010aa1c97055930c69ca3c7da5fdd5970f5da34456b67a3172ad",
     "provenance_sha256": "6bf07de9bca0ef23e7e0069e46c3949f714f205424db50d33471f6bf57f04965"
   },
-  "source_commit": "71fde69044a725a3f414fbc615df0d0fd2414948"
+  "source_commit": "d56c647158cf39a84ee36f08d33bccdb02a449a2"
 }
