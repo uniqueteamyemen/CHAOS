@@ -116,6 +116,14 @@ def _effect(
     return abs(delta) / pooled_scale, "ROBUST_STANDARDIZED_MEDIAN_SHIFT", delta, left_median, right_median
 
 
+def _slope_direction(value: float) -> str:
+    if value > 1e-12:
+        return "INCREASING"
+    if value < -1e-12:
+        return "DECREASING"
+    return "FLAT"
+
+
 def _fit_robust_line(years: Sequence[int], values: Sequence[float]) -> tuple[float, float, list[float]]:
     x = [float(year - years[0]) for year in years]
     slope = _theil_sen_slope(x, values)
@@ -292,7 +300,9 @@ def analyze_series(
                 "left_theil_sen_slope_per_year": left_slope,
                 "right_theil_sen_slope_per_year": right_slope,
                 "slope_delta_per_year": delta_slope,
-                "direction": "ACCELERATING" if delta_slope > 0 else "DECELERATING",
+                "direction": "SLOPE_INCREASE" if delta_slope > 0 else "SLOPE_DECREASE",
+                "pre_change_trend_direction": _slope_direction(left_slope),
+                "post_change_trend_direction": _slope_direction(right_slope),
                 "effect_size": score,
                 "effect_size_kind": score_kind,
                 "selection": "maximum_absolute_piecewise_theil_sen_slope_delta_over_all_eligible_splits",
@@ -556,20 +566,35 @@ def build_shared_year_patterns(
     candidates: Sequence[Mapping[str, Any]],
     contract: Mapping[str, Any],
 ) -> list[dict[str, Any]]:
-    groups: dict[tuple[str, str, int], list[Mapping[str, Any]]] = defaultdict(list)
+    groups: dict[tuple[str, str, int, str, str], list[Mapping[str, Any]]] = defaultdict(list)
     for item in candidates:
-        if item["candidate_type"] in {"level_shift", "slope_change"}:
-            groups[(item["metric_id"], item["candidate_type"], int(item["candidate_year"]))].append(item)
+        if item["candidate_type"] not in {"level_shift", "slope_change"}:
+            continue
+        pre_state = (
+            str(item.get("pre_change_trend_direction", "UNSPECIFIED"))
+            if item["candidate_type"] == "slope_change" else "NOT_APPLICABLE"
+        )
+        post_state = (
+            str(item.get("post_change_trend_direction", "UNSPECIFIED"))
+            if item["candidate_type"] == "slope_change" else "NOT_APPLICABLE"
+        )
+        groups[(
+            str(item["metric_id"]),
+            str(item["candidate_type"]),
+            int(item["candidate_year"]),
+            pre_state,
+            post_state,
+        )].append(item)
 
     output: list[dict[str, Any]] = []
-    for (metric_id, candidate_type, year), items in sorted(groups.items()):
+    for (metric_id, candidate_type, year, pre_state, post_state), items in sorted(groups.items()):
         entities = {str(item["entity_id"]) for item in items}
-        up = sum(
-            item["direction"] in {"UP", "ACCELERATING"} for item in items
-        )
-        down = sum(
-            item["direction"] in {"DOWN", "DECELERATING"} for item in items
-        )
+        if candidate_type == "slope_change":
+            up = sum(item["direction"] == "SLOPE_INCREASE" for item in items)
+            down = sum(item["direction"] == "SLOPE_DECREASE" for item in items)
+        else:
+            up = sum(item["direction"] == "UP" for item in items)
+            down = sum(item["direction"] == "DOWN" for item in items)
         interior_entities = {
             str(item["entity_id"])
             for item in items
@@ -599,12 +624,14 @@ def build_shared_year_patterns(
                 "metric_id": metric_id,
                 "candidate_type": candidate_type,
                 "year": year,
+                "pre_change_trend_direction": pre_state,
+                "post_change_trend_direction": post_state,
                 "entity_support": total,
                 "interior_entity_support": interior_support,
                 "boundary_entity_support": boundary_support,
                 "support_position": support_position,
-                "up_or_accelerating_count": up,
-                "down_or_decelerating_count": down,
+                "slope_increase_or_level_up_count": up,
+                "slope_decrease_or_level_down_count": down,
                 "direction_concordance": concordance,
                 "status": "DISCOVERY_CANDIDATE_UNVALIDATED",
                 "causal_claim": False,
@@ -675,9 +702,11 @@ def run_behavioral_discovery(
                 item, ensure_ascii=False, sort_keys=True, separators=(",", ":"), allow_nan=False
             ) + "\n")
     shared_fields = [
-        "pattern_type", "metric_id", "candidate_type", "year", "entity_support",
-        "interior_entity_support", "boundary_entity_support", "support_position",
-        "up_or_accelerating_count", "down_or_decelerating_count",
+        "pattern_type", "metric_id", "candidate_type", "year",
+        "pre_change_trend_direction", "post_change_trend_direction",
+        "entity_support", "interior_entity_support", "boundary_entity_support",
+        "support_position", "slope_increase_or_level_up_count",
+        "slope_decrease_or_level_down_count",
         "direction_concordance", "status", "causal_claim", "inferential_p_value",
     ]
     _write_csv(output_dir / SHARED_PATTERN_FILE, shared, shared_fields)
