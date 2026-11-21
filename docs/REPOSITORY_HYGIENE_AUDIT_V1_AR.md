@@ -4,7 +4,8 @@
 **Repository:** `uniqueteamyemen/CHAOS`  
 **Audit base:** `main-phase2`  
 **Base commit:** `b838eb48b2040bf358fc216e1e004311edfc30e8`  
-**Audit branch:** `chore/repository-hygiene-audit-v1@228591f56ef4d9ec8e9a2e1f8b8660717d1781aa`  \n**Purpose:** Establish and maintain a non-destructive repository classification and staged verification plan after Discovery V1 integration.
+**Audit branch:** `chore/repository-hygiene-audit-v1`  
+**Purpose:** Establish and maintain a non-destructive repository classification and staged verification plan after Discovery V1 integration.
 
 ## 1. Audit boundary and integrity constraints
 
@@ -48,7 +49,7 @@ The inventory is a Git-tree count. It does not imply that external raw data, loc
 - PR #28 merged Discovery V1 at `e0c13b41ef1bbbdfe46f1dc266a007eb2dedd8d7`.
 - PR #31 merged the post-Discovery documentation refresh at `b838eb48b2040bf358fc216e1e004311edfc30e8`.
 - The current component classification therefore treats Discovery V1 as integrated into `main-phase2`, but only as a research/candidate-generation and governance foundation.
-- The audit branch `chore/repository-hygiene-audit-v1` is at `228591f56ef4d9ec8e9a2e1f8b8660717d1781aa`. Its comparison with current `main-phase2` is diverged: 17 commits ahead, 3 behind, merge base `365bb2111c89352466d72e60965246bf238ffabb`, with eight paths in the net file comparison. PR #30 is already merged; do not reopen or merge the whole branch as a new combined change. Keep its remaining audit history and isolate any future documentation-only change from workflow/code scope.
+- The audit branch `chore/repository-hygiene-audit-v1` is retained as the work/history branch. It diverged from the current `main-phase2` lineage after PR #30 was squash-merged; PR #30 is already closed as merged. Do not reopen or merge the whole branch as a new combined change. Any future contribution from it must first be compared against the latest base and isolated by scope.
 - The open PR #24 concerns Markov rho observability and targets `p2.2.2-markov-calibration-audit`; it is unrelated to Discovery integration and repository hygiene.
 - The P2.2 stress run `44951886189` is running on SHA `7eb619c1a7756b52aeffb32a06278e786c0dd762`. The immutable-guard run `44951886251` on that same SHA completed successfully. These are SHA-specific results; they do not convert the DomainState registry into PASS.
 
@@ -107,7 +108,7 @@ The staged work is assessed against the current `main-phase2` baseline above. �
 
 ### Stage A — Inventory and dependency mapping
 
-<badge>COMPLETED — BOUNDED SCOPE</badge>
+**Stage status: COMPLETED — BOUNDED SCOPE**
 
 - Recursive repository inventory refreshed to 1,408 tracked files, 225 directories, 1,633 total tree entries, and 27 YAML workflows.
 - Workflow-to-entrypoint/artifact dependency map recorded in `docs/WORKFLOW_DEPENDENCY_MAP_V1_AR.md`.
@@ -117,7 +118,7 @@ The staged work is assessed against the current `main-phase2` baseline above. �
 
 ### Stage B — Repository classification
 
-<badge>COMPLETED</badge>
+**Stage status: COMPLETED**
 
 - Component and branch classifications recorded in `docs/REPOSITORY_COMPONENT_CLASSIFICATION_V1_AR.md`.
 - Discovery V1 reclassified from candidate branch work to integrated `ACTIVE-BASE / RESEARCH-ONLY` after PR #28.
@@ -127,7 +128,7 @@ The staged work is assessed against the current `main-phase2` baseline above. �
 
 ### Stage C — Documentation and CI hygiene
 
-<badge>PARTIALLY COMPLETED</badge>
+**Stage status: PARTIALLY COMPLETED**
 
 - Repository architecture, workflow, entrypoint, component classification, Engine 1 integration, and DomainState audit documentation were refreshed in PR #31.
 - PR #30 added a fail-closed immutable-path guard for both `experiments/**` and `structural_engine/isolated_break_detector_v1/**`, with tests and workflow integration.
@@ -136,13 +137,13 @@ The staged work is assessed against the current `main-phase2` baseline above. �
 
 ### Stage D — Controlled structural changes
 
-<badge>NOT STARTED</badge>
+**Stage status: NOT STARTED**
 
 No repository paths have been moved, renamed, or deleted by this audit. No workflow has been consolidated or disabled. The frozen detector and `experiments/**` remain untouched.
 
 ### Stage E — Verification and closure
 
-<badge>IN PROGRESS</badge>
+**Stage status: IN PROGRESS**
 
 - Frozen-path integrity check: passed on the recorded SHA.
 - P2.2 stress validation: still running at the time of this snapshot; step 8, “Execute real historical stress pipeline”, is in progress. Snapshot packaging, raw-response upload/numerical audit, and release publication are pending.
