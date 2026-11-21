@@ -18,6 +18,7 @@ AGENT_DIR = ROOT / "campaigns" / "agents" / "trade_v1"
 INPUT_CSV = AGENT_DIR / "WDI_TRADE_OBSERVED_RECORDS_2000_2024.csv"
 METADATA_CSV = AGENT_DIR / "WDI_TRADE_SELECTED_SERIES_METADATA.csv"
 EXTRACT_SUMMARY = AGENT_DIR / "WDI_TRADE_EXTRACT_SUMMARY.json"
+EDGE_INTEGRITY_SUMMARY = AGENT_DIR / "WDI_TRADE_EDGE_MAXSTAT_NULL_SUMMARY.json"
 OUTPUT_JSONL = AGENT_DIR / "WDI_TRADE_DOMAIN_STATES_ANNUAL_V1.jsonl"
 OUTPUT_SUMMARY = AGENT_DIR / "WDI_TRADE_DOMAIN_ADAPTER_RUN_V2.json"
 
@@ -69,6 +70,8 @@ def canonical_record(row: dict[str, str], metadata: dict[str, str]) -> dict[str,
         raise ValueError("source_identity_field_empty")
     if indicator_code not in metadata:
         raise ValueError(f"indicator_missing_from_source_metadata:{indicator_code}")
+    if indicator_name != metadata[indicator_code]["indicator_name"]:
+        raise ValueError(f"indicator_name_metadata_mismatch:{indicator_code}")
     try:
         year = int(year_text)
     except ValueError as exc:
@@ -130,9 +133,20 @@ def build_wdi_trade_domain_states(
     extract_summary_path: Path,
     output_jsonl: Path,
     output_summary: Path,
+    edge_integrity_summary_path: Path | None = None,
 ) -> dict[str, Any]:
     metadata = load_series_metadata(metadata_csv)
     extract_summary = json.loads(extract_summary_path.read_text(encoding="utf-8"))
+    input_hash = sha256_file(input_csv)
+    edge_integrity_summary = (
+        json.loads(edge_integrity_summary_path.read_text(encoding="utf-8"))
+        if edge_integrity_summary_path is not None else {}
+    )
+    expected_input_hash = edge_integrity_summary.get("source_sha256")
+    if expected_input_hash and input_hash != expected_input_hash:
+        raise ValueError(
+            f"source_sha256_mismatch:expected={expected_input_hash}:actual={input_hash}"
+        )
 
     records: list[dict[str, Any]] = []
     identity_counts: Counter[tuple[str, str, int]] = Counter()
@@ -176,6 +190,23 @@ def build_wdi_trade_domain_states(
     expected_rows = extract_summary.get("observed_rows")
     if isinstance(expected_rows, int) and len(records) != expected_rows:
         raise ValueError(f"extract_row_count_mismatch:expected={expected_rows}:actual={len(records)}")
+    expected_entities = extract_summary.get("entities")
+    if isinstance(expected_entities, int) and len(entity_names) != expected_entities:
+        raise ValueError(f"extract_entity_count_mismatch:expected={expected_entities}:actual={len(entity_names)}")
+    expected_indicators = set(extract_summary.get("indicator_codes") or [])
+    if expected_indicators and indicators != expected_indicators:
+        raise ValueError(
+            "extract_indicator_set_mismatch:"
+            + f"missing={sorted(expected_indicators - indicators)}:"
+            + f"unexpected={sorted(indicators - expected_indicators)}"
+        )
+    expected_years = extract_summary.get("years")
+    if isinstance(expected_years, list) and set(years) != set(expected_years):
+        raise ValueError(
+            "extract_year_set_mismatch:"
+            + f"missing={sorted(set(expected_years) - years)}:"
+            + f"unexpected={sorted(years - set(expected_years))}"
+        )
 
     records.sort(key=lambda item: (
         item["entity_id"], item["pattern_id"], item["timestamp"]
@@ -188,7 +219,6 @@ def build_wdi_trade_domain_states(
                 separators=(",", ":"), allow_nan=False
             ) + "\n")
 
-    input_hash = sha256_file(input_csv)
     metadata_hash = sha256_file(metadata_csv)
     output_hash = sha256_file(output_jsonl)
     summary = {
@@ -197,6 +227,8 @@ def build_wdi_trade_domain_states(
         "input": _path_reference(input_csv),
         "input_sha256": input_hash,
         "source_archive_sha256": extract_summary.get("external_raw_sha256"),
+        "source_integrity_reference": _path_reference(edge_integrity_summary_path) if edge_integrity_summary_path else None,
+        "source_integrity_reference_sha256": expected_input_hash,
         "metadata": _path_reference(metadata_csv),
         "metadata_sha256": metadata_hash,
         "output": _path_reference(output_jsonl),
@@ -219,7 +251,8 @@ def build_wdi_trade_domain_states(
 
 def main() -> int:
     summary = build_wdi_trade_domain_states(
-        INPUT_CSV, METADATA_CSV, EXTRACT_SUMMARY, OUTPUT_JSONL, OUTPUT_SUMMARY
+        INPUT_CSV, METADATA_CSV, EXTRACT_SUMMARY, OUTPUT_JSONL, OUTPUT_SUMMARY,
+        EDGE_INTEGRITY_SUMMARY,
     )
     print(json.dumps({
         "status": summary["status"],
