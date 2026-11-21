@@ -1,0 +1,88 @@
+name: CHAOS — Behavioural Discovery V1
+
+on:
+  push:
+    branches:
+      - 'discovery/**'
+    paths:
+      - 'discovery_engine/**'
+      - 'scripts/discovery/**'
+      - 'tests/discovery/**'
+      - 'experimental_contracts/BEHAVIORAL_DISCOVERY_CONTRACT_V1.json'
+      - 'catalog_first/readiness_gate/macro_plus_eia_energy/MACRO_PLUS_EIA_ENERGY_COMPLETE_139_NUMERIC_RAW_2000_2024_WIDE.csv'
+      - 'catalog_first/readiness_gate/macro_plus_eia_energy/SELECTED_VARIABLE_PROVENANCE.csv'
+      - 'catalog_first/readiness_gate/macro_plus_eia_energy/NUMERIC_COMPLETE_MATRIX_V1_1_SUMMARY.json'
+      - 'observation_foundation/record_identity_v1.py'
+      - 'chaos_governance_kernel/core.py'
+      - '.github/workflows/behavioral-discovery-v1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: chaos-behavioral-discovery-v1-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  behavioral-discovery:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout discovery branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref_name }}
+          fetch-depth: 0
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Compile discovery module and validate contract
+        run: |
+          python -m py_compile discovery_engine/behavioral_discovery_v1.py scripts/discovery/run_behavioral_discovery_v1.py
+          python -m json.tool experimental_contracts/BEHAVIORAL_DISCOVERY_CONTRACT_V1.json
+      - name: Run behavioral discovery unit tests
+        run: python -m unittest discover -s tests/discovery -v
+      - name: Build behavioural profiles and unvalidated candidates from the complete macro-energy panel
+        run: python scripts/discovery/run_behavioral_discovery_v1.py
+      - name: Validate discovery artifacts
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          from chaos_governance_kernel.core import validate_manifest
+          result = validate_manifest(
+              Path("discovery/behavioral_v1/BEHAVIORAL_DISCOVERY_MANIFEST_V1.json"),
+              Path.cwd(),
+          )
+          print(json.dumps(result, sort_keys=True))
+          if result["status"] != "pass":
+              raise SystemExit(1)
+          summary = json.loads(Path("discovery/behavioral_v1/BEHAVIORAL_DISCOVERY_SUMMARY_V1.json").read_text())
+          assert summary["status"] == "CANDIDATE_GENERATION_ONLY"
+          assert summary["inference"]["causal_claims_permitted"] is False
+          assert summary["inference"]["forecasting_performed"] is False
+          print(json.dumps({
+              "series": summary["series_profile_count"],
+              "candidates": summary["candidate_count"],
+              "shared_year_patterns": summary["shared_year_pattern_count"],
+              "candidate_counts": summary["candidate_counts_by_type"],
+          }, sort_keys=True))
+          PY
+      - name: Commit deterministic discovery outputs
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add discovery/behavioral_v1/
+          if ! git diff --cached --quiet; then
+            git commit -m "data(chaos): materialize behavioral discovery candidates v1"
+            git push origin "HEAD:${GITHUB_REF_NAME}"
+          fi
+      - name: Upload discovery artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: chaos-behavioral-discovery-v1-${{ github.sha }}
+          path: discovery/behavioral_v1/
+          if-no-files-found: error
+          retention-days: 90
