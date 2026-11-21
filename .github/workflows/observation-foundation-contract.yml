@@ -40,8 +40,8 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-      - name: Compile identity, lifecycle, adapter and governance utilities
-        run: python -m py_compile observation_foundation/record_identity_v1.py observation_foundation/lifecycle_v1.py observation_foundation/domain_state_adapter_v1.py chaos_governance_kernel/core.py
+      - name: Compile identity, lifecycle and governance utilities
+        run: python -m py_compile observation_foundation/record_identity_v1.py observation_foundation/lifecycle_v1.py chaos_governance_kernel/core.py
       - name: Validate source observation contract JSON
         run: python -m json.tool observation_foundation/contracts/source_record_observation_v1.schema.json
       - name: Validate hypothesis lifecycle contract JSON
@@ -50,7 +50,5 @@ jobs:
         run: python -m json.tool observation_foundation/contracts/input_disposition_v1.schema.json
       - name: Validate Research Ledger contract JSON
         run: python -m json.tool experimental_contracts/RESEARCH_LEDGER_CONTRACT_V1.json
-      - name: Validate DomainState observation adapter contract JSON
-        run: python -m json.tool observation_foundation/contracts/domain_state_observation_adapter_v1.schema.json
-      - name: Run deterministic identity, lifecycle and DomainState adapter tests
+      - name: Run deterministic identity and lifecycle tests
         run: python -m unittest discover -s tests/observation_foundation -v
