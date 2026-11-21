@@ -1,11 +1,12 @@
 """Auditable cross-vintage review of the IMF WEO 2020 real-GDP-growth signal.
 
-The script compares published historical vintages with the committed April 2026
-WEO panel. It preserves raw downloaded vintage files as workflow artifacts,
-records their URLs/SHA-256, and derives only a pre-2020 Theil-Sen extrapolation
-diagnostic. It does not call the 2020 value an observation available in 2020,
-and it does not repeat the symmetric point-anomaly detector (which requires
-post-2020 observations).
+The official IMF tab-delimited country files are compared with the April-2026
+WEO values staged in the CHAOS source panel. The IMF "Estimates Start After"
+field is interpreted as the latest actual-data year (zero means the whole
+series is estimated). Each raw vintage is kept as an artifact and hashed.
+
+The Theil-Sen pretrend is a revision-sensitivity diagnostic, not a forecast
+and not the V1 symmetric point-anomaly score.
 """
 from __future__ import annotations
 
@@ -14,34 +15,21 @@ import hashlib
 import json
 import math
 import statistics
+import urllib.error
 import urllib.request
 from decimal import Decimal, InvalidOperation
 from pathlib import Path
 from typing import Any, Mapping, Sequence
 
-CONTRACT_ID = "CHAOS_WEO_GDP_GROWTH_VINTAGE_AUDIT_V1"
-YEAR_COLUMNS = [str(year) for year in range(2016, 2021)]
-REQUIRED_PANEL_COLUMNS = {"entity_code", "imf_entity_name", "year", "imf__NGDP_RPCH"}
-WE0_SUBJECT_CODE = "NGDP_RPCH"
+from chaos_governance_kernel.core import utc_now
 
-VINTAGES = [
-    {
-        "vintage_id": "WEO_2020_OCT",
-        "release_label": "October 2020",
-        "release_page": "https://www.imf.org/en/publications/weo/weo-database/2020/october",
-        "download_url": "https://www.imf.org/-/media/files/publications/weo/weo-database/2020/02/weooct2020all.xls",
-    },
-    {
-        "vintage_id": "WEO_2021_APR",
-        "release_label": "April 2021",
-        "release_page": "https://www.imf.org/en/publications/weo/weo-database/2021/april",
-        "download_url": "https://www.imf.org/-/media/files/publications/weo/weo-database/2021/weoapr2021all.xls",
-    },
-]
+CONTRACT_ID = "CHAOS_WEO_GDP_GROWTH_VINTAGE_AUDIT_V1"
+SUPPORTED_YEARS = [2016, 2017, 2018, 2019, 2020]
+PANEL_REQUIRED_FIELDS = {"entity_code", "imf_entity_name", "year"}
 
 
 class VintageAuditError(ValueError):
-    """Raised when official vintage data cannot be parsed or matched safely."""
+    """Raised when official vintage data cannot be parsed safely."""
 
 
 def sha256_file(path: Path) -> str:
@@ -55,166 +43,263 @@ def sha256_file(path: Path) -> str:
     return digest.hexdigest()
 
 
-def download_official_vintage(url: str, path: Path) -> dict[str, Any]:
+def download_official_vintage(url_candidates: Sequence[str], path: Path) -> dict[str, Any]:
+    """Try only explicit IMF-hosted URLs and retain every attempt in the manifest."""
     path.parent.mkdir(parents=True, exist_ok=True)
-    request = urllib.request.Request(
-        url,
-        headers={
-            "User-Agent": "CHAOS-Research/1.0 (source-vintage reproducibility audit)",
-            "Accept": "*/*",
-        },
-    )
-    try:
-        with urllib.request.urlopen(request, timeout=90) as response:
-            status = int(response.status)
-            content_type = response.headers.get("Content-Type", "")
-            data = response.read()
-    except Exception as exc:
-        raise VintageAuditError(f"official_vintage_download_failed:{url}:{exc}") from exc
-    if status != 200:
-        raise VintageAuditError(f"official_vintage_http_status:{status}:{url}")
-    if len(data) < 100_000:
-        raise VintageAuditError(f"official_vintage_payload_too_small:{len(data)}:{url}")
-    if data.lstrip().startswith((b"<!DOCTYPE html", b"<html", b"<?xml")):
-        raise VintageAuditError(f"official_vintage_download_returned_markup:{url}")
-    path.write_bytes(data)
-    return {
-        "url": url,
-        "http_status": status,
-        "content_type": content_type,
-        "bytes": len(data),
-        "sha256": sha256_file(path),
-        "local_raw_file": path.name,
+    attempts: list[dict[str, Any]] = []
+    headers = {
+        "User-Agent": (
+            "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 "
+            "(KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36"
+        ),
+        "Accept": "text/tab-separated-values,text/plain,application/vnd.ms-excel,*/*",
+        "Accept-Language": "en-US,en;q=0.9",
+        "Referer": "https://www.imf.org/",
     }
+    for url in url_candidates:
+        if not isinstance(url, str) or not url.startswith("https://www.imf.org/"):
+            raise VintageAuditError(f"non_imf_vintage_url_rejected:{url}")
+        request = urllib.request.Request(url, headers=headers)
+        try:
+            with urllib.request.urlopen(request, timeout=120) as response:
+                status = int(response.status)
+                content_type = response.headers.get("Content-Type", "")
+                data = response.read()
+            attempts.append({
+                "url": url,
+                "http_status": status,
+                "content_type": content_type,
+                "bytes": len(data),
+            })
+        except urllib.error.HTTPError as exc:
+            attempts.append({
+                "url": url,
+                "http_status": int(exc.code),
+                "error": str(exc.reason),
+            })
+            continue
+        except Exception as exc:
+            attempts.append({
+                "url": url,
+                "error": f"{type(exc).__name__}:{exc}",
+            })
+            continue
+
+        if status != 200:
+            continue
+        if len(data) < 100_000:
+            attempts[-1]["rejected"] = "payload_too_small"
+            continue
+        if data.lstrip().startswith((b"<!DOCTYPE html", b"<html", b"<?xml")):
+            attempts[-1]["rejected"] = "markup_not_data"
+            continue
+        # The WEO legacy .xls files are tab-delimited text, not binary BIFF workbooks.
+        if b"\t" not in data[:8192] or b"WEO Subject Code" not in data[:65536]:
+            attempts[-1]["rejected"] = "payload_not_recognized_as_weo_tab_delimited"
+            continue
+
+        path.write_bytes(data)
+        return {
+            "selected_url": url,
+            "http_status": status,
+            "content_type": content_type,
+            "bytes": len(data),
+            "sha256": sha256_file(path),
+            "local_raw_file": path.name,
+            "retrieved_at_utc": utc_now(),
+            "attempts": attempts,
+        }
+
+    raise VintageAuditError(
+        "official_imf_vintage_download_failed_all_urls:"
+        + json.dumps(attempts, ensure_ascii=False, sort_keys=True)
+    )
 
 
-def _decode_text(path: Path) -> str:
+def parse_latest_actual_year(raw: Any) -> int | None:
+    """IMF field: year of latest actual data; zero means the series is all estimates."""
+    if raw is None:
+        return None
+    value = str(raw).strip()
+    if not value:
+        return None
+    try:
+        parsed = int(value)
+    except ValueError as exc:
+        raise VintageAuditError(f"estimates_start_after_invalid:{value}") from exc
+    if parsed == 0:
+        return 0
+    if not 1900 <= parsed <= 2100:
+        raise VintageAuditError(f"estimates_start_after_out_of_range:{value}")
+    return parsed
+
+
+def event_year_status(event_year: int, latest_actual_year: int | None) -> str:
+    if latest_actual_year is None:
+        return "UNKNOWN"
+    return "ACTUAL" if event_year <= latest_actual_year else "ESTIMATE_OR_PROJECTION"
+
+
+def read_weo_country_file(
+    path: Path,
+    *,
+    subject_code: str,
+    years: Sequence[int],
+) -> dict[str, dict[str, Any]]:
+    """Read a legacy IMF WEO By-Countries tab-delimited file."""
     data = path.read_bytes()
+    text = None
     for encoding in ("utf-8-sig", "cp1252", "latin-1"):
         try:
-            return data.decode(encoding)
+            text = data.decode(encoding)
+            break
         except UnicodeDecodeError:
             continue
-    raise VintageAuditError(f"vintage_text_decode_failed:{path.name}")
+    if text is None:
+        raise VintageAuditError(f"weo_text_decode_failed:{path.name}")
 
-
-def read_weo_country_file(path: Path) -> dict[str, dict[str, Any]]:
-    """Read the IMF legacy tab-delimited By Countries file without guessing columns."""
-    text = _decode_text(path)
     lines = text.splitlines()
     header_index = None
-    for index, line in enumerate(lines[:30]):
-        normalized = {part.strip().strip('"').casefold() for part in line.split("\t")}
-        if "iso" in normalized and "weo subject code" in normalized:
+    required_normalized = {
+        "iso", "weo subject code", "country", "estimates start after",
+        *[str(year).casefold() for year in years],
+    }
+    for index, line in enumerate(lines[:50]):
+        normalized = {
+            part.strip().strip('"').lstrip("\ufeff").casefold()
+            for part in line.split("\t")
+        }
+        if required_normalized.issubset(normalized):
             header_index = index
             break
     if header_index is None:
-        preview = "\n".join(lines[:8])[:1500]
+        preview = "\n".join(lines[:12])[:2000]
         raise VintageAuditError(f"weo_tsv_header_not_found:{path.name}:{preview}")
 
     reader = csv.DictReader(lines[header_index:], delimiter="\t")
     if not reader.fieldnames:
         raise VintageAuditError(f"weo_tsv_fieldnames_missing:{path.name}")
-    headers = [str(item or "").strip().strip('"') for item in reader.fieldnames]
+    headers = [str(item or "").strip().strip('"').lstrip("\ufeff") for item in reader.fieldnames]
     if len(set(headers)) != len(headers):
         raise VintageAuditError(f"weo_tsv_duplicate_headers:{path.name}")
-    required = {"ISO", "WEO Subject Code", "Country", *YEAR_COLUMNS}
+    required = {"ISO", "WEO Subject Code", "Country", "Estimates Start After"}
+    required.update(str(year) for year in years)
     missing = sorted(required - set(headers))
     if missing:
         raise VintageAuditError(f"weo_tsv_required_columns_missing:{path.name}:{missing}")
 
-    result: dict[str, dict[str, Any]] = {}
-    matched_rows = 0
+    output: dict[str, dict[str, Any]] = {}
     for row_number, raw in enumerate(reader, header_index + 2):
-        row = {str(k).strip().strip('"'): (v or "").strip().strip('"') for k, v in raw.items() if k is not None}
-        if row.get("WEO Subject Code") != WE0_SUBJECT_CODE:
+        row = {
+            str(key).strip().strip('"').lstrip("\ufeff"): (value or "").strip().strip('"')
+            for key, value in raw.items()
+            if key is not None
+        }
+        if row.get("WEO Subject Code") != subject_code:
             continue
         iso = row.get("ISO", "").strip().upper()
-        if not iso or len(iso) != 3 or not iso.isalpha():
-            # IMF country-group aggregates do not necessarily have an ISO code.
+        if len(iso) != 3 or not iso.isalpha():
+            # Country-group aggregates and non-country rows are not matched to countries.
             continue
-        if iso in result:
-            raise VintageAuditError(f"duplicate_weo_iso_subject_row:{path.name}:{iso}:{row_number}")
+        if iso in output:
+            raise VintageAuditError(
+                f"duplicate_weo_iso_subject_row:{path.name}:{iso}:{row_number}"
+            )
+
         values: dict[str, float | None] = {}
         raw_values: dict[str, str] = {}
-        for year in YEAR_COLUMNS:
-            raw_value = row.get(year, "").strip()
-            raw_values[year] = raw_value
+        for year in years:
+            key = str(year)
+            raw_value = row.get(key, "").strip()
+            raw_values[key] = raw_value
             if not raw_value or raw_value.casefold() in {
                 "n/a", "na", "--", "...", "no data", "not available"
             }:
-                values[year] = None
+                values[key] = None
                 continue
             try:
-                decimal_value = Decimal(raw_value.replace(",", ""))
+                parsed = Decimal(raw_value.replace(",", ""))
             except InvalidOperation as exc:
                 raise VintageAuditError(
-                    f"weo_numeric_value_invalid:{path.name}:{iso}:{year}:{raw_value}"
+                    f"weo_numeric_invalid:{path.name}:{iso}:{key}:{raw_value}"
                 ) from exc
-            if not decimal_value.is_finite():
-                raise VintageAuditError(
-                    f"weo_numeric_value_nonfinite:{path.name}:{iso}:{year}:{raw_value}"
-                )
-            number = float(decimal_value)
-            if not math.isfinite(number):
-                raise VintageAuditError(
-                    f"weo_numeric_value_overflow:{path.name}:{iso}:{year}:{raw_value}"
-                )
-            values[year] = number
-        result[iso] = {
+            if not parsed.is_finite():
+                raise VintageAuditError(f"weo_numeric_nonfinite:{path.name}:{iso}:{key}")
+            value = float(parsed)
+            if not math.isfinite(value):
+                raise VintageAuditError(f"weo_numeric_overflow:{path.name}:{iso}:{key}")
+            values[key] = value
+
+        latest_raw = row.get("Estimates Start After", "")
+        latest_actual = parse_latest_actual_year(latest_raw)
+        output[iso] = {
             "iso": iso,
             "country_name": row.get("Country", ""),
             "values": values,
             "raw_values": raw_values,
-            "estimates_start_after_raw": row.get("Estimates Start After", ""),
+            "estimates_start_after_raw": latest_raw,
+            "latest_actual_year": latest_actual,
+            "event_year_data_status": event_year_status(int(years[-1]), latest_actual),
+            "pretrend_all_actual": (
+                latest_actual is not None and latest_actual >= int(years[-2])
+            ),
             "country_series_notes": row.get("Country/Series-specific Notes", ""),
         }
-        matched_rows += 1
-    if not result:
-        raise VintageAuditError(f"weo_subject_rows_not_found:{path.name}:{WE0_SUBJECT_CODE}")
-    return result
+
+    if not output:
+        raise VintageAuditError(f"weo_subject_rows_not_found:{path.name}:{subject_code}")
+    return output
 
 
-def _parse_current_panel(path: Path) -> dict[str, dict[int, float]]:
+def _parse_current_panel(
+    path: Path,
+    years: Sequence[int],
+    value_column: str,
+) -> dict[str, dict[int, float]]:
     output: dict[str, dict[int, float]] = {}
     with path.open("r", encoding="utf-8-sig", newline="") as stream:
         reader = csv.DictReader(stream)
-        if not reader.fieldnames or not REQUIRED_PANEL_COLUMNS.issubset(set(reader.fieldnames)):
+        required = PANEL_REQUIRED_FIELDS | {value_column}
+        if not reader.fieldnames or not required.issubset(set(reader.fieldnames)):
             raise VintageAuditError(
-                f"current_panel_columns_missing:{sorted(REQUIRED_PANEL_COLUMNS-set(reader.fieldnames or []))}"
+                "current_panel_columns_missing:"
+                + str(sorted(required - set(reader.fieldnames or [])))
             )
+        accepted_years = set(years)
         for row_number, row in enumerate(reader, 2):
-            entity = (row.get("entity_code") or "").strip().upper()
-            if not entity:
-                raise VintageAuditError(f"current_panel_entity_missing:{row_number}")
+            iso = (row.get("entity_code") or "").strip().upper()
+            if len(iso) != 3 or not iso.isalpha():
+                raise VintageAuditError(f"current_panel_iso_invalid:{row_number}:{iso}")
             try:
-                year = int(row["year"])
-            except (TypeError, ValueError) as exc:
+                year = int(row.get("year") or "")
+            except ValueError as exc:
                 raise VintageAuditError(f"current_panel_year_invalid:{row_number}") from exc
-            if year not in range(2016, 2021):
+            if year not in accepted_years:
                 continue
-            raw = (row.get("imf__NGDP_RPCH") or "").strip()
+            raw = (row.get(value_column) or "").strip()
             if not raw:
                 continue
             try:
                 value = float(Decimal(raw))
             except (InvalidOperation, ValueError) as exc:
-                raise VintageAuditError(f"current_panel_value_invalid:{entity}:{year}:{raw}") from exc
+                raise VintageAuditError(
+                    f"current_panel_value_invalid:{iso}:{year}:{raw}"
+                ) from exc
             if not math.isfinite(value):
-                raise VintageAuditError(f"current_panel_value_nonfinite:{entity}:{year}")
-            values = output.setdefault(entity, {})
+                raise VintageAuditError(f"current_panel_value_nonfinite:{iso}:{year}")
+            values = output.setdefault(iso, {})
             if year in values:
-                raise VintageAuditError(f"current_panel_duplicate_country_year:{entity}:{year}")
+                raise VintageAuditError(f"current_panel_duplicate_iso_year:{iso}:{year}")
             values[year] = value
     if not output:
-        raise VintageAuditError("current_panel_no_imf_gdp_growth_rows")
+        raise VintageAuditError("current_panel_has_no_matching_values")
     return output
 
 
-def theil_sen_pretrend_projection(values: Sequence[float]) -> float:
-    """Project the 2016-2019 Theil-Sen trend one year forward to 2020."""
+def theil_sen_pretrend_reference(values: Sequence[float]) -> float:
+    """Fit on 2016–2019 only and extrapolate one year to 2020."""
     if len(values) != 4:
-        raise VintageAuditError("pretrend_requires_four_values_2016_to_2019")
+        raise VintageAuditError("pretrend_requires_four_values")
     x = [0.0, 1.0, 2.0, 3.0]
     slopes = [
         (values[j] - values[i]) / (x[j] - x[i])
@@ -222,76 +307,116 @@ def theil_sen_pretrend_projection(values: Sequence[float]) -> float:
         for j in range(i + 1, 4)
     ]
     slope = float(statistics.median(slopes))
-    intercept = float(statistics.median([value - slope * point for value, point in zip(values, x)]))
+    intercept = float(
+        statistics.median([value - slope * point for value, point in zip(values, x)])
+    )
     return intercept + slope * 4.0
 
 
 def _summarize_vintage(
     vintage_id: str,
     source: Mapping[str, Mapping[str, Any]],
-    current_panel: Mapping[str, Mapping[int, float]],
+    panel: Mapping[str, Mapping[int, float]],
+    years: Sequence[int],
+    *,
+    current_panel: bool = False,
 ) -> tuple[dict[str, Any], list[dict[str, Any]]]:
     rows: list[dict[str, Any]] = []
-    matched = set(source) & set(current_panel)
+    matched = set(source) & set(panel)
+    event_year = int(years[-1])
     for iso in sorted(matched):
         vintage = source[iso]
         values = vintage["values"]
-        pre = [values[str(year)] for year in range(2016, 2020)]
-        event = values["2020"]
-        if event is None or any(value is None for value in pre):
+        pre = [values.get(str(year)) for year in years[:-1]]
+        event_value = values.get(str(event_year))
+        if event_value is None or any(value is None for value in pre):
             continue
         pre_values = [float(value) for value in pre if value is not None]
-        forecast = theil_sen_pretrend_projection(pre_values)
-        event_value = float(event)
-        current_2020 = current_panel[iso].get(2020)
+        reference = theil_sen_pretrend_reference(pre_values)
+        event_value = float(event_value)
+        current_value = panel[iso].get(event_year)
+        status = (
+            "UNKNOWN_CURRENT_STAGED_PANEL"
+            if current_panel
+            else str(vintage["event_year_data_status"])
+        )
+        latest_actual = None if current_panel else vintage["latest_actual_year"]
         rows.append({
             "iso": iso,
             "country_name_vintage": vintage["country_name"],
             "vintage_id": vintage_id,
-            "2016": pre_values[0],
-            "2017": pre_values[1],
-            "2018": pre_values[2],
-            "2019": pre_values[3],
-            "2020": event_value,
-            "pretrend_projection_2020": forecast,
-            "deviation_from_pretrend_2020": event_value - forecast,
-            "below_pretrend_projection": event_value < forecast,
+            **{str(year): value for year, value in zip(years[:-1], pre_values)},
+            str(event_year): event_value,
+            "pretrend_reference_2020": reference,
+            "deviation_from_pretrend_2020": event_value - reference,
+            "below_pretrend_reference": event_value < reference,
             "below_2019_value": event_value < pre_values[-1],
-            "current_apr2026_panel_2020": current_2020,
-            "revision_vs_current_apr2026": (
-                current_2020 - event_value if current_2020 is not None else None
+            "latest_actual_year": latest_actual,
+            "estimates_start_after_raw": (
+                "" if current_panel else vintage["estimates_start_after_raw"]
             ),
-            "estimates_start_after_raw": vintage["estimates_start_after_raw"],
-            "country_series_notes": vintage["country_series_notes"],
+            "event_2020_data_status": status,
+            "pretrend_all_actual": (
+                False if current_panel else bool(vintage["pretrend_all_actual"])
+            ),
+            "current_panel_2020": current_value,
+            "revision_vs_current_panel_2020": (
+                current_value - event_value if current_value is not None else None
+            ),
+            "country_series_notes": (
+                "" if current_panel else vintage["country_series_notes"]
+            ),
         })
 
     if not rows:
-        raise VintageAuditError(f"vintage_common_complete_rows_empty:{vintage_id}")
-    below_trend = sum(row["below_pretrend_projection"] for row in rows)
-    below_2019 = sum(row["below_2019_value"] for row in rows)
-    revisions = [
-        abs(float(row["revision_vs_current_apr2026"]))
-        for row in rows if row["revision_vs_current_apr2026"] is not None
+        raise VintageAuditError(f"no_complete_common_iso_rows:{vintage_id}")
+
+    actual = [row for row in rows if row["event_2020_data_status"] == "ACTUAL"]
+    estimated = [
+        row for row in rows
+        if row["event_2020_data_status"] == "ESTIMATE_OR_PROJECTION"
     ]
-    signed_revisions = [
-        float(row["revision_vs_current_apr2026"])
-        for row in rows if row["revision_vs_current_apr2026"] is not None
+    unknown = [
+        row for row in rows
+        if row["event_2020_data_status"] == "UNKNOWN_CURRENT_STAGED_PANEL"
+        or row["event_2020_data_status"] == "UNKNOWN"
+    ]
+    actual_pretrend = [row for row in rows if row["pretrend_all_actual"]]
+
+    def _fraction(group: Sequence[Mapping[str, Any]]) -> float | None:
+        return (
+            sum(bool(row["below_pretrend_reference"]) for row in group) / len(group)
+            if group else None
+        )
+
+    revisions = [
+        abs(float(row["revision_vs_current_panel_2020"]))
+        for row in rows if row["revision_vs_current_panel_2020"] is not None
     ]
     summary = {
         "vintage_id": vintage_id,
-        "iso_matched_to_current_panel": len(matched),
-        "rows_with_complete_2016_2020": len(rows),
-        "below_pretrend_count": below_trend,
-        "below_pretrend_fraction": below_trend / len(rows),
-        "below_2019_count": below_2019,
-        "below_2019_fraction": below_2019 / len(rows),
-        "median_absolute_2020_revision_vs_current_apr2026": (
+        "iso_matched_to_panel": len(matched),
+        "complete_2016_2020_rows": len(rows),
+        "event_2020_status": {
+            "actual": len(actual),
+            "estimate_or_projection": len(estimated),
+            "unknown": len(unknown),
+        },
+        "below_pretrend_fraction_all_complete": _fraction(rows),
+        "below_pretrend_fraction_actual_2020": _fraction(actual),
+        "below_pretrend_fraction_estimated_2020": _fraction(estimated),
+        "all_actual_pretrend_rows": len(actual_pretrend),
+        "below_pretrend_fraction_all_actual_pretrend": _fraction(actual_pretrend),
+        "below_2019_fraction_all_complete": (
+            sum(bool(row["below_2019_value"]) for row in rows) / len(rows)
+        ),
+        "median_absolute_2020_revision_vs_staged_panel": (
             float(statistics.median(revisions)) if revisions else None
         ),
-        "median_signed_2020_revision_vs_current_apr2026": (
-            float(statistics.median(signed_revisions)) if signed_revisions else None
+        "pretrend_definition": (
+            "Theil-Sen fitted on 2016–2019 only and extrapolated one year; "
+            "2020 actual/estimate status comes from IMF Estimates Start After."
         ),
-        "pretrend_definition": "Theil-Sen line fit on 2016-2019 only, extrapolated one year to 2020; this is a source-vintage diagnostic, not the V1 symmetric point-anomaly detector.",
     }
     return summary, rows
 
@@ -299,127 +424,175 @@ def _summarize_vintage(
 def run_vintage_audit(
     *,
     panel_path: Path,
+    contract_path: Path,
     raw_dir: Path,
     output_dir: Path,
 ) -> dict[str, Any]:
-    current_panel = _parse_current_panel(panel_path)
+    contract = json.loads(contract_path.read_text(encoding="utf-8"))
+    if contract.get("contract_id") != CONTRACT_ID:
+        raise VintageAuditError("vintage_audit_contract_id_mismatch")
+    years = contract.get("years")
+    if years != SUPPORTED_YEARS or contract.get("event_year") != 2020:
+        raise VintageAuditError("vintage_audit_year_contract_invalid")
+    if contract.get("pretrend_years") != years[:-1]:
+        raise VintageAuditError("vintage_audit_pretrend_years_invalid")
+    subject_code = contract.get("subject_code")
+    if not isinstance(subject_code, str) or not subject_code:
+        raise VintageAuditError("subject_code_missing")
+
+    vintages = contract.get("vintages")
+    if not isinstance(vintages, list) or len(vintages) < 3:
+        raise VintageAuditError("vintage_contract_requires_two_historical_and_one_panel_release")
+    current_items = [
+        item for item in vintages
+        if item.get("vintage_id") == "WEO_APR2026_PANEL_STAGED"
+    ]
+    historical = [
+        item for item in vintages
+        if item.get("vintage_id") != "WEO_APR2026_PANEL_STAGED"
+    ]
+    if len(current_items) != 1 or len(historical) < 2:
+        raise VintageAuditError("vintage_registry_invalid")
+    current_item = current_items[0]
+    panel_column = current_item.get("panel_column")
+    if not isinstance(panel_column, str) or not panel_column:
+        raise VintageAuditError("current_panel_column_missing")
+
+    panel = _parse_current_panel(panel_path, years, panel_column)
     output_dir.mkdir(parents=True, exist_ok=True)
     raw_dir.mkdir(parents=True, exist_ok=True)
 
-    sources: dict[str, dict[str, dict[str, Any]]] = {}
-    downloads: list[dict[str, Any]] = []
-    for vintage in VINTAGES:
-        raw_path = raw_dir / f"{vintage['vintage_id']}_BY_COUNTRIES.xls"
-        download_meta = download_official_vintage(vintage["download_url"], raw_path)
-        download_meta.update({
-            "vintage_id": vintage["vintage_id"],
-            "release_label": vintage["release_label"],
-            "release_page": vintage["release_page"],
-        })
-        downloads.append(download_meta)
-        sources[vintage["vintage_id"]] = read_weo_country_file(raw_path)
-
-    current_source: dict[str, dict[str, Any]] = {}
-    for iso, values in current_panel.items():
-        current_source[iso] = {
-            "iso": iso,
-            "country_name": iso,
-            "values": {str(year): values.get(year) for year in range(2016, 2021)},
-            "raw_values": {},
-            "estimates_start_after_raw": "",
-            "country_series_notes": "",
-        }
-
+    source_by_vintage: dict[str, dict[str, dict[str, Any]]] = {}
+    download_manifest: list[dict[str, Any]] = []
     vintage_summaries: list[dict[str, Any]] = []
     all_rows: list[dict[str, Any]] = []
-    for vintage in VINTAGES:
-        summary, rows = _summarize_vintage(
-            vintage["vintage_id"], sources[vintage["vintage_id"]], current_panel
+
+    for item in historical:
+        vintage_id = item.get("vintage_id")
+        urls = item.get("download_url_candidates")
+        if not isinstance(vintage_id, str) or not vintage_id:
+            raise VintageAuditError("historical_vintage_id_invalid")
+        if not isinstance(urls, list) or not urls:
+            raise VintageAuditError(f"download_url_candidates_missing:{vintage_id}")
+        raw_path = raw_dir / f"{vintage_id}_BY_COUNTRIES.xls"
+        download = download_official_vintage(urls, raw_path)
+        download.update({
+            "vintage_id": vintage_id,
+            "release_label": item.get("release_label"),
+            "release_page": item.get("release_page"),
+        })
+        download_manifest.append(download)
+        source_by_vintage[vintage_id] = read_weo_country_file(
+            raw_path, subject_code=subject_code, years=years
         )
-        summary["release_label"] = vintage["release_label"]
-        summary["release_page"] = vintage["release_page"]
+        summary, rows = _summarize_vintage(
+            vintage_id, source_by_vintage[vintage_id], panel, years
+        )
+        summary["release_label"] = item.get("release_label")
+        summary["release_page"] = item.get("release_page")
         vintage_summaries.append(summary)
         all_rows.extend(rows)
 
-    current_summary, current_rows = _summarize_vintage(
-        "WEO_APR2026_CURRENT_PANEL", current_source, current_panel
+    staged_source: dict[str, dict[str, Any]] = {
+        iso: {
+            "iso": iso,
+            "country_name": iso,
+            "values": {str(year): values.get(year) for year in years},
+            "latest_actual_year": None,
+            "event_year_data_status": "UNKNOWN",
+            "pretrend_all_actual": False,
+            "estimates_start_after_raw": "",
+            "country_series_notes": "",
+        }
+        for iso, values in panel.items()
+    }
+    staged_id = current_item["vintage_id"]
+    staged_summary, staged_rows = _summarize_vintage(
+        staged_id, staged_source, panel, years, current_panel=True
     )
-    current_summary["release_label"] = "April 2026 WEO current snapshot as staged in CHAOS"
-    vintage_summaries.append(current_summary)
-    all_rows.extend(current_rows)
+    staged_summary["release_label"] = current_item.get("release_label")
+    vintage_summaries.append(staged_summary)
+    all_rows.extend(staged_rows)
 
-    # Per-country revision trajectory across available vintages, without
-    # imputing missing countries or silently equating estimates and actuals.
-    comparison_rows: dict[str, dict[str, Any]] = {}
+    comparison: dict[str, dict[str, Any]] = {}
     for row in all_rows:
-        iso = row["iso"]
-        target = comparison_rows.setdefault(iso, {"iso": iso})
+        target = comparison.setdefault(row["iso"], {"iso": row["iso"]})
         prefix = row["vintage_id"].lower()
         for field in (
-            "2016", "2017", "2018", "2019", "2020",
-            "pretrend_projection_2020", "deviation_from_pretrend_2020",
-            "below_pretrend_projection", "below_2019_value",
-            "revision_vs_current_apr2026", "estimates_start_after_raw",
+            *[str(year) for year in years],
+            "pretrend_reference_2020",
+            "deviation_from_pretrend_2020",
+            "below_pretrend_reference",
+            "below_2019_value",
+            "latest_actual_year",
+            "estimates_start_after_raw",
+            "event_2020_data_status",
+            "pretrend_all_actual",
+            "revision_vs_current_panel_2020",
         ):
             target[f"{prefix}_{field}"] = row.get(field)
 
-    revision_pairs: dict[str, dict[str, Any]] = {}
-    for iso, item in comparison_rows.items():
-        for vintage_id in ("WEO_2020_OCT", "WEO_2021_APR"):
-            key = vintage_id.lower()
-            value = item.get(f"{key}_2020")
-            if value is not None:
-                revision_pairs.setdefault(vintage_id, {})[iso] = float(value)
-
-    summary = {
-        "contract_id": CONTRACT_ID,
-        "status": "SOURCE_VINTAGE_AUDIT_COMPLETED",
-        "series": {
-            "imf_subject_code": WE0_SUBJECT_CODE,
-            "current_panel_column": "imf__NGDP_RPCH",
-            "current_panel_release_id": "imf_weo_apr2026_current",
-            "native_frequency": "annual",
-            "event_year": 2020,
-            "pretrend_years": [2016, 2017, 2018, 2019],
-            "pretrend_method": "Theil-Sen extrapolation fitted only on 2016-2019",
-        },
-        "panel": {
-            "path": panel_path.as_posix(),
-            "sha256": sha256_file(panel_path),
-            "entities_with_2016_to_2020": len(current_panel),
-        },
-        "downloads": downloads,
-        "vintages": vintage_summaries,
-        "comparison_entity_count": len(comparison_rows),
-        "interpretation": [
-            "This tests whether the sign and magnitude of the 2020 real-GDP-growth dip relative to a pre-2020 robust trend persist across official IMF WEO releases.",
-            "It is not the same statistic as the V1 symmetric local-reference point anomaly because early vintages do not contain four future observations after 2020.",
-            "The estimates_start_after and country/series notes are retained as source fields; the script does not infer actual-versus-estimate status from the column label.",
-            "No point-in-time forecast is constructed and no p-value or causal claim is produced.",
-        ],
-        "causal_claims_permitted": False,
-        "forecasting_performed": False,
-        "point_in_time_eligibility": "Historical-vintage publication is identified by the official release file, but country/series availability and estimate status must be interpreted from the retained source fields.",
-    }
-
     rows_path = output_dir / "WEO_GDP_GROWTH_2020_VINTAGE_COMPARISON_V1.csv"
-    fieldnames = sorted({key for row in comparison_rows.values() for key in row})
+    fieldnames = sorted({key for row in comparison.values() for key in row})
     with rows_path.open("w", encoding="utf-8", newline="") as stream:
         writer = csv.DictWriter(stream, fieldnames=fieldnames)
         writer.writeheader()
-        writer.writerows(comparison_rows[iso] for iso in sorted(comparison_rows))
+        writer.writerows(comparison[iso] for iso in sorted(comparison))
 
+    module_path = Path(__file__).resolve()
+    runner_path = Path.cwd() / "scripts" / "discovery" / "run_weo_vintage_audit_v1.py"
+    panel_sha = sha256_file(panel_path)
+    contract_sha = sha256_file(contract_path)
+    summary = {
+        "contract_id": CONTRACT_ID,
+        "status": "SOURCE_VINTAGE_AUDIT_COMPLETED",
+        "generated_at_utc": utc_now(),
+        "contract_sha256": contract_sha,
+        "code_sha256": sha256_file(module_path),
+        "panel": {
+            "path": panel_path.as_posix(),
+            "sha256": panel_sha,
+            "entities_with_any_panel_values": len(panel),
+        },
+        "series": {
+            "subject_code": subject_code,
+            "panel_column": panel_column,
+            "event_year": 2020,
+            "pretrend_years": list(years[:-1]),
+            "method": "Theil-Sen on 2016–2019 only, extrapolated to 2020",
+        },
+        "downloads": download_manifest,
+        "vintages": vintage_summaries,
+        "comparison_iso_count": len(comparison),
+        "limits": [
+            "Only ISO-3 exact matching is used; no fuzzy country-name matching.",
+            "The staged April-2026 panel has no source-vintage actual/estimate metadata; its event status is UNKNOWN.",
+            "The 2020 October and April 2021 release values are classified using IMF Estimates Start After.",
+            "Theil-Sen extrapolation is a source-vintage revision diagnostic, not a prediction or a p-value.",
+            "No causal claim or forecasting is performed.",
+        ],
+        "causal_claims_permitted": False,
+        "forecasting_performed": False,
+    }
     summary_path = output_dir / "WEO_GDP_GROWTH_2020_VINTAGE_AUDIT_V1.json"
     summary_path.write_text(
         json.dumps(summary, ensure_ascii=False, indent=2, sort_keys=True) + "\n",
         encoding="utf-8",
     )
+
     manifest = {
         "bundle_id": "CHAOS_WEO_GDP_GROWTH_VINTAGE_AUDIT_V1",
-        "generated_at_utc": None,
         "contract_id": CONTRACT_ID,
-        "panel_sha256": sha256_file(panel_path),
-        "downloads": downloads,
+        "generated_at_utc": utc_now(),
+        "contract_sha256": contract_sha,
+        "panel_sha256": panel_sha,
+        "code": {
+            "module_path": module_path.relative_to(Path.cwd().resolve()).as_posix(),
+            "module_sha256": sha256_file(module_path),
+            "runner_path": runner_path.resolve().relative_to(Path.cwd().resolve()).as_posix(),
+            "runner_sha256": sha256_file(runner_path),
+        },
+        "raw_downloads": download_manifest,
         "derived_artifacts": [
             {
                 "path": rows_path.resolve().relative_to(Path.cwd().resolve()).as_posix(),
@@ -432,21 +605,11 @@ def run_vintage_audit(
                 "bytes": summary_path.stat().st_size,
             },
         ],
-        "raw_downloads_are_uploaded_as_workflow_artifacts_not_committed_to_git": True,
+        "raw_files_uploaded_as_workflow_artifacts_only": True,
     }
     manifest_path = output_dir / "WEO_GDP_GROWTH_VINTAGE_MANIFEST_V1.json"
     manifest_path.write_text(
         json.dumps(manifest, ensure_ascii=False, indent=2, sort_keys=True) + "\n",
-        encoding="utf-8",
-    )
-    summary["derived_artifacts"] = {
-        "comparison_csv": rows_path.name,
-        "comparison_csv_sha256": sha256_file(rows_path),
-        "manifest": manifest_path.name,
-        "manifest_sha256": sha256_file(manifest_path),
-    }
-    summary_path.write_text(
-        json.dumps(summary, ensure_ascii=False, indent=2, sort_keys=True) + "\n",
         encoding="utf-8",
     )
     return summary
