@@ -566,35 +566,42 @@ def build_shared_year_patterns(
     candidates: Sequence[Mapping[str, Any]],
     contract: Mapping[str, Any],
 ) -> list[dict[str, Any]]:
-    groups: dict[tuple[str, str, int, str, str], list[Mapping[str, Any]]] = defaultdict(list)
+    groups: dict[tuple[str, str, int, str, str, str], list[Mapping[str, Any]]] = defaultdict(list)
     for item in candidates:
-        if item["candidate_type"] not in {"level_shift", "slope_change"}:
+        candidate_type = str(item["candidate_type"])
+        if candidate_type not in {"isolated_point_anomaly", "level_shift", "slope_change"}:
             continue
         pre_state = (
             str(item.get("pre_change_trend_direction", "UNSPECIFIED"))
-            if item["candidate_type"] == "slope_change" else "NOT_APPLICABLE"
+            if candidate_type == "slope_change" else "NOT_APPLICABLE"
         )
         post_state = (
             str(item.get("post_change_trend_direction", "UNSPECIFIED"))
-            if item["candidate_type"] == "slope_change" else "NOT_APPLICABLE"
+            if candidate_type == "slope_change" else "NOT_APPLICABLE"
         )
+        direction = str(item["direction"]) if candidate_type == "isolated_point_anomaly" else "ALL_DIRECTIONS"
         groups[(
             str(item["metric_id"]),
-            str(item["candidate_type"]),
+            candidate_type,
             int(item["candidate_year"]),
             pre_state,
             post_state,
+            direction,
         )].append(item)
 
     output: list[dict[str, Any]] = []
-    for (metric_id, candidate_type, year, pre_state, post_state), items in sorted(groups.items()):
+    for (metric_id, candidate_type, year, pre_state, post_state, point_direction), items in sorted(groups.items()):
         entities = {str(item["entity_id"]) for item in items}
         if candidate_type == "slope_change":
             up = sum(item["direction"] == "SLOPE_INCREASE" for item in items)
             down = sum(item["direction"] == "SLOPE_DECREASE" for item in items)
-        else:
+        elif candidate_type == "level_shift":
             up = sum(item["direction"] == "UP" for item in items)
             down = sum(item["direction"] == "DOWN" for item in items)
+        else:
+            up = sum(item["direction"] == "ABOVE_LOCAL_REFERENCE" for item in items)
+            down = sum(item["direction"] == "BELOW_LOCAL_REFERENCE" for item in items)
+
         interior_entities = {
             str(item["entity_id"])
             for item in items
@@ -606,32 +613,45 @@ def build_shared_year_patterns(
             if item.get("support_position") == "MINIMUM_SEGMENT_EDGE"
         }
         total = len(entities)
-        interior_support = len(interior_entities)
-        boundary_support = len(boundary_entities)
-        concordance = max(up, down) / total if total else 0.0
-        if (
-            total >= int(contract["shared_year_minimum_entities"])
-            and concordance >= float(contract["shared_year_direction_concordance"])
-        ):
+        if candidate_type == "isolated_point_anomaly":
+            # Symmetric local references do not use a split point; record their
+            # separate support regime rather than labelling them as split-interior.
+            interior_support = total
+            boundary_support = 0
+            support_position = "SYMMETRIC_LOCAL_REFERENCE"
+        else:
+            interior_support = len(interior_entities)
+            boundary_support = len(boundary_entities)
             if interior_support >= int(contract["shared_year_minimum_entities"]):
                 support_position = "INTERIOR_SUPPORTED"
             elif boundary_support == total:
                 support_position = "BOUNDARY_SENSITIVE_ONLY"
             else:
                 support_position = "MIXED_INTERIOR_AND_BOUNDARY"
+
+        concordance = max(up, down) / total if total else 0.0
+        if (
+            total >= int(contract["shared_year_minimum_entities"])
+            and concordance >= float(contract["shared_year_direction_concordance"])
+        ):
             output.append({
-                "pattern_type": "shared_metric_change_year",
+                "pattern_type": (
+                    "shared_metric_point_anomaly_year"
+                    if candidate_type == "isolated_point_anomaly"
+                    else "shared_metric_change_year"
+                ),
                 "metric_id": metric_id,
                 "candidate_type": candidate_type,
                 "year": year,
+                "point_anomaly_direction": point_direction if candidate_type == "isolated_point_anomaly" else "NOT_APPLICABLE",
                 "pre_change_trend_direction": pre_state,
                 "post_change_trend_direction": post_state,
                 "entity_support": total,
                 "interior_entity_support": interior_support,
                 "boundary_entity_support": boundary_support,
                 "support_position": support_position,
-                "slope_increase_or_level_up_count": up,
-                "slope_decrease_or_level_down_count": down,
+                "slope_increase_or_level_up_or_above_count": up,
+                "slope_decrease_or_level_down_or_below_count": down,
                 "direction_concordance": concordance,
                 "status": "DISCOVERY_CANDIDATE_UNVALIDATED",
                 "causal_claim": False,
@@ -703,10 +723,10 @@ def run_behavioral_discovery(
             ) + "\n")
     shared_fields = [
         "pattern_type", "metric_id", "candidate_type", "year",
-        "pre_change_trend_direction", "post_change_trend_direction",
+        "point_anomaly_direction", "pre_change_trend_direction", "post_change_trend_direction",
         "entity_support", "interior_entity_support", "boundary_entity_support",
-        "support_position", "slope_increase_or_level_up_count",
-        "slope_decrease_or_level_down_count",
+        "support_position", "slope_increase_or_level_up_or_above_count",
+        "slope_decrease_or_level_down_or_below_count",
         "direction_concordance", "status", "causal_claim", "inferential_p_value",
     ]
     _write_csv(output_dir / SHARED_PATTERN_FILE, shared, shared_fields)
