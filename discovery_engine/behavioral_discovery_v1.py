@@ -237,6 +237,9 @@ def analyze_series(
                 "left_segment_end": years[split - 1],
                 "right_segment_start": years[split],
                 "right_segment_end": years[-1],
+                "left_segment_observation_count": split,
+                "right_segment_observation_count": n - split,
+                "support_position": "MINIMUM_SEGMENT_EDGE" if split in {minimum_segment, n - minimum_segment} else "INTERIOR",
                 "left_detrended_median": left_median,
                 "right_detrended_median": right_median,
                 "direction": "UP" if delta > 0 else "DOWN",
@@ -283,6 +286,9 @@ def analyze_series(
                 "left_segment_end": years[split - 1],
                 "right_segment_start": years[split],
                 "right_segment_end": years[-1],
+                "left_segment_observation_count": split,
+                "right_segment_observation_count": n - split,
+                "support_position": "MINIMUM_SEGMENT_EDGE" if split in {minimum_segment, n - minimum_segment} else "INTERIOR",
                 "left_theil_sen_slope_per_year": left_slope,
                 "right_theil_sen_slope_per_year": right_slope,
                 "slope_delta_per_year": delta_slope,
@@ -564,18 +570,39 @@ def build_shared_year_patterns(
         down = sum(
             item["direction"] in {"DOWN", "DECELERATING"} for item in items
         )
+        interior_entities = {
+            str(item["entity_id"])
+            for item in items
+            if item.get("support_position") == "INTERIOR"
+        }
+        boundary_entities = {
+            str(item["entity_id"])
+            for item in items
+            if item.get("support_position") == "MINIMUM_SEGMENT_EDGE"
+        }
         total = len(entities)
+        interior_support = len(interior_entities)
+        boundary_support = len(boundary_entities)
         concordance = max(up, down) / total if total else 0.0
         if (
             total >= int(contract["shared_year_minimum_entities"])
             and concordance >= float(contract["shared_year_direction_concordance"])
         ):
+            if interior_support >= int(contract["shared_year_minimum_entities"]):
+                support_position = "INTERIOR_SUPPORTED"
+            elif boundary_support == total:
+                support_position = "BOUNDARY_SENSITIVE_ONLY"
+            else:
+                support_position = "MIXED_INTERIOR_AND_BOUNDARY"
             output.append({
                 "pattern_type": "shared_metric_change_year",
                 "metric_id": metric_id,
                 "candidate_type": candidate_type,
                 "year": year,
                 "entity_support": total,
+                "interior_entity_support": interior_support,
+                "boundary_entity_support": boundary_support,
+                "support_position": support_position,
                 "up_or_accelerating_count": up,
                 "down_or_decelerating_count": down,
                 "direction_concordance": concordance,
@@ -616,7 +643,27 @@ def run_behavioral_discovery(
         item["metric_id"], item["entity_id"], int(item["candidate_year"]), item["candidate_type"]
     ))
     shared = build_shared_year_patterns(candidates, contract)
-    candidate_counts = Counter(item["candidate_type"] for item in candidates)
+    source_identity_rows = [
+        identity
+        for series in series_list
+        for identity in series["identities"]
+    ]
+    logical_ids = [item["logical_record_id"] for item in source_identity_rows]
+    canonical_ids = [item["canonical_record_id"] for item in source_identity_rows]
+    if len(set(logical_ids)) != len(logical_ids):
+        raise BehavioralDiscoveryError("duplicate_logical_source_observation_identity")
+    if len(set(canonical_ids)) != len(canonical_ids):
+        raise BehavioralDiscoveryError("duplicate_canonical_source_observation_identity")
+    candidate_year_counts: dict[str, dict[str, int]] = defaultdict(lambda: defaultdict(int))
+    boundary_sensitive_count = 0
+    for item in candidates:
+        candidate_year_counts[item["candidate_type"]][str(item["candidate_year"])] += 1
+        if item.get("support_position") == "MINIMUM_SEGMENT_EDGE":
+            boundary_sensitive_count += 1
+    candidate_year_counts_plain = {
+        kind: dict(sorted(years.items(), key=lambda pair: int(pair[0])))
+        for kind, years in sorted(candidate_year_counts.items())
+    }
     output_dir.mkdir(parents=True, exist_ok=True)
 
     profile_fields = list(profiles[0].keys()) if profiles else []
@@ -628,13 +675,20 @@ def run_behavioral_discovery(
             ) + "\n")
     shared_fields = [
         "pattern_type", "metric_id", "candidate_type", "year", "entity_support",
+        "interior_entity_support", "boundary_entity_support", "support_position",
         "up_or_accelerating_count", "down_or_decelerating_count",
         "direction_concordance", "status", "causal_claim", "inferential_p_value",
     ]
     _write_csv(output_dir / SHARED_PATTERN_FILE, shared, shared_fields)
 
+    code_path = Path(__file__).resolve()
+    runner_path = Path.cwd() / "scripts" / "discovery" / "run_behavioral_discovery_v1.py"
+    source_commit = __import__("os").getenv("GITHUB_SHA")
     summary = {
         "contract_id": contract["contract_id"],
+        "source_commit": source_commit,
+        "code_sha256": sha256_file(code_path),
+        "runner_sha256": sha256_file(runner_path) if runner_path.is_file() else None,
         "status": "CANDIDATE_GENERATION_ONLY",
         "generated_at_utc": utc_now(),
         "input": {
@@ -654,11 +708,14 @@ def run_behavioral_discovery(
         "series_profile_count": len(profiles),
         "candidate_count": len(candidates),
         "candidate_counts_by_type": dict(sorted(candidate_counts.items())),
+        "candidate_year_counts_by_type": candidate_year_counts_plain,
+        "boundary_sensitive_candidate_count": boundary_sensitive_count,
         "shared_year_pattern_count": len(shared),
         "source_observation_identity": {
             "contract": "source-record-identity-v1",
             "records": input_counts["observation_count"],
-            "unique_logical_slots": input_counts["observation_count"],
+            "unique_logical_slots": len(set(logical_ids)),
+            "unique_canonical_versions": len(set(canonical_ids)),
             "available_at_known": 0,
             "available_at_unknown": input_counts["observation_count"],
             "revision_metadata_available": 0,
@@ -687,7 +744,13 @@ def run_behavioral_discovery(
         "bundle_id": "CHAOS_BEHAVIORAL_DISCOVERY_V1",
         "contract_id": contract["contract_id"],
         "generated_at_utc": summary["generated_at_utc"],
-        "source_commit": None,
+        "source_commit": source_commit,
+        "code": {
+            "module_path": code_path.resolve().relative_to(Path.cwd().resolve()).as_posix(),
+            "module_sha256": sha256_file(code_path),
+            "runner_path": runner_path.resolve().relative_to(Path.cwd().resolve()).as_posix() if runner_path.is_file() else None,
+            "runner_sha256": sha256_file(runner_path) if runner_path.is_file() else None,
+        },
         "artifacts": [
             {
                 "path": (output_dir / name).resolve().relative_to(Path.cwd().resolve()).as_posix(),
