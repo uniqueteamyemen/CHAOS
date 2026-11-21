@@ -87,7 +87,7 @@ def validate_domain_state(
     return errors
 
 
-def domain_state_identity(record: Mapping[str, Any]) -> str:
+def domain_state_coarse_key(record: Mapping[str, Any]) -> str:
     """Return a coarse screening key, not a globally unique multidimensional record identity.
 
     Source-specific dimensions (for example trade partner, indicator, direction,
@@ -173,7 +173,7 @@ def audit_domain_state_file(
                     continue
 
                 base["valid_records"] += 1
-                coarse_identity_counts[domain_state_identity(record)] += 1
+                coarse_identity_counts[domain_state_coarse_key(record)] += 1
                 domains[str(record["domain"])] += 1
                 frequencies[str(record["native_frequency"])] += 1
                 entities.add(str(record["entity_id"]))
@@ -269,7 +269,8 @@ def build_domain_state_integrity_report(
         "policy": {
             "native_frequency_must_match_registry": True,
             "state_probability_is_optional_and_not_causal_confidence": True,
-            "duplicate_state_slots_are_reported_not_removed": True,
+            "coarse_identity_collisions_are_reported_not_removed": True,
+            "coarse_identity_collision_is_not_proof_of_duplicate_record": True,
             "missing_source_artifacts_are_not_reconstructed_or_imputed": True,
             "historical_experiment_files_are_read_only": True,
         },
