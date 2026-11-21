@@ -92,14 +92,14 @@ Readiness is purpose-specific. A raw dataset can be present while an edge, cross
 ### Primary branches
 
 - `main-phase2`: sole Phase 2 integration base for this work.
-- `discovery/d1-domainstate-integrity-v1`: primary Engine 1 integration candidate.
+- `discovery/d1-domainstate-integrity-v1`: integrated Engine 1 candidate branch; PR #28 is merged into `main-phase2`; branch history retained.
 - `chore/repository-hygiene-audit-v1`: documentation and non-destructive inventory work only.
 - `governance/p0-baseline-audit-v1`: P0/D0 history; PR #21 was closed as superseded after verifying inclusion in Discovery ancestry.
 - `fix/p2-2-3-usgs-catalog-integrity-v1`: requires selective review; do not merge by branch name.
 
 ### Discovery integration evidence
 
-Discovery was rebased by a two-parent merge commit onto the protected-path-guard/documentation baseline in `main-phase2`. Subsequent commits corrected artifact-writer concurrency, added PR read-only validation, recorded current evidence, and corrected DomainState collision reporting. The latest comparison is against `main-phase2`; PR #28 changed-file inventory contains no paths under `experiments/**` or `structural_engine/isolated_break_detector_v1/**`.
+Discovery V1 was integrated into `main-phase2` by PR #28 at `e0c13b41ef1bbbdfe46f1dc266a007eb2dedd8d7`. The PR contained 62 changed files and no paths under `experiments/**` or `structural_engine/isolated_break_detector_v1/**`. The branch remains available with its history preserved.
 
 Relevant successful Actions runs previously observed (each applies only to its recorded head SHA):
 - WDI DomainState build: [44943154074](https://github.com/uniqueteamyemen/CHAOS/actions/runs/44943154074)
@@ -107,7 +107,7 @@ Relevant successful Actions runs previously observed (each applies only to its r
 - Conditional Calendar Null: [44945139684](https://github.com/uniqueteamyemen/CHAOS/actions/runs/44945139684)
 - WEO 2020 Source Vintage Audit: [44947329602](https://github.com/uniqueteamyemen/CHAOS/actions/runs/44947329602)
 
-The three generation workflows were made write-on-push/manual and read-only-on-PR. They completed successfully on the materialization head after their artifact-writer concurrency fixes. PR #28 exact-head checks on `4c9b0...` all completed successfully, including `stress`, `experiments-immutable`, Observation Foundation, Source Record Identity, D0 artifact validation, DomainState audit, and the three read-only generation validators. A later code change renamed the coarse DomainState collision metric and added a multidimensional regression test; those changes require a fresh exact-head CI cycle before PR #28 is made ready or merged.
+The three generation workflows now use write-on-push/manual and read-only-on-PR paths. Their final read-only validators passed on the final PR head `f0627eac6fd39a4d26fe128820cf05c58293054d`. All 11 check-runs completed: eight passed and three writer jobs were intentionally skipped on PR events. `stress` passed via the lightweight contract-test subset; the full P2.2 stress pipeline and Release publishing did not run on the PR.
 
 ### P0 PR overlap
 
@@ -121,11 +121,11 @@ Former PR #21 (P0 execution plan and D0 inventory) modified several files also c
 - `docs/P1_HYPOTHESIS_AND_INPUT_LIFECYCLE_V1_AR.md`
 - shared workflows and `.gitignore`.
 
-PR #21 was closed as superseded after verifying that the Discovery branch is a descendant of the P0 governance branch (merge base equals P0 head), and that PR #28 contains all 19 paths changed by PR #21, including `scripts/governance/build_d0_inventory.py`. Thus the overlap is already represented in branch ancestry, not an unresolved divergence. The D0 inventory remains part of the Discovery candidate and must pass the exact-PR-head CI and artifact checks.
+PR #21 was closed as superseded after verifying that the Discovery branch is a descendant of the P0 governance branch (merge base equals P0 head), and that PR #28 contains all 19 paths changed by PR #21, including `scripts/governance/build_d0_inventory.py`. Thus the overlap is already represented in branch ancestry, not an unresolved divergence. The D0 inventory is included in the merged Discovery baseline; its successful PR validation is recorded in the check-run history.
 
 ### USGS-labelled branch assessment
 
-The net comparison for `fix/p2-2-3-usgs-catalog-integrity-v1` reports 87 commits ahead and zero behind. Its changed-file set includes observation-foundation code, seismic null/declustering contracts, a large domain-null audit, and changes to `real_data_stress_pipeline/run_pipeline.py`. It does not present as a narrowly scoped catalog-only patch in the net diff.
+Against the post-Discovery `main-phase2`, `fix/p2-2-3-usgs-catalog-integrity-v1` is diverged: 87 commits ahead and 3 behind, with 28 changed paths in the net comparison. Some observation-foundation/kernel/contracts are already identical to current main; the branch still differs in `real_data_stress_pipeline/run_pipeline.py` and includes unique seismic audit/contracts/tests. It must be selectively ported, not merged wholesale.
 
 Do not merge this branch wholesale. First identify the exact commits and files that implement catalog integrity and magnitude provenance, compare them with Discovery and the current base, and selectively port only unique required changes. Run seismic-specific tests separately. Keep the frozen detector and historical experiment tree untouched.
 
@@ -141,20 +141,21 @@ Branch names are not proof of current usefulness. Preserve commit history; archi
 | `archive/phase1-detector-freeze-v1.0`, `phase1-detector-freeze-phase2-real-data` | Frozen Phase 1 references | Preserve as archive references. |
 
 Open PRs at the latest GitHub check:
-- #28: Discovery V1 integration; open as Draft. Base/head are synchronized; all earlier exact-head checks passed, but the latest coarse-key validator correction requires a fresh CI pass and the full DomainState registry remains BLOCKED.
 - #24: Markov rho observability; open, targets `p2.2.2-markov-calibration-audit`, not `main-phase2`. Keep isolated from the Engine 1 integration.
-- #21: closed as superseded after confirming Discovery is a descendant of the P0 branch and all 19 P0 changed paths are included in PR #28.
+- #28: merged into `main-phase2` at `e0c13b41ef1bbbdfe46f1dc266a007eb2dedd8d7`.
+- #30: merged into `main-phase2` at `7eb619c1a7756b52aeffb32a06278e786c0dd762`.
+- #21: closed as superseded; all 19 P0 paths were included through Discovery ancestry.
 - #20, #9, #2, #4, #3: closed from the active integration queue; their branches and commits remain. No branch deletion was performed.
 
 ## 7. Ordered integration plan
 
-1. **Complete candidate validation:** inspect all Discovery changed files, workflow definitions, contract changes, generated artifact provenance, and the exact branch head. Verify no protected-path changes.
+1. **Discovery V1 integrated:** PR #28 passed exact-head CI and merged without touching protected paths. Its outputs remain candidates; DomainState completeness remains blocked.
 2. **P0 ancestry verified:** PR #21 was closed as superseded; its D0 inventory path and all other changed paths are included in the Discovery descendant. Preserve its branch and commits.
-3. **Open/maintain a Discovery PR to `main-phase2`:** require CI on the PR merge candidate, all required checks green, and explicit diff review. Do not merge based solely on successful runs from earlier commits.
-4. **Integrate Discovery first:** merge only after the PR's exact-head CI and protected-path checks pass. Engine 1 remains discovery-only; no Engine 2 work starts.
-5. **USGS selective port:** identify catalog-specific commits and unique files. Port only the catalog/provenance changes that are absent from the integrated base, through a separate PR and separate CI.
-6. **Resolve diagnostic PRs separately:** review #24 only within its Markov diagnostic branch lineage. The P-engine/ERP proposals that were in the active queue are closed without merging; preserve their branch histories.
-7. **Repository cleanup:** only after the architecture map and dependency inventory are complete. Do not delete or move historical experiments or frozen detector assets.
+3. **Selective USGS port:** compare unique catalog-integrity and magnitude-provenance changes against the integrated main baseline; carry only the necessary code, tests, contracts, documentation, and workflow through a separate PR.
+4. **USGS acceptance boundary:** integrity checks may be integrated if CI passes; this does not establish Mc completeness, a validated seismic null, ETAS fit, or prediction.
+5. **Diagnostic tracks:** review #24 only within its Markov diagnostic branch lineage. P-engine/ERP proposals previously in the active queue are closed; preserve their branch histories.
+6. **Repository cleanup:** only after the dependency/reference map and component classification are complete. Do not delete or move historical experiments or frozen detector assets.
+
 
 ## 8. Acceptance conditions before Engine 1 freeze
 
@@ -178,7 +179,7 @@ Until these conditions are met, Discovery V1 remains a candidate generation and 
 - [DomainState registry audit](docs/DOMAIN_STATE_REGISTRY_AUDIT_V1_AR.md)
 - [Engine 1 Discovery integration status](docs/ENGINE1_DISCOVERY_INTEGRATION_STATUS_V1_AR.md)
 
-At the checked baseline, `main-phase2` has 1,347 tracked files and 211 directories (1,558 total tree entries); `experiments/**` accounts for 916 files. It has 21 YAML workflows and one non-workflow text marker. The Discovery branch contains 1,400 files and six additional workflows; it is not yet integrated.
+At the current post-Discovery baseline, `main-phase2` has 1,408 tracked files and 225 directories (1,633 total tree entries); `experiments/**` still accounts for 916 files. The workflow directory has 27 YAML workflows plus one non-workflow text marker. Discovery V1 is integrated.
 
 ## 10. Repository hygiene guardrails
 
