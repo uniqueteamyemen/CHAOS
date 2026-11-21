@@ -271,7 +271,7 @@ CHAOS محرك عام لاكتشاف البنية الزمنية داخل الس
 - 697 من 1,081 مرشحاً لتغير المستوى/الميل تقع عند الحد الأدنى لطول أحد الجزأين؛ بقيت موسومة boundary-sensitive ولا تُعامل كأنها أنماط داخلية.
 - أُضيف فصل دلالي بين `SLOPE_INCREASE/SLOPE_DECREASE` واتجاه الميل قبل التغير وبعده؛ لا يُجمع تباطؤ النمو مع تسارع الانكماش.
 - اجتاز 10 اختبارات وحدات، وبناء البيانات الفعلية، وفحص manifest لأربعة artifacts. Workflow `44944577870` نجح.
-- تقرير النتائج: `docs/BEHAVIORAL_DISCOVERY_V1_AR.md`.
+- تقرير النتائج: `docs/BEHAVIORAL_DISCOVERY_V1_NULL_REVIEW_AR.md`.
 - المخرجات: `discovery/behavioral_v1/`; الكود في `discovery_engine/behavioral_discovery_v1.py`.
 
 ### القراءة الهندسية
