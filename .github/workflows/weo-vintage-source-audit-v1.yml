@@ -1,0 +1,87 @@
+name: CHAOS — WEO 2020 Source Vintage Audit
+
+on:
+  push:
+    branches:
+      - 'discovery/**'
+    paths:
+      - 'discovery_engine/weo_vintage_audit_v1.py'
+      - 'scripts/discovery/run_weo_vintage_audit_v1.py'
+      - 'tests/discovery/test_weo_vintage_audit_v1.py'
+      - 'experimental_contracts/WEO_GDP_GROWTH_VINTAGE_AUDIT_CONTRACT_V1.json'
+      - 'catalog_first/readiness_gate/macro_plus_eia_energy/MACRO_PLUS_EIA_ENERGY_COMPLETE_139_NUMERIC_RAW_2000_2024_WIDE.csv'
+      - '.github/workflows/weo-vintage-source-audit-v1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: chaos-weo-vintage-audit-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  weo-vintage-audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout discovery branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref_name }}
+          fetch-depth: 0
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Compile vintage audit and validate contract
+        run: |
+          python -m py_compile discovery_engine/weo_vintage_audit_v1.py scripts/discovery/run_weo_vintage_audit_v1.py
+          python -m json.tool experimental_contracts/WEO_GDP_GROWTH_VINTAGE_AUDIT_CONTRACT_V1.json
+      - name: Run source vintage audit unit tests
+        run: python -m unittest discover -s tests/discovery -p 'test_weo_vintage_audit_v1.py' -v
+      - name: Download official historical WEO vintages and compare
+        run: python scripts/discovery/run_weo_vintage_audit_v1.py
+      - name: Verify raw and derived artifact hashes
+        run: |
+          python - <<'PY'
+          import hashlib, json
+          from pathlib import Path
+          root = Path.cwd()
+          summary_path = root / "discovery/source_vintage_v1/WEO_GDP_GROWTH_2020_VINTAGE_AUDIT_V1.json"
+          manifest_path = root / "discovery/source_vintage_v1/WEO_GDP_GROWTH_VINTAGE_MANIFEST_V1.json"
+          summary = json.loads(summary_path.read_text())
+          manifest = json.loads(manifest_path.read_text())
+          for entry in manifest["derived_artifacts"]:
+              path = root / entry["path"]
+              digest = hashlib.sha256(path.read_bytes()).hexdigest()
+              assert digest == entry["sha256"], (entry["path"], digest, entry["sha256"])
+          assert len(summary["downloads"]) == 2
+          assert all(item["sha256"] and item["bytes"] > 100000 for item in summary["downloads"])
+          print(json.dumps({
+              "status": summary["status"],
+              "comparison_entities": summary["comparison_entity_count"],
+              "vintages": summary["vintages"],
+              "raw_downloads": summary["downloads"],
+          }, sort_keys=True))
+          PY
+      - name: Commit derived vintage audit only
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add discovery/source_vintage_v1/WEO_GDP_GROWTH_2020_VINTAGE_AUDIT_V1.json
+          git add discovery/source_vintage_v1/WEO_GDP_GROWTH_2020_VINTAGE_COMPARISON_V1.csv
+          git add discovery/source_vintage_v1/WEO_GDP_GROWTH_VINTAGE_MANIFEST_V1.json
+          if ! git diff --cached --quiet; then
+            git commit -m "data(chaos): record official WEO vintage audit"
+            git push origin "HEAD:${GITHUB_REF_NAME}"
+          fi
+      - name: Upload raw WEO vintage files and derived evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: chaos-weo-vintage-source-audit-${{ github.sha }}
+          path: |
+            /tmp/chaos_weo_vintage_raw/
+            discovery/source_vintage_v1/
+          if-no-files-found: error
+          retention-days: 90
