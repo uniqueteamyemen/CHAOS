@@ -1,6 +1,6 @@
 {
   "contract_id": "CHAOS_WEO_GDP_GROWTH_VINTAGE_AUDIT_V1",
-  "purpose": "Test revision sensitivity of the 2020 real GDP growth candidate across official IMF WEO publication vintages.",
+  "purpose": "Test revision sensitivity of the 2020 IMF real GDP growth signal across official WEO release vintages.",
   "subject_code": "NGDP_RPCH",
   "years": [
     2016,
@@ -16,35 +16,42 @@
     2018,
     2019
   ],
-  "method": "Theil-Sen line on pre-event years only, extrapolated to event year. Compare the 2020 value against this pre-event projection and against the 2019 value.",
+  "method": "Theil-Sen line fitted on the four pre-event years and extrapolated one year to 2020; descriptive vintage sensitivity only.",
   "vintages": [
     {
       "vintage_id": "WEO_2020_OCT",
       "release_label": "October 2020",
       "release_page": "https://www.imf.org/en/publications/weo/weo-database/2020/october",
-      "download_url": "https://www.imf.org/-/media/files/publications/weo/weo-database/2020/02/weooct2020all.xls"
+      "download_url_candidates": [
+        "https://www.imf.org/-/media/Files/Publications/WEO/WEO-Database/2020/02/WEOOct2020all.xls",
+        "https://www.imf.org/-/media/files/publications/weo/weo-database/2020/02/weooct2020all.xls"
+      ]
     },
     {
       "vintage_id": "WEO_2021_APR",
       "release_label": "April 2021",
       "release_page": "https://www.imf.org/en/publications/weo/weo-database/2021/april",
-      "download_url": "https://www.imf.org/-/media/files/publications/weo/weo-database/2021/weoapr2021all.xls"
+      "download_url_candidates": [
+        "https://www.imf.org/-/media/Files/Publications/WEO/WEO-Database/2021/WEOApr2021all.xls",
+        "https://www.imf.org/-/media/files/publications/weo/weo-database/2021/weoapr2021all.xls"
+      ]
     },
     {
-      "vintage_id": "WEO_APR2026_CURRENT_PANEL",
-      "release_label": "April 2026",
+      "vintage_id": "WEO_APR2026_PANEL_STAGED",
+      "release_label": "April 2026 WEO panel already committed in CHAOS",
       "panel_column": "imf__NGDP_RPCH"
     }
   ],
-  "policies": {
-    "no_imputation": true,
-    "no_entity_name_fuzzy_matching": true,
-    "match_key": "ISO-3",
-    "raw_source_values_preserved": true,
-    "source_files_hashed": true,
-    "estimates_start_after_retained_not_interpreted": true,
-    "no_p_values": true,
-    "no_forecasting": true,
-    "no_causal_claims": true
+  "policy": {
+    "matching": "ISO-3 exact only",
+    "preserve_raw_source_files": true,
+    "calculate_raw_sha256": true,
+    "classify_2020_using_imf_estimates_start_after": true,
+    "estimates_start_after_semantics": "Latest actual-data year; 0 means all years are estimates; 2020 is actual only when latest actual year is >= 2020.",
+    "no_missing_value_imputation": true,
+    "no_country_name_fuzzy_matching": true,
+    "no_inferential_p_values": true,
+    "no_causal_claims": true,
+    "no_forecasting": true
   }
 }
