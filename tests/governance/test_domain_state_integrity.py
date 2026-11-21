@@ -44,6 +44,10 @@ class DomainStateIntegrityTests(unittest.TestCase):
     def test_valid_state_allows_null_probability_and_preserves_source_metadata(self):
         self.assertEqual(validate_domain_state(state(), REQUIRED, "annual"), [])
 
+    def test_institutions_policy_is_a_supported_domain(self):
+        record = state(domain="institutions_policy", native_frequency="source_defined_wave")
+        self.assertEqual(validate_domain_state(record, REQUIRED, "source_defined_wave"), [])
+
     def test_probability_outside_unit_interval_is_rejected(self):
         self.assertIn(
             "state_probability_must_be_null_or_finite_0_to_1",
