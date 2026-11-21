@@ -6,15 +6,9 @@
   "type": "object",
   "additionalProperties": false,
   "required": [
-    "adapter_id",
-    "source_namespace",
-    "dataset_id",
-    "domain",
-    "native_frequency",
-    "series_semantics",
-    "entity_id_path",
-    "event_time_path",
-    "metrics"
+    "adapter_id", "source_namespace", "dataset_id", "domain",
+    "native_frequency", "series_semantics", "entity_id_path",
+    "event_time_path", "time_support", "metrics"
   ],
   "properties": {
     "adapter_id": {"type": "string", "minLength": 1},
@@ -25,6 +19,17 @@
     "series_semantics": {"enum": ["periodic_measurement", "event_stream", "period_count"]},
     "entity_id_path": {"$ref": "#/$defs/path"},
     "event_time_path": {"$ref": "#/$defs/path"},
+    "time_support": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["observation_period_start", "observation_period_end", "native_frequency"],
+      "properties": {
+        "observation_period_start": {"type": "string", "minLength": 1},
+        "observation_period_end": {"type": "string", "minLength": 1},
+        "native_frequency": {"type": "string", "minLength": 1},
+        "boundary_semantics": {"type": "string", "minLength": 1}
+      }
+    },
     "available_at_path": {"$ref": "#/$defs/path"},
     "source_record_id_path": {"$ref": "#/$defs/path"},
     "source_revision_path": {"$ref": "#/$defs/path"},
