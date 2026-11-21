@@ -2,11 +2,88 @@ import unittest
 import numpy as np
 from scripts.audits.p2_2_3_markov_real_data_behavior import (
     rolling_mad_volatility_normalize, summarize_records,
-    run_bootstrap_jobs,
+    run_bootstrap_jobs, extract_markov_rho_diagnostics,
+    resolve_audit_source_commit,
 )
 
 
 class MarkovRealDataBehaviorTests(unittest.TestCase):
+    def test_audit_metadata_prefers_exact_checked_out_source_commit(self):
+        from unittest.mock import patch
+        with patch.dict("os.environ", {
+            "AUDIT_SOURCE_COMMIT": "checked-out-head-sha",
+            "GITHUB_SHA": "synthetic-merge-sha",
+        }):
+            self.assertEqual(resolve_audit_source_commit(), "checked-out-head-sha")
+
+    def test_rho_diagnostic_contract_exposes_three_distinct_coefficients(self):
+        diagnostics = {
+            "rho_raw": 0.94,
+            "rho_used": 0.88,
+            "rho_cusum_used": 0.71,
+        }
+        self.assertEqual(
+            extract_markov_rho_diagnostics(diagnostics),
+            {
+                "rho_raw": 0.94,
+                "rho_clipped": 0.88,
+                "rho_cusum_used": 0.71,
+            },
+        )
+
+    def test_rho_diagnostic_contract_rejects_inconsistent_clipped_value(self):
+        with self.assertRaisesRegex(ArithmeticError, "inconsistent_with_raw"):
+            extract_markov_rho_diagnostics({
+                "rho_raw": 0.94,
+                "rho_used": 0.70,
+                "rho_cusum_used": 0.71,
+            })
+
+    def test_rho_diagnostic_contract_fails_closed_when_a_source_field_is_missing(self):
+        with self.assertRaisesRegex(ArithmeticError, "rho_used"):
+            extract_markov_rho_diagnostics({
+                "rho_raw": 0.94,
+                "rho_cusum_used": 0.71,
+            })
+
+    def test_rho_summary_keeps_raw_clipped_and_cusum_distributions_separate(self):
+        rows = [
+            {
+                "series_id": "energy_rho", "category": "energy",
+                "sample_length": 100, "input_variant": "raw",
+                "has_any_alarm": False, "alarm_count": 0,
+                "cusum_peak": 1.0, "cusum_updates": 50,
+                "rho_raw": 0.94, "rho_clipped": 0.88, "rho_cusum_used": 0.71,
+                "rho_cusum_bias_correction_enabled": True,
+            },
+            {
+                "series_id": "energy_rho", "category": "energy",
+                "sample_length": 100, "input_variant": "raw",
+                "has_any_alarm": False, "alarm_count": 0,
+                "cusum_peak": 1.2, "cusum_updates": 50,
+                "rho_raw": 0.91, "rho_clipped": 0.88, "rho_cusum_used": 0.68,
+                "rho_cusum_bias_correction_enabled": False,
+            },
+        ]
+        summary = summarize_records(rows)
+        per_series = summary["per_series"]["energy_rho|n=100|raw"]
+        self.assertAlmostEqual(per_series["rho_raw_distribution"]["median"], 0.925)
+        self.assertAlmostEqual(per_series["rho_clipped_distribution"]["median"], 0.88)
+        self.assertAlmostEqual(per_series["rho_cusum_used_distribution"]["median"], 0.695)
+        self.assertEqual(per_series["rho_cusum_bias_correction_enabled_true_replicates"], 1)
+        self.assertEqual(per_series["rho_cusum_bias_correction_enabled_false_replicates"], 1)
+        self.assertEqual(per_series["rho_cusum_bias_correction_enabled_missing_or_invalid_replicates"], 0)
+        self.assertAlmostEqual(per_series["rho_cusum_bias_correction_enabled_true_fraction"], 0.5)
+        category = summary["by_category_length_variant"]["energy|n=100|raw"]
+        self.assertAlmostEqual(
+            category["rho_cusum_used_per_series_median_distribution"]["median"],
+            0.695,
+        )
+        self.assertAlmostEqual(
+            category["rho_cusum_bias_correction_enabled_true_fraction_mean_across_series"],
+            0.5,
+        )
+
     def test_rolling_mad_is_finite_and_preserves_length(self):
         values = np.random.default_rng(11).normal(0.0, 0.03, 160)
         result = rolling_mad_volatility_normalize(values)

@@ -93,6 +93,42 @@ def distribution(values):
             "q75": q(.75), "max": max(clean)}
 
 
+def resolve_audit_source_commit() -> str:
+    """Prefer the exact checked-out ref over GitHub's synthetic PR merge SHA."""
+    return os.getenv("AUDIT_SOURCE_COMMIT") or os.getenv("GITHUB_SHA", "local-unresolved")
+
+
+def extract_markov_rho_diagnostics(diagnostics: dict[str, Any]) -> dict[str, float]:
+    """Expose three distinct coefficients without changing frozen BreakDetectorV1.
+
+    V1's legacy rho_used is the raw coefficient clipped to [0.0, 0.88].
+    It is published here as rho_clipped; rho_cusum_used remains separate.
+    """
+    source_fields = {
+        "rho_raw": "rho_raw",
+        "rho_clipped": "rho_used",
+        "rho_cusum_used": "rho_cusum_used",
+    }
+    result: dict[str, float] = {}
+    for output_name, source_name in source_fields.items():
+        value = diagnostics.get(source_name)
+        if (
+            isinstance(value, bool)
+            or not isinstance(value, (int, float))
+            or not math.isfinite(float(value))
+        ):
+            raise ArithmeticError(
+                f"markov_rho_diagnostic_missing_or_nonfinite:{source_name}"
+            )
+        result[output_name] = float(value)
+    expected_clipped = min(0.88, max(0.0, result["rho_raw"]))
+    if not math.isclose(
+        result["rho_clipped"], expected_clipped, rel_tol=0.0, abs_tol=1e-6
+    ):
+        raise ArithmeticError("markov_rho_clipped_inconsistent_with_raw")
+    return result
+
+
 def summarize_records(records):
     """Keep the series as the independent unit; aggregate categories equally by series."""
     by_series = defaultdict(list)
@@ -111,6 +147,11 @@ def summarize_records(records):
         alarm_runs = sum(bool(row["has_any_alarm"]) for row in rows)
         probability = alarm_runs / len(rows) if rows else None
         key = f"{series_id}|n={length}|{variant}"
+        correction_true = sum(row.get("rho_cusum_bias_correction_enabled") is True for row in rows)
+        correction_false = sum(row.get("rho_cusum_bias_correction_enabled") is False for row in rows)
+        correction_missing = sum(
+            not isinstance(row.get("rho_cusum_bias_correction_enabled"), bool) for row in rows
+        )
         series_summary = {
             "series_id": series_id,
             "category": category,
@@ -124,7 +165,15 @@ def summarize_records(records):
             ) if rows else None,
             "cusum_peak_distribution": distribution([row["cusum_peak"] for row in rows]),
             "cusum_updates_distribution": distribution([row["cusum_updates"] for row in rows]),
-            "rho_cusum_used_distribution": distribution([row["rho_cusum_used"] for row in rows]),
+            "rho_raw_distribution": distribution([row.get("rho_raw") for row in rows]),
+            "rho_clipped_distribution": distribution([row.get("rho_clipped") for row in rows]),
+            "rho_cusum_used_distribution": distribution([row.get("rho_cusum_used") for row in rows]),
+            "rho_cusum_bias_correction_enabled_true_replicates": correction_true,
+            "rho_cusum_bias_correction_enabled_false_replicates": correction_false,
+            "rho_cusum_bias_correction_enabled_missing_or_invalid_replicates": correction_missing,
+            "rho_cusum_bias_correction_enabled_true_fraction": (
+                correction_true / len(rows) if rows else None
+            ),
         }
         per_series[key] = series_summary
         category_groups[(category, length, variant)].append(series_summary)
@@ -154,6 +203,34 @@ def summarize_records(records):
             ),
             "per_series_conditional_null_alarm_probability_distribution": distribution(
                 probabilities
+            ),
+            "rho_raw_per_series_median_distribution": distribution([
+                row["rho_raw_distribution"]["median"] for row in series_rows
+            ]),
+            "rho_clipped_per_series_median_distribution": distribution([
+                row["rho_clipped_distribution"]["median"] for row in series_rows
+            ]),
+            "rho_cusum_used_per_series_median_distribution": distribution([
+                row["rho_cusum_used_distribution"]["median"] for row in series_rows
+            ]),
+            "rho_cusum_bias_correction_enabled_true_fraction_mean_across_series": (
+                statistics.fmean([
+                    row["rho_cusum_bias_correction_enabled_true_fraction"]
+                    for row in series_rows
+                    if row["rho_cusum_bias_correction_enabled_true_fraction"] is not None
+                ]) if any(
+                    row["rho_cusum_bias_correction_enabled_true_fraction"] is not None
+                    for row in series_rows
+                ) else None
+            ),
+            "rho_cusum_bias_correction_enabled_true_fraction_distribution_across_series": distribution([
+                row["rho_cusum_bias_correction_enabled_true_fraction"]
+                for row in series_rows
+                if row["rho_cusum_bias_correction_enabled_true_fraction"] is not None
+            ]),
+            "rho_cusum_bias_correction_enabled_missing_or_invalid_series": sum(
+                row["rho_cusum_bias_correction_enabled_missing_or_invalid_replicates"] > 0
+                for row in series_rows
             ),
         }
 
@@ -185,7 +262,7 @@ def analyze_one(sample, sample_length, replicate_id, series_id, category,
         "first_alarm_index": min(times) if times else None,
         "cusum_peak": d.get("cusum_peak"), "cusum_updates": d.get("cusum_updates"),
         "cusum_directional_resets": d.get("cusum_directional_resets"),
-        "rho_raw": d.get("rho_raw"), "rho_cusum_used": d.get("rho_cusum_used"),
+        **extract_markov_rho_diagnostics(d),
         "rho_cusum_bias_correction_enabled": d.get("rho_cusum_bias_correction_enabled"),
     }
 
@@ -272,7 +349,7 @@ def run_audit(replicates, max_series=None, workers=None):
             observed[variant] = {
                 "alarm_count": len(events), "cusum_peak": diag.get("cusum_peak"),
                 "cusum_updates": diag.get("cusum_updates"),
-                "rho_raw": diag.get("rho_raw"), "rho_cusum_used": diag.get("rho_cusum_used"),
+                **extract_markov_rho_diagnostics(diag),
             }
         series_summaries.append({
             "series_id": series_id, "name": item["name"], "category": category,
@@ -312,7 +389,7 @@ def run_audit(replicates, max_series=None, workers=None):
     result = {
         "audit_id": "CHAOS-P2.2.3-MARKOV-REAL-DATA-BEHAVIOR",
         "status": "completed",
-        "repository_commit": os.getenv("GITHUB_SHA", "local-unresolved"),
+        "repository_commit": resolve_audit_source_commit(),
         "method": "per-series Stationary Bootstrap; no cross-series pooling",
         "source": {
             "provider": "World Bank Pink Sheet",
@@ -340,6 +417,15 @@ def run_audit(replicates, max_series=None, workers=None):
             "parallelism_unit": "one complete series per process",
             "seed_derivation": "SHA256(series_id|sample_length|replicate_id|audit_version)",
             "g1_gate_required_for_stationary_resampling": True,
+            "rho_diagnostic_mapping": {
+                "rho_raw": "detector diagnostics.rho_raw",
+                "rho_clipped": (
+                    "detector diagnostics.rho_used; legacy V1 field clipped from "
+                    "rho_raw to [0.0, 0.88]"
+                ),
+                "rho_cusum_used": "detector diagnostics.rho_cusum_used",
+                "detector_modified": False,
+            },
             "metric_name": "conditional_null_alarm_probability", "not_fpr": True,
             "skipped_g1_series": skipped,
         },
