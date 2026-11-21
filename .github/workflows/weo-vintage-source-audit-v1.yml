@@ -81,7 +81,7 @@ jobs:
         with:
           name: chaos-weo-vintage-source-audit-${{ github.sha }}
           path: |
-            /tmp/chaos_weo_vintage_raw/
+            discovery/source_vintage_v1/raw_downloads/
             discovery/source_vintage_v1/
           if-no-files-found: error
           retention-days: 90
