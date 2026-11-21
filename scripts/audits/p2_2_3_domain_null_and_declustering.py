@@ -604,6 +604,10 @@ def read_usgs_csv(path: Path) -> list[dict[str, Any]]:
             "latitude": float(row["latitude"]),
             "depth_km": float(row["depth_km"]) if row.get("depth_km") else None,
             "place": row.get("place"),
+            # Optional fields preserve compatibility with historical CSV files
+            # whose headers predate magnitude-type/source provenance.
+            "mag_type": row.get("mag_type"),
+            "mag_source": row.get("mag_source"),
         })
     return result
 
