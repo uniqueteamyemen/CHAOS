@@ -22,6 +22,7 @@ from pathlib import Path
 from typing import Any, Mapping, Sequence
 
 from chaos_governance_kernel.core import utc_now
+from .weo_hf_mirror_v1 import WeoMirrorError, load_hf_mirror_vintages
 
 CONTRACT_ID = "CHAOS_WEO_GDP_GROWTH_VINTAGE_AUDIT_V1"
 SUPPORTED_YEARS = [2016, 2017, 2018, 2019, 2020]
@@ -378,8 +379,7 @@ def _summarize_vintage(
     ]
     unknown = [
         row for row in rows
-        if row["event_2020_data_status"] == "UNKNOWN_CURRENT_STAGED_PANEL"
-        or row["event_2020_data_status"] == "UNKNOWN"
+        if str(row["event_2020_data_status"]).startswith("UNKNOWN")
     ]
     actual_pretrend = [row for row in rows if row["pretrend_all_actual"]]
 
@@ -467,6 +467,7 @@ def run_vintage_audit(
     vintage_summaries: list[dict[str, Any]] = []
     all_rows: list[dict[str, Any]] = []
 
+    official_access_failures: list[dict[str, Any]] = []
     for item in historical:
         vintage_id = item.get("vintage_id")
         urls = item.get("download_url_candidates")
@@ -474,22 +475,95 @@ def run_vintage_audit(
             raise VintageAuditError("historical_vintage_id_invalid")
         if not isinstance(urls, list) or not urls:
             raise VintageAuditError(f"download_url_candidates_missing:{vintage_id}")
+
         raw_path = raw_dir / f"{vintage_id}_BY_COUNTRIES.xls"
-        download = download_official_vintage(urls, raw_path)
+        try:
+            download = download_official_vintage(urls, raw_path)
+        except VintageAuditError as exc:
+            message = str(exc)
+            if not message.startswith("official_imf_vintage_download_failed_all_urls:"):
+                raise
+            official_access_failures.append({
+                "vintage_id": vintage_id,
+                "release_label": item.get("release_label"),
+                "release_page": item.get("release_page"),
+                "publication_year": item.get("publication_year"),
+                "publication_release": item.get("publication_release"),
+                "official_download_failure": message,
+            })
+            continue
+
         download.update({
             "vintage_id": vintage_id,
             "release_label": item.get("release_label"),
             "release_page": item.get("release_page"),
+            "source_type": "OFFICIAL_IMF_DIRECT",
         })
         download_manifest.append(download)
         source_by_vintage[vintage_id] = read_weo_country_file(
             raw_path, subject_code=subject_code, years=years
         )
+
+    mirror_meta: dict[str, Any] | None = None
+    if official_access_failures:
+        mirror_contract = contract.get("mirror")
+        if not isinstance(mirror_contract, dict):
+            raise VintageAuditError(
+                "official_imf_access_failed_and_no_secondary_mirror_contract"
+            )
+        if mirror_contract.get("fallback_policy") != "USE_ONLY_AFTER_OFFICIAL_IMF_DOWNLOAD_ACCESS_FAILURE":
+            raise VintageAuditError("secondary_mirror_fallback_policy_not_explicit")
+        mirror_specs = []
+        for failed in official_access_failures:
+            if failed["publication_year"] is None or not failed["publication_release"]:
+                raise VintageAuditError(
+                    f"mirror_publication_metadata_missing:{failed['vintage_id']}"
+                )
+            mirror_specs.append({
+                "vintage_id": failed["vintage_id"],
+                "publication_year": failed["publication_year"],
+                "publication_release": failed["publication_release"],
+            })
+        try:
+            mirror_sources, mirror_meta = load_hf_mirror_vintages(
+                repo_id=mirror_contract["repository_id"],
+                vintage_specs=mirror_specs,
+                subject_code=subject_code,
+                years=years,
+                raw_dir=raw_dir / "huggingface",
+            )
+        except WeoMirrorError as exc:
+            raise VintageAuditError(
+                "official_imf_access_failed_and_secondary_mirror_failed:"
+                + str(exc)
+            ) from exc
+
+        for failed in official_access_failures:
+            vintage_id = failed["vintage_id"]
+            source_by_vintage[vintage_id] = mirror_sources[vintage_id]
+            download_manifest.append({
+                **failed,
+                "source_type": "THIRD_PARTY_DERIVED_MIRROR",
+                "mirror_source": mirror_meta,
+                "actual_estimate_status": "UNKNOWN_MIRROR_METADATA_NOT_PRESERVED",
+            })
+
+    for item in historical:
+        vintage_id = item["vintage_id"]
         summary, rows = _summarize_vintage(
             vintage_id, source_by_vintage[vintage_id], panel, years
         )
         summary["release_label"] = item.get("release_label")
         summary["release_page"] = item.get("release_page")
+        acquisition = next(
+            entry for entry in download_manifest
+            if entry["vintage_id"] == vintage_id
+        )
+        summary["source_type"] = acquisition["source_type"]
+        if acquisition["source_type"] == "THIRD_PARTY_DERIVED_MIRROR":
+            summary["actual_estimate_status"] = (
+                "UNKNOWN_MIRROR_METADATA_NOT_PRESERVED"
+            )
         vintage_summaries.append(summary)
         all_rows.extend(rows)
 
@@ -545,7 +619,11 @@ def run_vintage_audit(
     contract_sha = sha256_file(contract_path)
     summary = {
         "contract_id": CONTRACT_ID,
-        "status": "SOURCE_VINTAGE_AUDIT_COMPLETED",
+        "status": (
+            "SOURCE_VINTAGE_AUDIT_COMPLETED_WITH_SECONDARY_MIRROR"
+            if mirror_meta is not None
+            else "SOURCE_VINTAGE_AUDIT_COMPLETED_FROM_OFFICIAL_IMF_FILES"
+        ),
         "generated_at_utc": utc_now(),
         "contract_sha256": contract_sha,
         "code_sha256": sha256_file(module_path),
@@ -562,12 +640,15 @@ def run_vintage_audit(
             "method": "Theil-Sen on 2016–2019 only, extrapolated to 2020",
         },
         "downloads": download_manifest,
+        "secondary_mirror": mirror_meta,
+        "official_imf_access_failures": official_access_failures,
         "vintages": vintage_summaries,
         "comparison_iso_count": len(comparison),
         "limits": [
             "Only ISO-3 exact matching is used; no fuzzy country-name matching.",
             "The staged April-2026 panel has no source-vintage actual/estimate metadata; its event status is UNKNOWN.",
-            "The 2020 October and April 2021 release values are classified using IMF Estimates Start After.",
+            "Official IMF files use Estimates Start After for actual/estimate classification; secondary mirror values remain UNKNOWN because this metadata is not preserved in the mirror.",
+            "A third-party mirror is never reported as an official IMF source file."
             "Theil-Sen extrapolation is a source-vintage revision diagnostic, not a prediction or a p-value.",
             "No causal claim or forecasting is performed.",
         ],
@@ -592,7 +673,9 @@ def run_vintage_audit(
             "runner_path": runner_path.resolve().relative_to(Path.cwd().resolve()).as_posix(),
             "runner_sha256": sha256_file(runner_path),
         },
-        "raw_downloads": download_manifest,
+        "raw_downloads_and_source_acquisitions": download_manifest,
+        "secondary_mirror": mirror_meta,
+        "official_imf_access_failures": official_access_failures,
         "derived_artifacts": [
             {
                 "path": rows_path.resolve().relative_to(Path.cwd().resolve()).as_posix(),
