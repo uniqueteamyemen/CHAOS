@@ -1,11 +1,16 @@
 #!/usr/bin/env python3
-"""Fail when a proposed Git diff touches the frozen experiments/ archive."""
+"""Fail when a proposed Git diff touches either frozen CHAOS archive."""
 
 from __future__ import annotations
 
 import argparse
 import subprocess
 import sys
+
+FROZEN_PATHS = (
+    "experiments/",
+    "structural_engine/isolated_break_detector_v1/",
+)
 
 
 def changed_paths(base: str, head: str, triple_dot: bool) -> list[tuple[str, list[str]]]:
@@ -21,7 +26,7 @@ def changed_paths(base: str, head: str, triple_dot: bool) -> list[tuple[str, lis
         "--find-renames",
         *revisions,
         "--",
-        "experiments/",
+        *FROZEN_PATHS,
     ]
     completed = subprocess.run(
         command,
@@ -47,7 +52,9 @@ def changed_paths(base: str, head: str, triple_dot: bool) -> list[tuple[str, lis
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(
+        description="Reject changes to the frozen CHAOS experiments and detector archives."
+    )
     parser.add_argument("--base", required=True, help="Base commit SHA")
     parser.add_argument("--head", required=True, help="Head commit SHA")
     parser.add_argument(
@@ -64,12 +71,15 @@ def main() -> int:
         return 2
 
     if touched:
-        print("IMMUTABILITY VIOLATION: experiments/ is frozen.", file=sys.stderr)
+        print(
+            "IMMUTABILITY VIOLATION: frozen CHAOS archive paths are immutable.",
+            file=sys.stderr,
+        )
         for status, paths in touched:
             print(f"{status}\t" + "\t".join(paths), file=sys.stderr)
         return 1
 
-    print("PASS: no changed path touches experiments/.")
+    print("PASS: no changed path touches either frozen CHAOS archive.")
     return 0
 
 
