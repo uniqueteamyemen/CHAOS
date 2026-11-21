@@ -1,8 +1,8 @@
 # CHAOS — Repository Architecture and Status
 
 **Repository:** `uniqueteamyemen/CHAOS`  
-**Current main-phase2 head:** `7eb619c1a7756b52aeffb32a06278e786c0dd762` (Stage A/B documentation and frozen-path CI guard merged; original Phase 2 common ancestor: `1b941282a4a415230a65098e066043fbd6a19155`)  
-**Discovery candidate:** `discovery/d1-domainstate-integrity-v1@db57bf29d2e4211d1c23af21cfa0fa3d858f7717` (PR #28; candidate only, no merge yet)  
+**Current main-phase2 head:** `e0c13b41ef1bbbdfe46f1dc266a007eb2dedd8d7` (Discovery V1 merged via PR #28; Stage A/B and frozen-path CI guard via PR #30)  
+**Discovery V1 integration:** PR [#28](https://github.com/uniqueteamyemen/CHAOS/pull/28) merged at `e0c13b41ef1bbbdfe46f1dc266a007eb2dedd8d7`; branch history retained.  
 **USGS-labelled candidate:** `fix/p2-2-3-usgs-catalog-integrity-v1`  
 **Document status:** Architecture and integration map; not a scientific approval or merge authorization.
 
@@ -42,11 +42,11 @@ The Discovery branch introduces:
 - WDI trade adapter and annual DomainState records;
 - behavioral discovery artifacts and supporting contracts, tests, and workflows.
 
-The branch reports a behavioral scan of 1,529 series and 38,225 observations, yielding 1,698 candidates and 45 shared patterns. It marks 697 candidates as sensitive to segmentation boundaries. These are discovery outputs, not validated predictive patterns.
+The integrated code reports a behavioral scan of 1,529 series and 38,225 observations, yielding 1,698 candidates and 45 shared patterns. It marks 697 candidates as sensitive to segmentation boundaries. These are discovery outputs, not validated predictive patterns.
 
 The reported Conditional Calendar Null used 10,000 redistributions and returned the recorded empirical p-value. The WEO vintage audit compares October 2020, April 2021, and April 2026 vintages. Its own report explicitly says the actual-versus-estimate status validation is incomplete; the reported 130/139 sign stability must not be represented as full vintage or causal validation.
 
-The WDI observed-record source and edge diagnostics are already tracked in main-phase2. The dedicated V2 DomainState materialization is part of the Discovery candidate branch. The adapter summary reports 29,004 records, 259 entities, five indicators, and 2000–2024; however the current WDI edge max-stat summaries report p=0.4547726137 for the within-domain test and p=0.5897051474 for WDI-to-economic deterioration (2,000 replicates each), both `research_evidence_only`. Data readiness is not evidence of a supported edge.
+The WDI observed-record source and edge diagnostics are already tracked in main-phase2. The dedicated V2 DomainState materialization is now integrated in main-phase2. The adapter summary reports 29,004 records, 259 entities, five indicators, and 2000–2024; however the current WDI edge max-stat summaries report p=0.4547726137 for the within-domain test and p=0.5897051474 for WDI-to-economic deterioration (2,000 replicates each), both `research_evidence_only`. Data readiness is not evidence of a supported edge.
 
 ### DomainState registry completeness — BLOCKED
 
@@ -56,7 +56,7 @@ The six absent paths are the WGI annual DomainState output and five missing file
 
 The previous validator called coarse key collisions `duplicate_state_slots`. Eleven existing archived IMF IMTS shards produced 59,553 collisions because their shared key omits source dimensions such as counterpart country, indicator, trade flow, and valuation. The records are not thereby proven duplicates. The Discovery branch now reports `coarse_identity_collisions`, renames the key function `domain_state_coarse_key`, and adds a regression test preserving separate multidimensional records. See [DomainState Registry Audit](docs/DOMAIN_STATE_REGISTRY_AUDIT_V1_AR.md).
 
-This blocks a claim that the full multi-domain registry is complete. It does not invalidate the isolated WDI materialization or candidate-generation code; merge of PR #28, if approved after new exact-head CI, is an integration of a candidate Engine 1 foundation only, not a DomainState completeness certification or Engine 1 freeze.
+This blocks a claim that the full multi-domain registry is complete. It does not invalidate the isolated WDI materialization or candidate-generation code; PR #28 merged the candidate Engine 1 foundation only; it did not certify DomainState completeness or freeze Engine 1.
 
 **Engine 2 status:** Not authorized to start. Engine 1 has not yet been frozen through a complete acceptance and handoff gate.
 
