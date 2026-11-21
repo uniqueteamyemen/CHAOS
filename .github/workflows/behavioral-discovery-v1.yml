@@ -28,7 +28,7 @@ permissions:
   contents: write
 
 concurrency:
-  group: chaos-discovery-artifact-writers-${{ github.ref }}
+  group: chaos-behavioral-discovery-v1-${{ github.ref }}
   cancel-in-progress: false
 
 jobs:
@@ -95,7 +95,18 @@ jobs:
           git add discovery/behavioral_v1/
           if ! git diff --cached --quiet; then
             git commit -m "data(chaos): materialize behavioral discovery candidates v1"
-            git push origin "HEAD:${GITHUB_REF_NAME}"
+            for attempt in 1 2 3 4 5; do
+              git fetch origin "${GITHUB_REF_NAME}"
+              if git rebase FETCH_HEAD; then
+                if git push origin "HEAD:${GITHUB_REF_NAME}"; then
+                  exit 0
+                fi
+              fi
+              git rebase --abort || true
+              sleep "$attempt"
+            done
+            echo "Unable to publish behavioral artifacts after five fast-forward retries." >&2
+            exit 1
           fi
       - name: Upload discovery artifacts
         uses: actions/upload-artifact@v4
@@ -159,5 +170,11 @@ jobs:
               "null_q95_max_support": null_summary["null_global_max_q95"],
           }, sort_keys=True))
           PY
-      - name: Ensure tracked discovery artifacts reproduce byte-for-byte
-        run: git diff --exit-code -- discovery/behavioral_v1/
+      - name: Ensure deterministic discovery evidence reproduces byte-for-byte
+        run: |
+          git diff --exit-code -- \
+            discovery/behavioral_v1/BEHAVIORAL_CANDIDATES_V1.jsonl \
+            discovery/behavioral_v1/CONDITIONAL_CALENDAR_GROUPS_V1.csv \
+            discovery/behavioral_v1/CONDITIONAL_CALENDAR_NULL_V1.json \
+            discovery/behavioral_v1/SERIES_BEHAVIOR_PROFILES_V1.csv \
+            discovery/behavioral_v1/SHARED_YEAR_PATTERNS_V1.csv

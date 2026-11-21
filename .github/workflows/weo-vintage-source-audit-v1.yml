@@ -22,7 +22,7 @@ permissions:
   contents: write
 
 concurrency:
-  group: chaos-discovery-artifact-writers-${{ github.ref }}
+  group: chaos-weo-vintage-audit-${{ github.ref }}
   cancel-in-progress: false
 
 jobs:
@@ -104,7 +104,18 @@ jobs:
           git add discovery/source_vintage_v1/WEO_GDP_GROWTH_VINTAGE_MANIFEST_V1.json
           if ! git diff --cached --quiet; then
             git commit -m "data(chaos): record official WEO vintage audit"
-            git push origin "HEAD:${GITHUB_REF_NAME}"
+            for attempt in 1 2 3 4 5; do
+              git fetch origin "${GITHUB_REF_NAME}"
+              if git rebase FETCH_HEAD; then
+                if git push origin "HEAD:${GITHUB_REF_NAME}"; then
+                  exit 0
+                fi
+              fi
+              git rebase --abort || true
+              sleep "$attempt"
+            done
+            echo "Unable to publish WEO vintage artifacts after five fast-forward retries." >&2
+            exit 1
           fi
       - name: Upload raw WEO vintage files and derived evidence
         uses: actions/upload-artifact@v4
