@@ -63,7 +63,7 @@ class DomainStateObservationAdapterTests(unittest.TestCase):
         imports = by_metric["trade.import.value"]["observation"]
         exports = by_metric["trade.export.value"]["observation"]
         self.assertEqual(imports["event_time"], "2020")
-        self.assertEqual(imports["native_frequency"] if "native_frequency" in imports else "annual", "annual")
+        self.assertEqual(by_metric["trade.import.value"]["lineage"]["native_frequency"], "annual")
         self.assertEqual(imports["value"], 120.0)
         self.assertEqual(imports["unit"], "USD")
         self.assertEqual(exports["value"], 150.0)
