@@ -1,0 +1,50 @@
+{
+  "contract_id": "CHAOS_WEO_GDP_GROWTH_VINTAGE_AUDIT_V1",
+  "purpose": "Test revision sensitivity of the 2020 real GDP growth candidate across official IMF WEO publication vintages.",
+  "subject_code": "NGDP_RPCH",
+  "years": [
+    2016,
+    2017,
+    2018,
+    2019,
+    2020
+  ],
+  "event_year": 2020,
+  "pretrend_years": [
+    2016,
+    2017,
+    2018,
+    2019
+  ],
+  "method": "Theil-Sen line on pre-event years only, extrapolated to event year. Compare 2020 value against this frozen pre-event projection and against the 2019 value.",
+  "vintages": [
+    {
+      "vintage_id": "WEO_2020_OCT",
+      "release_label": "October 2020",
+      "release_page": "https://www.imf.org/en/publications/weo/weo-database/2020/october",
+      "download_url": "https://www.imf.org/-/media/files/publications/weo/weo-database/2020/02/weooct2020all.xls"
+    },
+    {
+      "vintage_id": "WEO_2021_APR",
+      "release_label": "April 2021",
+      "release_page": "https://www.imf.org/en/publications/weo/weo-database/2021/april",
+      "download_url": "https://www.imf.org/-/media/files/publications/weo/weo-database/2021/weoapr2021all.xls"
+    },
+    {
+      "vintage_id": "WEO_APR2026_CURRENT_PANEL",
+      "release_label": "April 2026",
+      "panel_column": "imf__NGDP_RPCH"
+    }
+  ],
+  "policies": {
+    "no_imputation": true,
+    "no_entity_name_fuzzy_matching": true,
+    "match_key": "ISO-3",
+    "raw_source_values_preserved": true,
+    "source_files_hashed": true,
+    "estimates_start_after_retained_not_interpreted": true,
+    "no_p_values": true,
+    "no_forecasting": true,
+    "no_causal_claims": true
+  }
+}\n
