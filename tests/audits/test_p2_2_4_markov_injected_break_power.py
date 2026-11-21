@@ -90,6 +90,25 @@ class MarkovInjectedBreakPowerTests(unittest.TestCase):
         np.testing.assert_allclose(changed[84:] - values[84:], effect, rtol=0, atol=1e-15)
         self.assertIn("2.5", parameter)
 
+    def test_negative_mean_shift_preserves_prefix_and_mirrors_positive_effect(self):
+        values = np.random.default_rng(31).normal(0.0, 0.05, 120)
+        positive, positive_effect, _ = inject_scenario(
+            values, "mean_shift_2_5_initial_MAD", 84
+        )
+        negative, negative_effect, parameter = inject_scenario(
+            values, "mean_shift_negative_2_5_initial_MAD", 84
+        )
+        np.testing.assert_array_equal(negative[:84], values[:84])
+        self.assertAlmostEqual(negative_effect, -positive_effect, places=14)
+        np.testing.assert_allclose(
+            positive[84:] - values[84:],
+            -(negative[84:] - values[84:]),
+            rtol=0.0,
+            atol=1e-15,
+        )
+        self.assertLess(negative_effect, 0.0)
+        self.assertIn("negative", parameter)
+
     def test_volatility_jump_scales_deviations_without_changing_prefix_or_center(self):
         values = np.random.default_rng(32).normal(0.0, 0.04, 120)
         changed, multiplier, parameter = inject_scenario(
