@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import csv
+import hashlib
 import json
 from pathlib import Path
 from tempfile import TemporaryDirectory
@@ -92,6 +93,18 @@ class WdiTradeDomainStateBuilderTests(unittest.TestCase):
                 build_wdi_trade_domain_states(source, metadata, extract, output, summary_path)
             self.assertFalse(output.exists())
             self.assertFalse(summary_path.exists())
+
+    def test_source_sha256_must_match_the_prior_edge_input_manifest(self):
+        with TemporaryDirectory() as directory:
+            root = Path(directory)
+            source, metadata, extract = self._write_inputs(root)
+            edge_integrity = root / "edge-integrity.json"
+            edge_integrity.write_text(json.dumps({"source_sha256": "b" * 64}), encoding="utf-8")
+            with self.assertRaisesRegex(ValueError, "source_sha256_mismatch"):
+                build_wdi_trade_domain_states(
+                    source, metadata, extract, root / "states.jsonl",
+                    root / "summary.json", edge_integrity,
+                )
 
     def test_extract_row_count_mismatch_fails_closed(self):
         with TemporaryDirectory() as directory:
