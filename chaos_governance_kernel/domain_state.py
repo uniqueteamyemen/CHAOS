@@ -88,7 +88,12 @@ def validate_domain_state(
 
 
 def domain_state_identity(record: Mapping[str, Any]) -> str:
-    """Content-independent identity for a state slot; it never deduplicates records."""
+    """Return a coarse screening key, not a globally unique multidimensional record identity.
+
+    Source-specific dimensions (for example trade partner, indicator, direction,
+    or valuation) are deliberately not inferred here. Collisions must therefore
+    be reported as coarse-key collisions, never asserted to be duplicate records.
+    """
     payload = {
         "schema": "CHAOS_DOMAIN_STATE_ID_V1",
         "domain": record["domain"],
@@ -124,7 +129,7 @@ def audit_domain_state_file(
         "records": 0,
         "valid_records": 0,
         "invalid_records": 0,
-        "duplicate_state_slots": 0,
+        "coarse_identity_collisions": 0,
         "domains": {},
         "frequencies": {},
         "entities": 0,
@@ -134,7 +139,7 @@ def audit_domain_state_file(
     if not path.is_file():
         return base
 
-    identity_counts: Counter[str] = Counter()
+    coarse_identity_counts: Counter[str] = Counter()
     domains: Counter[str] = Counter()
     frequencies: Counter[str] = Counter()
     entities: set[str] = set()
@@ -168,7 +173,7 @@ def audit_domain_state_file(
                     continue
 
                 base["valid_records"] += 1
-                identity_counts[domain_state_identity(record)] += 1
+                coarse_identity_counts[domain_state_identity(record)] += 1
                 domains[str(record["domain"])] += 1
                 frequencies[str(record["native_frequency"])] += 1
                 entities.add(str(record["entity_id"]))
@@ -178,11 +183,11 @@ def audit_domain_state_file(
         base["errors"] = [{"line": None, "error": f"read_error:{type(exc).__name__}:{exc}"}]
         return base
 
-    duplicate_slots = sum(count - 1 for count in identity_counts.values() if count > 1)
+    coarse_collisions = sum(count - 1 for count in coarse_identity_counts.values() if count > 1)
     base.update({
         "status": "invalid" if invalid else ("empty" if base["records"] == 0 else "pass"),
         "invalid_records": invalid,
-        "duplicate_state_slots": duplicate_slots,
+        "coarse_identity_collisions": coarse_collisions,
         "domains": dict(sorted(domains.items())),
         "frequencies": dict(sorted(frequencies.items())),
         "entities": len(entities),
@@ -191,7 +196,7 @@ def audit_domain_state_file(
         "errors_truncated": invalid > len(errors),
         "sha256": sha256_file(path),
         "bytes": path.stat().st_size,
-        "duplicate_policy": "PRESERVED_AND_REPORTED; no record is removed",
+        "identity_collision_policy": "COARSE_SCREENING_KEY_ONLY; source-specific dimensions may distinguish records; collisions do not prove duplicate records; no record is removed",
     })
     return base
 
