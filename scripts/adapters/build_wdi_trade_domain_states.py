@@ -117,6 +117,13 @@ def canonical_record(row: dict[str, str], metadata: dict[str, str]) -> dict[str,
     }
 
 
+def _path_reference(path: Path) -> str:
+    try:
+        return path.resolve().relative_to(ROOT.resolve()).as_posix()
+    except ValueError:
+        return path.name
+
+
 def build_wdi_trade_domain_states(
     input_csv: Path,
     metadata_csv: Path,
@@ -187,12 +194,12 @@ def build_wdi_trade_domain_states(
     summary = {
         "adapter_id": "WDI_TRADE_DOMAIN_STATE_ADAPTER_V2",
         "status": "ready_for_domain_state_integrity_and_transition_layer",
-        "input": input_csv.relative_to(ROOT).as_posix(),
+        "input": _path_reference(input_csv),
         "input_sha256": input_hash,
         "source_archive_sha256": extract_summary.get("external_raw_sha256"),
-        "metadata": metadata_csv.relative_to(ROOT).as_posix(),
+        "metadata": _path_reference(metadata_csv),
         "metadata_sha256": metadata_hash,
-        "output": output_jsonl.relative_to(ROOT).as_posix(),
+        "output": _path_reference(output_jsonl),
         "output_sha256": output_hash,
         "records": len(records),
         "entities": len(entity_names),
@@ -221,8 +228,8 @@ def main() -> int:
         "indicators": len(summary["indicators"]),
         "years": summary["years"],
         "output_sha256": summary["output_sha256"],
-        "summary": OUTPUT_SUMMARY.relative_to(ROOT).as_posix(),
-        "output": OUTPUT_JSONL.relative_to(ROOT).as_posix(),
+        "summary": _path_reference(OUTPUT_SUMMARY),
+        "output": _path_reference(OUTPUT_JSONL),
     }, ensure_ascii=False, sort_keys=True))
     return 0
 
