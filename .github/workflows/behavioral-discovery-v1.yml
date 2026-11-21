@@ -1,6 +1,9 @@
 name: CHAOS — Behavioural Discovery V1
 
 on:
+  pull_request:
+    branches:
+      - main-phase2
   push:
     branches:
       - 'discovery/**'
@@ -30,6 +33,7 @@ concurrency:
 
 jobs:
   behavioral-discovery:
+    if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -100,3 +104,60 @@ jobs:
           path: discovery/behavioral_v1/
           if-no-files-found: error
           retention-days: 90
+
+  validate-pr:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout pull request merge candidate
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Compile discovery modules and validate contracts
+        run: |
+          python -m py_compile discovery_engine/behavioral_discovery_v1.py discovery_engine/calendar_coincidence_null_v1.py scripts/discovery/run_behavioral_discovery_v1.py scripts/discovery/run_calendar_coincidence_null_v1.py
+          python -m json.tool experimental_contracts/BEHAVIORAL_DISCOVERY_CONTRACT_V1.json
+          python -m json.tool experimental_contracts/CONDITIONAL_CALENDAR_COINCIDENCE_NULL_V1.json
+      - name: Run discovery unit tests
+        run: python -m unittest discover -s tests/discovery -v
+      - name: Rebuild behavioral discovery outputs on the PR candidate
+        run: python scripts/discovery/run_behavioral_discovery_v1.py
+      - name: Rebuild conditional calendar null on the PR candidate
+        run: python scripts/discovery/run_calendar_coincidence_null_v1.py
+      - name: Validate manifest and non-predictive candidate status
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          from chaos_governance_kernel.core import validate_manifest
+          root = Path.cwd()
+          out = root / "discovery/behavioral_v1"
+          result = validate_manifest(out / "BEHAVIORAL_DISCOVERY_MANIFEST_V1.json", root)
+          print(json.dumps(result, sort_keys=True))
+          assert result["status"] == "pass", result
+          summary = json.loads((out / "BEHAVIORAL_DISCOVERY_SUMMARY_V1.json").read_text())
+          null_summary = json.loads((out / "CONDITIONAL_CALENDAR_NULL_V1.json").read_text())
+          assert summary["status"] == "CANDIDATE_GENERATION_ONLY"
+          assert summary["inference"]["causal_claims_permitted"] is False
+          assert summary["inference"]["forecasting_performed"] is False
+          assert null_summary["null_is_detector_fpr"] is False
+          assert null_summary["causal_claims_permitted"] is False
+          assert null_summary["forecasting_performed"] is False
+          print(json.dumps({
+              "series": summary["series_profile_count"],
+              "candidates": summary["candidate_count"],
+              "shared_year_patterns": summary["shared_year_pattern_count"],
+              "conditional_calendar_global_p": null_summary["global_max_conditional_p"],
+              "observed_global_max_support": null_summary["observed_global_max_support"],
+              "null_q95_max_support": null_summary["null_global_max_q95"],
+          }, sort_keys=True))
+          PY
+      - name: Ensure tracked discovery artifacts reproduce byte-for-byte
+        run: git diff --exit-code -- discovery/behavioral_v1/
