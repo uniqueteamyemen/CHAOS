@@ -5,10 +5,76 @@ from scripts.audits.p2_2_4_markov_injected_break_power import (
     inject_scenario,
     planned_break_index,
     summarize_records,
+    extract_markov_rho_diagnostics,
+    resolve_audit_source_commit,
 )
 
 
 class MarkovInjectedBreakPowerTests(unittest.TestCase):
+    def test_audit_metadata_prefers_exact_checked_out_source_commit(self):
+        from unittest.mock import patch
+        with patch.dict("os.environ", {
+            "AUDIT_SOURCE_COMMIT": "checked-out-head-sha",
+            "GITHUB_SHA": "synthetic-merge-sha",
+        }):
+            self.assertEqual(resolve_audit_source_commit(), "checked-out-head-sha")
+
+    def test_rho_diagnostics_expose_three_distinct_coefficients(self):
+        self.assertEqual(
+            extract_markov_rho_diagnostics({
+                "rho_raw": 0.94, "rho_used": 0.88, "rho_cusum_used": 0.71,
+            }),
+            {"rho_raw": 0.94, "rho_clipped": 0.88, "rho_cusum_used": 0.71},
+        )
+
+    def test_rho_diagnostics_reject_missing_or_inconsistent_values(self):
+        with self.assertRaisesRegex(ArithmeticError, "rho_used"):
+            extract_markov_rho_diagnostics({
+                "rho_raw": 0.94, "rho_cusum_used": 0.71,
+            })
+        with self.assertRaisesRegex(ArithmeticError, "inconsistent_with_raw"):
+            extract_markov_rho_diagnostics({
+                "rho_raw": 0.94, "rho_used": 0.70, "rho_cusum_used": 0.71,
+            })
+
+    def test_summary_keeps_three_rho_distributions_separate(self):
+        rows = [
+            {
+                "series_id": "energy_a", "category": "energy",
+                "scenario": "mean_shift_2_5_initial_MAD",
+                "sample_length": 100, "input_variant": "raw",
+                "clean_detection": True, "post_break_alarm": True,
+                "pre_break_alarm": False, "detection_delay_steps": 5,
+                "rho_raw": 0.94, "rho_clipped": 0.88, "rho_cusum_used": 0.71,
+                "rho_cusum_bias_correction_enabled": True,
+            },
+            {
+                "series_id": "energy_a", "category": "energy",
+                "scenario": "mean_shift_2_5_initial_MAD",
+                "sample_length": 100, "input_variant": "raw",
+                "clean_detection": True, "post_break_alarm": True,
+                "pre_break_alarm": False, "detection_delay_steps": 7,
+                "rho_raw": 0.91, "rho_clipped": 0.88, "rho_cusum_used": 0.68,
+                "rho_cusum_bias_correction_enabled": False,
+            },
+        ]
+        summary = summarize_records(rows)
+        per_series = summary["per_series"][
+            "energy_a|mean_shift_2_5_initial_MAD|n=100|raw"
+        ]
+        self.assertAlmostEqual(per_series["rho_raw_distribution"]["median"], 0.925)
+        self.assertAlmostEqual(per_series["rho_clipped_distribution"]["median"], 0.88)
+        self.assertAlmostEqual(per_series["rho_cusum_used_distribution"]["median"], 0.695)
+        self.assertEqual(per_series["rho_cusum_bias_correction_enabled_true_replicates"], 1)
+        self.assertEqual(per_series["rho_cusum_bias_correction_enabled_false_replicates"], 1)
+        self.assertEqual(per_series["rho_cusum_bias_correction_enabled_missing_or_invalid_replicates"], 0)
+        self.assertAlmostEqual(per_series["rho_cusum_bias_correction_enabled_true_fraction"], 0.5)
+        category = summary["by_category"]["energy|n=100|mean_shift_2_5_initial_MAD|raw"]
+        self.assertAlmostEqual(
+            category["rho_cusum_bias_correction_enabled_true_fraction_mean_across_series"],
+            0.5,
+        )
+
     def test_break_index_is_predeclared_and_after_quiet_period(self):
         self.assertEqual(planned_break_index(100), 70)
         self.assertEqual(planned_break_index(539), 377)

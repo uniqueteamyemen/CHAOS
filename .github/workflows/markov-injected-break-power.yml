@@ -1,6 +1,13 @@
 name: CHAOS P2.2.4 — Markov Injected-Break Power Audit
 
 on:
+  pull_request:
+    branches:
+      - diag/markov-real-data-behavior
+    paths:
+      - 'scripts/audits/p2_2_4_markov_injected_break_power.py'
+      - 'tests/audits/test_p2_2_4_markov_injected_break_power.py'
+      - '.github/workflows/markov-injected-break-power.yml'
   push:
     branches:
       - diag/markov-real-data-behavior
@@ -30,7 +37,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: diag/markov-real-data-behavior
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
@@ -54,7 +61,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: diag/markov-real-data-behavior
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
@@ -70,6 +77,7 @@ jobs:
       - name: Run paired power and delay audit (unbuffered)
         env:
           PYTHONUNBUFFERED: '1'
+          AUDIT_SOURCE_COMMIT: ${{ github.event.pull_request.head.sha || github.sha }}
           REPLICATES: ${{ inputs.replicates || '100' }}
         run: |
           python -u scripts/audits/p2_2_4_markov_injected_break_power.py \

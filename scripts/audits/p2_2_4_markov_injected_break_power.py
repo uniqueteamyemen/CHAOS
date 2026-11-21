@@ -144,6 +144,8 @@ def detector_power_record(
         ),
         "cusum_peak": diagnostics.get("cusum_peak"),
         "cusum_updates": diagnostics.get("cusum_updates"),
+        "rho_cusum_bias_correction_enabled": diagnostics.get("rho_cusum_bias_correction_enabled"),
+        **extract_markov_rho_diagnostics(diagnostics),
     }
 
 
@@ -234,6 +236,38 @@ def distribution(values: list[float | int]) -> dict[str, float | int | None]:
     }
 
 
+def resolve_audit_source_commit() -> str:
+    """Prefer the exact checked-out ref over GitHub's synthetic PR merge SHA."""
+    return os.getenv("AUDIT_SOURCE_COMMIT") or os.getenv("GITHUB_SHA", "local-unresolved")
+
+
+def extract_markov_rho_diagnostics(diagnostics: dict[str, Any]) -> dict[str, float]:
+    """Expose raw, clipped and structural-CUSUM rho without touching frozen V1."""
+    source_fields = {
+        "rho_raw": "rho_raw",
+        "rho_clipped": "rho_used",
+        "rho_cusum_used": "rho_cusum_used",
+    }
+    result: dict[str, float] = {}
+    for output_name, source_name in source_fields.items():
+        value = diagnostics.get(source_name)
+        if (
+            isinstance(value, bool)
+            or not isinstance(value, (int, float))
+            or not math.isfinite(float(value))
+        ):
+            raise ArithmeticError(
+                f"markov_rho_diagnostic_missing_or_nonfinite:{source_name}"
+            )
+        result[output_name] = float(value)
+    expected_clipped = min(0.88, max(0.0, result["rho_raw"]))
+    if not math.isclose(
+        result["rho_clipped"], expected_clipped, rel_tol=0.0, abs_tol=1e-6
+    ):
+        raise ArithmeticError("markov_rho_clipped_inconsistent_with_raw")
+    return result
+
+
 def summarize_records(records: list[dict[str, Any]]) -> dict[str, Any]:
     per_series_groups: dict[tuple[str, str, int, str], list[dict[str, Any]]] = defaultdict(list)
     for row in records:
@@ -267,6 +301,23 @@ def summarize_records(records: list[dict[str, Any]]) -> dict[str, Any]:
             "post_break_alarm_probability": post / len(rows) if rows else None,
             "pre_break_alarm_probability": pre / len(rows) if rows else None,
             "detection_delay_steps_among_clean_detections": distribution(delays),
+            "rho_raw_distribution": distribution([row.get("rho_raw") for row in rows]),
+            "rho_clipped_distribution": distribution([row.get("rho_clipped") for row in rows]),
+            "rho_cusum_used_distribution": distribution([row.get("rho_cusum_used") for row in rows]),
+            "rho_cusum_bias_correction_enabled_true_replicates": sum(
+                row.get("rho_cusum_bias_correction_enabled") is True for row in rows
+            ),
+            "rho_cusum_bias_correction_enabled_false_replicates": sum(
+                row.get("rho_cusum_bias_correction_enabled") is False for row in rows
+            ),
+            "rho_cusum_bias_correction_enabled_missing_or_invalid_replicates": sum(
+                not isinstance(row.get("rho_cusum_bias_correction_enabled"), bool)
+                for row in rows
+            ),
+            "rho_cusum_bias_correction_enabled_true_fraction": (
+                sum(row.get("rho_cusum_bias_correction_enabled") is True for row in rows)
+                / len(rows) if rows else None
+            ),
         }
         per_series[key] = value
         category_groups[(category, length, scenario, variant)].append(value)
@@ -301,6 +352,32 @@ def summarize_records(records: list[dict[str, Any]]) -> dict[str, Any]:
                 row["detection_delay_steps_among_clean_detections"]["median"] is not None
                 for row in rows
             ) else None,
+            "rho_raw_per_series_median_distribution": distribution([
+                row["rho_raw_distribution"]["median"] for row in rows
+            ]),
+            "rho_clipped_per_series_median_distribution": distribution([
+                row["rho_clipped_distribution"]["median"] for row in rows
+            ]),
+            "rho_cusum_used_per_series_median_distribution": distribution([
+                row["rho_cusum_used_distribution"]["median"] for row in rows
+            ]),
+            "rho_cusum_bias_correction_enabled_true_fraction_mean_across_series": (
+                statistics.fmean(
+                    row["rho_cusum_bias_correction_enabled_true_fraction"] for row in rows
+                    if row["rho_cusum_bias_correction_enabled_true_fraction"] is not None
+                ) if any(
+                    row["rho_cusum_bias_correction_enabled_true_fraction"] is not None
+                    for row in rows
+                ) else None
+            ),
+            "rho_cusum_bias_correction_enabled_true_fraction_distribution_across_series": distribution([
+                row["rho_cusum_bias_correction_enabled_true_fraction"] for row in rows
+                if row["rho_cusum_bias_correction_enabled_true_fraction"] is not None
+            ]),
+            "rho_cusum_bias_correction_enabled_missing_or_invalid_series": sum(
+                row["rho_cusum_bias_correction_enabled_missing_or_invalid_replicates"] > 0
+                for row in rows
+            ),
         }
 
     return {
@@ -371,7 +448,7 @@ def run_audit(
     result = {
         "audit_id": "CHAOS-P2.2.4-MARKOV-INJECTED-BREAK-POWER",
         "status": "completed",
-        "repository_commit": os.getenv("GITHUB_SHA", "local-unresolved"),
+        "repository_commit": resolve_audit_source_commit(),
         "source": {
             "provider": "World Bank Pink Sheet",
             "retrieved_at_utc": metadata["sources"][0].get("retrieved_at_utc")
@@ -403,6 +480,15 @@ def run_audit(
             "primary_metric": "clean_detection_probability",
             "clean_detection_definition": "At least one alarm at/after break and no alarm before break",
             "g1_gate_required_for_resampling": True,
+            "rho_diagnostic_mapping": {
+                "rho_raw": "detector diagnostics.rho_raw",
+                "rho_clipped": (
+                    "detector diagnostics.rho_used; legacy V1 value clipped from "
+                    "rho_raw to [0.0, 0.88]"
+                ),
+                "rho_cusum_used": "detector diagnostics.rho_cusum_used",
+                "detector_modified": False,
+            },
             "not_operational_forecast": True,
         },
         "series": series_rows,
