@@ -8,7 +8,7 @@ import unittest
 from chaos_governance_kernel.domain_state import (
     audit_domain_state_file,
     build_domain_state_integrity_report,
-    domain_state_identity,
+    domain_state_coarse_key,
     validate_domain_state,
 )
 
@@ -74,7 +74,7 @@ class DomainStateIntegrityTests(unittest.TestCase):
     def test_coarse_identity_key_ignores_observed_value_but_is_not_a_record_identity(self):
         first = state()
         revised = state(source_observations={"primaryValue_raw": 999.0})
-        self.assertEqual(domain_state_identity(first), domain_state_identity(revised))
+        self.assertEqual(domain_state_coarse_key(first), domain_state_coarse_key(revised))
 
     def test_file_audit_reports_coarse_collisions_without_deduplicating(self):
         with TemporaryDirectory() as directory:
