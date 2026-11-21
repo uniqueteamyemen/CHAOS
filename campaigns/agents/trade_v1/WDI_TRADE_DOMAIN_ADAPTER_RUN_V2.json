@@ -31,6 +31,8 @@
   },
   "records": 29004,
   "source_archive_sha256": "2ab1d0d250ebe986ac8a9f7163f6e177fbe4cfb2750f822b18578d902aeb134f",
+  "source_integrity_reference": "campaigns/agents/trade_v1/WDI_TRADE_EDGE_MAXSTAT_NULL_SUMMARY.json",
+  "source_integrity_reference_sha256": "35f1064dd8e2a5fd7925a772e05cb6a08199835f0b1a1cc2844be23019a1f3cf",
   "status": "ready_for_domain_state_integrity_and_transition_layer",
   "transformations": [],
   "years": [
