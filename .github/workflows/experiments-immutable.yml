@@ -41,16 +41,11 @@ jobs:
         run: |
           set -euo pipefail
           if [[ "$EVENT_NAME" == "pull_request" ]]; then
-            python scripts/guards/check_experiments_immutable.py \\
-              --base "$PR_BASE_SHA" \\
-              --head "$PR_HEAD_SHA" \\
-              --triple-dot
+            python scripts/guards/check_experiments_immutable.py --base "$PR_BASE_SHA" --head "$PR_HEAD_SHA" --triple-dot
           else
             if [[ "$PUSH_BASE_SHA" =~ ^0+$ ]]; then
               echo "Cannot verify the initial push diff; failing closed."
               exit 2
             fi
-            python scripts/guards/check_experiments_immutable.py \\
-              --base "$PUSH_BASE_SHA" \\
-              --head "$PUSH_HEAD_SHA"
+            python scripts/guards/check_experiments_immutable.py --base "$PUSH_BASE_SHA" --head "$PUSH_HEAD_SHA"
           fi
