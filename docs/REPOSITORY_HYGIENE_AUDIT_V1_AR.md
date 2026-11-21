@@ -1,10 +1,10 @@
 # CHAOS — Repository Hygiene Audit V1
 
-**Audit date:** 21 November 2026  
+**Audit date:** 22 November 2026  
 **Repository:** `uniqueteamyemen/CHAOS`  
 **Audit base:** `main-phase2`  
-**Base commit:** `1b941282a4a415230a65098e066043fbd6a19155`  
-**Purpose:** Establish a non-destructive repository organization plan before any structural cleanup.
+**Base commit:** `b838eb48b2040bf358fc216e1e004311edfc30e8`  
+**Audit branch:** `chore/repository-hygiene-audit-v1@228591f56ef4d9ec8e9a2e1f8b8660717d1781aa`  \n**Purpose:** Establish and maintain a non-destructive repository classification and staged verification plan after Discovery V1 integration.
 
 ## 1. Audit boundary and integrity constraints
 
@@ -24,38 +24,33 @@ The repository's `AGENTS.md` remains authoritative for integrity and immutabilit
 
 ## 2. Verified repository inventory
 
-The recursive Git tree for the audited base contains **1,556 tracked paths**. The top-level distribution is:
+**Current audit baseline:** `main-phase2@b838eb48b2040bf358fc216e1e004311edfc30e8`.
 
-| Top-level path | Tracked paths |
+The recursive Git tree and the post-integration architecture record establish the following current counts:
+
+| Measure | Verified count |
 |---|---:|
-| `experiments/` | 1,049 |
-| `campaigns/` | 112 |
-| `catalog_first/` | 91 |
-| `campaign/` | 56 |
-| `experimental_contracts/` | 47 |
-| Repository root files | 37 |
-| `.github/` | 24 |
-| `docs/` | 17 |
-| `real_data_stress_pipeline/` | 16 |
-| `data/` | 13 |
-| `structural_engine/` | 12 |
-| `scripts/` | 10 |
-| `chaos_governance_kernel/` | 4 |
-| `src/` | 36 |
-| `lightning_logs/` | 30 |
-| `tooling/` | 2 |
+| Tracked files | 1,408 |
+| Directories | 225 |
+| Total tree entries | 1,633 |
+| Files under `experiments/**` | 916 |
+| YAML workflows under `.github/workflows/` | 27 |
+| Additional non-workflow marker under `.github/workflows/` | 1 |
 
-The `.github/workflows/` directory contains **21 YAML workflows**. The `docs/` directory contains **17 tracked paths**, including the repository protection audit, scope and phase reports, freeze documentation, and one review report.
+These figures supersede the earlier 1,556-path inventory from the 17 November baseline. The 916 experiment files remain historical evidence and are outside the cleanup mutation scope.
 
-The large `experiments/` footprint is historical evidence, not proof of accidental duplication. It is explicitly outside the cleanup mutation scope.
+The inventory is a Git-tree count. It does not imply that external raw data, local workspace files, or GitHub Actions artifact payloads are present in a clean clone.
 
 ## 3. Current branch and integration observations
 
-- The audited `main-phase2` head is `1b941282a4a415230a65098e066043fbd6a19155`.
-- The latest commit is a documentation-only update to `docs/REPOSITORY_PROTECTION_AUDIT.md`.
-- The repository has an open P0 governance pull request (#21) targeting `main-phase2`. Repository hygiene work must not duplicate or silently absorb that PR's governance scope.
-- Recent Actions activity includes repeated runs on `discovery/d1-domainstate-integrity-v1`, including successful, failed, and cancelled WEO source-vintage audit runs. This is active branch work and must not be interrupted by cleanup.
-- The repository has multiple historical experiment and ERP branches. Branch names alone are insufficient evidence for deletion or archival.
+- The current `main-phase2` head is `b838eb48b2040bf358fc216e1e004311edfc30e8`.
+- PR #30 merged the dependency map and frozen-archive guard work at `7eb619c1a7756b52aeffb32a06278e786c0dd762`.
+- PR #28 merged Discovery V1 at `e0c13b41ef1bbbdfe46f1dc266a007eb2dedd8d7`.
+- PR #31 merged the post-Discovery documentation refresh at `b838eb48b2040bf358fc216e1e004311edfc30e8`.
+- The current component classification therefore treats Discovery V1 as integrated into `main-phase2`, but only as a research/candidate-generation and governance foundation.
+- The audit branch `chore/repository-hygiene-audit-v1` is at `228591f56ef4d9ec8e9a2e1f8b8660717d1781aa`. Its comparison with current `main-phase2` is diverged: 17 commits ahead, 3 behind, merge base `365bb2111c89352466d72e60965246bf238ffabb`, with eight paths in the net file comparison. PR #30 is already merged; do not reopen or merge the whole branch as a new combined change. Keep its remaining audit history and isolate any future documentation-only change from workflow/code scope.
+- The open PR #24 concerns Markov rho observability and targets `p2.2.2-markov-calibration-audit`; it is unrelated to Discovery integration and repository hygiene.
+- The P2.2 stress run `44951886189` is running on SHA `7eb619c1a7756b52aeffb32a06278e786c0dd762`. The immutable-guard run `44951886251` on that same SHA completed successfully. These are SHA-specific results; they do not convert the DomainState registry into PASS.
 
 ## 4. Structural findings
 
@@ -79,7 +74,7 @@ These are **review candidates only**. No item is classified as safe to delete or
 
 ### 4.3 Workflow surface
 
-Twenty-one workflow YAML files are present. Their names suggest several historical experiment families, but names alone do not establish that workflows are obsolete. Each workflow must be checked for:
+Twenty-seven workflow YAML files are present in the post-Discovery main-phase2 tree. Their names suggest several historical experiment families, but names alone do not establish that workflows are obsolete. Each workflow must be checked for:
 
 - trigger conditions and branch filters;
 - referenced scripts, paths, and artifacts;
@@ -98,7 +93,7 @@ The target is a logical organization first, not a forced directory migration:
 | Core | Governed scientific execution | `structural_engine/`, `real_data_stress_pipeline/` |
 | Governance | Rules, lineage, admission, immutability | `chaos_governance_kernel/`, `experimental_contracts/`, governance scripts |
 | Data and catalogs | Sources, raw evidence, manifests, readiness | `data/`, `catalog_first/`, `campaign/raw/` |
-| Discovery | DomainState and discovery-only analysis | Existing discovery branch and its isolated paths |
+| Discovery | Integrated research/candidate-generation and evidence governance | `observation_foundation/`, `discovery_engine/`, `discovery/`, `scripts/discovery/`, `scripts/governance/`, and adapters; integrated by PR #28, not a validated forecasting engine |
 | Evidence operations | Campaigns, agent records, ledgers, gates | `campaigns/`, `campaign/` |
 | Historical research | Frozen experiments and their evidence | `experiments/` (immutable) |
 | Validation and CI | Tests, guards, workflows | `.github/workflows/`, tests, `scripts/` |
@@ -106,44 +101,61 @@ The target is a logical organization first, not a forced directory migration:
 
 This model does not authorize moving existing files. It is a classification map for future decisions.
 
-## 6. Safe execution sequence
+## 6. Stage execution status
 
-### Stage A — Complete inventory (read-only)
-- Enumerate all paths and file types.
-- Build a workflow-to-script and workflow-to-artifact reference map.
-- Build a Python/TypeScript import and entry-point map.
-- Identify data manifests whose referenced raw objects are absent.
-- Compare repeated artifacts by content hash, provenance, and schema—not by filename alone.
+The staged work is assessed against the current `main-phase2` baseline above. “Complete” means complete within the bounded Git-tracked repository scope, not proof that every external source or historical artifact is available.
 
-### Stage B — Classification (read-only)
-Assign each non-experiment path one status:
-- `ACTIVE`: used by a current runtime, test, or workflow.
-- `REFERENCE`: authoritative contract, governance record, or source-of-truth documentation.
-- `HISTORICAL`: retained evidence or retired implementation.
-- `DUPLICATE_CANDIDATE`: byte-identical or behaviorally overlapping item requiring review.
-- `UNREFERENCED`: no consumer found after a complete bounded search; not automatically deletable.
+### Stage A — Inventory and dependency mapping
 
-### Stage C — Minimal documentation and CI hygiene
-- Correct misleading documentation and stale path references.
-- Add a clear repository map and ownership boundaries.
-- Consolidate workflow definitions only where trigger, permissions, outputs, and required-check semantics are demonstrably equivalent.
-- Keep each change isolated and reviewable.
+<badge>COMPLETED — BOUNDED SCOPE</badge>
+
+- Recursive repository inventory refreshed to 1,408 tracked files, 225 directories, 1,633 total tree entries, and 27 YAML workflows.
+- Workflow-to-entrypoint/artifact dependency map recorded in `docs/WORKFLOW_DEPENDENCY_MAP_V1_AR.md`.
+- Python/TypeScript entrypoint and import map recorded in `docs/ENTRYPOINT_AND_IMPORT_MAP_V1_AR.md`.
+- Branch history, PR relationships, CI workflow scope, and protected-path boundaries reviewed.
+- Limitation: this audit did not download and inspect every historical Actions artifact payload, and it did not run a fresh local checkout of every manual tool. Missing external assets remain explicit.
+
+### Stage B — Repository classification
+
+<badge>COMPLETED</badge>
+
+- Component and branch classifications recorded in `docs/REPOSITORY_COMPONENT_CLASSIFICATION_V1_AR.md`.
+- Discovery V1 reclassified from candidate branch work to integrated `ACTIVE-BASE / RESEARCH-ONLY` after PR #28.
+- Source existence, adapter readiness, supported edge evidence, causal claims, and runtime eligibility remain separate statuses.
+- DomainState registry remains `BLOCKED_INCOMPLETE_ASSET_SET`: 21 registered paths, 15 present, 6 absent, 94,231 records read, and zero schema-invalid records.
+- One absent path is the WGI materialized output in the active campaign area. Five absent references belong to the immutable `experiments/**` archive.
+
+### Stage C — Documentation and CI hygiene
+
+<badge>PARTIALLY COMPLETED</badge>
+
+- Repository architecture, workflow, entrypoint, component classification, Engine 1 integration, and DomainState audit documentation were refreshed in PR #31.
+- PR #30 added a fail-closed immutable-path guard for both `experiments/**` and `structural_engine/isolated_break_detector_v1/**`, with tests and workflow integration.
+- The `experiments-immutable` run `44951886251` passed on SHA `7eb619c1a7756b52aeffb32a06278e786c0dd762`.
+- The expensive P2.2 stress run `44951886189` on that SHA remains in progress; its historical pipeline and release-artifact steps have not yet completed.
 
 ### Stage D — Controlled structural changes
-- Use a dedicated branch and pull request.
-- Move only non-historical, non-core files with proven consumers and path updates.
-- Delete only proven generated duplicates; preserve provenance and checksums.
-- Never bundle workflow changes, code changes, and data changes into one broad cleanup commit.
 
-### Stage E — Verification
-- Run all affected tests and workflow checks.
-- Verify that protected paths are unchanged.
-- Verify that no referenced file, artifact, or entry point was orphaned.
-- Compare the resulting tree and behavior against the baseline.
-- Merge only through the repository's approved PR and CI process.
+<badge>NOT STARTED</badge>
+
+No repository paths have been moved, renamed, or deleted by this audit. No workflow has been consolidated or disabled. The frozen detector and `experiments/**` remain untouched.
+
+### Stage E — Verification and closure
+
+<badge>IN PROGRESS</badge>
+
+- Frozen-path integrity check: passed on the recorded SHA.
+- P2.2 stress validation: still running at the time of this snapshot; step 8, “Execute real historical stress pipeline”, is in progress. Snapshot packaging, raw-response upload/numerical audit, and release publication are pending.
+- DomainState asset completeness: blocked independently of CI execution; six references remain unresolved.
+- Final closure requires the stress run's completed conclusion and artifact review, plus an explicit evidence-based disposition of the six missing registry references.
 
 ## 7. Immediate next action
 
-Complete Stage A on a dedicated audit branch. The first deliverable is a machine-checkable path/reference inventory and workflow dependency map. No file relocation, deletion, workflow disablement, experiment modification, or detector modification is authorized by this audit.
+1. Preserve the active P2.2 run without launching a duplicate. After run `44951886189` finishes, inspect its final job conclusion, source-snapshot artifacts, numerical audit, and release outcome. Record the SHA tested; the run currently targets `7eb619c1`, while the latest branch head is `b838eb48`.
+2. Reconcile the one missing active WGI output only after the declared raw `WGI_CSV.zip` is supplied and its SHA-256 is verified. The current tree contains WGI provenance and summary metadata, but not the source ZIP or a tracked WGI materialization entrypoint. Do not treat the 32,403 estimated states as reproducible output yet.
+3. Keep the five missing WHO/IMF references under `experiments/**` immutable. Resolve their registry semantics through an explicit, versioned scope/requiredness decision; do not recreate or modify those historical files to force a PASS.
+4. Only after the registry reports an honest, policy-valid readiness state should Engine 1 proceed to its remaining pattern/relationship/structural validation and freeze-manifest/handoff gate. Engine 2 remains closed until that handoff is accepted.
 
-**Audit status:** Baseline established; full dependency/reference audit remains pending.
+No file relocation, deletion, workflow disablement, experiment modification, detector modification, or automatic branch deletion is authorized by this audit.
+
+**Audit status:** Stage A and Stage B complete within the audited Git scope; Stage C partially complete; Stage D not started; Stage E still in progress. Discovery V1 is integrated as research-only foundation. DomainState registry remains blocked, and the P2.2 stress run has not yet reported a final result.
