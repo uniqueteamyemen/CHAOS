@@ -17,6 +17,11 @@ def periodic_contract():
         "series_semantics": "periodic_measurement",
         "entity_id_path": ["entity_id"],
         "event_time_path": ["timestamp"],
+        "time_support": {
+            "observation_period_start": "2000",
+            "observation_period_end": "2024",
+            "native_frequency": "annual",
+        },
         "metrics": [
             {
                 "metric_id": "trade.import.value",
@@ -30,6 +35,32 @@ def periodic_contract():
             },
         ],
     }
+
+
+def event_contract(*, include_source_id=True):
+    contract = {
+        "adapter_id": "fixture-events-v1",
+        "source_namespace": "fixture-seismic",
+        "dataset_id": "fixture-events",
+        "domain": "environmental",
+        "native_frequency": "event",
+        "series_semantics": "event_stream",
+        "entity_id_path": ["entity_id"],
+        "event_time_path": ["timestamp"],
+        "time_support": {
+            "observation_period_start": "2024-01-01T00:00:00Z",
+            "observation_period_end": "2024-12-31T23:59:59Z",
+            "native_frequency": "event",
+        },
+        "metrics": [{
+            "metric_id": "earthquake.magnitude",
+            "value_path": ["source_observations", "magnitude"],
+            "unit": "magnitude",
+        }],
+    }
+    if include_source_id:
+        contract["source_record_id_path"] = ["entity_id"]
+    return contract
 
 
 def state(**changes):
@@ -73,7 +104,7 @@ class DomainStateObservationAdapterTests(unittest.TestCase):
         result = adapt_domain_state(state(), periodic_contract())
         observation = result[0]["observation"]
         self.assertIsNone(observation["available_at"])
-        self.assertEqual(observation["logical_record_id"] is not None, True)
+        self.assertIsNotNone(observation["logical_record_id"])
         from observation_foundation.record_identity_v1 import select_vintages_as_of
         selection = select_vintages_as_of([observation], "2021-01-01T00:00:00Z")
         self.assertEqual(selection["selected"], [])
@@ -105,22 +136,6 @@ class DomainStateObservationAdapterTests(unittest.TestCase):
             adapt_domain_state(malformed, periodic_contract())
 
     def test_event_stream_uses_only_declared_source_identity(self):
-        contract = {
-            "adapter_id": "fixture-events-v1",
-            "source_namespace": "fixture-seismic",
-            "dataset_id": "fixture-events",
-            "domain": "environmental",
-            "native_frequency": "event",
-            "series_semantics": "event_stream",
-            "entity_id_path": ["entity_id"],
-            "event_time_path": ["timestamp"],
-            "source_record_id_path": ["entity_id"],
-            "metrics": [{
-                "metric_id": "earthquake.magnitude",
-                "value_path": ["source_observations", "magnitude"],
-                "unit": "magnitude",
-            }],
-        }
         event = state(
             domain="environmental",
             entity_id="us7000abc",
@@ -128,27 +143,12 @@ class DomainStateObservationAdapterTests(unittest.TestCase):
             native_frequency="event",
             source_observations={"magnitude": 6.7},
         )
-        observation = adapt_domain_state(event, contract)[0]["observation"]
+        observation = adapt_domain_state(event, event_contract())[0]["observation"]
         self.assertEqual(observation["source_record_id"], "us7000abc")
         self.assertEqual(observation["identity_basis"], "source_record_id")
         self.assertEqual(observation["event_time"], "2024-01-01T10:00:00Z")
 
     def test_event_stream_without_source_id_remains_unlinked(self):
-        contract = {
-            "adapter_id": "fixture-events-v1",
-            "source_namespace": "fixture-seismic",
-            "dataset_id": "fixture-events",
-            "domain": "environmental",
-            "native_frequency": "event",
-            "series_semantics": "event_stream",
-            "entity_id_path": ["entity_id"],
-            "event_time_path": ["timestamp"],
-            "metrics": [{
-                "metric_id": "earthquake.magnitude",
-                "value_path": ["source_observations", "magnitude"],
-                "unit": "magnitude",
-            }],
-        }
         event = state(
             domain="environmental",
             entity_id="unknown",
@@ -156,9 +156,28 @@ class DomainStateObservationAdapterTests(unittest.TestCase):
             native_frequency="event",
             source_observations={"magnitude": 6.7},
         )
-        observation = adapt_domain_state(event, contract)[0]["observation"]
+        observation = adapt_domain_state(
+            event, event_contract(include_source_id=False)
+        )[0]["observation"]
         self.assertIsNone(observation["logical_record_id"])
         self.assertEqual(observation["identity_basis"], "UNRESOLVED_NO_STABLE_KEY")
+
+    def test_event_outside_source_declared_support_fails(self):
+        event = state(
+            domain="environmental",
+            entity_id="us7000abc",
+            timestamp="2025-01-01T10:00:00Z",
+            native_frequency="event",
+            source_observations={"magnitude": 6.7},
+        )
+        with self.assertRaisesRegex(DomainStateAdapterError, "event_time_outside"):
+            adapt_domain_state(event, event_contract())
+
+    def test_time_support_frequency_must_match_adapter(self):
+        contract = periodic_contract()
+        contract["time_support"]["native_frequency"] = "monthly"
+        with self.assertRaisesRegex(DomainStateAdapterError, "time_support_frequency_mismatch"):
+            adapt_domain_state(state(), contract)
 
     def test_collection_order_is_deterministic_and_multiplicity_is_preserved(self):
         first = state(entity_id="124", timestamp=2020)
@@ -171,6 +190,8 @@ class DomainStateObservationAdapterTests(unittest.TestCase):
         )
         self.assertEqual(left["output_observation_count"], 6)
         self.assertEqual(left["input_domain_state_count"], 3)
+        self.assertEqual(left["unknown_availability_count"], 6)
+        self.assertEqual(left["time_support"]["observation_period_start"], "2000")
 
     def test_duplicate_metric_id_is_rejected(self):
         contract = periodic_contract()
