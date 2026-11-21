@@ -1,14 +1,14 @@
 # CHAOS — خريطة اعتماديات GitHub Actions v1
 
 **المستودع:** `uniqueteamyemen/CHAOS`  
-**مرجع خط الأساس الذي فُحص:** `main-phase2@365bb2111c89352466d72e60965246bf238ffabb`  
-**فرع Discovery المقارن:** `discovery/d1-domainstate-integrity-v1@1c0ea804b4a3112ee553ee2e63b7a4a15fab50a6`  
-**PR Discovery:** [#28](https://github.com/uniqueteamyemen/CHAOS/pull/28) — مفتوح كمسودة  
+**مرجع خط الأساس الذي فُحص:** `main-phase2@e0c13b41ef1bbbdfe46f1dc266a007eb2dedd8d7`  
+**فرع Discovery المقارن:** `discovery/d1-domainstate-integrity-v1@f0627eac6fd39a4d26fe128820cf05c58293054d`  
+**Discovery integration:** [PR #28](https://github.com/uniqueteamyemen/CHAOS/pull/28) — merged into `main-phase2` at `e0c13b41ef1bbbdfe46f1dc266a007eb2dedd8d7`  
 **المنهج:** قراءة ملفات Workflow الفعلية، trigger filters، scripts المستدعاة، artifacts، صلاحيات GitHub Actions، وفحص نتائج التشغيلات عبر GitHub. هذه خريطة اعتماديات تشغيلية ثابتة وليست تقرير نجاح علمي.
 
 ## 1. لقطة المستودع
 
-شجرة `main-phase2` تحتوي 1,558 مدخلاً: 1,347 ملفاً و211 مجلداً. منها 916 ملفاً تحت `experiments/**`. يحتوي `.github/workflows/` على 21 ملف YAML وملف نصي واحد `b71-trigger-once.txt`؛ الملف النصي ليس Workflow.
+بعد دمج PR #28، تحتوي شجرة `main-phase2` على 1,633 مدخلاً: 1,408 ملفات و225 مجلداً. منها 916 ملفاً تحت `experiments/**`. يحتوي `.github/workflows/` على 27 ملف YAML وملف نصي واحد `b71-trigger-once.txt`؛ الملف النصي ليس Workflow. الرقم السابق 21 YAML كان لقطة ما قبل دمج Discovery.
 
 لا يحتوي `main-phase2` على Workflows لـnpm build أو TypeScript lint أو Python package test عام. تشغيلات Python الحالية إما مرتبطة بفرع Phase 2 المحدد، أو بفروع التجارب التاريخية، أو بأدوات الجرد المتخصصة.
 
@@ -37,29 +37,33 @@
 
 ### 2.3 القائمة الكاملة لملفات YAML على main-phase2
 
-1. `b71-isolated-markov-router.yml`
-2. `erp-reconcile-tests.yml`
-3. `experiments-immutable.yml`
-4. `p-engine-asymmetry-guard-cusum-confirmation.yml`
-5. `p-engine-asymmetry-guard-cusum.yml`
-6. `p-engine-eia-replay.yml`
-7. `p-engine-mcusum-candidate.yml`
-8. `p-engine-parallel-fusion.yml`
-9. `p-engine-robust-cusum-calibration.yml`
-10. `p-engine-robust-cusum-holdout.yml`
-11. `p-engine-robustness-holdout.yml`
-12. `phase1-detector-real-data.yml`
-13. `real-data-stress.yml`
-14. `sequential-break-engine-audit.yml`
-15. `sequential-break-engine-b3-2-minimal-retest.yml`
-16. `sequential-break-engine-b4.yml`
-17. `sequential-break-engine-b5.yml`
-18. `sequential-break-engine-b6.yml`
-19. `sequential-break-engine-b61.yml`
-20. `sequential-break-engine-b7.yml`
-21. `sequential-break-engine.yml`
+1. `behavioral-discovery-v1.yml`
+2. `b71-isolated-markov-router.yml`
+3. `discovery-domain-state-integrity.yml`
+4. `erp-reconcile-tests.yml`
+5. `experiments-immutable.yml`
+6. `p-engine-asymmetry-guard-cusum-confirmation.yml`
+7. `p-engine-asymmetry-guard-cusum.yml`
+8. `p-engine-eia-replay.yml`
+9. `p-engine-mcusum-candidate.yml`
+10. `p-engine-parallel-fusion.yml`
+11. `p-engine-robust-cusum-calibration.yml`
+12. `p-engine-robust-cusum-holdout.yml`
+13. `p-engine-robustness-holdout.yml`
+14. `phase1-detector-real-data.yml`
+15. `real-data-stress.yml`
+16. `sequential-break-engine-audit.yml`
+17. `sequential-break-engine-b3-2-minimal-retest.yml`
+18. `sequential-break-engine-b4.yml`
+19. `sequential-break-engine-b5.yml`
+20. `sequential-break-engine-b6.yml`
+21. `sequential-break-engine-b61.yml`
+22. `sequential-break-engine-b7.yml`
+23. `sequential-break-engine.yml`
+24. `wdi-trade-domainstate-build.yml`
+25. `weo-vintage-source-audit-v1.yml`
 
-## 3. Workflows المضافة في فرع Discovery المرشح — ليست على main-phase2 بعد
+## 3. Workflows التي أضافها Discovery V1 وأصبحت الآن على main-phase2
 
 | Workflow | Trigger | ما ينفذه | الكتابة/الأثر |
 |---|---|---|---|
@@ -70,16 +74,20 @@
 | `discovery-domain-state-integrity.yml` | Pull Request إلى `main-phase2` عند تغيّر DomainState registry/campaigns/tests؛ Push على فرع Discovery؛ و`workflow_dispatch` | اختبارات validator ثم قراءة وفحص جميع DomainState assets المسجلة | `contents: read`، يرفع تقرير integrity؛ لا يعدل الأصول |
 | `chaos-governance-artifacts.yml` | Pull Request وPush إلى `main-phase2` عند تغيّر governance scripts/kernel/plan؛ و`workflow_dispatch` | بناء D0 inventory عبر kernel، التحقق من manifest، ثم رفع الحزمة | `contents: read`، artifact فقط |
 
-### 3.1 فجوة التحقق الدقيق لفرع Discovery
+### 3.1 التحقق الدقيق قبل دمج PR #28
 
-PR #28 على الرأس `1c0ea804b4a3112ee553ee2e63b7a4a15fab50a6` لديه أربعة PR-triggered checks ناجحة:
+PR #28 على الرأس النهائي `f0627eac6fd39a4d26fe128820cf05c58293054d` انتهى بكل 11 check-runs:
 
-| التشغيل | الحالة |
+| الفحص | الحالة |
 |---|---|
-| Governed Artifacts — 44950054404 | success |
-| Observation Foundation Contract — 44950054352 | success |
-| DomainState Integrity — 44950054328 | success |
-| experiments-immutable — 44950054370 | success |
+| stress | success (PR contract tests only; no long P2.2 run) |
+| experiments-immutable | success |
+| DomainState Integrity | success as audit execution; asset readiness remains BLOCKED |
+| Observation Foundation Contract | success |
+| Source Record Identity V1 | success |
+| D0 Baseline Artifact Validation | success |
+| Behavioral / WDI / WEO `validate-pr` | success (read-only rebuild and validation) |
+| Three materialization writer jobs | skipped intentionally on PR events |
 
 لكن هذه checks لا تعوض تشغيل وحدات توليد النتائج الثلاثة على SHA الحالي. آخر التشغيلات الناجحة المتاحة لهذه الوحدات كانت على رؤوس أقدم:
 
@@ -90,7 +98,7 @@ PR #28 على الرأس `1c0ea804b4a3112ee553ee2e63b7a4a15fab50a6` لديه أ�
 | Conditional Calendar Null | 44945139684 | `02fb97e2bbd601219c3547dc2df186da495620c3` | أقدم |
 | WEO Source Vintage Audit | 44947329602 | `cbbefa3d25bc109957cfff8f1856f7f6552311bc` | أقدم؛ تغيرت وحدة/ملفات workflow بعده |
 
-لذلك لا تُوصف هذه التشغيلات بأنها تحققت من كامل رأس PR #28. كما أن Workflows الثلاثة الأولى لا تتضمن `pull_request` trigger؛ يجب معالجة ذلك في خطة التكامل قبل إخراج PR من حالة Draft.
+كانت هذه التشغيلات السابقة على رؤوس أقدم؛ استبدلتها الآن بوحدات تحقق read-only على PR قبل الدمج. مهام materialization والكتابة بقيت Push/Manual فقط.
 
 ## 4. الحماية والصلاحيات
 
