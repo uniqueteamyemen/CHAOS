@@ -1,8 +1,8 @@
 # CHAOS — Repository Architecture and Status
 
 **Repository:** `uniqueteamyemen/CHAOS`  
-**Current main-phase2 head:** `365bb2111c89352466d72e60965246bf238ffabb` (documentation baseline merged; original Phase 2 common ancestor: `1b941282a4a415230a65098e066043fbd6a19155`)  
-**Discovery candidate:** `discovery/d1-domainstate-integrity-v1@1c0ea804b4a3112ee553ee2e63b7a4a15fab50a6`  
+**Current main-phase2 head:** `7eb619c1a7756b52aeffb32a06278e786c0dd762` (Stage A/B documentation and frozen-path CI guard merged; original Phase 2 common ancestor: `1b941282a4a415230a65098e066043fbd6a19155`)  
+**Discovery candidate:** `discovery/d1-domainstate-integrity-v1@db57bf29d2e4211d1c23af21cfa0fa3d858f7717` (PR #28; candidate only, no merge yet)  
 **USGS-labelled candidate:** `fix/p2-2-3-usgs-catalog-integrity-v1`  
 **Document status:** Architecture and integration map; not a scientific approval or merge authorization.
 
@@ -48,6 +48,16 @@ The reported Conditional Calendar Null used 10,000 redistributions and returned 
 
 The WDI observed-record source and edge diagnostics are already tracked in main-phase2. The dedicated V2 DomainState materialization is part of the Discovery candidate branch. The adapter summary reports 29,004 records, 259 entities, five indicators, and 2000–2024; however the current WDI edge max-stat summaries report p=0.4547726137 for the within-domain test and p=0.5897051474 for WDI-to-economic deterioration (2,000 replicates each), both `research_evidence_only`. Data readiness is not evidence of a supported edge.
 
+### DomainState registry completeness — BLOCKED
+
+The read-only DomainState audit found 21 registered paths, 15 present files, 6 missing references, 94,231 records read, and zero invalid records. Its readiness is `BLOCKED_INCOMPLETE_ASSET_SET`. The CI job passes when the auditor executes and records no invalid data; a green job does not turn this completeness state into PASS.
+
+The six absent paths are the WGI annual DomainState output and five missing files under the protected `experiments/**` archive (WHO daily, plus IMF IMTS BRA/CAN/MEX/ZAF shards). The five archived paths are not to be reconstructed or edited. The WGI summary reports 32,403 estimated DomainStates, but the expected output file is absent in the branch tree.
+
+The previous validator called coarse key collisions `duplicate_state_slots`. Eleven existing archived IMF IMTS shards produced 59,553 collisions because their shared key omits source dimensions such as counterpart country, indicator, trade flow, and valuation. The records are not thereby proven duplicates. The Discovery branch now reports `coarse_identity_collisions`, renames the key function `domain_state_coarse_key`, and adds a regression test preserving separate multidimensional records. See [DomainState Registry Audit](docs/DOMAIN_STATE_REGISTRY_AUDIT_V1_AR.md).
+
+This blocks a claim that the full multi-domain registry is complete. It does not invalidate the isolated WDI materialization or candidate-generation code; merge of PR #28, if approved after new exact-head CI, is an integration of a candidate Engine 1 foundation only, not a DomainState completeness certification or Engine 1 freeze.
+
 **Engine 2 status:** Not authorized to start. Engine 1 has not yet been frozen through a complete acceptance and handoff gate.
 
 ## 3. Immutable and protected areas
@@ -57,7 +67,7 @@ The following are protected by the repository's `AGENTS.md` and remain outside r
 - `experiments/**`: historical experiment code, data, results, and reports. No edits, moves, renames, reformatting, or deletion.
 - `structural_engine/isolated_break_detector_v1/**`: frozen detector implementation and mathematics. No edits under this phase.
 
-The existing `experiments-immutable.yml` CI guard verifies `experiments/**` only. It does not cover the frozen detector directory; current protection for that directory is documentary/CODEOWNERS routing, not an equivalent immutable-path CI check. Treat adding a detector-path guard as a separate Stage C governance PR; do not edit detector contents.
+The merged `experiments-immutable.yml` guard verifies both `experiments/**` and `structural_engine/isolated_break_detector_v1/**` on pull requests and relevant pushes. Unit tests cover the guard and it fails closed if the diff cannot be verified. The `stress` PR status is emitted using contract tests only; the expensive P2.2 stress pipeline and release publishing stay off PR events.
 
 ## 4. Source and domain readiness
 
@@ -84,12 +94,12 @@ Readiness is purpose-specific. A raw dataset can be present while an edge, cross
 - `main-phase2`: sole Phase 2 integration base for this work.
 - `discovery/d1-domainstate-integrity-v1`: primary Engine 1 integration candidate.
 - `chore/repository-hygiene-audit-v1`: documentation and non-destructive inventory work only.
-- `governance/p0-baseline-audit-v1`: existing P0/D0 work under open PR #21.
+- `governance/p0-baseline-audit-v1`: P0/D0 history; PR #21 was closed as superseded after verifying inclusion in Discovery ancestry.
 - `fix/p2-2-3-usgs-catalog-integrity-v1`: requires selective review; do not merge by branch name.
 
 ### Discovery integration evidence
 
-Before the documentation merge, Discovery was 140 commits ahead and zero behind the original main baseline. Current main-phase2 includes the documentation merge `365bb...`; Discovery is now 140 commits ahead and 1 behind, with merge base still the original common ancestor. The one-behind change is the repository-architecture documentation commit and must be reconciled before merging. Its net changed-file set includes the new discovery engine, observation foundation, contracts, DomainState artifacts, tests, and workflows. The comparison did not report changes under `experiments/**` or the frozen detector directory.
+Discovery was rebased by a two-parent merge commit onto the protected-path-guard/documentation baseline in `main-phase2`. Subsequent commits corrected artifact-writer concurrency, added PR read-only validation, recorded current evidence, and corrected DomainState collision reporting. The latest comparison is against `main-phase2`; PR #28 changed-file inventory contains no paths under `experiments/**` or `structural_engine/isolated_break_detector_v1/**`.
 
 Relevant successful Actions runs previously observed (each applies only to its recorded head SHA):
 - WDI DomainState build: [44943154074](https://github.com/uniqueteamyemen/CHAOS/actions/runs/44943154074)
@@ -97,7 +107,7 @@ Relevant successful Actions runs previously observed (each applies only to its r
 - Conditional Calendar Null: [44945139684](https://github.com/uniqueteamyemen/CHAOS/actions/runs/44945139684)
 - WEO 2020 Source Vintage Audit: [44947329602](https://github.com/uniqueteamyemen/CHAOS/actions/runs/44947329602)
 
-These successful runs belong to the specific historical run SHAs, not to the later documentation-only branch head `1c0ea804...`. On the current PR head `1c0ea804...`, four PR-triggered checks succeeded: Governed Artifacts, Observation Foundation Contract, DomainState Integrity, and experiments-immutable. The WDI, Behavioral Discovery, and WEO generation workflows are push/dispatch-only (no pull_request trigger) and their last successful runs were on older SHAs; WDI output changed after its last successful run. Exact-head validation for these three materialization paths is still missing. PR #28 therefore remains Draft and is not ready to merge.
+The three generation workflows were made write-on-push/manual and read-only-on-PR. They completed successfully on the materialization head after their artifact-writer concurrency fixes. PR #28 exact-head checks on `4c9b0...` all completed successfully, including `stress`, `experiments-immutable`, Observation Foundation, Source Record Identity, D0 artifact validation, DomainState audit, and the three read-only generation validators. A later code change renamed the coarse DomainState collision metric and added a multidimensional regression test; those changes require a fresh exact-head CI cycle before PR #28 is made ready or merged.
 
 ### P0 PR overlap
 
@@ -131,7 +141,7 @@ Branch names are not proof of current usefulness. Preserve commit history; archi
 | `archive/phase1-detector-freeze-v1.0`, `phase1-detector-freeze-phase2-real-data` | Frozen Phase 1 references | Preserve as archive references. |
 
 Open PRs at the latest GitHub check:
-- #28: Discovery V1 integration; open as Draft. Base/head need reconciliation after the documentation commit; exact-head generation workflows remain unvalidated.
+- #28: Discovery V1 integration; open as Draft. Base/head are synchronized; all earlier exact-head checks passed, but the latest coarse-key validator correction requires a fresh CI pass and the full DomainState registry remains BLOCKED.
 - #24: Markov rho observability; open, targets `p2.2.2-markov-calibration-audit`, not `main-phase2`. Keep isolated from the Engine 1 integration.
 - #21: closed as superseded after confirming Discovery is a descendant of the P0 branch and all 19 P0 changed paths are included in PR #28.
 - #20, #9, #2, #4, #3: closed from the active integration queue; their branches and commits remain. No branch deletion was performed.
@@ -165,6 +175,8 @@ Until these conditions are met, Discovery V1 remains a candidate generation and 
 - [Entrypoint and import map](docs/ENTRYPOINT_AND_IMPORT_MAP_V1_AR.md)
 - [Component and branch classification](docs/REPOSITORY_COMPONENT_CLASSIFICATION_V1_AR.md)
 - [Repository hygiene audit](docs/REPOSITORY_HYGIENE_AUDIT_V1_AR.md)
+- [DomainState registry audit](docs/DOMAIN_STATE_REGISTRY_AUDIT_V1_AR.md)
+- [Engine 1 Discovery integration status](docs/ENGINE1_DISCOVERY_INTEGRATION_STATUS_V1_AR.md)
 
 At the checked baseline, `main-phase2` has 1,347 tracked files and 211 directories (1,558 total tree entries); `experiments/**` accounts for 916 files. It has 21 YAML workflows and one non-workflow text marker. The Discovery branch contains 1,400 files and six additional workflows; it is not yet integrated.
 

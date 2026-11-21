@@ -52,6 +52,86 @@ def append_jsonl(path: Path, record: dict[str, Any]) -> None:
         f.write(json.dumps(record, ensure_ascii=False, sort_keys=True) + '\n')
 
 
+RESEARCH_LEDGER_REQUIRED_FIELDS = {
+    "ledger_id", "record_type", "created_at_utc", "source_refs",
+    "contract_ref", "input_hashes", "output_refs", "status", "notes",
+}
+RESEARCH_LEDGER_RECORD_TYPES = {
+    "source", "contract", "run", "domain_state", "transition_evidence",
+    "pattern_decision", "runtime_alert", "qa",
+}
+
+
+def append_research_ledger_record(path: Path, record: dict[str, Any]) -> dict[str, Any]:
+    """Append one validated, idempotent record to the canonical research ledger.
+
+    A sidecar advisory lock serializes writers across processes. A repeated
+    ledger_id with identical content is a no-op; a repeated ID with different
+    content is a hard integrity error. Corrupt existing JSONL fails closed.
+    """
+    if not isinstance(record, dict):
+        raise ValueError("research_ledger_record_must_be_object")
+    missing = sorted(RESEARCH_LEDGER_REQUIRED_FIELDS - set(record))
+    if missing:
+        raise ValueError("research_ledger_fields_missing:" + ",".join(missing))
+    if record.get("record_type") not in RESEARCH_LEDGER_RECORD_TYPES:
+        raise ValueError("research_ledger_record_type_invalid")
+    ledger_id = record.get("ledger_id")
+    if not isinstance(ledger_id, str) or not ledger_id.startswith("ledger:v1:sha256:"):
+        raise ValueError("research_ledger_id_invalid")
+    payload = {key: value for key, value in record.items() if key != "ledger_id"}
+    expected_id = "ledger:v1:sha256:" + canonical_sha256(payload)
+    if ledger_id != expected_id:
+        raise ValueError("research_ledger_id_content_mismatch")
+    try:
+        rendered = json.dumps(
+            record, ensure_ascii=False, sort_keys=True, separators=(",", ":"), allow_nan=False
+        )
+    except (TypeError, ValueError) as exc:
+        raise ValueError("research_ledger_record_not_canonical_json") from exc
+
+    path.parent.mkdir(parents=True, exist_ok=True)
+    lock_path = path.with_name(path.name + ".lock")
+    with lock_path.open("a+b") as lock_handle:
+        if os.name == "nt":
+            import msvcrt
+            if lock_path.stat().st_size == 0:
+                lock_handle.write(b"0")
+                lock_handle.flush()
+            lock_handle.seek(0)
+            msvcrt.locking(lock_handle.fileno(), msvcrt.LK_LOCK, 1)
+            unlock = lambda: (lock_handle.seek(0), msvcrt.locking(lock_handle.fileno(), msvcrt.LK_UNLCK, 1))
+        else:
+            import fcntl
+            fcntl.flock(lock_handle.fileno(), fcntl.LOCK_EX)
+            unlock = lambda: fcntl.flock(lock_handle.fileno(), fcntl.LOCK_UN)
+        try:
+            if path.exists():
+                with path.open("r", encoding="utf-8") as existing:
+                    for line_number, line in enumerate(existing, 1):
+                        if not line.strip():
+                            continue
+                        try:
+                            previous = json.loads(line)
+                        except json.JSONDecodeError as exc:
+                            raise ValueError(f"research_ledger_jsonl_corrupt:line={line_number}") from exc
+                        if previous.get("ledger_id") == ledger_id:
+                            if previous == record:
+                                return {
+                                    "status": "already_recorded",
+                                    "ledger_id": ledger_id,
+                                    "path": str(path),
+                                }
+                            raise ValueError("research_ledger_duplicate_id_content_conflict")
+            with path.open("a", encoding="utf-8", newline="\n") as output:
+                output.write(rendered + "\n")
+                output.flush()
+                os.fsync(output.fileno())
+        finally:
+            unlock()
+    return {"status": "appended", "ledger_id": ledger_id, "path": str(path)}
+
+
 def load_manifest(path: Path) -> dict[str, Any]:
     data = json.loads(path.read_text(encoding='utf-8'))
     if not isinstance(data, dict) or 'artifacts' not in data:

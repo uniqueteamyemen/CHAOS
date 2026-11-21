@@ -1,0 +1,31 @@
+{
+  "contract_id": "CHAOS_CONDITIONAL_CALENDAR_COINCIDENCE_NULL_V1",
+  "replicates": 10000,
+  "seed": 20261121,
+  "minimum_segment_observations": 5,
+  "point_reference_observations_each_side": 4,
+  "minimum_entity_support": 5,
+  "input_year_range": [
+    2000,
+    2024
+  ],
+  "conditioning_policy": {
+    "preserve_candidate_count_per_series_type": true,
+    "preserve_metric": true,
+    "preserve_entity": true,
+    "preserve_direction": true,
+    "preserve_pre_post_trend_state": true,
+    "preserve_split_support_class": true,
+    "reassign_candidate_year_independently": true
+  },
+  "test_family": "maximum same-signature entity support across all metrics, candidate types, directions, years, and split-support classes",
+  "inference_limits": {
+    "null_tests_detector_false_alarm_rate": false,
+    "null_tests_existence_of_within_series_anomalies": false,
+    "causal_test": false,
+    "forecasting": false,
+    "candidate_promotion": false,
+    "exchangeability_assumption": "Candidate calendar timing is exchangeable only conditional on candidate existence and the admissible year support. Nonstationary source revisions, coverage shifts, or time-varying candidate detectability can violate this assumption.",
+    "interpretation": "Diagnostic test of cross-entity calendar coincidence; not a detector FPR/FDR or a source-independent validation."
+  }
+}

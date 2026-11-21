@@ -2,6 +2,18 @@
   "contract_id":"CHAOS_TEMPORAL_ALIGNMENT_V1",
   "purpose":"Explicitly align native-frequency states for edge testing without rewriting source observations",
   "principles":["preserve_native_frequency","no_daily_to_annual_conversion_by_default","no_broadcasting_future_state_into_past","alignment_is_derived_artifact_not_raw_replacement"],
+  "time_support":{
+    "required_at":"source/dataset/series boundary",
+    "fields":["observation_period_start","observation_period_end","native_frequency"],
+    "boundary_semantics_default":"SOURCE_DECLARED",
+    "rules":[
+      "Both period boundaries must be source-declared in the native frequency.",
+      "Do not infer time support from the first and last available rows.",
+      "Do not convert event, daily, monthly, or annual boundaries into another frequency without a separate alignment/aggregation contract.",
+      "A missing or reversed time-support interval is NOT_TESTABLE and must fail closed."
+    ],
+    "availability_time_is_separate":true
+  },
   "annual_to_annual":{"allowed":true,"key":"entity_id + calendar_year","lag_unit":"years","missing_policy":"fail_closed"},
   "event_to_annual":{"allowed":false,"default_status":"not_testable","requires":["event_window","shock_window","outcome_horizon","entity_match_rule","coverage_rule","null_design","alignment_version"]},
   "daily_to_monthly":{"allowed":false,"requires":"separate aggregation contract preserving event counts and timing"},

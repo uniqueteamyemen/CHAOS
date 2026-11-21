@@ -1,0 +1,262 @@
+{
+  "causal_claims_permitted": false,
+  "code_sha256": "7f923eb01fffb737bb4ee658231272d79b047d7a2d377b64177ba484e914f2cc",
+  "comparison_iso_count": 139,
+  "contract_id": "CHAOS_WEO_GDP_GROWTH_VINTAGE_AUDIT_V1",
+  "contract_sha256": "f2e887a11ac4502b7b9829696f1a9391c069bbe3a422e7432bccfbc3db60c842",
+  "downloads": [
+    {
+      "actual_estimate_status": "UNKNOWN_MIRROR_METADATA_NOT_PRESERVED",
+      "mirror_source": {
+        "created_at": "2025-11-10 05:56:45+00:00",
+        "last_modified": "2026-10-19 12:32:20+00:00",
+        "license": null,
+        "metadata_missing_for_actual_estimate_status": true,
+        "parquet_files": [
+          {
+            "bytes": 54694031,
+            "filename": "economic_outlook.parquet",
+            "local_path": "/home/runner/work/CHAOS/CHAOS/discovery/source_vintage_v1/raw_downloads/huggingface/huggingface/economic_outlook.parquet",
+            "repository": "https://huggingface.co/datasets/econdataverse/imfweo",
+            "revision": "38f124bb0bf9c07679493c9dc0869dcd53385aee",
+            "sha256": "707a1b43ee3471f5ed487a6e1c2848428f74f475e3e3acf35b408a1f6b4a775a"
+          },
+          {
+            "bytes": 11063,
+            "filename": "entities.parquet",
+            "local_path": "/home/runner/work/CHAOS/CHAOS/discovery/source_vintage_v1/raw_downloads/huggingface/huggingface/entities.parquet",
+            "repository": "https://huggingface.co/datasets/econdataverse/imfweo",
+            "revision": "38f124bb0bf9c07679493c9dc0869dcd53385aee",
+            "sha256": "e94d63550f3792544b527aeb66c962930fd71989f3819a3e88bc2b0f8b1107e1"
+          },
+          {
+            "bytes": 17208,
+            "filename": "series.parquet",
+            "local_path": "/home/runner/work/CHAOS/CHAOS/discovery/source_vintage_v1/raw_downloads/huggingface/huggingface/series.parquet",
+            "repository": "https://huggingface.co/datasets/econdataverse/imfweo",
+            "revision": "38f124bb0bf9c07679493c9dc0869dcd53385aee",
+            "sha256": "4ccfccadfdb9ee259258b7e9f4fa9136afe666536f268eaaec3467d1b101905a"
+          }
+        ],
+        "repository": "https://huggingface.co/datasets/econdataverse/imfweo",
+        "repository_id": "econdataverse/imfweo",
+        "revision": "38f124bb0bf9c07679493c9dc0869dcd53385aee",
+        "selected_row_count_by_vintage": {
+          "WEO_2020_OCT": 1035,
+          "WEO_2021_APR": 1035
+        },
+        "source_type": "THIRD_PARTY_DERIVED_MIRROR",
+        "transformation_notice": "Long-form Parquet converted from IMF WEO publications by the imfweo project; IMF Estimates Start After and original country/series notes are not present."
+      },
+      "official_download_failure": "official_imf_vintage_download_failed_all_urls:[{\"error\": \"Forbidden\", \"http_status\": 403, \"url\": \"https://www.imf.org/-/media/Files/Publications/WEO/WEO-Database/2020/02/WEOOct2020all.xls\"}, {\"error\": \"Forbidden\", \"http_status\": 403, \"url\": \"https://www.imf.org/-/media/files/publications/weo/weo-database/2020/02/weooct2020all.xls\"}]",
+      "publication_release": "Fall",
+      "publication_year": 2020,
+      "release_label": "October 2020",
+      "release_page": "https://www.imf.org/en/publications/weo/weo-database/2020/october",
+      "source_type": "THIRD_PARTY_DERIVED_MIRROR",
+      "vintage_id": "WEO_2020_OCT"
+    },
+    {
+      "actual_estimate_status": "UNKNOWN_MIRROR_METADATA_NOT_PRESERVED",
+      "mirror_source": {
+        "created_at": "2025-11-10 05:56:45+00:00",
+        "last_modified": "2026-10-19 12:32:20+00:00",
+        "license": null,
+        "metadata_missing_for_actual_estimate_status": true,
+        "parquet_files": [
+          {
+            "bytes": 54694031,
+            "filename": "economic_outlook.parquet",
+            "local_path": "/home/runner/work/CHAOS/CHAOS/discovery/source_vintage_v1/raw_downloads/huggingface/huggingface/economic_outlook.parquet",
+            "repository": "https://huggingface.co/datasets/econdataverse/imfweo",
+            "revision": "38f124bb0bf9c07679493c9dc0869dcd53385aee",
+            "sha256": "707a1b43ee3471f5ed487a6e1c2848428f74f475e3e3acf35b408a1f6b4a775a"
+          },
+          {
+            "bytes": 11063,
+            "filename": "entities.parquet",
+            "local_path": "/home/runner/work/CHAOS/CHAOS/discovery/source_vintage_v1/raw_downloads/huggingface/huggingface/entities.parquet",
+            "repository": "https://huggingface.co/datasets/econdataverse/imfweo",
+            "revision": "38f124bb0bf9c07679493c9dc0869dcd53385aee",
+            "sha256": "e94d63550f3792544b527aeb66c962930fd71989f3819a3e88bc2b0f8b1107e1"
+          },
+          {
+            "bytes": 17208,
+            "filename": "series.parquet",
+            "local_path": "/home/runner/work/CHAOS/CHAOS/discovery/source_vintage_v1/raw_downloads/huggingface/huggingface/series.parquet",
+            "repository": "https://huggingface.co/datasets/econdataverse/imfweo",
+            "revision": "38f124bb0bf9c07679493c9dc0869dcd53385aee",
+            "sha256": "4ccfccadfdb9ee259258b7e9f4fa9136afe666536f268eaaec3467d1b101905a"
+          }
+        ],
+        "repository": "https://huggingface.co/datasets/econdataverse/imfweo",
+        "repository_id": "econdataverse/imfweo",
+        "revision": "38f124bb0bf9c07679493c9dc0869dcd53385aee",
+        "selected_row_count_by_vintage": {
+          "WEO_2020_OCT": 1035,
+          "WEO_2021_APR": 1035
+        },
+        "source_type": "THIRD_PARTY_DERIVED_MIRROR",
+        "transformation_notice": "Long-form Parquet converted from IMF WEO publications by the imfweo project; IMF Estimates Start After and original country/series notes are not present."
+      },
+      "official_download_failure": "official_imf_vintage_download_failed_all_urls:[{\"error\": \"Forbidden\", \"http_status\": 403, \"url\": \"https://www.imf.org/-/media/Files/Publications/WEO/WEO-Database/2021/WEOApr2021all.xls\"}, {\"error\": \"Forbidden\", \"http_status\": 403, \"url\": \"https://www.imf.org/-/media/files/publications/weo/weo-database/2021/weoapr2021all.xls\"}]",
+      "publication_release": "Spring",
+      "publication_year": 2021,
+      "release_label": "April 2021",
+      "release_page": "https://www.imf.org/en/publications/weo/weo-database/2021/april",
+      "source_type": "THIRD_PARTY_DERIVED_MIRROR",
+      "vintage_id": "WEO_2021_APR"
+    }
+  ],
+  "forecasting_performed": false,
+  "generated_at_utc": "2026-11-21T21:36:25Z",
+  "limits": [
+    "Only ISO-3 exact matching is used; no fuzzy country-name matching.",
+    "The staged April-2026 panel has no source-vintage actual/estimate metadata; its event status is UNKNOWN.",
+    "Official IMF files use Estimates Start After for actual/estimate classification; secondary mirror values remain UNKNOWN because this metadata is not preserved in the mirror.",
+    "A third-party mirror is never reported as an official IMF source file.Theil-Sen extrapolation is a source-vintage revision diagnostic, not a prediction or a p-value.",
+    "No causal claim or forecasting is performed."
+  ],
+  "official_imf_access_failures": [
+    {
+      "official_download_failure": "official_imf_vintage_download_failed_all_urls:[{\"error\": \"Forbidden\", \"http_status\": 403, \"url\": \"https://www.imf.org/-/media/Files/Publications/WEO/WEO-Database/2020/02/WEOOct2020all.xls\"}, {\"error\": \"Forbidden\", \"http_status\": 403, \"url\": \"https://www.imf.org/-/media/files/publications/weo/weo-database/2020/02/weooct2020all.xls\"}]",
+      "publication_release": "Fall",
+      "publication_year": 2020,
+      "release_label": "October 2020",
+      "release_page": "https://www.imf.org/en/publications/weo/weo-database/2020/october",
+      "vintage_id": "WEO_2020_OCT"
+    },
+    {
+      "official_download_failure": "official_imf_vintage_download_failed_all_urls:[{\"error\": \"Forbidden\", \"http_status\": 403, \"url\": \"https://www.imf.org/-/media/Files/Publications/WEO/WEO-Database/2021/WEOApr2021all.xls\"}, {\"error\": \"Forbidden\", \"http_status\": 403, \"url\": \"https://www.imf.org/-/media/files/publications/weo/weo-database/2021/weoapr2021all.xls\"}]",
+      "publication_release": "Spring",
+      "publication_year": 2021,
+      "release_label": "April 2021",
+      "release_page": "https://www.imf.org/en/publications/weo/weo-database/2021/april",
+      "vintage_id": "WEO_2021_APR"
+    }
+  ],
+  "panel": {
+    "entities_with_any_panel_values": 139,
+    "path": "/home/runner/work/CHAOS/CHAOS/catalog_first/readiness_gate/macro_plus_eia_energy/MACRO_PLUS_EIA_ENERGY_COMPLETE_139_NUMERIC_RAW_2000_2024_WIDE.csv",
+    "sha256": "015736245ac4010aa1c97055930c69ca3c7da5fdd5970f5da34456b67a3172ad"
+  },
+  "secondary_mirror": {
+    "created_at": "2025-11-10 05:56:45+00:00",
+    "last_modified": "2026-10-19 12:32:20+00:00",
+    "license": null,
+    "metadata_missing_for_actual_estimate_status": true,
+    "parquet_files": [
+      {
+        "bytes": 54694031,
+        "filename": "economic_outlook.parquet",
+        "local_path": "/home/runner/work/CHAOS/CHAOS/discovery/source_vintage_v1/raw_downloads/huggingface/huggingface/economic_outlook.parquet",
+        "repository": "https://huggingface.co/datasets/econdataverse/imfweo",
+        "revision": "38f124bb0bf9c07679493c9dc0869dcd53385aee",
+        "sha256": "707a1b43ee3471f5ed487a6e1c2848428f74f475e3e3acf35b408a1f6b4a775a"
+      },
+      {
+        "bytes": 11063,
+        "filename": "entities.parquet",
+        "local_path": "/home/runner/work/CHAOS/CHAOS/discovery/source_vintage_v1/raw_downloads/huggingface/huggingface/entities.parquet",
+        "repository": "https://huggingface.co/datasets/econdataverse/imfweo",
+        "revision": "38f124bb0bf9c07679493c9dc0869dcd53385aee",
+        "sha256": "e94d63550f3792544b527aeb66c962930fd71989f3819a3e88bc2b0f8b1107e1"
+      },
+      {
+        "bytes": 17208,
+        "filename": "series.parquet",
+        "local_path": "/home/runner/work/CHAOS/CHAOS/discovery/source_vintage_v1/raw_downloads/huggingface/huggingface/series.parquet",
+        "repository": "https://huggingface.co/datasets/econdataverse/imfweo",
+        "revision": "38f124bb0bf9c07679493c9dc0869dcd53385aee",
+        "sha256": "4ccfccadfdb9ee259258b7e9f4fa9136afe666536f268eaaec3467d1b101905a"
+      }
+    ],
+    "repository": "https://huggingface.co/datasets/econdataverse/imfweo",
+    "repository_id": "econdataverse/imfweo",
+    "revision": "38f124bb0bf9c07679493c9dc0869dcd53385aee",
+    "selected_row_count_by_vintage": {
+      "WEO_2020_OCT": 1035,
+      "WEO_2021_APR": 1035
+    },
+    "source_type": "THIRD_PARTY_DERIVED_MIRROR",
+    "transformation_notice": "Long-form Parquet converted from IMF WEO publications by the imfweo project; IMF Estimates Start After and original country/series notes are not present."
+  },
+  "series": {
+    "event_year": 2020,
+    "method": "Theil-Sen on 2016–2019 only, extrapolated to 2020",
+    "panel_column": "imf__NGDP_RPCH",
+    "pretrend_years": [
+      2016,
+      2017,
+      2018,
+      2019
+    ],
+    "subject_code": "NGDP_RPCH"
+  },
+  "status": "SOURCE_VINTAGE_AUDIT_COMPLETED_WITH_SECONDARY_MIRROR",
+  "vintages": [
+    {
+      "actual_estimate_status": "UNKNOWN_MIRROR_METADATA_NOT_PRESERVED",
+      "all_actual_pretrend_rows": 0,
+      "below_2019_fraction_all_complete": 0.9856115107913669,
+      "below_pretrend_fraction_actual_2020": null,
+      "below_pretrend_fraction_all_actual_pretrend": null,
+      "below_pretrend_fraction_all_complete": 0.9712230215827338,
+      "below_pretrend_fraction_estimated_2020": null,
+      "complete_2016_2020_rows": 139,
+      "event_2020_status": {
+        "actual": 0,
+        "estimate_or_projection": 0,
+        "unknown": 139
+      },
+      "iso_matched_to_panel": 139,
+      "median_absolute_2020_revision_vs_staged_panel": 1.8900000000000006,
+      "pretrend_definition": "Theil-Sen fitted on 2016–2019 only and extrapolated one year; 2020 actual/estimate status comes from IMF Estimates Start After.",
+      "release_label": "October 2020",
+      "release_page": "https://www.imf.org/en/publications/weo/weo-database/2020/october",
+      "source_type": "THIRD_PARTY_DERIVED_MIRROR",
+      "vintage_id": "WEO_2020_OCT"
+    },
+    {
+      "actual_estimate_status": "UNKNOWN_MIRROR_METADATA_NOT_PRESERVED",
+      "all_actual_pretrend_rows": 0,
+      "below_2019_fraction_all_complete": 0.9712230215827338,
+      "below_pretrend_fraction_actual_2020": null,
+      "below_pretrend_fraction_all_actual_pretrend": null,
+      "below_pretrend_fraction_all_complete": 0.9568345323741008,
+      "below_pretrend_fraction_estimated_2020": null,
+      "complete_2016_2020_rows": 139,
+      "event_2020_status": {
+        "actual": 0,
+        "estimate_or_projection": 0,
+        "unknown": 139
+      },
+      "iso_matched_to_panel": 139,
+      "median_absolute_2020_revision_vs_staged_panel": 0.6659999999999968,
+      "pretrend_definition": "Theil-Sen fitted on 2016–2019 only and extrapolated one year; 2020 actual/estimate status comes from IMF Estimates Start After.",
+      "release_label": "April 2021",
+      "release_page": "https://www.imf.org/en/publications/weo/weo-database/2021/april",
+      "source_type": "THIRD_PARTY_DERIVED_MIRROR",
+      "vintage_id": "WEO_2021_APR"
+    },
+    {
+      "all_actual_pretrend_rows": 0,
+      "below_2019_fraction_all_complete": 0.9496402877697842,
+      "below_pretrend_fraction_actual_2020": null,
+      "below_pretrend_fraction_all_actual_pretrend": null,
+      "below_pretrend_fraction_all_complete": 0.9424460431654677,
+      "below_pretrend_fraction_estimated_2020": null,
+      "complete_2016_2020_rows": 139,
+      "event_2020_status": {
+        "actual": 0,
+        "estimate_or_projection": 0,
+        "unknown": 139
+      },
+      "iso_matched_to_panel": 139,
+      "median_absolute_2020_revision_vs_staged_panel": 0.0,
+      "pretrend_definition": "Theil-Sen fitted on 2016–2019 only and extrapolated one year; 2020 actual/estimate status comes from IMF Estimates Start After.",
+      "release_label": "April 2026 WEO panel already committed in CHAOS",
+      "vintage_id": "WEO_APR2026_PANEL_STAGED"
+    }
+  ]
+}

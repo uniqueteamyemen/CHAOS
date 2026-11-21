@@ -47,3 +47,6 @@ experiments/multi_domain_native_adapters_v1/imf_imts_v1/IMF_IMTS_DOMAIN_STATES_A
 
 # Raw snapshots and intermediate outputs from the P2.2 stress pipeline
 /artifacts/real_data_stress/
+
+# Runtime advisory lock for the canonical research ledger
+/governance/ledger/*.lock

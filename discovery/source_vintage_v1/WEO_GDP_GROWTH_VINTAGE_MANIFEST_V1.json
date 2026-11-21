@@ -1,0 +1,189 @@
+{
+  "bundle_id": "CHAOS_WEO_GDP_GROWTH_VINTAGE_AUDIT_V1",
+  "code": {
+    "module_path": "discovery_engine/weo_vintage_audit_v1.py",
+    "module_sha256": "7f923eb01fffb737bb4ee658231272d79b047d7a2d377b64177ba484e914f2cc",
+    "runner_path": "scripts/discovery/run_weo_vintage_audit_v1.py",
+    "runner_sha256": "2598f02f59b0ec8de978c177a0e9a43238265486a3880d4b2a44a95939e973c2"
+  },
+  "contract_id": "CHAOS_WEO_GDP_GROWTH_VINTAGE_AUDIT_V1",
+  "contract_sha256": "f2e887a11ac4502b7b9829696f1a9391c069bbe3a422e7432bccfbc3db60c842",
+  "derived_artifacts": [
+    {
+      "bytes": 54637,
+      "path": "discovery/source_vintage_v1/WEO_GDP_GROWTH_2020_VINTAGE_COMPARISON_V1.csv",
+      "sha256": "a6144c48079751330a213d62e7d142774c3c895ab5c4ff1dd15d60a118faef8a"
+    },
+    {
+      "bytes": 14112,
+      "path": "discovery/source_vintage_v1/WEO_GDP_GROWTH_2020_VINTAGE_AUDIT_V1.json",
+      "sha256": "388e9c36e3e609b1d6165e239c64b7a235bb6a133e18056c8e3117385360cfcb"
+    }
+  ],
+  "generated_at_utc": "2026-11-21T21:36:25Z",
+  "official_imf_access_failures": [
+    {
+      "official_download_failure": "official_imf_vintage_download_failed_all_urls:[{\"error\": \"Forbidden\", \"http_status\": 403, \"url\": \"https://www.imf.org/-/media/Files/Publications/WEO/WEO-Database/2020/02/WEOOct2020all.xls\"}, {\"error\": \"Forbidden\", \"http_status\": 403, \"url\": \"https://www.imf.org/-/media/files/publications/weo/weo-database/2020/02/weooct2020all.xls\"}]",
+      "publication_release": "Fall",
+      "publication_year": 2020,
+      "release_label": "October 2020",
+      "release_page": "https://www.imf.org/en/publications/weo/weo-database/2020/october",
+      "vintage_id": "WEO_2020_OCT"
+    },
+    {
+      "official_download_failure": "official_imf_vintage_download_failed_all_urls:[{\"error\": \"Forbidden\", \"http_status\": 403, \"url\": \"https://www.imf.org/-/media/Files/Publications/WEO/WEO-Database/2021/WEOApr2021all.xls\"}, {\"error\": \"Forbidden\", \"http_status\": 403, \"url\": \"https://www.imf.org/-/media/files/publications/weo/weo-database/2021/weoapr2021all.xls\"}]",
+      "publication_release": "Spring",
+      "publication_year": 2021,
+      "release_label": "April 2021",
+      "release_page": "https://www.imf.org/en/publications/weo/weo-database/2021/april",
+      "vintage_id": "WEO_2021_APR"
+    }
+  ],
+  "panel_sha256": "015736245ac4010aa1c97055930c69ca3c7da5fdd5970f5da34456b67a3172ad",
+  "raw_downloads_and_source_acquisitions": [
+    {
+      "actual_estimate_status": "UNKNOWN_MIRROR_METADATA_NOT_PRESERVED",
+      "mirror_source": {
+        "created_at": "2025-11-10 05:56:45+00:00",
+        "last_modified": "2026-10-19 12:32:20+00:00",
+        "license": null,
+        "metadata_missing_for_actual_estimate_status": true,
+        "parquet_files": [
+          {
+            "bytes": 54694031,
+            "filename": "economic_outlook.parquet",
+            "local_path": "/home/runner/work/CHAOS/CHAOS/discovery/source_vintage_v1/raw_downloads/huggingface/huggingface/economic_outlook.parquet",
+            "repository": "https://huggingface.co/datasets/econdataverse/imfweo",
+            "revision": "38f124bb0bf9c07679493c9dc0869dcd53385aee",
+            "sha256": "707a1b43ee3471f5ed487a6e1c2848428f74f475e3e3acf35b408a1f6b4a775a"
+          },
+          {
+            "bytes": 11063,
+            "filename": "entities.parquet",
+            "local_path": "/home/runner/work/CHAOS/CHAOS/discovery/source_vintage_v1/raw_downloads/huggingface/huggingface/entities.parquet",
+            "repository": "https://huggingface.co/datasets/econdataverse/imfweo",
+            "revision": "38f124bb0bf9c07679493c9dc0869dcd53385aee",
+            "sha256": "e94d63550f3792544b527aeb66c962930fd71989f3819a3e88bc2b0f8b1107e1"
+          },
+          {
+            "bytes": 17208,
+            "filename": "series.parquet",
+            "local_path": "/home/runner/work/CHAOS/CHAOS/discovery/source_vintage_v1/raw_downloads/huggingface/huggingface/series.parquet",
+            "repository": "https://huggingface.co/datasets/econdataverse/imfweo",
+            "revision": "38f124bb0bf9c07679493c9dc0869dcd53385aee",
+            "sha256": "4ccfccadfdb9ee259258b7e9f4fa9136afe666536f268eaaec3467d1b101905a"
+          }
+        ],
+        "repository": "https://huggingface.co/datasets/econdataverse/imfweo",
+        "repository_id": "econdataverse/imfweo",
+        "revision": "38f124bb0bf9c07679493c9dc0869dcd53385aee",
+        "selected_row_count_by_vintage": {
+          "WEO_2020_OCT": 1035,
+          "WEO_2021_APR": 1035
+        },
+        "source_type": "THIRD_PARTY_DERIVED_MIRROR",
+        "transformation_notice": "Long-form Parquet converted from IMF WEO publications by the imfweo project; IMF Estimates Start After and original country/series notes are not present."
+      },
+      "official_download_failure": "official_imf_vintage_download_failed_all_urls:[{\"error\": \"Forbidden\", \"http_status\": 403, \"url\": \"https://www.imf.org/-/media/Files/Publications/WEO/WEO-Database/2020/02/WEOOct2020all.xls\"}, {\"error\": \"Forbidden\", \"http_status\": 403, \"url\": \"https://www.imf.org/-/media/files/publications/weo/weo-database/2020/02/weooct2020all.xls\"}]",
+      "publication_release": "Fall",
+      "publication_year": 2020,
+      "release_label": "October 2020",
+      "release_page": "https://www.imf.org/en/publications/weo/weo-database/2020/october",
+      "source_type": "THIRD_PARTY_DERIVED_MIRROR",
+      "vintage_id": "WEO_2020_OCT"
+    },
+    {
+      "actual_estimate_status": "UNKNOWN_MIRROR_METADATA_NOT_PRESERVED",
+      "mirror_source": {
+        "created_at": "2025-11-10 05:56:45+00:00",
+        "last_modified": "2026-10-19 12:32:20+00:00",
+        "license": null,
+        "metadata_missing_for_actual_estimate_status": true,
+        "parquet_files": [
+          {
+            "bytes": 54694031,
+            "filename": "economic_outlook.parquet",
+            "local_path": "/home/runner/work/CHAOS/CHAOS/discovery/source_vintage_v1/raw_downloads/huggingface/huggingface/economic_outlook.parquet",
+            "repository": "https://huggingface.co/datasets/econdataverse/imfweo",
+            "revision": "38f124bb0bf9c07679493c9dc0869dcd53385aee",
+            "sha256": "707a1b43ee3471f5ed487a6e1c2848428f74f475e3e3acf35b408a1f6b4a775a"
+          },
+          {
+            "bytes": 11063,
+            "filename": "entities.parquet",
+            "local_path": "/home/runner/work/CHAOS/CHAOS/discovery/source_vintage_v1/raw_downloads/huggingface/huggingface/entities.parquet",
+            "repository": "https://huggingface.co/datasets/econdataverse/imfweo",
+            "revision": "38f124bb0bf9c07679493c9dc0869dcd53385aee",
+            "sha256": "e94d63550f3792544b527aeb66c962930fd71989f3819a3e88bc2b0f8b1107e1"
+          },
+          {
+            "bytes": 17208,
+            "filename": "series.parquet",
+            "local_path": "/home/runner/work/CHAOS/CHAOS/discovery/source_vintage_v1/raw_downloads/huggingface/huggingface/series.parquet",
+            "repository": "https://huggingface.co/datasets/econdataverse/imfweo",
+            "revision": "38f124bb0bf9c07679493c9dc0869dcd53385aee",
+            "sha256": "4ccfccadfdb9ee259258b7e9f4fa9136afe666536f268eaaec3467d1b101905a"
+          }
+        ],
+        "repository": "https://huggingface.co/datasets/econdataverse/imfweo",
+        "repository_id": "econdataverse/imfweo",
+        "revision": "38f124bb0bf9c07679493c9dc0869dcd53385aee",
+        "selected_row_count_by_vintage": {
+          "WEO_2020_OCT": 1035,
+          "WEO_2021_APR": 1035
+        },
+        "source_type": "THIRD_PARTY_DERIVED_MIRROR",
+        "transformation_notice": "Long-form Parquet converted from IMF WEO publications by the imfweo project; IMF Estimates Start After and original country/series notes are not present."
+      },
+      "official_download_failure": "official_imf_vintage_download_failed_all_urls:[{\"error\": \"Forbidden\", \"http_status\": 403, \"url\": \"https://www.imf.org/-/media/Files/Publications/WEO/WEO-Database/2021/WEOApr2021all.xls\"}, {\"error\": \"Forbidden\", \"http_status\": 403, \"url\": \"https://www.imf.org/-/media/files/publications/weo/weo-database/2021/weoapr2021all.xls\"}]",
+      "publication_release": "Spring",
+      "publication_year": 2021,
+      "release_label": "April 2021",
+      "release_page": "https://www.imf.org/en/publications/weo/weo-database/2021/april",
+      "source_type": "THIRD_PARTY_DERIVED_MIRROR",
+      "vintage_id": "WEO_2021_APR"
+    }
+  ],
+  "raw_files_uploaded_as_workflow_artifacts_only": true,
+  "secondary_mirror": {
+    "created_at": "2025-11-10 05:56:45+00:00",
+    "last_modified": "2026-10-19 12:32:20+00:00",
+    "license": null,
+    "metadata_missing_for_actual_estimate_status": true,
+    "parquet_files": [
+      {
+        "bytes": 54694031,
+        "filename": "economic_outlook.parquet",
+        "local_path": "/home/runner/work/CHAOS/CHAOS/discovery/source_vintage_v1/raw_downloads/huggingface/huggingface/economic_outlook.parquet",
+        "repository": "https://huggingface.co/datasets/econdataverse/imfweo",
+        "revision": "38f124bb0bf9c07679493c9dc0869dcd53385aee",
+        "sha256": "707a1b43ee3471f5ed487a6e1c2848428f74f475e3e3acf35b408a1f6b4a775a"
+      },
+      {
+        "bytes": 11063,
+        "filename": "entities.parquet",
+        "local_path": "/home/runner/work/CHAOS/CHAOS/discovery/source_vintage_v1/raw_downloads/huggingface/huggingface/entities.parquet",
+        "repository": "https://huggingface.co/datasets/econdataverse/imfweo",
+        "revision": "38f124bb0bf9c07679493c9dc0869dcd53385aee",
+        "sha256": "e94d63550f3792544b527aeb66c962930fd71989f3819a3e88bc2b0f8b1107e1"
+      },
+      {
+        "bytes": 17208,
+        "filename": "series.parquet",
+        "local_path": "/home/runner/work/CHAOS/CHAOS/discovery/source_vintage_v1/raw_downloads/huggingface/huggingface/series.parquet",
+        "repository": "https://huggingface.co/datasets/econdataverse/imfweo",
+        "revision": "38f124bb0bf9c07679493c9dc0869dcd53385aee",
+        "sha256": "4ccfccadfdb9ee259258b7e9f4fa9136afe666536f268eaaec3467d1b101905a"
+      }
+    ],
+    "repository": "https://huggingface.co/datasets/econdataverse/imfweo",
+    "repository_id": "econdataverse/imfweo",
+    "revision": "38f124bb0bf9c07679493c9dc0869dcd53385aee",
+    "selected_row_count_by_vintage": {
+      "WEO_2020_OCT": 1035,
+      "WEO_2021_APR": 1035
+    },
+    "source_type": "THIRD_PARTY_DERIVED_MIRROR",
+    "transformation_notice": "Long-form Parquet converted from IMF WEO publications by the imfweo project; IMF Estimates Start After and original country/series notes are not present."
+  }
+}
