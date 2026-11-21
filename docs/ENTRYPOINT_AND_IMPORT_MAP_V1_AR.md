@@ -83,11 +83,11 @@
 
 ### 2.5 الحارس الحالي
 
-`scripts/guards/check_experiments_immutable.py` هو نقطة دخول حارس CI. يستخدم `git diff --name-status` ويحدد نطاقه صراحة بـ`-- experiments/`. لا يتضمن مسار `structural_engine/isolated_break_detector_v1/`، ولذلك لا يحرس ذلك المسار حالياً.
+`scripts/guards/check_experiments_immutable.py` هو نقطة دخول حارس CI. يستخدم `git diff --name-status` ويفحص المسارين `experiments/` و`structural_engine/isolated_break_detector_v1/`، ويرفض الدمج إذا تعذر التحقق من diff. حارس الـCI يغطي PRs المستهدفة إلى `main-phase2` والتغييرات ذات الصلة على الفرع.
 
-## 3. Discovery V1: خريطة الفرع المرشح
+## 3. Discovery V1: المسار العلمي المدمج
 
-هذه الوحدات موجودة في `discovery/d1-domainstate-integrity-v1`، ولم تكن مدمجة في `main-phase2` عند كتابة هذه الخريطة.
+هذه الوحدات أصبحت مدمجة في `main-phase2` عبر PR #28 عند `e0c13b41ef1bbbdfe46f1dc266a007eb2dedd8d7`.
 
 ### 3.1 Source Observation وLifecycle
 
