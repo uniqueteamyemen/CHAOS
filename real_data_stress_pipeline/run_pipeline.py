@@ -251,25 +251,175 @@ def usgs_query(belt,start,end,m,depth=0):
   mid=(a+(b-a)/2).strftime("%Y-%m-%dT%H:%M:%S")
   return usgs_query(belt,start,mid,m,depth+1)+usgs_query(belt,mid,end,m,depth+1)
  return fs
+def usgs_record_rejection_reasons(
+ belt, latitude, longitude, magnitude, epoch_ms, min_magnitude=None
+):
+ reasons=[]
+ def finite_number(value):
+  if isinstance(value,bool) or value is None:return None
+  try:number=float(value)
+  except (TypeError,ValueError,OverflowError):return None
+  return number if math.isfinite(number) else None
+ lat=finite_number(latitude);lon=finite_number(longitude);mag=finite_number(magnitude)
+ if lat is None or lon is None:
+  reasons.append("INVALID_OR_MISSING_COORDINATES")
+ else:
+  if not (-90.0<=lat<=90.0 and -180.0<=lon<=180.0):
+   reasons.append("COORDINATES_OUT_OF_GLOBAL_RANGE")
+  else:
+   if not (float(belt["minlatitude"])<=lat<=float(belt["maxlatitude"])):
+    reasons.append("OUTSIDE_BELT_LATITUDE_BOUNDS")
+   min_lon=float(belt["minlongitude"]);max_lon=float(belt["maxlongitude"])
+   inside_lon=(min_lon<=lon<=max_lon) if min_lon<=max_lon else (lon>=min_lon or lon<=max_lon)
+   if not inside_lon:reasons.append("OUTSIDE_BELT_LONGITUDE_BOUNDS")
+ if mag is None:
+  reasons.append("INVALID_OR_MISSING_MAGNITUDE")
+ else:
+  threshold=float(MAG if min_magnitude is None else min_magnitude)
+  if mag<threshold:reasons.append("BELOW_QUERY_MINIMUM_MAGNITUDE")
+ try:
+  if isinstance(epoch_ms,bool) or epoch_ms is None:raise ValueError
+  if isinstance(epoch_ms,int):event_ms=epoch_ms
+  elif isinstance(epoch_ms,float) and math.isfinite(epoch_ms) and epoch_ms.is_integer():
+   event_ms=int(epoch_ms)
+  elif isinstance(epoch_ms,str) and epoch_ms.strip().lstrip("+-").isdigit():
+   event_ms=int(epoch_ms.strip())
+  else:raise ValueError
+ except (TypeError,ValueError,OverflowError):
+  reasons.append("INVALID_OR_MISSING_EVENT_TIME")
+ else:
+  window_start=int(datetime(Y0,1,1,tzinfo=timezone.utc).timestamp()*1000)
+  window_end=int(datetime(Y1+1,1,1,tzinfo=timezone.utc).timestamp()*1000)
+  if not (window_start<=event_ms<window_end):
+   reasons.append("OUTSIDE_ANALYSIS_TIME_WINDOW")
+ return reasons
+
+
 def seismic(m):
  out=[]
  for belt in BELTS:
   try:
-   fs=usgs_query(belt,f"{Y0}-01-01T00:00:00",f"{Y1+1}-01-01T00:00:00",m);events={}
-   for f in fs:
-    p=f.get("properties") or {};g=f.get("geometry") or {};c=g.get("coordinates") or []
-    if p.get("time") is None or p.get("mag") is None or len(c)<2:continue
-    eid=str(f.get("id") or f"{p['time']}:{p['mag']}:{c[0]}:{c[1]}")
-    events[eid]={"id":eid,"time":datetime.fromtimestamp(p["time"]/1000,tz=timezone.utc).isoformat(),"epoch_ms":int(p["time"]),"magnitude":float(p["mag"]),"longitude":c[0],"latitude":c[1],"depth_km":c[2] if len(c)>2 else None,"place":p.get("place")}
+   fs=usgs_query(belt,f"{Y0}-01-01T00:00:00",f"{Y1+1}-01-01T00:00:00",m)
+   events={}
+   rejected_count=0
+   duplicate_count=0
+   rejected_by_reason=Counter()
+   magnitude_type_counts=Counter()
+   magnitude_source_counts=Counter()
+   for feature_index,feature in enumerate(fs):
+    if not isinstance(feature,dict):
+     feature={}
+    properties=feature.get("properties")
+    if not isinstance(properties,dict):
+     properties={}
+    geometry=feature.get("geometry")
+    if not isinstance(geometry,dict):
+     geometry={}
+    coordinates=geometry.get("coordinates")
+    if not isinstance(coordinates,(list,tuple)):
+     coordinates=[]
+    longitude=coordinates[0] if len(coordinates)>=2 else None
+    latitude=coordinates[1] if len(coordinates)>=2 else None
+    raw_time=properties.get("time")
+    raw_magnitude=properties.get("mag")
+    raw_mag_type=properties.get("magType")
+    mag_type=str(raw_mag_type).strip().lower() if raw_mag_type is not None and str(raw_mag_type).strip() else "missing"
+    raw_mag_source=properties.get("magSource")
+    mag_source=str(raw_mag_source).strip() if raw_mag_source is not None and str(raw_mag_source).strip() else "missing"
+    reasons=usgs_record_rejection_reasons(
+     belt,latitude,longitude,raw_magnitude,raw_time,MAG
+    )
+    raw_event_id=feature.get("id")
+    if raw_event_id is not None and str(raw_event_id).strip():
+     event_id=str(raw_event_id).strip()
+    elif any(value is not None for value in (raw_time,raw_magnitude,longitude,latitude)):
+     event_id=f"fallback:{raw_time}:{raw_magnitude}:{longitude}:{latitude}"
+    else:
+     event_id=f"feature-index:{feature_index}"
+    if reasons:
+     rejected_count+=1
+     for reason in reasons:rejected_by_reason[reason]+=1
+     m["rejected"].append({
+      "source":"usgs","series":belt["id"],"event_id":event_id,
+      "reasons":reasons,"time":raw_time,"magnitude":raw_magnitude,
+      "longitude":longitude,"latitude":latitude,"place":properties.get("place"),
+      "handling":"QUARANTINED_FROM_ANALYTICAL_CATALOG_RAW_SOURCE_PRESERVED",
+     })
+     continue
+    epoch=int(raw_time)
+    magnitude=float(raw_magnitude)
+    longitude=float(longitude)
+    latitude=float(latitude)
+    depth=None
+    if len(coordinates)>2 and coordinates[2] is not None:
+     try:
+      candidate_depth=float(coordinates[2])
+      if math.isfinite(candidate_depth):depth=candidate_depth
+     except (TypeError,ValueError,OverflowError):
+      depth=None
+    event={
+     "id":event_id,
+     "time":datetime.fromtimestamp(epoch/1000,tz=timezone.utc).isoformat(),
+     "epoch_ms":epoch,"magnitude":magnitude,
+     "longitude":longitude,"latitude":latitude,
+     "depth_km":depth,"place":properties.get("place"),
+     "mag_type":mag_type,"mag_source":mag_source,
+    }
+    previous=events.get(event_id)
+    if previous is not None:
+     if previous==event:
+      duplicate_count+=1
+      continue
+     rejected_count+=1
+     rejected_by_reason["DUPLICATE_EVENT_ID_CONFLICT"]+=1
+     m["rejected"].append({
+      "source":"usgs","series":belt["id"],"event_id":event_id,
+      "reasons":["DUPLICATE_EVENT_ID_CONFLICT"],
+      "time":raw_time,"magnitude":raw_magnitude,
+      "longitude":longitude,"latitude":latitude,
+      "handling":"QUARANTINED_CONFLICTING_DUPLICATE_RAW_SOURCE_PRESERVED",
+     })
+     continue
+    events[event_id]=event
+    magnitude_type_counts[mag_type]+=1
+    magnitude_source_counts[mag_source]+=1
    rows=sorted(events.values(),key=lambda x:x["epoch_ms"])
+   if len(fs) != len(rows) + rejected_count + duplicate_count:
+    raise RuntimeError(
+     "USGS catalog accounting mismatch: "
+     f"received={len(fs)}, accepted={len(rows)}, "
+     f"quarantined={rejected_count}, deduplicated={duplicate_count}"
+    )
    csvpath=DERIVED/f"{belt['id']}_events.csv";csvpath.parent.mkdir(parents=True,exist_ok=True)
-   cols=["id","time","epoch_ms","magnitude","longitude","latitude","depth_km","place"]
-   with csvpath.open("w",newline="",encoding="utf-8") as f:
-    w=csv.DictWriter(f,fieldnames=cols);w.writeheader();w.writerows(rows)
-   rec={"id":belt["id"],"name":belt["name"],"bbox":{k:belt[k] for k in ("minlatitude","maxlatitude","minlongitude","maxlongitude")},"min_magnitude":MAG,"events":len(rows),"start":rows[0]["time"] if rows else None,"end":rows[-1]["time"] if rows else None,"csv_sha256":hash_file(csvpath)}
+   cols=["id","time","epoch_ms","magnitude","longitude","latitude","depth_km","place","mag_type","mag_source"]
+   with csvpath.open("w",newline="",encoding="utf-8") as handle:
+    writer=csv.DictWriter(handle,fieldnames=cols);writer.writeheader();writer.writerows(rows)
+   catalog_integrity_status="PASS_WITH_QUARANTINE" if rejected_count else "PASS"
+   rec={
+    "id":belt["id"],"name":belt["name"],
+    "bbox":{k:belt[k] for k in ("minlatitude","maxlatitude","minlongitude","maxlongitude")},
+    "min_magnitude":MAG,"events":len(rows),
+    "events_received":len(fs),"events_accepted":len(rows),
+    "events_quarantined":rejected_count,
+    "duplicate_features_deduplicated":duplicate_count,
+    "rejected_by_reason":dict(sorted(rejected_by_reason.items())),
+    "magnitude_type_counts":dict(sorted(magnitude_type_counts.items())),
+    "magnitude_source_counts":dict(sorted(magnitude_source_counts.items())),
+    "magnitude_type_missing_events":magnitude_type_counts.get("missing",0),
+    "magnitude_source_missing_events":magnitude_source_counts.get("missing",0),
+    "magnitude_source_homogeneous":len([k for k in magnitude_source_counts if k!="missing"])==1 and magnitude_source_counts.get("missing",0)==0,
+    "magnitude_source_mixture_requires_calibration_review":len([k for k in magnitude_source_counts if k!="missing"])>1 or magnitude_source_counts.get("missing",0)>0,
+    "magnitude_type_homogeneous":len([k for k in magnitude_type_counts if k!="missing"])==1 and magnitude_type_counts.get("missing",0)==0,
+    "single_magnitude_type_precheck_pass":len(magnitude_type_counts)==1 and "missing" not in magnitude_type_counts,
+    "catalog_integrity_status":catalog_integrity_status,
+    "client_side_validation":"coordinates_magnitude_and_analysis_time_rechecked",
+    "start":rows[0]["time"] if rows else None,
+    "end":rows[-1]["time"] if rows else None,
+    "csv_sha256":hash_file(csvpath),
+   }
    m["belts"].append(rec)
    # Secondary monthly event-count representation; empty months are zero only
-   # inside the fully queried USGS catalog window.
+   # inside the fully queried and client-side-validated USGS catalog window.
    month_counts={k:0 for k in range(Y0*12,(Y1+1)*12)}
    for event in rows:
     k=month(event["time"][:7])
@@ -285,13 +435,14 @@ def seismic(m):
     m["rejected"].append({"source":"usgs","series":belt["id"],"quality":{"passed":False,"reason":"fewer_than_88_events_for_87_intervals","event_count":len(rows)}});continue
    times=[datetime.fromisoformat(x["time"]) for x in rows]
    gaps=[(times[i]-times[i-1]).total_seconds()/86400 for i in range(1,len(times))]
-   vals=[math.log1p(x) for x in gaps];q=g0(vals,SEISMIC_MIN)
-   if not q["passed"]:
-    m["rejected"].append({"source":"usgs","series":belt["id"],"quality":q});continue
-   out.append({"id":"usgs:"+belt["id"],"source":"usgs","source_name":"USGS ComCat","name":belt["name"],"cohort":"seismic_event_interarrival","domain":"seismic","frequency":"event_interarrival","axis":[x.isoformat() for x in times[1:]],"values":vals,"sha256":hash_file(csvpath),"points":len(rows),"quality":q})
-  except Exception as e:
-   m["errors"].append({"provider":"USGS ComCat","belt":belt["id"],"error":str(e),"time":stamp()})
-   print("USGS ERROR",belt["id"],type(e).__name__,str(e))
+   values=[math.log1p(x) for x in gaps]
+   quality=g0(values,SEISMIC_MIN)
+   if not quality["passed"]:
+    m["rejected"].append({"source":"usgs","series":belt["id"],"quality":quality});continue
+   out.append({"id":"usgs:"+belt["id"],"source":"usgs","source_name":"USGS ComCat","name":belt["name"],"cohort":"seismic_event_interarrival","domain":"seismic","frequency":"event_interarrival","axis":[x.isoformat() for x in times[1:]],"values":values,"sha256":hash_file(csvpath),"points":len(rows),"quality":quality})
+  except Exception as exc:
+   m["errors"].append({"provider":"USGS ComCat","belt":belt["id"],"error":str(exc),"time":stamp()})
+   print("USGS ERROR",belt["id"],type(exc).__name__,str(exc))
  return out
 def stationary_sample(x,rng,block):
  x=np.asarray(x,float);n=len(x);idx=np.empty(n,dtype=int);idx[0]=int(rng.integers(n));p=1/max(1,block)
