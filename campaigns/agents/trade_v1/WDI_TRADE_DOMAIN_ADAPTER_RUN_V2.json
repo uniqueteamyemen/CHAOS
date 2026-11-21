@@ -18,7 +18,7 @@
   "metadata_sha256": "3087b95faba7f397b4653d65d139447e43197d978bff8b74f608df7f88177cc6",
   "native_frequency": "annual",
   "output": "campaigns/agents/trade_v1/WDI_TRADE_DOMAIN_STATES_ANNUAL_V1.jsonl",
-  "output_sha256": "2b2ca7827210034d805748b64567736ba51d4e506c02faf5b7e31b68a66bdd3b",
+  "output_sha256": "c4f836acc9f57c35f605447def2e0dc412d1363a917b534f0ffde30932729554",
   "policy": {
     "domain": "trade",
     "native_frequency": "annual",
@@ -33,7 +33,25 @@
   "source_archive_sha256": "2ab1d0d250ebe986ac8a9f7163f6e177fbe4cfb2750f822b18578d902aeb134f",
   "source_integrity_reference": "campaigns/agents/trade_v1/WDI_TRADE_EDGE_MAXSTAT_NULL_SUMMARY.json",
   "source_integrity_reference_sha256": "35f1064dd8e2a5fd7925a772e05cb6a08199835f0b1a1cc2844be23019a1f3cf",
+  "source_observation_identity": {
+    "contract": "source-record-identity-v1",
+    "dataset_id": "wdi_country_annual_indicators",
+    "known_available_at": 0,
+    "records": 29004,
+    "revision_metadata_available": 0,
+    "series_semantics": "periodic_measurement",
+    "source_namespace": "world_bank",
+    "unique_canonical_versions": 29004,
+    "unique_logical_slots": 29004,
+    "unknown_available_at": 29004
+  },
   "status": "ready_for_domain_state_integrity_and_transition_layer",
+  "time_support": {
+    "boundary_semantics": "SOURCE_EXTRACT_DECLARED",
+    "native_frequency": "annual",
+    "observation_period_end": "2024",
+    "observation_period_start": "2000"
+  },
   "transformations": [],
   "years": [
     2000,
