@@ -25,7 +25,9 @@
       "download_url_candidates": [
         "https://www.imf.org/-/media/Files/Publications/WEO/WEO-Database/2020/02/WEOOct2020all.xls",
         "https://www.imf.org/-/media/files/publications/weo/weo-database/2020/02/weooct2020all.xls"
-      ]
+      ],
+      "publication_year": 2020,
+      "publication_release": "Fall"
     },
     {
       "vintage_id": "WEO_2021_APR",
@@ -34,7 +36,9 @@
       "download_url_candidates": [
         "https://www.imf.org/-/media/Files/Publications/WEO/WEO-Database/2021/WEOApr2021all.xls",
         "https://www.imf.org/-/media/files/publications/weo/weo-database/2021/weoapr2021all.xls"
-      ]
+      ],
+      "publication_year": 2021,
+      "publication_release": "Spring"
     },
     {
       "vintage_id": "WEO_APR2026_PANEL_STAGED",
@@ -53,5 +57,22 @@
     "no_inferential_p_values": true,
     "no_causal_claims": true,
     "no_forecasting": true
+  },
+  "mirror": {
+    "repository_id": "econdataverse/imfweo",
+    "repository_url": "https://huggingface.co/datasets/econdataverse/imfweo",
+    "maintainer_project_url": "https://teal-insights.github.io/r-imfweo/",
+    "fallback_policy": "USE_ONLY_AFTER_OFFICIAL_IMF_DOWNLOAD_ACCESS_FAILURE",
+    "data_lineage": "Third-party long-form Parquet conversion of published IMF WEO vintages maintained by the imfweo project.",
+    "known_missing_metadata": [
+      "IMF Estimates Start After",
+      "Country/Series-specific Notes",
+      "raw original WEO row formatting"
+    ],
+    "consequences": [
+      "Actual/estimate status for mirror rows remains UNKNOWN_MIRROR_METADATA_NOT_PRESERVED.",
+      "The mirror must not be described as an official IMF-hosted download.",
+      "The mirror revision and every downloaded Parquet shard must be SHA-256 hashed."
+    ]
   }
 }
