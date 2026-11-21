@@ -39,44 +39,46 @@
 
 1. `behavioral-discovery-v1.yml`
 2. `b71-isolated-markov-router.yml`
-3. `discovery-domain-state-integrity.yml`
-4. `erp-reconcile-tests.yml`
-5. `experiments-immutable.yml`
-6. `p-engine-asymmetry-guard-cusum-confirmation.yml`
-7. `p-engine-asymmetry-guard-cusum.yml`
-8. `p-engine-eia-replay.yml`
-9. `p-engine-mcusum-candidate.yml`
-10. `p-engine-parallel-fusion.yml`
-11. `p-engine-robust-cusum-calibration.yml`
-12. `p-engine-robust-cusum-holdout.yml`
-13. `p-engine-robustness-holdout.yml`
-14. `phase1-detector-real-data.yml`
-15. `real-data-stress.yml`
-16. `sequential-break-engine-audit.yml`
-17. `sequential-break-engine-b3-2-minimal-retest.yml`
-18. `sequential-break-engine-b4.yml`
-19. `sequential-break-engine-b5.yml`
-20. `sequential-break-engine-b6.yml`
-21. `sequential-break-engine-b61.yml`
-22. `sequential-break-engine-b7.yml`
-23. `sequential-break-engine.yml`
-24. `wdi-trade-domainstate-build.yml`
-25. `weo-vintage-source-audit-v1.yml`
+3. `chaos-governance-artifacts.yml`
+4. `discovery-domain-state-integrity.yml`
+5. `erp-reconcile-tests.yml`
+6. `experiments-immutable.yml`
+7. `observation-foundation-contract.yml`
+8. `p-engine-asymmetry-guard-cusum-confirmation.yml`
+9. `p-engine-asymmetry-guard-cusum.yml`
+10. `p-engine-eia-replay.yml`
+11. `p-engine-mcusum-candidate.yml`
+12. `p-engine-parallel-fusion.yml`
+13. `p-engine-robust-cusum-calibration.yml`
+14. `p-engine-robust-cusum-holdout.yml`
+15. `p-engine-robustness-holdout.yml`
+16. `phase1-detector-real-data.yml`
+17. `real-data-stress.yml`
+18. `sequential-break-engine-audit.yml`
+19. `sequential-break-engine-b3-2-minimal-retest.yml`
+20. `sequential-break-engine-b4.yml`
+21. `sequential-break-engine-b5.yml`
+22. `sequential-break-engine-b6.yml`
+23. `sequential-break-engine-b61.yml`
+24. `sequential-break-engine-b7.yml`
+25. `sequential-break-engine.yml`
+26. `wdi-trade-domainstate-build.yml`
+27. `weo-vintage-source-audit-v1.yml`
 
 ## 3. Workflows التي أضافها Discovery V1 وأصبحت الآن على main-phase2
 
 | Workflow | Trigger | ما ينفذه | الكتابة/الأثر |
 |---|---|---|---|
-| `behavioral-discovery-v1.yml` | Push على `discovery/**` مع تغير ملفات Discovery/العقود/مصدر Macro+EIA؛ و`workflow_dispatch`؛ لا يوجد `pull_request` trigger | py_compile، اختبارات discovery، بناء profiles/candidates، Conditional Calendar Null، تحقق hashes/manifest وشروط no-causal/no-forecast | `contents: write`؛ يضيف/يدفع مخرجات `discovery/behavioral_v1/` إلى فرع Discovery ثم يرفع artifact |
-| `wdi-trade-domainstate-build.yml` | Push على الفرع المحدد حرفياً `discovery/d1-domainstate-integrity-v1` مع تغير adapter/inputs/tests؛ و`workflow_dispatch`؛ لا يوجد PR trigger | اختبار WDI adapter، بناء DomainStates السنوية، ثم فحص سجل DomainState بأكمله | `contents: write`؛ يكتب `WDI_TRADE_DOMAIN_STATES_ANNUAL_V1.jsonl` وملف run summary ويعمل commit/push إلى نفس الفرع ثم يرفع artifact |
-| `weo-vintage-source-audit-v1.yml` | Push على `discovery/**` مع تغير وحدات/عقد WEO؛ و`workflow_dispatch`؛ لا يوجد PR trigger | تثبيت `huggingface_hub` و`pyarrow`، اختبارات WEO، تنزيل mirror/نسخ تاريخية، مقارنة vintage والتحقق من hashes وتصنيف actual/estimate | `contents: write`؛ يحفظ مخرجات مشتقة في `discovery/source_vintage_v1/`، ويرفع الملفات الخام/الدليل كـartifact |
+| `behavioral-discovery-v1.yml` | Push على `discovery/**` و`workflow_dispatch`؛ وPR إلى `main-phase2` | Push/manual: py_compile، tests، build profiles/candidates، Conditional Calendar Null، manifest/hash validation ثم commit/push إلى فرع العمل. PR: `validate-pr` read-only يعيد البناء والتحقق ويقارن المخرجات الحتمية | writer له `contents: write` على فرع العمل فقط؛ PR validator يملك `contents: read`. لا يكتب إلى `main-phase2` |
+| `wdi-trade-domainstate-build.yml` | Push على الفرع المحدد `discovery/d1-domainstate-integrity-v1` و`workflow_dispatch`؛ وPR إلى `main-phase2` | Push/manual: اختبار adapter، بناء DomainStates، فحص registry ثم commit/push إلى فرع العمل. PR: `validate-pr` read-only يعيد البناء، يتحقق من registry، ويفحص تطابق المخرجات | writer له `contents: write` على فرع العمل فقط؛ PR validator `contents: read`. لا يكتب إلى `main-phase2` |
+| `weo-vintage-source-audit-v1.yml` | Push على `discovery/**` و`workflow_dispatch`؛ وPR إلى `main-phase2` | Push/manual: اختبار WEO، تنزيل النسخ/المصادر المثبتة، مقارنة vintage، وحفظ outputs ثم commit/push لفرع العمل. PR: `validate-pr` read-only يعيد البناء ويتحقق من hashes وتصنيف actual/estimate | writer له `contents: write` على فرع العمل فقط؛ PR validator `contents: read`. لا يكتب إلى `main-phase2` |
 | `observation-foundation-contract.yml` | Pull Request إلى `main-phase2` عند تغيّر Foundation/tests/kernel/contract؛ Push على `main-phase2` وفروع Discovery/فرع GEM | Compile لـidentity/lifecycle/kernel؛ فحص JSON contracts؛ اختبارات deterministic identity/lifecycle | `contents: read`، لا commit ولا write |
 | `discovery-domain-state-integrity.yml` | Pull Request إلى `main-phase2` عند تغيّر DomainState registry/campaigns/tests؛ Push على فرع Discovery؛ و`workflow_dispatch` | اختبارات validator ثم قراءة وفحص جميع DomainState assets المسجلة | `contents: read`، يرفع تقرير integrity؛ لا يعدل الأصول |
 | `chaos-governance-artifacts.yml` | Pull Request وPush إلى `main-phase2` عند تغيّر governance scripts/kernel/plan؛ و`workflow_dispatch` | بناء D0 inventory عبر kernel، التحقق من manifest، ثم رفع الحزمة | `contents: read`، artifact فقط |
 
-### 3.1 التحقق الدقيق قبل دمج PR #28
+### 3.1 التحقق الدقيق قبل دمج PR #28 (تم)
 
-PR #28 على الرأس النهائي `f0627eac6fd39a4d26fe128820cf05c58293054d` انتهى بكل 11 check-runs:
+PR #28 (المدمج الآن عند `e0c13b41ef1bbbdfe46f1dc266a007eb2dedd8d7`) انتهى على الرأس النهائي `f0627eac6fd39a4d26fe128820cf05c58293054d` بكل 11 check-runs:
 
 | الفحص | الحالة |
 |---|---|
@@ -89,7 +91,7 @@ PR #28 على الرأس النهائي `f0627eac6fd39a4d26fe128820cf05c58293054
 | Behavioral / WDI / WEO `validate-pr` | success (read-only rebuild and validation) |
 | Three materialization writer jobs | skipped intentionally on PR events |
 
-لكن هذه checks لا تعوض تشغيل وحدات توليد النتائج الثلاثة على SHA الحالي. آخر التشغيلات الناجحة المتاحة لهذه الوحدات كانت على رؤوس أقدم:
+تشغيلات materialization على Push كانت على SHA أقدم من PR merge head، لكن وحدات `validate-pr` أعادت بناء النتائج والتحقق منها read-only على رأس PR النهائي. التشغيلات السابقة التالية تبقى مرجع lineage فقط:
 
 | Workflow | آخر run متحقق | SHA الذي اختُبر فعلاً | علاقته بالرأس الحالي |
 |---|---:|---|---|
@@ -103,10 +105,9 @@ PR #28 على الرأس النهائي `f0627eac6fd39a4d26fe128820cf05c58293054
 ## 4. الحماية والصلاحيات
 
 - `main-phase2` محمي على GitHub (branch metadata: `protected=true`).
-- `experiments-immutable.yml` هو فحص immutability الوحيد في قائمة Workflows الرئيسية، وهو يفحص `experiments/**` وحده.
+- `experiments-immutable.yml` هو فحص immutability المشترك؛ يتحقق من `experiments/**` و`structural_engine/isolated_break_detector_v1/**` في PRs إلى `main-phase2` وعند تغييرات المسارات المحمية.
 - `AGENTS.md` يمنع تعديل كل من `experiments/**` والكاشف المجمد `structural_engine/isolated_break_detector_v1/**`.
-- `.github/CODEOWNERS` يوجّه المراجعة للمالك، لكنه لا يفرض بنفسه موافقة أو يمنع الدمج.
-- لا يوجد في القائمة فحص CI مكافئ يمنع تعديل مسار الكاشف المجمد.
+- `.github/CODEOWNERS` يوجّه المراجعة للمالك، بينما الحارس الآلي يفرض رفض أي diff يمس المسارين.
 - ثلاثة Workflows Discovery التي تنتج ملفات مشتقة لها `contents: write`؛ يجب أن تبقى عملياتها على فرع Discovery، لا على فرع محمي أثناء PR validation.
 - لا يوجد في Workflows الحالية فحص آلي لـ`npm run build` أو `npm run lint`.
 
@@ -120,4 +121,4 @@ PR #28 على الرأس النهائي `f0627eac6fd39a4d26fe128820cf05c58293054
 
 ## 6. حدود هذا الجرد
 
-تمت قراءة ملفات YAML الـ21 في `main-phase2` وملفات Discovery الستة، وربط أوامرها بالـentrypoints والأصول المعروفة. لم يُفحص محتوى كل GitHub Actions artifact خاماً واحداً واحداً، ولم يُنفذ local checkout أو تشغيل محلي من هذه الجلسة. أي اعتماد غير مذكور هنا يظل بحاجة إلى فحص إضافي، ولا تُزال الملفات أو الفروع اعتماداً على هذا الجرد وحده.
+تمت قراءة ملفات YAML الـ27 الحالية على `main-phase2` (بما فيها Workflows Discovery الستة بعد الدمج)، وربط أوامرها بالـentrypoints والأصول المعروفة. لم يُفحص محتوى كل GitHub Actions artifact خاماً واحداً واحداً، ولم يُنفذ local checkout أو تشغيل محلي من هذه الجلسة. أي اعتماد غير مذكور هنا يظل بحاجة إلى فحص إضافي، ولا تُزال الملفات أو الفروع اعتماداً على هذا الجرد وحده.
