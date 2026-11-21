@@ -1,12 +1,71 @@
 {
+  "boundary_sensitive_candidate_count": 697,
   "candidate_count": 1698,
   "candidate_counts_by_type": {
     "isolated_point_anomaly": 617,
     "level_shift": 657,
     "slope_change": 424
   },
+  "candidate_year_counts_by_type": {
+    "isolated_point_anomaly": {
+      "2004": 11,
+      "2005": 8,
+      "2006": 21,
+      "2007": 23,
+      "2008": 70,
+      "2009": 86,
+      "2010": 16,
+      "2011": 24,
+      "2012": 21,
+      "2013": 20,
+      "2014": 18,
+      "2015": 31,
+      "2016": 20,
+      "2017": 11,
+      "2018": 7,
+      "2019": 18,
+      "2020": 212
+    },
+    "level_shift": {
+      "2005": 216,
+      "2006": 21,
+      "2007": 21,
+      "2008": 28,
+      "2009": 29,
+      "2010": 15,
+      "2011": 11,
+      "2012": 5,
+      "2013": 10,
+      "2014": 6,
+      "2015": 13,
+      "2016": 15,
+      "2017": 20,
+      "2018": 28,
+      "2019": 30,
+      "2020": 189
+    },
+    "slope_change": {
+      "2005": 69,
+      "2006": 17,
+      "2007": 4,
+      "2008": 5,
+      "2009": 13,
+      "2010": 8,
+      "2011": 2,
+      "2012": 5,
+      "2013": 4,
+      "2014": 7,
+      "2015": 3,
+      "2016": 4,
+      "2017": 13,
+      "2018": 21,
+      "2019": 26,
+      "2020": 223
+    }
+  },
+  "code_sha256": "5e99a26760f5c24247f97839097f012f6410cb93140b51e1983dc649768cae68",
   "contract_id": "CHAOS_BEHAVIORAL_DISCOVERY_V1",
-  "generated_at_utc": "2026-11-21T20:00:51Z",
+  "generated_at_utc": "2026-11-21T20:03:03Z",
   "inference": {
     "candidate_status": "DISCOVERY_CANDIDATE_UNVALIDATED",
     "causal_claims_permitted": false,
@@ -67,8 +126,10 @@
     "series_profiles": "SERIES_BEHAVIOR_PROFILES_V1.csv",
     "shared_year_patterns": "SHARED_YEAR_PATTERNS_V1.csv"
   },
+  "runner_sha256": "b794d6f6a889170403d329ca36292727d391d61c600ac57b0b780c315883c9af",
   "series_profile_count": 1529,
   "shared_year_pattern_count": 30,
+  "source_commit": "048fef22e44681a669adbe86ce0b81f1d94ae883",
   "source_observation_identity": {
     "available_at_known": 0,
     "available_at_unknown": 38225,
@@ -76,6 +137,7 @@
     "point_in_time_eligible": false,
     "records": 38225,
     "revision_metadata_available": 0,
+    "unique_canonical_versions": 38225,
     "unique_logical_slots": 38225
   },
   "status": "CANDIDATE_GENERATION_ONLY"

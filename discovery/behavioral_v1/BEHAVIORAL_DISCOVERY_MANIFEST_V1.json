@@ -7,35 +7,41 @@
       "sha256": "f27377403faaa5546d9ba77dc51749a30dedcce386962dacad256a2c688e745d"
     },
     {
-      "bytes": 2086146,
+      "bytes": 2204861,
       "path": "discovery/behavioral_v1/BEHAVIORAL_CANDIDATES_V1.jsonl",
       "role": "behavioral_candidates_v1",
-      "sha256": "6693e5557e0ecc536cf8bc61805911a993770bf921fceb7951922ded809bca7e"
+      "sha256": "79cecca84f33b139506363c6ad039bc672d7aba8d47abd30b0b24adc1e2f231d"
     },
     {
-      "bytes": 3646,
+      "bytes": 4500,
       "path": "discovery/behavioral_v1/SHARED_YEAR_PATTERNS_V1.csv",
       "role": "shared_year_patterns_v1",
-      "sha256": "18238811cdb908d651d6a8000005408b6c5034a4b19eba9f6d95edc04bd0d208"
+      "sha256": "6b95ad0f3849bbe121e4ea5dad2d49c4ea4fbcbdc20a564fa674d749ca0bbb00"
     },
     {
-      "bytes": 2630,
+      "bytes": 3957,
       "path": "discovery/behavioral_v1/BEHAVIORAL_DISCOVERY_SUMMARY_V1.json",
       "role": "behavioral_discovery_summary_v1",
-      "sha256": "5624184f247c5a65b24e57c4497f86b8e5a6ad9d4760e691aa1e10524a7e7a36"
+      "sha256": "2578f22de2e4196f7dd8e7938219fe9d26f295fcc4aa0e085e51e594cd45a03f"
     }
   ],
   "bundle_id": "CHAOS_BEHAVIORAL_DISCOVERY_V1",
+  "code": {
+    "module_path": "discovery_engine/behavioral_discovery_v1.py",
+    "module_sha256": "5e99a26760f5c24247f97839097f012f6410cb93140b51e1983dc649768cae68",
+    "runner_path": "scripts/discovery/run_behavioral_discovery_v1.py",
+    "runner_sha256": "b794d6f6a889170403d329ca36292727d391d61c600ac57b0b780c315883c9af"
+  },
   "contract_id": "CHAOS_BEHAVIORAL_DISCOVERY_V1",
   "decision": {
     "status": "CANDIDATES_REQUIRE_SOURCE_SPECIFIC_NULL_AND_INDEPENDENT_REVIEW",
     "summary": "Descriptive candidate generation only; no inferential admission or forecast."
   },
-  "generated_at_utc": "2026-11-21T20:00:51Z",
+  "generated_at_utc": "2026-11-21T20:03:03Z",
   "inputs": {
     "contract_sha256": "0c44ff9066208378ae0a3d4bc955324d6c738a46938721c1abdaca6c546f3496",
     "panel_sha256": "015736245ac4010aa1c97055930c69ca3c7da5fdd5970f5da34456b67a3172ad",
     "provenance_sha256": "6bf07de9bca0ef23e7e0069e46c3949f714f205424db50d33471f6bf57f04965"
   },
-  "source_commit": null
+  "source_commit": "048fef22e44681a669adbe86ce0b81f1d94ae883"
 }
