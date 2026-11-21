@@ -47,7 +47,13 @@ class WdiTradeDomainStateBuilderTests(unittest.TestCase):
             })
 
         extract = root / "extract.json"
-        extract.write_text(json.dumps({\n            "observed_rows": 2,\n            "entities": 1,\n            "indicator_codes": ["NE.TRD.GNFS.ZS", "NE.EXP.GNFS.ZS"],\n            "years": [2000, 2001],\n            "external_raw_sha256": "a" * 64,\n        }), encoding="utf-8")
+        extract.write_text(json.dumps({
+            "observed_rows": 2,
+            "entities": 1,
+            "indicator_codes": ["NE.TRD.GNFS.ZS", "NE.EXP.GNFS.ZS"],
+            "years": [2000, 2001],
+            "external_raw_sha256": "a" * 64,
+        }), encoding="utf-8")
         return source, metadata, extract
 
     def test_build_preserves_raw_value_lexemes_and_native_time(self):
