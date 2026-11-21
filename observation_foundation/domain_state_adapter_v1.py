@@ -1,26 +1,31 @@
 """Explicit, lossless adaptation from CHAOS DomainState envelopes to source observations.
 
-The adapter never infers a metric, unit, availability time, revision order,
-natural key, or frequency conversion. Every mapping is declared in a versioned
-adapter contract and then validated by source_record_identity_v1.
+No metric, unit, availability time, revision order, natural key, or frequency
+conversion is inferred. Every mapping and the source-declared time envelope
+must be supplied by a versioned adapter contract.
 """
 from __future__ import annotations
 
 from typing import Any, Iterable, Mapping, Sequence
 
-from .record_identity_v1 import canonical_order_key, normalize_time_support, prepare_source_record
+from .record_identity_v1 import (
+    canonical_order_key,
+    normalize_time_support,
+    prepare_source_record,
+)
 
 ADAPTER_CONTRACT_ID = "domain-state-observation-adapter-v1"
 ADAPTER_FIELDS = {
     "adapter_id", "source_namespace", "dataset_id", "domain",
     "native_frequency", "series_semantics", "entity_id_path",
-    "event_time_path", "time_support", "available_at_path", "source_record_id_path",
-    "source_revision_path", "revision_status_path", "metrics",
+    "event_time_path", "time_support", "available_at_path",
+    "source_record_id_path", "source_revision_path", "revision_status_path",
+    "metrics",
 }
 REQUIRED_ADAPTER_FIELDS = {
     "adapter_id", "source_namespace", "dataset_id", "domain",
     "native_frequency", "series_semantics", "entity_id_path",
-    "event_time_path", "metrics",
+    "event_time_path", "time_support", "metrics",
 }
 METRIC_FIELDS = {
     "metric_id", "value_path", "unit", "unit_path",
@@ -82,10 +87,12 @@ def _read_optional(
     if selected is None:
         return None
     path = _path(selected, f"{field}_path", required=True)
+    assert path is not None
     return _read_path(state, path, field)
 
 
-def validate_adapter_contract(contract: Mapping[str, Any]) -> None:
+def validate_adapter_contract(contract: Mapping[str, Any]) -> dict[str, Any]:
+    """Validate the explicit mapping and return its canonical time-support envelope."""
     if not isinstance(contract, Mapping):
         raise DomainStateAdapterError("adapter_contract_must_be_object")
     missing = sorted(REQUIRED_ADAPTER_FIELDS - set(contract))
@@ -99,12 +106,17 @@ def validate_adapter_contract(contract: Mapping[str, Any]) -> None:
         value = contract.get(field)
         if not isinstance(value, str) or not value.strip():
             raise DomainStateAdapterError(f"{field}_must_be_nonempty_string")
-    semantics = contract.get("series_semantics")
-    if semantics not in {"periodic_measurement", "event_stream", "period_count"}:
+    if contract.get("series_semantics") not in {
+        "periodic_measurement", "event_stream", "period_count"
+    }:
         raise DomainStateAdapterError("series_semantics_invalid")
 
     _path(contract.get("entity_id_path"), "entity_id", required=True)
     _path(contract.get("event_time_path"), "event_time", required=True)
+    time_support = normalize_time_support(contract.get("time_support"))
+    if time_support["native_frequency"] != contract["native_frequency"]:
+        raise DomainStateAdapterError("adapter_time_support_frequency_mismatch")
+
     for field in ("available_at", "source_record_id", "source_revision", "revision_status"):
         _path(contract.get(f"{field}_path"), field, required=False)
 
@@ -150,13 +162,14 @@ def validate_adapter_contract(contract: Mapping[str, Any]) -> None:
         ):
             if metric.get(f"{field}_path") is not None:
                 _path(metric[f"{field}_path"], f"metrics[{index}].{field}", required=True)
+    return time_support
 
 
 def adapt_domain_state(
     state: Mapping[str, Any], contract: Mapping[str, Any]
 ) -> list[dict[str, Any]]:
     """Convert one DomainState row into one source observation per declared metric."""
-    validate_adapter_contract(contract)
+    time_support = validate_adapter_contract(contract)
     if not isinstance(state, Mapping):
         raise DomainStateAdapterError("domain_state_must_be_object")
 
@@ -173,12 +186,22 @@ def adapt_domain_state(
         raise DomainStateAdapterError("native_frequency_mismatch")
     if not isinstance(state["source_observations"], Mapping):
         raise DomainStateAdapterError("source_observations_must_be_object")
+    if not isinstance(state["pattern_id"], str) or not state["pattern_id"].strip():
+        raise DomainStateAdapterError("domain_state_pattern_id_invalid")
+    if not isinstance(state["state_label"], str) or not state["state_label"].strip():
+        raise DomainStateAdapterError("domain_state_label_invalid")
 
     entity_path = _path(contract["entity_id_path"], "entity_id", required=True)
     time_path = _path(contract["event_time_path"], "event_time", required=True)
     assert entity_path is not None and time_path is not None
     entity_id = _text_identifier(_read_path(state, entity_path, "entity_id"), "entity_id")
     event_time = _event_time(_read_path(state, time_path, "event_time"))
+
+    evidence_refs = state.get("evidence_refs")
+    if not isinstance(evidence_refs, list) or any(
+        not isinstance(item, str) for item in evidence_refs
+    ):
+        raise DomainStateAdapterError("evidence_refs_must_be_string_array")
 
     adapted: list[dict[str, Any]] = []
     for metric in contract["metrics"]:
@@ -197,9 +220,22 @@ def adapt_domain_state(
             raise DomainStateAdapterError(f"unit_invalid:{metric_id}")
 
         available_at = _read_optional(state, metric, contract, "available_at")
+        if available_at is not None and not isinstance(available_at, str):
+            raise DomainStateAdapterError(f"available_at_invalid:{metric_id}")
+
         source_record_id = _read_optional(state, metric, contract, "source_record_id")
+        if source_record_id is not None:
+            source_record_id = _text_identifier(source_record_id, "source_record_id")
+
         source_revision = _read_optional(state, metric, contract, "source_revision")
+        if source_revision is not None and (
+            isinstance(source_revision, bool) or not isinstance(source_revision, (str, int))
+        ):
+            raise DomainStateAdapterError(f"source_revision_invalid:{metric_id}")
+
         revision_status = _read_optional(state, metric, contract, "revision_status")
+        if revision_status is not None and not isinstance(revision_status, str):
+            raise DomainStateAdapterError(f"revision_status_invalid:{metric_id}")
 
         status_path = metric.get("observation_status_path")
         if status_path is None:
@@ -228,12 +264,12 @@ def adapt_domain_state(
             "unit": unit,
             "observation_status": observation_status,
         })
-
-        evidence_refs = state.get("evidence_refs")
-        if not isinstance(evidence_refs, list) or any(
-            not isinstance(item, str) for item in evidence_refs
+        if not (
+            time_support["observation_period_start"]
+            <= source_record["event_time"]
+            <= time_support["observation_period_end"]
         ):
-            raise DomainStateAdapterError("evidence_refs_must_be_string_array")
+            raise DomainStateAdapterError("event_time_outside_declared_time_support")
 
         adapted.append({
             "observation": source_record,
@@ -256,7 +292,7 @@ def adapt_domain_states(
     states: Iterable[Mapping[str, Any]], contract: Mapping[str, Any]
 ) -> dict[str, Any]:
     """Adapt a collection deterministically without collapsing repeated observations."""
-    validate_adapter_contract(contract)
+    time_support = validate_adapter_contract(contract)
     records: list[dict[str, Any]] = []
     input_count = 0
     for state in states:
@@ -281,5 +317,6 @@ def adapt_domain_states(
             item["logical_record_id"] is None for item in observations
         ),
         "native_frequency": contract["native_frequency"],
+        "time_support": time_support,
         "records": records,
     }
