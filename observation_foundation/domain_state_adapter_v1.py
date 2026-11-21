@@ -8,13 +8,13 @@ from __future__ import annotations
 
 from typing import Any, Iterable, Mapping, Sequence
 
-from .record_identity_v1 import canonical_order_key, prepare_source_record
+from .record_identity_v1 import canonical_order_key, normalize_time_support, prepare_source_record
 
 ADAPTER_CONTRACT_ID = "domain-state-observation-adapter-v1"
 ADAPTER_FIELDS = {
     "adapter_id", "source_namespace", "dataset_id", "domain",
     "native_frequency", "series_semantics", "entity_id_path",
-    "event_time_path", "available_at_path", "source_record_id_path",
+    "event_time_path", "time_support", "available_at_path", "source_record_id_path",
     "source_revision_path", "revision_status_path", "metrics",
 }
 REQUIRED_ADAPTER_FIELDS = {
