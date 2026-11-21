@@ -84,7 +84,7 @@ jobs:
       - name: Install pipeline dependencies
         run: python -m pip install -r real_data_stress_pipeline/requirements.txt
 
-      - name: Verify historical experiments archive is unchanged
+      - name: Verify both frozen archives are unchanged
         env:
           BEFORE_SHA: ${{ github.event.before }}
           CURRENT_SHA: ${{ github.sha }}
