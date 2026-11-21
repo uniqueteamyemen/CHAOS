@@ -160,6 +160,11 @@ def analyze_series(
         raise BehavioralDiscoveryError("series_non_finite_numeric_value")
     if len(set(years)) != len(years):
         raise BehavioralDiscoveryError("series_duplicate_year")
+    minimum_segment = int(contract["minimum_segment_observations"])
+    if len(years) < 2 * minimum_segment:
+        raise BehavioralDiscoveryError(
+            f"series_too_short_for_declared_segment_support:min_length={2 * minimum_segment}"
+        )
 
     slope, intercept, residuals = _fit_robust_line(years, values)
     differences = [values[i] - values[i - 1] for i in range(1, len(values))]
@@ -200,7 +205,6 @@ def analyze_series(
     }
 
     candidates: list[dict[str, Any]] = []
-    minimum_segment = int(contract["minimum_segment_observations"])
     n = len(values)
 
     # Retrospective level shift scan on robust detrended residuals.
