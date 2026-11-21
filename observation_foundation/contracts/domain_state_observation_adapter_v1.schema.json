@@ -1,0 +1,65 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "CHAOS_DOMAIN_STATE_OBSERVATION_ADAPTER_V1",
+  "title": "CHAOS DomainState Observation Adapter V1",
+  "description": "Explicit field mapping from an existing DomainState envelope to immutable source observations. No inferred frequency, unit, key, availability or revision metadata.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "adapter_id",
+    "source_namespace",
+    "dataset_id",
+    "domain",
+    "native_frequency",
+    "series_semantics",
+    "entity_id_path",
+    "event_time_path",
+    "metrics"
+  ],
+  "properties": {
+    "adapter_id": {"type": "string", "minLength": 1},
+    "source_namespace": {"type": "string", "minLength": 1},
+    "dataset_id": {"type": "string", "minLength": 1},
+    "domain": {"type": "string", "minLength": 1},
+    "native_frequency": {"type": "string", "minLength": 1},
+    "series_semantics": {"enum": ["periodic_measurement", "event_stream", "period_count"]},
+    "entity_id_path": {"$ref": "#/$defs/path"},
+    "event_time_path": {"$ref": "#/$defs/path"},
+    "available_at_path": {"$ref": "#/$defs/path"},
+    "source_record_id_path": {"$ref": "#/$defs/path"},
+    "source_revision_path": {"$ref": "#/$defs/path"},
+    "revision_status_path": {"$ref": "#/$defs/path"},
+    "metrics": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"$ref": "#/$defs/metric"}
+    }
+  },
+  "$defs": {
+    "path": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"type": "string", "minLength": 1}
+    },
+    "metric": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["metric_id", "value_path"],
+      "properties": {
+        "metric_id": {"type": "string", "minLength": 1},
+        "value_path": {"$ref": "#/$defs/path"},
+        "unit": {"type": ["string", "null"]},
+        "unit_path": {"$ref": "#/$defs/path"},
+        "available_at_path": {"$ref": "#/$defs/path"},
+        "source_record_id_path": {"$ref": "#/$defs/path"},
+        "source_revision_path": {"$ref": "#/$defs/path"},
+        "revision_status_path": {"$ref": "#/$defs/path"},
+        "observation_status_path": {"$ref": "#/$defs/path"}
+      },
+      "oneOf": [
+        {"required": ["unit"], "not": {"required": ["unit_path"]}},
+        {"required": ["unit_path"], "not": {"required": ["unit"]}}
+      ]
+    }
+  }
+}
