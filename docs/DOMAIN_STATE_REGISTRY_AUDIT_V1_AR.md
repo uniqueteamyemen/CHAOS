@@ -1,8 +1,8 @@
 # CHAOS — DomainState Registry Integrity Audit V1
 
-**Source of evidence:** GitHub Actions run [44952544505](https://github.com/uniqueteamyemen/CHAOS/actions/runs/44952544505), on candidate SHA `4c9b0c2219d6f0b834a80947a24819d268eb4ccb`.  
+**Source of evidence:** GitHub Actions run [44952544505](https://github.com/uniqueteamyemen/CHAOS/actions/runs/44952544505), on candidate SHA `4c9b0c2219d6f0b834a80947a24819d268eb4ccb`; the PR-head validation rerun is recorded in [44953200015](https://github.com/uniqueteamyemen/CHAOS/actions/runs/44953200015).  
 **Read-only audit artifact:** `DOMAIN_STATE_INTEGRITY_REPORT_V2.json`, artifact ID `14725898366`.  
-**Current integration candidate:** PR [#28](https://github.com/uniqueteamyemen/CHAOS/pull/28).  
+**Integration status:** PR [#28](https://github.com/uniqueteamyemen/CHAOS/pull/28) merged into `main-phase2` at `e0c13b41ef1bbbdfe46f1dc266a007eb2dedd8d7`.  
 **Important:** This report describes asset completeness at the audited SHA. It is not a scientific acceptance certificate.
 
 ## 1. Registry result
@@ -58,3 +58,8 @@ No records were removed. The validator was corrected in the Discovery candidate 
 - WGI DomainState materialization remains unproven until its source ZIP can be supplied through a reproducible, hashed adapter run.
 
 The Discovery code may be integrated as a candidate Engine 1 foundation only with these limitations stated. The registry does not pass completeness, Engine 1 is not frozen, and Engine 2 remains closed until the separate acceptance/freeze/handoff gate is satisfied.
+
+
+## 5. Status after integration
+
+The Discovery V1 implementation and registry validator were merged into `main-phase2` via PR #28. This does not convert the recorded audit readiness into PASS. The six missing references remain a declared registry blocker until a separate source-backed change resolves the WGI output and an explicit policy decision addresses the five immutable historical paths. No missing artifact has been recreated, and no file under `experiments/**` was altered.
