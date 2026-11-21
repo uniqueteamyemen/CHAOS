@@ -139,6 +139,33 @@ class BehavioralDiscoveryTests(unittest.TestCase):
         self.assertEqual(patterns[0]["pre_change_trend_direction"], "NOT_APPLICABLE")
         self.assertEqual(patterns[0]["post_change_trend_direction"], "NOT_APPLICABLE")
 
+    def test_shared_point_anomaly_years_are_aggregated_separately_from_breaks(self):
+        candidates = []
+        for i in range(6):
+            candidates.append({
+                "metric_id": "wdi__GDP",
+                "candidate_type": "isolated_point_anomaly",
+                "candidate_year": 2020,
+                "entity_id": f"E{i}",
+                "direction": "BELOW_LOCAL_REFERENCE",
+                "effect_size": 5.0,
+            })
+        candidates.append({
+            "metric_id": "wdi__GDP",
+            "candidate_type": "isolated_point_anomaly",
+            "candidate_year": 2020,
+            "entity_id": "E6",
+            "direction": "ABOVE_LOCAL_REFERENCE",
+            "effect_size": 4.0,
+        })
+        patterns = build_shared_year_patterns(candidates, CONTRACT)
+        self.assertEqual(len(patterns), 1)
+        self.assertEqual(patterns[0]["pattern_type"], "shared_metric_point_anomaly_year")
+        self.assertEqual(patterns[0]["point_anomaly_direction"], "BELOW_LOCAL_REFERENCE")
+        self.assertEqual(patterns[0]["entity_support"], 7)
+        self.assertEqual(patterns[0]["support_position"], "SYMMETRIC_LOCAL_REFERENCE")
+        self.assertAlmostEqual(patterns[0]["direction_concordance"], 6 / 7)
+
     def test_shared_slope_patterns_do_not_mix_growth_slowdown_with_decline_acceleration(self):
         candidates = []
         for i in range(8):
