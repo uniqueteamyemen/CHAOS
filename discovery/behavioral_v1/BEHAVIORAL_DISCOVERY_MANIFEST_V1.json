@@ -22,11 +22,27 @@
       "bytes": 3957,
       "path": "discovery/behavioral_v1/BEHAVIORAL_DISCOVERY_SUMMARY_V1.json",
       "role": "behavioral_discovery_summary_v1",
-      "sha256": "9af4eaf60929b82781e7cdc649565bfa41460d80439edb671f54af5abd9b2ffc"
+      "sha256": "53107e8b0ddd6ff5b38b329d1796dc579162e4227a22d49755b025bc4f6fe564"
+    },
+    {
+      "bytes": 31633,
+      "path": "discovery/behavioral_v1/CONDITIONAL_CALENDAR_NULL_V1.json",
+      "role": "conditional_calendar_null_summary_v1",
+      "sha256": "37e8563c9f4d32c889d14af384692a2fdb44f3c04a7b0b707aef0e6845e4bbed"
+    },
+    {
+      "bytes": 8574,
+      "path": "discovery/behavioral_v1/CONDITIONAL_CALENDAR_GROUPS_V1.csv",
+      "role": "conditional_calendar_null_groups_v1",
+      "sha256": "8319f797ac3dc0bb77608442aa4d7595c1fe611c9833f6375c1e17a882baac4c"
     }
   ],
   "bundle_id": "CHAOS_BEHAVIORAL_DISCOVERY_V1",
   "code": {
+    "calendar_null_module_path": "discovery_engine/calendar_coincidence_null_v1.py",
+    "calendar_null_module_sha256": "dbbe4128f1d0dacc75248282628b86221a58c68ca18981fc40d6d7f8e801199d",
+    "calendar_null_runner_path": "scripts/discovery/run_calendar_coincidence_null_v1.py",
+    "calendar_null_runner_sha256": "cbe85785eae6d7b9aed09a983e85e677c10cfbaaf78e4210b5125f46f51fc1f0",
     "module_path": "discovery_engine/behavioral_discovery_v1.py",
     "module_sha256": "52aad8d8863b85032f96969440bb40d280787501aa3caa535c9de27f1a50a488",
     "runner_path": "scripts/discovery/run_behavioral_discovery_v1.py",
@@ -37,11 +53,12 @@
     "status": "CANDIDATES_REQUIRE_SOURCE_SPECIFIC_NULL_AND_INDEPENDENT_REVIEW",
     "summary": "Descriptive candidate generation only; no inferential admission or forecast."
   },
-  "generated_at_utc": "2026-11-21T20:07:37Z",
+  "generated_at_utc": "2026-11-21T20:13:49Z",
   "inputs": {
+    "conditional_calendar_null_contract_sha256": "3b40fb6265de03132261b76da5a25877ab8ccedb8f8f5dab03578e238c5946c0",
     "contract_sha256": "0c44ff9066208378ae0a3d4bc955324d6c738a46938721c1abdaca6c546f3496",
     "panel_sha256": "015736245ac4010aa1c97055930c69ca3c7da5fdd5970f5da34456b67a3172ad",
     "provenance_sha256": "6bf07de9bca0ef23e7e0069e46c3949f714f205424db50d33471f6bf57f04965"
   },
-  "source_commit": "ed8bdbcaaf140d0907732d4697d7a4638ad3f3c3"
+  "source_commit": "02fb97e2bbd601219c3547dc2df186da495620c3"
 }
