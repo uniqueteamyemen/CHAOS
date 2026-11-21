@@ -1,0 +1,82 @@
+{
+  "candidate_count": 1698,
+  "candidate_counts_by_type": {
+    "isolated_point_anomaly": 617,
+    "level_shift": 657,
+    "slope_change": 424
+  },
+  "contract_id": "CHAOS_BEHAVIORAL_DISCOVERY_V1",
+  "generated_at_utc": "2026-11-21T20:00:36Z",
+  "inference": {
+    "candidate_status": "DISCOVERY_CANDIDATE_UNVALIDATED",
+    "causal_claims_permitted": false,
+    "detector_math_modified": false,
+    "forecasting_performed": false,
+    "null_tests_performed": false,
+    "p_values_computed": false
+  },
+  "input": {
+    "entity_count": 139,
+    "expected_years": [
+      2000,
+      2001,
+      2002,
+      2003,
+      2004,
+      2005,
+      2006,
+      2007,
+      2008,
+      2009,
+      2010,
+      2011,
+      2012,
+      2013,
+      2014,
+      2015,
+      2016,
+      2017,
+      2018,
+      2019,
+      2020,
+      2021,
+      2022,
+      2023,
+      2024
+    ],
+    "input_summary": "/home/runner/work/CHAOS/CHAOS/catalog_first/readiness_gate/macro_plus_eia_energy/NUMERIC_COMPLETE_MATRIX_V1_1_SUMMARY.json",
+    "input_summary_sha256": "adebcd5f2a13a54d6fea27752422febbfab54601e21a5501ce7ad57a54d994ed",
+    "metric_count": 11,
+    "observation_count": 38225,
+    "panel": "/home/runner/work/CHAOS/CHAOS/catalog_first/readiness_gate/macro_plus_eia_energy/MACRO_PLUS_EIA_ENERGY_COMPLETE_139_NUMERIC_RAW_2000_2024_WIDE.csv",
+    "panel_sha256": "015736245ac4010aa1c97055930c69ca3c7da5fdd5970f5da34456b67a3172ad",
+    "provenance": "/home/runner/work/CHAOS/CHAOS/catalog_first/readiness_gate/macro_plus_eia_energy/SELECTED_VARIABLE_PROVENANCE.csv",
+    "provenance_sha256": "6bf07de9bca0ef23e7e0069e46c3949f714f205424db50d33471f6bf57f04965",
+    "row_count": 3475,
+    "series_count": 1529
+  },
+  "method": {
+    "level_shift": "maximum median shift on robust detrended residuals over eligible splits",
+    "maximum_candidates_per_series": 3,
+    "point_anomaly": "symmetric local reference on detrended residuals",
+    "slope_shift": "maximum piecewise Theil-Sen slope delta",
+    "trend": "Theil-Sen line; median residual intercept"
+  },
+  "outputs": {
+    "candidate_events": "BEHAVIORAL_CANDIDATES_V1.jsonl",
+    "series_profiles": "SERIES_BEHAVIOR_PROFILES_V1.csv",
+    "shared_year_patterns": "SHARED_YEAR_PATTERNS_V1.csv"
+  },
+  "series_profile_count": 1529,
+  "shared_year_pattern_count": 30,
+  "source_observation_identity": {
+    "available_at_known": 0,
+    "available_at_unknown": 38225,
+    "contract": "source-record-identity-v1",
+    "point_in_time_eligible": false,
+    "records": 38225,
+    "revision_metadata_available": 0,
+    "unique_logical_slots": 38225
+  },
+  "status": "CANDIDATE_GENERATION_ONLY"
+}

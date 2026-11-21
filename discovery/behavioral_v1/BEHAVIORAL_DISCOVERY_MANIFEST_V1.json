@@ -1,0 +1,41 @@
+{
+  "artifacts": [
+    {
+      "bytes": 628257,
+      "path": "discovery/behavioral_v1/SERIES_BEHAVIOR_PROFILES_V1.csv",
+      "role": "series_behavior_profiles_v1",
+      "sha256": "f27377403faaa5546d9ba77dc51749a30dedcce386962dacad256a2c688e745d"
+    },
+    {
+      "bytes": 2086146,
+      "path": "discovery/behavioral_v1/BEHAVIORAL_CANDIDATES_V1.jsonl",
+      "role": "behavioral_candidates_v1",
+      "sha256": "6693e5557e0ecc536cf8bc61805911a993770bf921fceb7951922ded809bca7e"
+    },
+    {
+      "bytes": 3646,
+      "path": "discovery/behavioral_v1/SHARED_YEAR_PATTERNS_V1.csv",
+      "role": "shared_year_patterns_v1",
+      "sha256": "18238811cdb908d651d6a8000005408b6c5034a4b19eba9f6d95edc04bd0d208"
+    },
+    {
+      "bytes": 2630,
+      "path": "discovery/behavioral_v1/BEHAVIORAL_DISCOVERY_SUMMARY_V1.json",
+      "role": "behavioral_discovery_summary_v1",
+      "sha256": "cf660dcb226a58aff2b79646c99145b6f6aac5aa5361d779c9e95e9209bef406"
+    }
+  ],
+  "bundle_id": "CHAOS_BEHAVIORAL_DISCOVERY_V1",
+  "contract_id": "CHAOS_BEHAVIORAL_DISCOVERY_V1",
+  "decision": {
+    "status": "CANDIDATES_REQUIRE_SOURCE_SPECIFIC_NULL_AND_INDEPENDENT_REVIEW",
+    "summary": "Descriptive candidate generation only; no inferential admission or forecast."
+  },
+  "generated_at_utc": "2026-11-21T20:00:36Z",
+  "inputs": {
+    "contract_sha256": "0c44ff9066208378ae0a3d4bc955324d6c738a46938721c1abdaca6c546f3496",
+    "panel_sha256": "015736245ac4010aa1c97055930c69ca3c7da5fdd5970f5da34456b67a3172ad",
+    "provenance_sha256": "6bf07de9bca0ef23e7e0069e46c3949f714f205424db50d33471f6bf57f04965"
+  },
+  "source_commit": null
+}
