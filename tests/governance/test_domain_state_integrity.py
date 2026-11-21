@@ -101,10 +101,10 @@ class DomainStateIntegrityTests(unittest.TestCase):
                 ],
             }), encoding="utf-8")
             report = build_domain_state_integrity_report(root, registry_path, output_path)
+            self.assertTrue(output_path.exists())
         self.assertEqual(report["readiness"], "BLOCKED_INCOMPLETE_ASSET_SET")
         self.assertEqual(report["records_seen"], 1)
         self.assertIn("missing.jsonl", report["missing_references"])
-        self.assertTrue(output_path.exists())
 
     def test_invalid_jsonl_record_is_a_hard_failure(self):
         with TemporaryDirectory() as directory:
