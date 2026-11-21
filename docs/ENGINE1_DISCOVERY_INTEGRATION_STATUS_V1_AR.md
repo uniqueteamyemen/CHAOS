@@ -1,11 +1,11 @@
 # CHAOS — Engine 1 Discovery Integration Status
 
-**الحالة:** مرشح دمج — لا يعني اعتماد Engine 1 أو السماح ببدء Engine 2.  
+**الحالة:** مدمج كقاعدة Engine 1 مرشحة — لا يعني اعتماد Engine 1 أو السماح ببدء Engine 2.  
 **الفرع:** `discovery/d1-domainstate-integrity-v1`  
-**PR:** [#28](https://github.com/uniqueteamyemen/CHAOS/pull/28) → `main-phase2`  
-**رأس الفرع عند توثيق فحص DomainState:** `3761ef8a7b72276639571828cb455ee2e786a531` (قبل إضافة تقرير هذا التدقيق)  
-**رأس main-phase2:** `7eb619c1a7756b52aeffb32a06278e786c0dd762`  
-**قاعدة الدمج:** `main-phase2`، متزامن بالكامل؛ مقارنة GitHub قبل هذه الوثيقة كانت 150 commits ahead و0 behind.
+**PR:** [#28](https://github.com/uniqueteamyemen/CHAOS/pull/28) — merged into `main-phase2` at `e0c13b41ef1bbbdfe46f1dc266a007eb2dedd8d7`  
+**رأس المراجعة النهائي قبل الدمج:** `f0627eac6fd39a4d26fe128820cf05c58293054d`  
+**رأس main-phase2 بعد الدمج:** `e0c13b41ef1bbbdfe46f1dc266a007eb2dedd8d7`  
+**نتيجة الدمج:** 159 commits ضمن PR #28، 0 behind قبل الدمج؛ لا تغيير في `experiments/**` أو الكاشف المجمد.
 
 ## 1. تشغيلات إعادة البناء على رأس الكود
 
@@ -17,7 +17,7 @@
 | WDI Trade DomainState build | [44952380408](https://github.com/uniqueteamyemen/CHAOS/actions/runs/44952380408) | success |
 | WEO 2020 Source Vintage Audit | [44952380583](https://github.com/uniqueteamyemen/CHAOS/actions/runs/44952380583) | success |
 
-هذه تشغيلات Push على رأس الكود `bf4037d5bda841fc07f56d5199a72c7c415c970c`. نتج عنها تحديث artifacts مشتقة إلى الفرع. لا ينبغي الخلط بينها وبين نتائج علمية معتمدة أو مع PR checks التي يجب أن تعمل على رأس المراجعة النهائي.
+هذه تشغيلات Push على رأس الكود `bf4037d5bda841fc07f56d5199a72c7c415c970c`. نتج عنها تحديث artifacts مشتقة إلى فرع العمل قبل الدمج؛ وجرى التحقق من إعادة البناء read-only على رأس PR النهائي. نجاح التشغيل يثبت التنفيذ، لا اعتماداً علمياً.
 
 ## 2. Behavioral Discovery V1
 
@@ -71,11 +71,11 @@
 - WDI adapter tests + إعادة بناء 29,004 DomainStates + registry validator + byte-for-byte check للمخرجات.
 - WEO tests + تنزيل النسخ/المرآة المثبتة + SHA verification + تأكيد بقاء actual/estimate unknown حيث metadata غير متاحة.
 
-نجحت جميع بوابات PR على الرأس `4c9b0c2219d6f0b834a80947a24819d268eb4ccb` في الجولة السابقة: `stress`, `experiments-immutable`, `domain-state-integrity`, `observation-foundation-contract`, `source-record-identity-v1`, `d0-baseline-artifact-validation`, ومهام `validate-pr` الثلاثة لـBehavioral/WDI/WEO. لكن تقرير DomainState كشف اكتمالاً جزئياً فقط، ثم أُصلح مقياس تصادمات الهوية وأضيف اختبار جديد؛ لذلك يلزم إعادة تشغيل جميع بوابات PR على الرأس الأحدث قبل الدمج.
+نجحت جميع بوابات PR على الرأس النهائي `f0627eac6fd39a4d26fe128820cf05c58293054d`: `stress`, `experiments-immutable`, `domain-state-integrity`, `observation-foundation-contract`, `source-record-identity-v1`, `d0-baseline-artifact-validation`, ومهام `validate-pr` الثلاثة لـBehavioral/WDI/WEO. اجتازت كذلك إعادة اختبار تصادم المفتاح الخشن متعدد الأبعاد. بعدها دُمج PR #28 عبر squash في `main-phase2`.
 
 ## 6. قرار التسليم
 
-**القرار الحالي: PR #28 مرشح للدمج بعد نجاح CI على رأسه النهائي فقط.**
+**قرار التكامل:** PR #28 مدمج في `main-phase2` كقاعدة Engine 1 مرشحة؛ الدمج لا يعني اجتياز كل بوابات الجاهزية العلمية.
 
 ما زال Engine 1 غير مجمّد: Pattern discovery, relationship/structural discovery, independent validation, and freeze manifest/handoff gate لم تجتز جميعها بوابة التسليم النهائية. لا يبدأ Engine 2 من هذه النتائج وحدها.
 
@@ -109,4 +109,11 @@
 
 التقرير التفصيلي: [DOMAIN_STATE_REGISTRY_AUDIT_V1_AR.md](DOMAIN_STATE_REGISTRY_AUDIT_V1_AR.md).
 
-**قرار الدمج:** يجوز دمج كود Discovery باعتباره أساس Engine 1 مرشحاً، بشرط إبقاء registry completeness بحالة BLOCKED وعدم وصفها بأنها PASS. هذا الدمج لا يصادق على الأصول الستة المفقودة ولا على أي IMF duplicate claim؛ ولا يعني Engine 1 freeze أو السماح بEngine 2.
+**قرار ما بعد الدمج:** الكود مدمج باعتباره أساس Engine 1 مرشحاً، مع إبقاء registry completeness بحالة BLOCKED وعدم وصفها بأنها PASS. الدمج لا يصادق على الأصول الستة المفقودة ولا على أي IMF duplicate claim؛ ولا يعني Engine 1 freeze أو السماح بEngine 2.
+
+
+## 8. حالة المستودع بعد PR #28
+
+أصبحت `discovery_engine/`, `observation_foundation/`, وملفات adapter/governance/workflows الخاصة بها جزءاً من `main-phase2`. يبقى فرع Discovery موجوداً كسجل تاريخي لمراحل البناء والتحقق، وليس خط أساس منفصلاً يلزم cherry-pick منه.
+
+الخطوة التالية في Engine 1 هي إغلاق نواقص DomainState registry دون المساس بمجلد التجارب، ثم استكمال Pattern/Relationship/Structural validation ونسخة freeze manifest مستقلة. لا يبدأ Engine 2 قبل اجتياز عقد التسليم.

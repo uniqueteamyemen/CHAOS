@@ -1,6 +1,6 @@
 # CHAOS — تصنيف مكونات المستودع والفروع v1
 
-**الفرع المرجعي:** `main-phase2@365bb2111c89352466d72e60965246bf238ffabb`  
+**الفرع المرجعي:** `main-phase2@e0c13b41ef1bbbdfe46f1dc266a007eb2dedd8d7`  
 **فرع جرد الاعتماديات:** `chore/repository-hygiene-audit-v1`  
 **تاريخ لقطة GitHub:** 22 نوفمبر 2026  
 **قاعدة التصنيف:** وجود كود/بيانات/نجاح Workflow لا يساوي اعتماداً علمياً أو صلاحية تشغيل إنتاجي.
@@ -41,31 +41,31 @@
 ## 3. تصنيف Discovery V1
 
 **الفرع:** `discovery/d1-domainstate-integrity-v1`  
-**PR:** [#28](https://github.com/uniqueteamyemen/CHAOS/pull/28) — Draft، open  
-**الرأس:** `1c0ea804b4a3112ee553ee2e63b7a4a15fab50a6`  
-**العلاقة الحالية بـmain-phase2:** 140 commits ahead و1 behind؛ فرق التأخر هو توثيق main-phase2 الذي أُضيف بعد تفرع Discovery. يجب تسوية هذا الفرق قبل الدمج.
+**PR:** [#28](https://github.com/uniqueteamyemen/CHAOS/pull/28) — merged into `main-phase2` at `e0c13b41ef1bbbdfe46f1dc266a007eb2dedd8d7`  
+**رأس ما قبل الدمج:** `f0627eac6fd39a4d26fe128820cf05c58293054d`  
+**حالة التكامل:** أصبحت جميع الملفات أدناه جزءاً من `main-phase2`. يحفظ فرع Discovery التاريخ الأصلي ولا يظل شرطاً لتشغيل الكود المدمج.
 
-| المكون في Discovery branch | التصنيف | القرار |
+| المكون المدمج من Discovery V1 | التصنيف الحالي | القرار |
 |---|---|---|
-| `observation_foundation/` | CANDIDATE-INTEGRATION | مصدر الهوية/versioning وlifecycle؛ يُحافظ عليه ويُراجع التداخل مع kernel والعقود |
-| `discovery_engine/` | CANDIDATE-INTEGRATION | Behavioral discovery وcalendar null وWEO vintage audit |
-| `chaos_governance_kernel/domain_state.py` | CANDIDATE-INTEGRATION | امتداد للـkernel الحالي لا بديل عنه |
-| `scripts/adapters/build_wdi_trade_domain_states.py` | CANDIDATE-INTEGRATION | بناء DomainState سنوي من WDI source records |
-| `scripts/discovery/**` | CANDIDATE-INTEGRATION | نقاط تشغيل discovery/null/vintage |
-| `scripts/governance/**` | CANDIDATE-INTEGRATION | D0 inventory وDomainState registry validation |
+| `observation_foundation/` | ACTIVE-BASE | مصدر الهوية/versioning وlifecycle؛ نقطة الأساس الحالية لعقود observation/lifecycle |
+| `discovery_engine/` | ACTIVE-BASE / RESEARCH-ONLY | وحدات Behavioral discovery وcalendar null وWEO vintage audit؛ مخرجاتها مرشحات/اختبارات بحث وليست نماذج معتمدة |
+| `chaos_governance_kernel/domain_state.py` | ACTIVE-BASE / GOVERNANCE | امتداد للـkernel الحالي؛ يجب الحفاظ على الحالة BLOCKED عند نقص الأصول |
+| `scripts/adapters/build_wdi_trade_domain_states.py` | ACTIVE-BASE / ADAPTER | بناء DomainState سنوي من WDI source records؛ لا يثبت edge ولا point-in-time eligibility |
+| `scripts/discovery/**` | ACTIVE-BASE / RESEARCH ENTRYPOINTS | نقاط تشغيل discovery/null/vintage؛ الأوامر المنتجة للأدلة تبقى write-on-push/manual على فرع العمل، والتحقق على PR read-only |
+| `scripts/governance/**` | ACTIVE-BASE / GOVERNANCE | D0 inventory وDomainState registry validation |
 | `discovery/**` | EVIDENCE-ONLY | candidate profiles/results/manifests؛ نتائجها ليست validated patterns أو forecasts |
 | `campaigns/agents/trade_v1/WDI_TRADE_DOMAIN_STATES_ANNUAL_V1.jsonl` | EVIDENCE-ONLY / DERIVED | 29,004 DomainState records في مخرج V2 مشتق؛ لا يخلط مع source observations أو مع evidence الخاص بوجود edge |
-| Workflows الستة الجديدة | CANDIDATE-INTEGRATION | ثلاثة workflows توليدية لها contents:write ولا تعمل على PR events؛ يلزم توفير مسار PR read-only للتحقق الدقيق من الرأس |
+| Workflows Discovery الستة | ACTIVE-BASE / GUARDED | PR validation read-only، بينما writer jobs تبقى Push/Manual على branch work فقط؛ لا يسمح لها بالكتابة إلى `main-phase2` |
 
 ### نتائج Discovery لا تُرقّى تلقائياً
 
 - تقرير Behavioral Discovery يصف نفسه `CANDIDATE_GENERATION_ONLY`, و`forecasting_performed=false`, و`causal_claims_permitted=false`.
 - 1,529 سلسلة و38,225 ملاحظة و1,698 مرشحاً و45 shared patterns هي مخرجات المرشحات وفق artifacts الفرع؛ 697 مرشحاً حساس للتقسيم.
 - WDI Adapter status هو `ready_for_within_domain_edge_contract`. لكن نتائج الاختبار المسجلة في main-phase2 للـWDI within-domain max-stat تعطي `p=0.4547726137` (2,000 replicate)، ونتائج WDI-to-economic deterioration تعطي `p=0.5897051474` (2,000 replicate). كلاهما `research_evidence_only`، ولا يسمح بادعاء causal.
-- Conditional Calendar Null وWEO vintage runs الناجحة كانت على SHAs أقدم من رأس PR #28. أربع PR checks على رأس PR ناجحة (Governed Artifacts, Observation Foundation Contract, DomainState Integrity, experiments-immutable)، لكن WDI/Behavioral/WEO materialization لم يُتحقق منها على الرأس الحالي.
+- نجحت read-only validators الخاصة بـBehavioral/WDI/WEO على PR head النهائي، وأعيد فحص manifests/matrices قبل الدمج. يظل هذا دليلاً على إعادة الإنتاج البرمجية، لا على اعتماد العلاقات أو دقة WEO point-in-time.
 - بوابة Supervisor على main-phase2 تسجل pass، لكن `compiled_runtime_eligible=0` و`causal_claims=0`. نجاح البوابة ليس تصريح تشغيل.
 
-**قرار Stage B:** Discovery V1 هو المرشح التالي للدمج في Engine 1، لكن لا يزال CANDIDATE-INTEGRATION، لا Active. يُمنع دمجه حتى يُستكمل التحقق على exact PR head وتحديث PR من أثر commit الوثائقي على main-phase2.
+**قرار Stage B بعد PR #28:** Discovery V1 أصبح جزءاً من ACTIVE-BASE في `main-phase2` كقدرات توليد مرشحات وحوكمة/هوية. لا يعني ذلك اعتماد patterns أو اكتمال registry أو تجميد Engine 1؛ حالة registry هي `BLOCKED_INCOMPLETE_ASSET_SET`، ولا يبدأ Engine 2.
 
 ## 4. تصنيف المسارات السيزمية/USGS
 
@@ -73,11 +73,11 @@
 
 | الفرع | المقارنة مع main-phase2 | أحدث رأس معروف | آخر تشغيل موثق على الرأس | التصنيف |
 |---|---:|---|---|---|
-| `fix/p2-2-3-usgs-catalog-integrity-v1` | 87 ahead / 1 behind؛ 28 ملفاً | `12c3ce747078936dc5eb789fceb23799f3d91fe6` | Run 44936295839 success، على الرأس نفسه | CANDIDATE-INTEGRATION منفصل، يحتاج انتقاء |
-| `feat/p2-2-3-magnitude-type-provenance-v1` | 97 ahead / 1 behind؛ 28 ملفاً | `1188882ab76fac78133a5926e25f6a032e519b42` | Run 44935268368 success؛ job الثاني skipped | CANDIDATE-INTEGRATION جزئي |
-| `fix/p2-2-3-gem-snapshot` | 73 ahead / 1 behind؛ 27 ملفاً | `995487aa394d1b3bee77c1b62db55b7fd75329cd` | Run 44791078808 success، jobان | CANDIDATE-INTEGRATION جزئي/أقدم lineage |
+| `fix/p2-2-3-usgs-catalog-integrity-v1` | 87 ahead / 3 behind؛ diverged، 28 مساراً في net diff | `12c3ce747078936dc5eb789fceb23799f3d91fe6` | Run 44936295839 success على رأسه | CANDIDATE-INTEGRATION منفصل؛ port انتقائي فقط |
+| `feat/p2-2-3-magnitude-type-provenance-v1` | 97 ahead / 3 behind؛ diverged | `1188882ab76fac78133a5926e25f6a032e519b42` | Run 44935268368 success؛ job الثاني skipped | CANDIDATE-INTEGRATION جزئي |
+| `fix/p2-2-3-gem-snapshot` | 73 ahead / 3 behind؛ diverged | `995487aa394d1b3bee77c1b62db55b7fd75329cd` | Run 44791078808 success، jobان | CANDIDATE-INTEGRATION جزئي/أقدم lineage |
 
-هذه الفروع ليست ثلاثة نسخ متطابقة. مقارنة USGS base إلى Magnitude branch تظهر Magnitude متقدماً 14 ومتأخراً 4 commits عن USGS، مع اختلافات في Workflow audit و`run_pipeline.py` وaudit script/tests. مقارنة USGS إلى GEM snapshot تظهر GEM متقدماً commit واحداً ومتأخراً 15. لا يدمج أي منها بكامل الفرع.
+هذه الفروع ليست ثلاثة نسخ متطابقة. جميع أرقام ahead/behind أعلاه أعيد حسابها بعد دمج PR #28 وPR #30 على main-phase2. مقارنة USGS base إلى Magnitude branch تظهر Magnitude متقدماً 14 ومتأخراً 4 commits عن USGS، مع اختلافات في Workflow audit و`run_pipeline.py` وaudit script/tests. مقارنة USGS إلى GEM snapshot تظهر GEM متقدماً commit واحداً ومتأخراً 15. لا يدمج أي منها بكامل الفرع.
 
 ### 4.2 ما الذي أثبته USGS run وما لم يثبته
 
@@ -91,13 +91,13 @@ Run [44936295839](https://github.com/uniqueteamyemen/CHAOS/actions/runs/44936295
 
 | الفرع/PR | الوضع المقارن والهدف | التصنيف |
 |---|---|---|
-| `p2.2.2-markov-calibration-audit` | 7 commits ahead/1 behind؛ حزمة diagnostics | BRANCH-ARCHIVE / DIAGNOSTIC |
-| `fix/p2-2-2-rho-observability-v1` | 17 ahead/1 behind؛ PR #24 يستهدف فرع calibration وليس main-phase2 | CANDIDATE-DIAGNOSTIC |
-| `fix/p2-2-3-rho-observability-v1` | 34 ahead/1 behind؛ 10 ملفات audit وworkflows/tests | DIAGNOSTIC |
-| `fix/p2-2-4-rho-power-observability-v1` | 28 ahead/1 behind؛ power audit امتداد منفصل | DIAGNOSTIC |
-| `diag/markov-real-data-behavior` | 21 ahead/1 behind؛ آخر تشغيلين 44935931443 و44935937210 ناجحان على SHAs التشغيل نفسها | DIAGNOSTIC |
-| `diag/domain-null-and-declustering` | 23 ahead/1 behind؛ audit زلزالي مستقل | DIAGNOSTIC |
-| `p2.2.2-seismic-null-contract` | 5 ahead/1 behind؛ عقد تصميم واختبارات | EVIDENCE-ONLY / DESIGN CONTRACT |
+| `p2.2.2-markov-calibration-audit` | 7 commits ahead/3 behind؛ حزمة diagnostics | BRANCH-ARCHIVE / DIAGNOSTIC |
+| `fix/p2-2-2-rho-observability-v1` | 17 ahead/3 behind؛ PR #24 يستهدف فرع calibration وليس main-phase2 | CANDIDATE-DIAGNOSTIC |
+| `fix/p2-2-3-rho-observability-v1` | 34 ahead/3 behind؛ 10 ملفات audit وworkflows/tests | DIAGNOSTIC |
+| `fix/p2-2-4-rho-power-observability-v1` | 28 ahead/3 behind؛ power audit امتداد منفصل | DIAGNOSTIC |
+| `diag/markov-real-data-behavior` | 21 ahead/3 behind؛ آخر تشغيلين 44935931443 و44935937210 ناجحان على SHAs التشغيل نفسها | DIAGNOSTIC |
+| `diag/domain-null-and-declustering` | 23 ahead/3 behind؛ audit زلزالي مستقل | DIAGNOSTIC |
+| `p2.2.2-seismic-null-contract` | 5 ahead/3 behind؛ عقد تصميم واختبارات | EVIDENCE-ONLY / DESIGN CONTRACT |
 
 لا تتضمن هذه التصنيفات إذناً بتغيير الكاشف المجمد أو إدخال Markov إلى Discovery. الهدف هو حفظ diagnostics منفصلة عن التنفيذ العلمي النشط.
 
@@ -111,7 +111,7 @@ Run [44936295839](https://github.com/uniqueteamyemen/CHAOS/actions/runs/44936295
 | `erp-*`, `feat/erp-*`, `benchmark/erp-*`, `review/abc-adversarial` | BRANCH-ARCHIVE / SEPARATE PROJECT | مسار ERP مستقل عن Engine 1. PRs #2/#4/#9/#20/#3 أغلقت من طابور الدمج النشط دون حذف الفروع أو الملفات |
 | `archive/phase1-detector-freeze-v1.0`, `phase1-detector-freeze-phase2-real-data` | FROZEN-ARCHIVE | أرشيف Phase 1 ومرجعه، يحفظ دون تعديل |
 | `fix/p2-2-non-cancelling-concurrency` | SMALL-FIX-CANDIDATE | تعديل Workflow صغير فقط؛ لا يدمج قبل تحليل التشغيلات/الأثر |
-| `fix/50k-peer-benchmark-unit-gate-v1` | BRANCH-ARCHIVE | 3 commits ahead لكنه 197 behind عن main-phase2 ويعدل `experiments/**`; ليس مسار دمج |
+| `fix/50k-peer-benchmark-unit-gate-v1` | BRANCH-ARCHIVE | 3 commits ahead لكنه 200 behind عن main-phase2 ويعدل `experiments/**`; ليس مسار دمج |
 
 **مبدأ حفظ التاريخ:** إغلاق PR لا يعني حذف الفرع أو commit، وتصنيف branch كأرشيف لا يغير محتواه. لا تستخدم branch deletion أو directory deletion كآلية تنظيف في هذه المرحلة.
 
@@ -120,7 +120,7 @@ Run [44936295839](https://github.com/uniqueteamyemen/CHAOS/actions/runs/44936295
 | المصدر | ما أثبتته الملفات/التقارير الحالية | حالة الاستخدام |
 |---|---|---|
 | Macro + EIA Energy | لوحة 139 كياناً × 25 سنة (2000–2024) و11 متغيراً؛ توجد provenance وgap profiles | مصدر بيانات متاح لـDiscovery behavioral؛ اختبار Energy-intensity → deterioration في سجل agent رُفض كإضافة positive edge (`null_p=0.3013493253`) |
-| WDI Trade | 29,004 observed records، 259 كياناً، 5 indicators، annual 2000–2024 | بيانات WDI موجودة في main؛ adapter V2/DomainState JSONL مخرجات فرع Discovery. نتائج max-stat الحالية (p=.4548 within-domain، p=.5897 cross-domain) لا تدعم edge إيجابياً |
+| WDI Trade | 29,004 observed records، 259 كياناً، 5 indicators، annual 2000–2024 | بيانات WDI ومخرج adapter V2/DomainState JSONL أصبحت ضمن main بعد PR #28. نتائج max-stat الحالية (p=.4548 within-domain، p=.5897 cross-domain) لا تدعم edge إيجابياً |
 | UN Comtrade | Bounded preview واحد بصف واحد + world aggregate probe؛ acquisition الأوسع 124 records/5 reporters/2000–2024 مع فشل request واحد، لكنها لا تغطي partner/commodity/flow بالشكل اللازم لكل network | لا تزال غير كافية لربط تاريخي country-partner-commodity؛ `TRADE_AGENT_READINESS_V1` يقرر not_testable |
 | IMF IMTS | استعلام 15 reporter نجح لـXG/MG؛ acquisition لـ139 reporter مع XG فقط سجّل 139 استجابة 200؛ acquisition المزدوج XG+MG لـ139 reporter سجل 139 استجابة 403 | جزئي ومفيد لمسار export-only، لكن واردات/تغطية مؤشرات مزدوجة لجميع 139 غير مكتملة؛ لا تختزل الحالة إلى “4 ملفات ناقصة” أو “IMF جاهز” |
 | USGS M6.5+ | 1,141 حدثاً native event؛ integrity/de-dup/spatial/time checks في فرع USGS نجحت | الحدث موجود؛ cross-domain path blocked لغياب country attribution/production shock/recovery. لا annual alignment بلا contract |

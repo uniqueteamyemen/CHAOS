@@ -1,8 +1,8 @@
 # CHAOS — خريطة نقاط الدخول والاعتماديات البرمجية v1
 
 **المستودع:** `uniqueteamyemen/CHAOS`  
-**الفرع المرجعي للكود الأساسي:** `main-phase2@365bb2111c89352466d72e60965246bf238ffabb`  
-**الفرع المرجعي لمحرك Discovery المرشح:** `discovery/d1-domainstate-integrity-v1@1c0ea804b4a3112ee553ee2e63b7a4a15fab50a6`  
+**الفرع المرجعي للكود الأساسي:** `main-phase2@e0c13b41ef1bbbdfe46f1dc266a007eb2dedd8d7`  
+**مرجع دمج Discovery V1:** PR #28 → `main-phase2@e0c13b41ef1bbbdfe46f1dc266a007eb2dedd8d7`  
 **الغرض:** تحديد نقطة الدخول، الاعتماديات، حدود البيانات، ومواقع الكتابة قبل أي إعادة تنظيم مادي.
 
 ## 1. حقيقة التشغيل: مستويان منفصلان
@@ -51,7 +51,7 @@
 
 هذه المكتبة تعتمد على Python standard library في النسخة الأساسية التي فُحصت. لا يوجد `pyproject.toml` أو `setup.py` أو تثبيت package مركزي؛ الاستدعاء الحالي يتم من داخل repository root، غالباً عبر `python -m` أو imports محلية.
 
-في فرع Discovery أضيف `chaos_governance_kernel/domain_state.py` لفحص DomainState assets. وهو ليس موجوداً في `main-phase2` قبل دمج PR #28.
+أُضيف `chaos_governance_kernel/domain_state.py` إلى `main-phase2` عبر PR #28 لفحص DomainState assets. ويجب التمييز بين نجاح تنفيذ المدقق وبين جاهزية الأصول؛ أحدث تقرير على الرأس النهائي سجل 21 مرجعاً، 15 موجوداً، و6 مفقودة، مع readiness=`BLOCKED_INCOMPLETE_ASSET_SET`.
 
 ### 2.3 Catalog First — أدوات الاستكشاف والجرد
 
@@ -83,11 +83,11 @@
 
 ### 2.5 الحارس الحالي
 
-`scripts/guards/check_experiments_immutable.py` هو نقطة دخول حارس CI. يستخدم `git diff --name-status` ويحدد نطاقه صراحة بـ`-- experiments/`. لا يتضمن مسار `structural_engine/isolated_break_detector_v1/`، ولذلك لا يحرس ذلك المسار حالياً.
+`scripts/guards/check_experiments_immutable.py` هو نقطة دخول حارس CI. يستخدم `git diff --name-status` ويفحص المسارين `experiments/` و`structural_engine/isolated_break_detector_v1/`، ويرفض الدمج إذا تعذر التحقق من diff. حارس الـCI يغطي PRs المستهدفة إلى `main-phase2` والتغييرات ذات الصلة على الفرع.
 
-## 3. Discovery V1: خريطة الفرع المرشح
+## 3. Discovery V1: المسار العلمي المدمج
 
-هذه الوحدات موجودة في `discovery/d1-domainstate-integrity-v1`، ولم تكن مدمجة في `main-phase2` عند كتابة هذه الخريطة.
+هذه الوحدات أصبحت مدمجة في `main-phase2` عبر PR #28 عند `e0c13b41ef1bbbdfe46f1dc266a007eb2dedd8d7`.
 
 ### 3.1 Source Observation وLifecycle
 
@@ -193,7 +193,7 @@
 |---|---|---|
 | `experimental_contracts/**` | Python engine/validator أو Workflow JSON checks | مواصفات مدخلات ومنهجية/حوكمة؛ وجود العقد وحده لا يثبت تشغيله |
 | `catalog_first/readiness_gate/macro_plus_eia_energy/**` | Discovery V1 في فرعه المرشح؛ وأدوات readiness القديمة | مخرجات candidate/profiles؛ ملفات خام/مراحل كثيرة خارج Git |
-| `campaigns/agents/trade_v1/WDI_TRADE_OBSERVED_RECORDS_2000_2024.csv` | WDI adapter | DomainState JSONL وadapter summary على فرع Discovery |
+| `campaigns/agents/trade_v1/WDI_TRADE_OBSERVED_RECORDS_2000_2024.csv` | WDI adapter | DomainState JSONL وadapter summary على المسار المدمج |
 | `campaigns/agents/**` | DomainState validator وSupervisor gate | قراءة تقارير agents/outputs وتحقق schema/lineage |
 | `campaigns/CAMPAIGN_SHARED_GATE_V1/**` | evidence/supervisor gate | سجل قبول/عزل؛ Gate pass لا يعني runtime eligible |
 | `data/raw/**` | source manifests/adapters | يحتوي عدد محدود من source snapshots المتتبعة؛ لا يساوي مستودع البيانات الخارجية الكامل |
@@ -229,3 +229,15 @@
 - لم يُفحص كل ملف من 916 ملفاً داخل `experiments/**` لأن هذا الأرشيف protected scope؛ تم احترامه.
 - لا تحذف أي مرشح orphan أو وحدة تبدو مكررة قبل فحص branch-wide references، والـworkflow invocation، والـartifact lineage، وhashes.
 
+
+
+## 9. حالة ما بعد الدمج
+
+PR #28 مدمج في `main-phase2` عند `e0c13b41ef1bbbdfe46f1dc266a007eb2dedd8d7`. لذلك لم تعد ملفات `discovery_engine/`, `observation_foundation/`, و`scripts/discovery/` مجرد branch candidate؛ أصبحت جزءاً من مسار Python في خط الأساس.
+
+تبقى ثلاثة حدود تشغيلية:
+1. مخرجات Behavioral Discovery ذات حالة `CANDIDATE_GENERATION_ONLY`، وليست patterns validated.
+2. DomainState registry على مستوى multi-domain لا يزال `BLOCKED_INCOMPLETE_ASSET_SET` بسبب ستة مراجع مفقودة؛ لا تُنشأ الملفات الخمسة الغائبة تحت `experiments/**`.
+3. لا توجد نقطة دخول Python→React أو API serving في الكود الذي جرى تتبعه؛ الواجهة Presentation/fixtures مستقلة عن نتائج المحرك العلمي.
+
+الدمج تقني/معماري وليس شهادة جاهزية علمية أو تصريح تشغيل تنبؤي.

@@ -1,14 +1,14 @@
 # CHAOS — خريطة اعتماديات GitHub Actions v1
 
 **المستودع:** `uniqueteamyemen/CHAOS`  
-**مرجع خط الأساس الذي فُحص:** `main-phase2@365bb2111c89352466d72e60965246bf238ffabb`  
-**فرع Discovery المقارن:** `discovery/d1-domainstate-integrity-v1@1c0ea804b4a3112ee553ee2e63b7a4a15fab50a6`  
-**PR Discovery:** [#28](https://github.com/uniqueteamyemen/CHAOS/pull/28) — مفتوح كمسودة  
+**مرجع خط الأساس الذي فُحص:** `main-phase2@e0c13b41ef1bbbdfe46f1dc266a007eb2dedd8d7`  
+**فرع Discovery المقارن:** `discovery/d1-domainstate-integrity-v1@f0627eac6fd39a4d26fe128820cf05c58293054d`  
+**Discovery integration:** [PR #28](https://github.com/uniqueteamyemen/CHAOS/pull/28) — merged into `main-phase2` at `e0c13b41ef1bbbdfe46f1dc266a007eb2dedd8d7`  
 **المنهج:** قراءة ملفات Workflow الفعلية، trigger filters، scripts المستدعاة، artifacts، صلاحيات GitHub Actions، وفحص نتائج التشغيلات عبر GitHub. هذه خريطة اعتماديات تشغيلية ثابتة وليست تقرير نجاح علمي.
 
 ## 1. لقطة المستودع
 
-شجرة `main-phase2` تحتوي 1,558 مدخلاً: 1,347 ملفاً و211 مجلداً. منها 916 ملفاً تحت `experiments/**`. يحتوي `.github/workflows/` على 21 ملف YAML وملف نصي واحد `b71-trigger-once.txt`؛ الملف النصي ليس Workflow.
+بعد دمج PR #28، تحتوي شجرة `main-phase2` على 1,633 مدخلاً: 1,408 ملفات و225 مجلداً. منها 916 ملفاً تحت `experiments/**`. يحتوي `.github/workflows/` على 27 ملف YAML وملف نصي واحد `b71-trigger-once.txt`؛ الملف النصي ليس Workflow. الرقم السابق 21 YAML كان لقطة ما قبل دمج Discovery.
 
 لا يحتوي `main-phase2` على Workflows لـnpm build أو TypeScript lint أو Python package test عام. تشغيلات Python الحالية إما مرتبطة بفرع Phase 2 المحدد، أو بفروع التجارب التاريخية، أو بأدوات الجرد المتخصصة.
 
@@ -37,51 +37,61 @@
 
 ### 2.3 القائمة الكاملة لملفات YAML على main-phase2
 
-1. `b71-isolated-markov-router.yml`
-2. `erp-reconcile-tests.yml`
-3. `experiments-immutable.yml`
-4. `p-engine-asymmetry-guard-cusum-confirmation.yml`
-5. `p-engine-asymmetry-guard-cusum.yml`
-6. `p-engine-eia-replay.yml`
-7. `p-engine-mcusum-candidate.yml`
-8. `p-engine-parallel-fusion.yml`
-9. `p-engine-robust-cusum-calibration.yml`
-10. `p-engine-robust-cusum-holdout.yml`
-11. `p-engine-robustness-holdout.yml`
-12. `phase1-detector-real-data.yml`
-13. `real-data-stress.yml`
-14. `sequential-break-engine-audit.yml`
-15. `sequential-break-engine-b3-2-minimal-retest.yml`
-16. `sequential-break-engine-b4.yml`
-17. `sequential-break-engine-b5.yml`
-18. `sequential-break-engine-b6.yml`
-19. `sequential-break-engine-b61.yml`
-20. `sequential-break-engine-b7.yml`
-21. `sequential-break-engine.yml`
+1. `behavioral-discovery-v1.yml`
+2. `b71-isolated-markov-router.yml`
+3. `chaos-governance-artifacts.yml`
+4. `discovery-domain-state-integrity.yml`
+5. `erp-reconcile-tests.yml`
+6. `experiments-immutable.yml`
+7. `observation-foundation-contract.yml`
+8. `p-engine-asymmetry-guard-cusum-confirmation.yml`
+9. `p-engine-asymmetry-guard-cusum.yml`
+10. `p-engine-eia-replay.yml`
+11. `p-engine-mcusum-candidate.yml`
+12. `p-engine-parallel-fusion.yml`
+13. `p-engine-robust-cusum-calibration.yml`
+14. `p-engine-robust-cusum-holdout.yml`
+15. `p-engine-robustness-holdout.yml`
+16. `phase1-detector-real-data.yml`
+17. `real-data-stress.yml`
+18. `sequential-break-engine-audit.yml`
+19. `sequential-break-engine-b3-2-minimal-retest.yml`
+20. `sequential-break-engine-b4.yml`
+21. `sequential-break-engine-b5.yml`
+22. `sequential-break-engine-b6.yml`
+23. `sequential-break-engine-b61.yml`
+24. `sequential-break-engine-b7.yml`
+25. `sequential-break-engine.yml`
+26. `wdi-trade-domainstate-build.yml`
+27. `weo-vintage-source-audit-v1.yml`
 
-## 3. Workflows المضافة في فرع Discovery المرشح — ليست على main-phase2 بعد
+## 3. Workflows التي أضافها Discovery V1 وأصبحت الآن على main-phase2
 
 | Workflow | Trigger | ما ينفذه | الكتابة/الأثر |
 |---|---|---|---|
-| `behavioral-discovery-v1.yml` | Push على `discovery/**` مع تغير ملفات Discovery/العقود/مصدر Macro+EIA؛ و`workflow_dispatch`؛ لا يوجد `pull_request` trigger | py_compile، اختبارات discovery، بناء profiles/candidates، Conditional Calendar Null، تحقق hashes/manifest وشروط no-causal/no-forecast | `contents: write`؛ يضيف/يدفع مخرجات `discovery/behavioral_v1/` إلى فرع Discovery ثم يرفع artifact |
-| `wdi-trade-domainstate-build.yml` | Push على الفرع المحدد حرفياً `discovery/d1-domainstate-integrity-v1` مع تغير adapter/inputs/tests؛ و`workflow_dispatch`؛ لا يوجد PR trigger | اختبار WDI adapter، بناء DomainStates السنوية، ثم فحص سجل DomainState بأكمله | `contents: write`؛ يكتب `WDI_TRADE_DOMAIN_STATES_ANNUAL_V1.jsonl` وملف run summary ويعمل commit/push إلى نفس الفرع ثم يرفع artifact |
-| `weo-vintage-source-audit-v1.yml` | Push على `discovery/**` مع تغير وحدات/عقد WEO؛ و`workflow_dispatch`؛ لا يوجد PR trigger | تثبيت `huggingface_hub` و`pyarrow`، اختبارات WEO، تنزيل mirror/نسخ تاريخية، مقارنة vintage والتحقق من hashes وتصنيف actual/estimate | `contents: write`؛ يحفظ مخرجات مشتقة في `discovery/source_vintage_v1/`، ويرفع الملفات الخام/الدليل كـartifact |
+| `behavioral-discovery-v1.yml` | Push على `discovery/**` و`workflow_dispatch`؛ وPR إلى `main-phase2` | Push/manual: py_compile، tests، build profiles/candidates، Conditional Calendar Null، manifest/hash validation ثم commit/push إلى فرع العمل. PR: `validate-pr` read-only يعيد البناء والتحقق ويقارن المخرجات الحتمية | writer له `contents: write` على فرع العمل فقط؛ PR validator يملك `contents: read`. لا يكتب إلى `main-phase2` |
+| `wdi-trade-domainstate-build.yml` | Push على الفرع المحدد `discovery/d1-domainstate-integrity-v1` و`workflow_dispatch`؛ وPR إلى `main-phase2` | Push/manual: اختبار adapter، بناء DomainStates، فحص registry ثم commit/push إلى فرع العمل. PR: `validate-pr` read-only يعيد البناء، يتحقق من registry، ويفحص تطابق المخرجات | writer له `contents: write` على فرع العمل فقط؛ PR validator `contents: read`. لا يكتب إلى `main-phase2` |
+| `weo-vintage-source-audit-v1.yml` | Push على `discovery/**` و`workflow_dispatch`؛ وPR إلى `main-phase2` | Push/manual: اختبار WEO، تنزيل النسخ/المصادر المثبتة، مقارنة vintage، وحفظ outputs ثم commit/push لفرع العمل. PR: `validate-pr` read-only يعيد البناء ويتحقق من hashes وتصنيف actual/estimate | writer له `contents: write` على فرع العمل فقط؛ PR validator `contents: read`. لا يكتب إلى `main-phase2` |
 | `observation-foundation-contract.yml` | Pull Request إلى `main-phase2` عند تغيّر Foundation/tests/kernel/contract؛ Push على `main-phase2` وفروع Discovery/فرع GEM | Compile لـidentity/lifecycle/kernel؛ فحص JSON contracts؛ اختبارات deterministic identity/lifecycle | `contents: read`، لا commit ولا write |
 | `discovery-domain-state-integrity.yml` | Pull Request إلى `main-phase2` عند تغيّر DomainState registry/campaigns/tests؛ Push على فرع Discovery؛ و`workflow_dispatch` | اختبارات validator ثم قراءة وفحص جميع DomainState assets المسجلة | `contents: read`، يرفع تقرير integrity؛ لا يعدل الأصول |
 | `chaos-governance-artifacts.yml` | Pull Request وPush إلى `main-phase2` عند تغيّر governance scripts/kernel/plan؛ و`workflow_dispatch` | بناء D0 inventory عبر kernel، التحقق من manifest، ثم رفع الحزمة | `contents: read`، artifact فقط |
 
-### 3.1 فجوة التحقق الدقيق لفرع Discovery
+### 3.1 التحقق الدقيق قبل دمج PR #28 (تم)
 
-PR #28 على الرأس `1c0ea804b4a3112ee553ee2e63b7a4a15fab50a6` لديه أربعة PR-triggered checks ناجحة:
+PR #28 (المدمج الآن عند `e0c13b41ef1bbbdfe46f1dc266a007eb2dedd8d7`) انتهى على الرأس النهائي `f0627eac6fd39a4d26fe128820cf05c58293054d` بكل 11 check-runs:
 
-| التشغيل | الحالة |
+| الفحص | الحالة |
 |---|---|
-| Governed Artifacts — 44950054404 | success |
-| Observation Foundation Contract — 44950054352 | success |
-| DomainState Integrity — 44950054328 | success |
-| experiments-immutable — 44950054370 | success |
+| stress | success (PR contract tests only; no long P2.2 run) |
+| experiments-immutable | success |
+| DomainState Integrity | success as audit execution; asset readiness remains BLOCKED |
+| Observation Foundation Contract | success |
+| Source Record Identity V1 | success |
+| D0 Baseline Artifact Validation | success |
+| Behavioral / WDI / WEO `validate-pr` | success (read-only rebuild and validation) |
+| Three materialization writer jobs | skipped intentionally on PR events |
 
-لكن هذه checks لا تعوض تشغيل وحدات توليد النتائج الثلاثة على SHA الحالي. آخر التشغيلات الناجحة المتاحة لهذه الوحدات كانت على رؤوس أقدم:
+تشغيلات materialization على Push كانت على SHA أقدم من PR merge head، لكن وحدات `validate-pr` أعادت بناء النتائج والتحقق منها read-only على رأس PR النهائي. التشغيلات السابقة التالية تبقى مرجع lineage فقط:
 
 | Workflow | آخر run متحقق | SHA الذي اختُبر فعلاً | علاقته بالرأس الحالي |
 |---|---:|---|---|
@@ -90,15 +100,14 @@ PR #28 على الرأس `1c0ea804b4a3112ee553ee2e63b7a4a15fab50a6` لديه أ�
 | Conditional Calendar Null | 44945139684 | `02fb97e2bbd601219c3547dc2df186da495620c3` | أقدم |
 | WEO Source Vintage Audit | 44947329602 | `cbbefa3d25bc109957cfff8f1856f7f6552311bc` | أقدم؛ تغيرت وحدة/ملفات workflow بعده |
 
-لذلك لا تُوصف هذه التشغيلات بأنها تحققت من كامل رأس PR #28. كما أن Workflows الثلاثة الأولى لا تتضمن `pull_request` trigger؛ يجب معالجة ذلك في خطة التكامل قبل إخراج PR من حالة Draft.
+كانت هذه التشغيلات السابقة على رؤوس أقدم؛ استبدلتها الآن بوحدات تحقق read-only على PR قبل الدمج. مهام materialization والكتابة بقيت Push/Manual فقط.
 
 ## 4. الحماية والصلاحيات
 
 - `main-phase2` محمي على GitHub (branch metadata: `protected=true`).
-- `experiments-immutable.yml` هو فحص immutability الوحيد في قائمة Workflows الرئيسية، وهو يفحص `experiments/**` وحده.
+- `experiments-immutable.yml` هو فحص immutability المشترك؛ يتحقق من `experiments/**` و`structural_engine/isolated_break_detector_v1/**` في PRs إلى `main-phase2` وعند تغييرات المسارات المحمية.
 - `AGENTS.md` يمنع تعديل كل من `experiments/**` والكاشف المجمد `structural_engine/isolated_break_detector_v1/**`.
-- `.github/CODEOWNERS` يوجّه المراجعة للمالك، لكنه لا يفرض بنفسه موافقة أو يمنع الدمج.
-- لا يوجد في القائمة فحص CI مكافئ يمنع تعديل مسار الكاشف المجمد.
+- `.github/CODEOWNERS` يوجّه المراجعة للمالك، بينما الحارس الآلي يفرض رفض أي diff يمس المسارين.
 - ثلاثة Workflows Discovery التي تنتج ملفات مشتقة لها `contents: write`؛ يجب أن تبقى عملياتها على فرع Discovery، لا على فرع محمي أثناء PR validation.
 - لا يوجد في Workflows الحالية فحص آلي لـ`npm run build` أو `npm run lint`.
 
@@ -112,4 +121,4 @@ PR #28 على الرأس `1c0ea804b4a3112ee553ee2e63b7a4a15fab50a6` لديه أ�
 
 ## 6. حدود هذا الجرد
 
-تمت قراءة ملفات YAML الـ21 في `main-phase2` وملفات Discovery الستة، وربط أوامرها بالـentrypoints والأصول المعروفة. لم يُفحص محتوى كل GitHub Actions artifact خاماً واحداً واحداً، ولم يُنفذ local checkout أو تشغيل محلي من هذه الجلسة. أي اعتماد غير مذكور هنا يظل بحاجة إلى فحص إضافي، ولا تُزال الملفات أو الفروع اعتماداً على هذا الجرد وحده.
+تمت قراءة ملفات YAML الـ27 الحالية على `main-phase2` (بما فيها Workflows Discovery الستة بعد الدمج)، وربط أوامرها بالـentrypoints والأصول المعروفة. لم يُفحص محتوى كل GitHub Actions artifact خاماً واحداً واحداً، ولم يُنفذ local checkout أو تشغيل محلي من هذه الجلسة. أي اعتماد غير مذكور هنا يظل بحاجة إلى فحص إضافي، ولا تُزال الملفات أو الفروع اعتماداً على هذا الجرد وحده.
