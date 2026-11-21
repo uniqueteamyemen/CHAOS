@@ -109,7 +109,7 @@
     }
   ],
   "forecasting_performed": false,
-  "generated_at_utc": "2026-11-21T21:33:44Z",
+  "generated_at_utc": "2026-11-21T21:35:10Z",
   "limits": [
     "Only ISO-3 exact matching is used; no fuzzy country-name matching.",
     "The staged April-2026 panel has no source-vintage actual/estimate metadata; its event status is UNKNOWN.",
