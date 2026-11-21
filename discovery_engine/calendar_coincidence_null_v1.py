@@ -227,9 +227,6 @@ def run_conditional_calendar_null(
         key for key, count in observed_counts.items()
         if count >= minimum_support
     ]
-    if not observed_groups:
-        raise CalendarNullError("no_candidate_group_meets_minimum_entity_support")
-
     rng = random.Random(seed)
     unadjusted_ge: Counter[tuple[str, ...]] = Counter()
     max_adjusted_ge: Counter[tuple[str, ...]] = Counter()
@@ -333,11 +330,19 @@ def write_calendar_null_artifacts(
 
     contract = json.loads(contract_path.read_text(encoding="utf-8"))
     result = run_conditional_calendar_null(candidates=candidates, contract=contract)
+    module_path = Path(__file__).resolve()
+    runner_path = repository_root / "scripts" / "discovery" / "run_calendar_coincidence_null_v1.py"
     result["input"] = {
         "candidate_file": candidates_path.resolve().relative_to(repository_root.resolve()).as_posix(),
         "candidate_sha256": sha256_file(candidates_path),
         "contract_file": contract_path.resolve().relative_to(repository_root.resolve()).as_posix(),
         "contract_sha256": sha256_file(contract_path),
+    }
+    result["code"] = {
+        "module_path": module_path.relative_to(repository_root.resolve()).as_posix(),
+        "module_sha256": sha256_file(module_path),
+        "runner_path": runner_path.relative_to(repository_root.resolve()).as_posix(),
+        "runner_sha256": sha256_file(runner_path),
     }
 
     output_dir.mkdir(parents=True, exist_ok=True)
@@ -359,6 +364,11 @@ def write_calendar_null_artifacts(
     manifest_path = output_dir / "BEHAVIORAL_DISCOVERY_MANIFEST_V1.json"
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
     existing_paths = {item["path"] for item in manifest["artifacts"]}
+    manifest.setdefault("code", {})["calendar_null_module_path"] = result["code"]["module_path"]
+    manifest["code"]["calendar_null_module_sha256"] = result["code"]["module_sha256"]
+    manifest["code"]["calendar_null_runner_path"] = result["code"]["runner_path"]
+    manifest["code"]["calendar_null_runner_sha256"] = result["code"]["runner_sha256"]
+    manifest.setdefault("inputs", {})["conditional_calendar_null_contract_sha256"] = result["input"]["contract_sha256"]
     for path, role in (
         (summary_path, "conditional_calendar_null_summary_v1"),
         (groups_path, "conditional_calendar_null_groups_v1"),
