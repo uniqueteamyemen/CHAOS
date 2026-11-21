@@ -113,7 +113,7 @@ def load_hf_mirror_vintages(
     raw_dir.mkdir(parents=True, exist_ok=True)
     api = HfApi()
     try:
-        info = api.dataset_info(repo_id, repo_type="dataset", files_metadata=True)
+        info = api.dataset_info(repo_id, files_metadata=True)
     except Exception as exc:
         raise WeoMirrorError(f"mirror_dataset_info_failed:{repo_id}:{exc}") from exc
 
