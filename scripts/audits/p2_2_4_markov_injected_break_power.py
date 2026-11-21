@@ -38,7 +38,11 @@ from structural_engine.isolated_break_detector_v1 import (
 
 BLOCK_MONTHS = 12
 QUIET_END = 40
-SCENARIOS = ("mean_shift_2_5_initial_MAD", "volatility_jump_2x")
+SCENARIOS = (
+    "mean_shift_2_5_initial_MAD",
+    "mean_shift_negative_2_5_initial_MAD",
+    "volatility_jump_2x",
+)
 
 
 def stable_seed(series_id: str, sample_length: int, replicate_id: int) -> int:
@@ -75,6 +79,10 @@ def inject_scenario(
         effect = 2.5 * scale
         changed[break_index:] += effect
         parameter = "additive_shift_2.5_x_initial_robust_sigma"
+    elif scenario == "mean_shift_negative_2_5_initial_MAD":
+        effect = -2.5 * scale
+        changed[break_index:] += effect
+        parameter = "negative_additive_shift_2.5_x_initial_robust_sigma"
     elif scenario == "volatility_jump_2x":
         multiplier = 2.0
         changed[break_index:] = (
@@ -470,7 +478,8 @@ def run_audit(
             "break_position_fraction": 0.70,
             "break_index": "floor(0.70*n), bounded below by 52",
             "scenarios": {
-                "mean_shift_2_5_initial_MAD": "Add 2.5 times initial quiet robust sigma from the break onward",
+                "mean_shift_2_5_initial_MAD": "Add positive 2.5 times initial quiet robust sigma from the break onward",
+                "mean_shift_negative_2_5_initial_MAD": "Add negative 2.5 times initial quiet robust sigma from the break onward",
                 "volatility_jump_2x": "Multiply post-break deviations from the initial quiet median by 2.0",
             },
             "comparison": ["raw", "rolling_mad_scale_only"],
