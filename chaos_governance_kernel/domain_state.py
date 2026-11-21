@@ -31,6 +31,8 @@ def validate_domain_state(
     record: Mapping[str, Any],
     required_fields: Iterable[str],
     expected_frequency: str | None = None,
+    allowed_domains: Iterable[str] | None = None,
+    allowed_frequencies: Iterable[str] | None = None,
 ) -> list[str]:
     """Return deterministic validation errors without mutating the source record."""
     errors: list[str] = []
@@ -47,7 +49,8 @@ def validate_domain_state(
             errors.append(f"{field}_must_be_nonempty_string")
 
     domain = record.get("domain")
-    if isinstance(domain, str) and domain not in ALLOWED_DOMAINS:
+    domain_values = set(allowed_domains) if allowed_domains is not None else ALLOWED_DOMAINS
+    if isinstance(domain, str) and domain not in domain_values:
         errors.append("domain_value_invalid")
 
     timestamp = record.get("timestamp")
@@ -57,7 +60,8 @@ def validate_domain_state(
         errors.append("timestamp_must_not_be_empty")
 
     frequency = record.get("native_frequency")
-    if not isinstance(frequency, str) or frequency not in ALLOWED_FREQUENCIES:
+    frequency_values = set(allowed_frequencies) if allowed_frequencies is not None else ALLOWED_FREQUENCIES
+    if not isinstance(frequency, str) or frequency not in frequency_values:
         errors.append("native_frequency_invalid")
     elif expected_frequency is not None and frequency != expected_frequency:
         errors.append(f"native_frequency_mismatch:expected={expected_frequency}:actual={frequency}")
@@ -109,6 +113,8 @@ def audit_domain_state_file(
     required_fields: Iterable[str],
     expected_frequency: str | None = None,
     max_errors: int = 100,
+    allowed_domains: Iterable[str] | None = None,
+    allowed_frequencies: Iterable[str] | None = None,
 ) -> dict[str, Any]:
     path = root / relative_path
     base: dict[str, Any] = {
@@ -150,7 +156,11 @@ def audit_domain_state_file(
                         errors.append({"line": line_number, "error": f"invalid_json:{exc.msg}"})
                     continue
 
-                problems = validate_domain_state(record, required_fields, expected_frequency)
+                problems = validate_domain_state(
+                    record, required_fields, expected_frequency,
+                    allowed_domains=allowed_domains,
+                    allowed_frequencies=allowed_frequencies,
+                )
                 if problems:
                     invalid += 1
                     if len(errors) < max_errors:
@@ -190,10 +200,18 @@ def build_domain_state_integrity_report(
     root: Path,
     registry_path: Path,
     output_path: Path,
+    schema_path: Path | None = None,
 ) -> dict[str, Any]:
     registry = json.loads(registry_path.read_text(encoding="utf-8"))
-    required_fields = registry.get("required_fields")
+    schema_path = schema_path or (root / "experimental_contracts" / "DOMAIN_STATE_SCHEMA_V2.json")
+    schema = json.loads(schema_path.read_text(encoding="utf-8")) if schema_path.is_file() else {}
+    required_fields = schema.get("required_fields") or registry.get("required_fields")
+    registry_required_fields = registry.get("required_fields")
     files = registry.get("files")
+    if schema and set(required_fields) != set(registry_required_fields or []):
+        raise ValueError("registry_schema_required_fields_mismatch")
+    allowed_domains = schema.get("domain_values") or ALLOWED_DOMAINS
+    allowed_frequencies = schema.get("native_frequency_values") or ALLOWED_FREQUENCIES
     if not isinstance(required_fields, list) or not required_fields:
         raise ValueError("registry_required_fields_missing")
     if not isinstance(files, list) or not files:
@@ -205,6 +223,8 @@ def build_domain_state_integrity_report(
             relative_path=item["path"],
             required_fields=required_fields,
             expected_frequency=item.get("native_frequency"),
+            allowed_domains=allowed_domains,
+            allowed_frequencies=allowed_frequencies,
         )
         for item in files
     ]
@@ -227,6 +247,9 @@ def build_domain_state_integrity_report(
         "generated_at": utc_now(),
         "repository": "uniqueteamyemen/CHAOS",
         "registry_source": registry_path.relative_to(root).as_posix(),
+        "schema_source": schema_path.relative_to(root).as_posix() if schema_path.is_file() else None,
+        "schema_id": schema.get("schema_id"),
+        "schema_version": schema.get("version"),
         "required_fields": required_fields,
         "read_only": True,
         "no_source_mutations": True,
