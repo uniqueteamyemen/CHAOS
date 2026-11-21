@@ -42,7 +42,7 @@ def changed_paths(base: str, head: str, triple_dot: bool) -> list[tuple[str, lis
 
     parsed: list[tuple[str, list[str]]] = []
     for line in completed.stdout.splitlines():
-        fields = line.split("\\t")
+        fields = line.split("\t")
         if not fields:
             continue
         status = fields[0]
@@ -76,7 +76,7 @@ def main() -> int:
             file=sys.stderr,
         )
         for status, paths in touched:
-            print(f"{status}\\t" + "\\t".join(paths), file=sys.stderr)
+            print(f"{status}\t" + "\t".join(paths), file=sys.stderr)
         return 1
 
     print("PASS: no changed path touches either frozen CHAOS archive.")
