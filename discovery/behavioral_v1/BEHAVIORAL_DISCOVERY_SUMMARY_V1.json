@@ -65,7 +65,7 @@
   },
   "code_sha256": "52aad8d8863b85032f96969440bb40d280787501aa3caa535c9de27f1a50a488",
   "contract_id": "CHAOS_BEHAVIORAL_DISCOVERY_V1",
-  "generated_at_utc": "2026-11-21T20:23:03Z",
+  "generated_at_utc": "2026-11-21T20:23:41Z",
   "inference": {
     "candidate_status": "DISCOVERY_CANDIDATE_UNVALIDATED",
     "causal_claims_permitted": false,
@@ -129,7 +129,7 @@
   "runner_sha256": "b794d6f6a889170403d329ca36292727d391d61c600ac57b0b780c315883c9af",
   "series_profile_count": 1529,
   "shared_year_pattern_count": 45,
-  "source_commit": "1b0395438c629c1127dba3fe5d0a5a5290591246",
+  "source_commit": "8d093e62241a170e3aa5e1600f1eaa1016def3df",
   "source_observation_identity": {
     "available_at_known": 0,
     "available_at_unknown": 38225,

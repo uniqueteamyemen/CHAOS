@@ -22,7 +22,7 @@
       "bytes": 3957,
       "path": "discovery/behavioral_v1/BEHAVIORAL_DISCOVERY_SUMMARY_V1.json",
       "role": "behavioral_discovery_summary_v1",
-      "sha256": "1032c228f0de0d3a90aa77050ddfc226e157072c9e54a563f097654cba510f10"
+      "sha256": "6ef44a725ff7875d62f40cf9e43b93e213404b7ad4918d576dad380334d0c7b9"
     },
     {
       "bytes": 31633,
@@ -53,12 +53,12 @@
     "status": "CANDIDATES_REQUIRE_SOURCE_SPECIFIC_NULL_AND_INDEPENDENT_REVIEW",
     "summary": "Descriptive candidate generation only; no inferential admission or forecast."
   },
-  "generated_at_utc": "2026-11-21T20:23:03Z",
+  "generated_at_utc": "2026-11-21T20:23:41Z",
   "inputs": {
     "conditional_calendar_null_contract_sha256": "3b40fb6265de03132261b76da5a25877ab8ccedb8f8f5dab03578e238c5946c0",
     "contract_sha256": "0c44ff9066208378ae0a3d4bc955324d6c738a46938721c1abdaca6c546f3496",
     "panel_sha256": "015736245ac4010aa1c97055930c69ca3c7da5fdd5970f5da34456b67a3172ad",
     "provenance_sha256": "6bf07de9bca0ef23e7e0069e46c3949f714f205424db50d33471f6bf57f04965"
   },
-  "source_commit": "1b0395438c629c1127dba3fe5d0a5a5290591246"
+  "source_commit": "8d093e62241a170e3aa5e1600f1eaa1016def3df"
 }
