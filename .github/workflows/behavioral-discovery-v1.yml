@@ -9,6 +9,7 @@ on:
       - 'scripts/discovery/**'
       - 'tests/discovery/**'
       - 'experimental_contracts/BEHAVIORAL_DISCOVERY_CONTRACT_V1.json'
+      - 'experimental_contracts/CONDITIONAL_CALENDAR_COINCIDENCE_NULL_V1.json'
       - 'catalog_first/readiness_gate/macro_plus_eia_energy/MACRO_PLUS_EIA_ENERGY_COMPLETE_139_NUMERIC_RAW_2000_2024_WIDE.csv'
       - 'catalog_first/readiness_gate/macro_plus_eia_energy/SELECTED_VARIABLE_PROVENANCE.csv'
       - 'catalog_first/readiness_gate/macro_plus_eia_energy/NUMERIC_COMPLETE_MATRIX_V1_1_SUMMARY.json'
@@ -40,12 +41,15 @@ jobs:
           python-version: '3.11'
       - name: Compile discovery module and validate contract
         run: |
-          python -m py_compile discovery_engine/behavioral_discovery_v1.py scripts/discovery/run_behavioral_discovery_v1.py
+          python -m py_compile discovery_engine/behavioral_discovery_v1.py discovery_engine/calendar_coincidence_null_v1.py scripts/discovery/run_behavioral_discovery_v1.py scripts/discovery/run_calendar_coincidence_null_v1.py
           python -m json.tool experimental_contracts/BEHAVIORAL_DISCOVERY_CONTRACT_V1.json
+          python -m json.tool experimental_contracts/CONDITIONAL_CALENDAR_COINCIDENCE_NULL_V1.json
       - name: Run behavioral discovery unit tests
         run: python -m unittest discover -s tests/discovery -v
       - name: Build behavioural profiles and unvalidated candidates from the complete macro-energy panel
         run: python scripts/discovery/run_behavioral_discovery_v1.py
+      - name: Run conditional calendar-coincidence null
+        run: python scripts/discovery/run_calendar_coincidence_null_v1.py
       - name: Validate discovery artifacts
         run: |
           python - <<'PY'
@@ -63,7 +67,14 @@ jobs:
           assert summary["status"] == "CANDIDATE_GENERATION_ONLY"
           assert summary["inference"]["causal_claims_permitted"] is False
           assert summary["inference"]["forecasting_performed"] is False
+          null_summary = json.loads(Path("discovery/behavioral_v1/CONDITIONAL_CALENDAR_NULL_V1.json").read_text())
+          assert null_summary["null_is_detector_fpr"] is False
+          assert null_summary["causal_claims_permitted"] is False
+          assert null_summary["forecasting_performed"] is False
           print(json.dumps({
+              "conditional_calendar_global_p": null_summary["global_max_conditional_p"],
+              "observed_global_max_support": null_summary["observed_global_max_support"],
+              "null_q95_max_support": null_summary["null_global_max_q95"],
               "series": summary["series_profile_count"],
               "candidates": summary["candidate_count"],
               "shared_year_patterns": summary["shared_year_pattern_count"],
