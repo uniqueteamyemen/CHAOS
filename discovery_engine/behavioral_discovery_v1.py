@@ -654,6 +654,7 @@ def run_behavioral_discovery(
         raise BehavioralDiscoveryError("duplicate_logical_source_observation_identity")
     if len(set(canonical_ids)) != len(canonical_ids):
         raise BehavioralDiscoveryError("duplicate_canonical_source_observation_identity")
+    candidate_counts = Counter(item["candidate_type"] for item in candidates)
     candidate_year_counts: dict[str, dict[str, int]] = defaultdict(lambda: defaultdict(int))
     boundary_sensitive_count = 0
     for item in candidates:
