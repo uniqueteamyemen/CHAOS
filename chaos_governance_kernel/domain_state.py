@@ -15,7 +15,7 @@ ALLOWED_EDGE_STATUSES = {
 }
 ALLOWED_DOMAINS = {
     "economic", "conflict", "energy", "trade", "environmental", "health",
-    "institutional", "demographic", "other"
+    "institutions_policy", "institutional", "demographic", "other"
 }
 ALLOWED_FREQUENCIES = {
     "annual", "annual_source_defined_years", "monthly", "quarterly",
