@@ -71,12 +71,12 @@ class DomainStateIntegrityTests(unittest.TestCase):
         self.assertTrue(any(item.startswith("required_fields_missing") for item in errors))
         self.assertIn("source_observations_must_be_object", errors)
 
-    def test_identity_ignores_observed_value_but_keys_the_state_slot(self):
+    def test_coarse_identity_key_ignores_observed_value_but_is_not_a_record_identity(self):
         first = state()
         revised = state(source_observations={"primaryValue_raw": 999.0})
         self.assertEqual(domain_state_identity(first), domain_state_identity(revised))
 
-    def test_file_audit_reports_duplicate_slots_without_deduplicating(self):
+    def test_file_audit_reports_coarse_collisions_without_deduplicating(self):
         with TemporaryDirectory() as directory:
             root = Path(directory)
             path = root / "states.jsonl"
@@ -87,10 +87,33 @@ class DomainStateIntegrityTests(unittest.TestCase):
             report = audit_domain_state_file(root, "states.jsonl", REQUIRED, "annual")
         self.assertEqual(report["records"], 2)
         self.assertEqual(report["valid_records"], 2)
-        self.assertEqual(report["duplicate_state_slots"], 1)
+        self.assertEqual(report["coarse_identity_collisions"], 1)
         self.assertEqual(report["status"], "pass")
 
-    def test_registry_reports_missing_files_as_blocked_not_pass(self):
+
+    def test_multidimensional_source_records_share_coarse_bucket_without_being_deduplicated(self):
+        with TemporaryDirectory() as directory:
+            root = Path(directory)
+            path = root / "states.jsonl"
+            first = state(source_observations={
+                "counterpart_country": "ABW", "indicator": "XG_FOB_USD",
+                "trade_flow": "XG", "valuation": "FOB",
+            })
+            second = state(source_observations={
+                "counterpart_country": "USA", "indicator": "MG_CIF_USD",
+                "trade_flow": "MG", "valuation": "CIF",
+            })
+            path.write_text(
+                json.dumps(first) + "\\n" + json.dumps(second) + "\\n",
+                encoding="utf-8",
+            )
+            report = audit_domain_state_file(root, "states.jsonl", REQUIRED, "annual")
+        self.assertEqual(report["records"], 2)
+        self.assertEqual(report["valid_records"], 2)
+        self.assertEqual(report["coarse_identity_collisions"], 1)
+        self.assertNotIn("duplicate_state_slots", report)
+        self.assertEqual(report["status"], "pass")
+\n    def test_registry_reports_missing_files_as_blocked_not_pass(self):
         with TemporaryDirectory() as directory:
             root = Path(directory)
             registry_path = root / "registry.json"
