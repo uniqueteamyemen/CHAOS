@@ -1,6 +1,9 @@
 name: CHAOS — WDI Trade DomainState Build
 
 on:
+  pull_request:
+    branches:
+      - main-phase2
   push:
     branches:
       - discovery/d1-domainstate-integrity-v1
@@ -18,6 +21,7 @@ permissions:
 
 jobs:
   build-wdi-trade-domain-states:
+    if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -58,3 +62,30 @@ jobs:
             governance/artifacts/DOMAIN_STATE_INTEGRITY_REPORT_V2.json
           if-no-files-found: error
           retention-days: 90
+
+  validate-pr:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout pull request merge candidate
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Run WDI adapter unit tests
+        run: python -m unittest discover -s tests/adapters -p 'test_wdi_trade_domain_states.py' -v
+      - name: Rebuild annual WDI DomainStates on the PR candidate
+        run: python scripts/adapters/build_wdi_trade_domain_states.py
+      - name: Validate all registered DomainState assets
+        run: python scripts/governance/validate_domain_state_registry.py
+      - name: Ensure committed WDI artifacts reproduce byte-for-byte
+        run: |
+          git diff --exit-code -- \
+            campaigns/agents/trade_v1/WDI_TRADE_DOMAIN_STATES_ANNUAL_V1.jsonl \
+            campaigns/agents/trade_v1/WDI_TRADE_DOMAIN_ADAPTER_RUN_V2.json
