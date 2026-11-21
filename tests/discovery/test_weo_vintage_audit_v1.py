@@ -9,18 +9,29 @@ from discovery_engine.weo_vintage_audit_v1 import (
 )
 
 
+HEADER = [
+    "Country", "WEO Country Code", "ISO", "WEO Subject Code",
+    "Subject Descriptor", "2016", "2017", "2018", "2019", "2020",
+    "Estimates Start After",
+]
+
+
 class WeoVintageAuditTests(unittest.TestCase):
+    def write_tsv(self, path, rows, preamble=True):
+        lines = []
+        if preamble:
+            lines.extend(["World Economic Outlook Database", "Release: test"])
+        lines.append("\t".join(HEADER))
+        lines.extend("\t".join(row) for row in rows)
+        path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+
     def test_parse_tab_delimited_weo_with_preamble(self):
         with tempfile.TemporaryDirectory() as tmp:
             path = Path(tmp) / "weo.xls"
-            path.write_text(
-                "World Economic Outlook Database\\n"
-                "Release: test\\n"
-                "Country\\tWEO Country Code\\tISO\\tWEO Subject Code\\tSubject Descriptor\\t2016\\t2017\\t2018\\t2019\\t2020\\tEstimates Start After\\n"
-                "Testland\\t999\\tTST\\tNGDP_RPCH\\tGDP growth\\t2.0\\t3.0\\t2.0\\t1.0\\t-4.0\\t2019\\n"
-                "Testland\\t999\\tTST\\tPCPI\\tInflation\\t2.0\\t3.0\\t2.0\\t1.0\\t0.0\\t2019\\n",
-                encoding="utf-8",
-            )
+            self.write_tsv(path, [
+                ["Testland", "999", "TST", "NGDP_RPCH", "GDP growth", "2.0", "3.0", "2.0", "1.0", "-4.0", "2019"],
+                ["Testland", "999", "TST", "PCPI", "Inflation", "2.0", "3.0", "2.0", "1.0", "0.0", "2019"],
+            ])
             result = read_weo_country_file(path)
         self.assertEqual(set(result), {"TST"})
         self.assertEqual(result["TST"]["values"]["2020"], -4.0)
@@ -29,12 +40,8 @@ class WeoVintageAuditTests(unittest.TestCase):
     def test_duplicate_iso_subject_row_fails_closed(self):
         with tempfile.TemporaryDirectory() as tmp:
             path = Path(tmp) / "weo.xls"
-            row = "Testland\\t999\\tTST\\tNGDP_RPCH\\tGDP growth\\t2\\t3\\t2\\t1\\t-4\\t2019\\n"
-            path.write_text(
-                "Country\\tWEO Country Code\\tISO\\tWEO Subject Code\\tSubject Descriptor\\t2016\\t2017\\t2018\\t2019\\t2020\\tEstimates Start After\\n"
-                + row + row,
-                encoding="utf-8",
-            )
+            row = ["Testland", "999", "TST", "NGDP_RPCH", "GDP growth", "2", "3", "2", "1", "-4", "2019"]
+            self.write_tsv(path, [row, row], preamble=False)
             with self.assertRaisesRegex(VintageAuditError, "duplicate_weo"):
                 read_weo_country_file(path)
 
@@ -48,11 +55,9 @@ class WeoVintageAuditTests(unittest.TestCase):
     def test_missing_vintage_year_values_are_not_silently_filled(self):
         with tempfile.TemporaryDirectory() as tmp:
             path = Path(tmp) / "weo.xls"
-            path.write_text(
-                "Country\\tWEO Country Code\\tISO\\tWEO Subject Code\\tSubject Descriptor\\t2016\\t2017\\t2018\\t2019\\t2020\\tEstimates Start After\\n"
-                "Testland\\t999\\tTST\\tNGDP_RPCH\\tGDP growth\\t2\\t3\\t2\\t1\\t\\t2019\\n",
-                encoding="utf-8",
-            )
+            self.write_tsv(path, [
+                ["Testland", "999", "TST", "NGDP_RPCH", "GDP growth", "2", "3", "2", "1", "", "2019"]
+            ], preamble=False)
             result = read_weo_country_file(path)
         self.assertIsNone(result["TST"]["values"]["2020"])
 
