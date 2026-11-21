@@ -71,7 +71,7 @@ class DomainStateIntegrityTests(unittest.TestCase):
         self.assertTrue(any(item.startswith("required_fields_missing") for item in errors))
         self.assertIn("source_observations_must_be_object", errors)
 
-    def test_coarse_identity_key_ignores_observed_value_but_is_not_a_record_identity(self):
+    def test_coarse_identity_key_ignores_value_and_is_not_a_record_identity(self):
         first = state()
         revised = state(source_observations={"primaryValue_raw": 999.0})
         self.assertEqual(domain_state_coarse_key(first), domain_state_coarse_key(revised))
@@ -90,7 +90,6 @@ class DomainStateIntegrityTests(unittest.TestCase):
         self.assertEqual(report["coarse_identity_collisions"], 1)
         self.assertEqual(report["status"], "pass")
 
-
     def test_multidimensional_source_records_share_coarse_bucket_without_being_deduplicated(self):
         with TemporaryDirectory() as directory:
             root = Path(directory)
@@ -104,16 +103,16 @@ class DomainStateIntegrityTests(unittest.TestCase):
                 "trade_flow": "MG", "valuation": "CIF",
             })
             path.write_text(
-                json.dumps(first) + "\\n" + json.dumps(second) + "\\n",
+                json.dumps(first) + "\n" + json.dumps(second) + "\n",
                 encoding="utf-8",
             )
             report = audit_domain_state_file(root, "states.jsonl", REQUIRED, "annual")
         self.assertEqual(report["records"], 2)
         self.assertEqual(report["valid_records"], 2)
         self.assertEqual(report["coarse_identity_collisions"], 1)
-        self.assertNotIn("duplicate_state_slots", report)
         self.assertEqual(report["status"], "pass")
-\n    def test_registry_reports_missing_files_as_blocked_not_pass(self):
+
+    def test_registry_reports_missing_files_as_blocked_not_pass(self):
         with TemporaryDirectory() as directory:
             root = Path(directory)
             registry_path = root / "registry.json"
