@@ -60,10 +60,14 @@ class WdiTradeDomainStateBuilderTests(unittest.TestCase):
         self.assertEqual(summary["records"], 2)
         self.assertEqual(summary["entities"], 1)
         self.assertEqual(summary["native_frequency"], "annual")
-        self.assertEqual(records[0]["source_observations"]["value_raw"], "001.2300")
-        self.assertEqual(records[0]["timestamp"], 2000)
-        self.assertEqual(records[0]["state_probability"], None)
-        self.assertEqual(records[0]["edge_status"], "not_testable")
+        trade_record = next(
+            item for item in records
+            if item["source_observations"]["indicator_code"] == "NE.TRD.GNFS.ZS"
+        )
+        self.assertEqual(trade_record["source_observations"]["value_raw"], "001.2300")
+        self.assertEqual(trade_record["timestamp"], 2000)
+        self.assertIsNone(trade_record["state_probability"])
+        self.assertEqual(trade_record["edge_status"], "not_testable")
         self.assertFalse(summary["edge_evaluation_performed"])
 
     def test_output_is_byte_deterministic_for_same_inputs(self):
