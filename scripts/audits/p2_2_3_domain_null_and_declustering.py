@@ -13,7 +13,7 @@ import time
 import urllib.error
 import urllib.parse
 import urllib.request
-from collections import defaultdict
+from collections import Counter, defaultdict
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 from typing import Any
@@ -604,6 +604,10 @@ def read_usgs_csv(path: Path) -> list[dict[str, Any]]:
             "latitude": float(row["latitude"]),
             "depth_km": float(row["depth_km"]) if row.get("depth_km") else None,
             "place": row.get("place"),
+            # Optional fields preserve compatibility with historical CSV files
+            # whose headers predate magnitude-type/source provenance.
+            "mag_type": row.get("mag_type"),
+            "mag_source": row.get("mag_source"),
         })
     return result
 
@@ -781,6 +785,45 @@ def detector_on_seismic_representation(values: np.ndarray) -> dict[str, Any]:
     return result
 
 
+def summarize_magnitude_metadata(events: list[dict[str, Any]]) -> dict[str, Any]:
+    """Describe measurement-scale heterogeneity without pooling distinct scales."""
+    type_counts: Counter[str] = Counter()
+    source_counts: Counter[str] = Counter()
+    for event in events:
+        raw_type = event.get("mag_type")
+        mag_type = str(raw_type).strip().lower() if raw_type is not None and str(raw_type).strip() else "missing"
+        raw_source = event.get("mag_source")
+        mag_source = str(raw_source).strip() if raw_source is not None and str(raw_source).strip() else "missing"
+        type_counts[mag_type] += 1
+        source_counts[mag_source] += 1
+
+    observed_types = sorted(t for t in type_counts if t != "missing")
+    missing = type_counts.get("missing", 0)
+    observed_sources = sorted(t for t in source_counts if t != "missing")
+    source_missing = source_counts.get("missing", 0)
+    homogeneous = len(observed_types) == 1 and missing == 0
+    source_homogeneous = len(observed_sources) == 1 and source_missing == 0
+    return {
+        "magnitude_type_counts": dict(sorted(type_counts.items())),
+        "magnitude_source_counts": dict(sorted(source_counts.items())),
+        "magnitude_type_missing_events": missing,
+        "observed_magnitude_types": observed_types,
+        "magnitude_source_missing_events": source_missing,
+        "observed_magnitude_sources": observed_sources,
+        "magnitude_source_homogeneous": source_homogeneous,
+        "magnitude_source_mixture_requires_calibration_review": len(observed_sources) > 1 or source_missing > 0,
+        "magnitude_type_homogeneous": homogeneous,
+        "single_magnitude_type_precheck_pass": homogeneous,
+        "pooled_frequency_magnitude_status": (
+            "SINGLE_MAGNITUDE_TYPE_PRECHECK_PASS"
+            if homogeneous
+            else "MIXED_MAGNITUDE_TYPES"
+            if len(observed_types) > 1
+            else "MAGNITUDE_TYPE_MISSING_OR_UNAVAILABLE"
+        ),
+    }
+
+
 def validate_usgs_belt_catalog(
     belt: dict[str, Any],
     events: list[dict[str, Any]],
@@ -846,6 +889,7 @@ def validate_usgs_belt_catalog(
         })
 
     return {
+        "magnitude_metadata": summarize_magnitude_metadata(events),
         "status": "PASS" if not errors else "FAIL",
         "post_ingest_validation_status": "PASS" if not rejected else "FAIL",
         "catalog_integrity_status": ingestion_record.get("catalog_integrity_status"),
