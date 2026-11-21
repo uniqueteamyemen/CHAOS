@@ -123,9 +123,8 @@ class BehavioralDiscoveryTests(unittest.TestCase):
             candidates.append({
                 "metric_id": "wdi__GDP", "candidate_type": "level_shift",
                 "candidate_year": 2020, "entity_id": f"E{i}",
-                "direction": "SLOPE_DECREASE",
-                "pre_change_trend_direction": "INCREASING",
-                "post_change_trend_direction": "INCREASING",
+                "direction": "UP",
+                "support_position": "INTERIOR",
                 "causal_claim": False,
             })
         candidates.append({
@@ -137,8 +136,8 @@ class BehavioralDiscoveryTests(unittest.TestCase):
         self.assertEqual(len(patterns), 1)
         self.assertEqual(patterns[0]["entity_support"], 7)
         self.assertAlmostEqual(patterns[0]["direction_concordance"], 6 / 7)
-        self.assertEqual(patterns[0]["pre_change_trend_direction"], "INCREASING")
-        self.assertEqual(patterns[0]["post_change_trend_direction"], "INCREASING")
+        self.assertEqual(patterns[0]["pre_change_trend_direction"], "NOT_APPLICABLE")
+        self.assertEqual(patterns[0]["post_change_trend_direction"], "NOT_APPLICABLE")
 
     def test_shared_slope_patterns_do_not_mix_growth_slowdown_with_decline_acceleration(self):
         candidates = []
