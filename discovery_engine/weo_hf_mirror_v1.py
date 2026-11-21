@@ -8,6 +8,7 @@ metadata, so actual/estimate status remains UNKNOWN for mirrored values.
 from __future__ import annotations
 
 import hashlib
+import math
 from pathlib import Path
 from typing import Any, Mapping, Sequence
 
@@ -38,7 +39,11 @@ def source_records_from_rows(
     for row in rows:
         if str(row.get("series_id")) != subject_code:
             continue
-        if int(row.get("publication_year")) != publication_year:
+        try:
+            row_publication_year = int(row.get("publication_year"))
+        except (TypeError, ValueError) as exc:
+            raise WeoMirrorError("mirror_publication_year_invalid") from exc
+        if row_publication_year != publication_year:
             continue
         if str(row.get("publication_release", "")).casefold() != publication_release.casefold():
             continue
@@ -63,6 +68,8 @@ def source_records_from_rows(
                 value = float(raw_value)
             except (TypeError, ValueError, OverflowError) as exc:
                 raise WeoMirrorError(f"mirror_value_invalid:{iso}:{year}") from exc
+            if not math.isfinite(value):
+                raise WeoMirrorError(f"mirror_value_nonfinite:{iso}:{year}")
 
         item = result.setdefault(iso, {
             "iso": iso,
@@ -99,7 +106,6 @@ def load_hf_mirror_vintages(
     """Download a pinned HF dataset revision and extract required WEO vintages."""
     try:
         from huggingface_hub import HfApi, hf_hub_download
-        import pyarrow as pa
         import pyarrow.dataset as ds
     except ImportError as exc:
         raise WeoMirrorError("mirror_dependencies_missing:huggingface_hub,pyarrow") from exc
@@ -159,17 +165,6 @@ def load_hf_mirror_vintages(
         )
 
     years_set = set(int(year) for year in years)
-    expression = (
-        (ds.field("series_id") == subject_code)
-        & ds.field("year").isin(sorted(years_set))
-    )
-    for spec in vintage_specs:
-        pub_year = int(spec["publication_year"])
-        pub_release = str(spec["publication_release"])
-        expression = expression & (
-            (ds.field("publication_year") == pub_year)
-            & (ds.field("publication_release") == pub_release)
-        ) if len(vintage_specs) == 1 else expression
     # Extract each release separately; keep the data table narrow and deterministic.
     output: dict[str, dict[str, dict[str, Any]]] = {}
     selected_rows: dict[str, int] = {}
