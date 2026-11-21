@@ -16,7 +16,7 @@
     2018,
     2019
   ],
-  "method": "Theil-Sen line on pre-event years only, extrapolated to event year. Compare 2020 value against this frozen pre-event projection and against the 2019 value.",
+  "method": "Theil-Sen line on pre-event years only, extrapolated to event year. Compare the 2020 value against this pre-event projection and against the 2019 value.",
   "vintages": [
     {
       "vintage_id": "WEO_2020_OCT",
@@ -47,4 +47,4 @@
     "no_forecasting": true,
     "no_causal_claims": true
   }
-}\n
+}
