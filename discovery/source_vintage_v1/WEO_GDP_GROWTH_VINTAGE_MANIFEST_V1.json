@@ -17,10 +17,10 @@
     {
       "bytes": 14112,
       "path": "discovery/source_vintage_v1/WEO_GDP_GROWTH_2020_VINTAGE_AUDIT_V1.json",
-      "sha256": "c28dee99895166b6cf646aa904529ca2d2500dd9abfd438627a44da68b746c41"
+      "sha256": "b38bc7152becb7f0ca06e990887a58dd18e2232af9f54f7dcffe57bcc0c0f2d6"
     }
   ],
-  "generated_at_utc": "2026-11-21T20:38:34Z",
+  "generated_at_utc": "2026-11-21T21:33:44Z",
   "official_imf_access_failures": [
     {
       "official_download_failure": "official_imf_vintage_download_failed_all_urls:[{\"error\": \"Forbidden\", \"http_status\": 403, \"url\": \"https://www.imf.org/-/media/Files/Publications/WEO/WEO-Database/2020/02/WEOOct2020all.xls\"}, {\"error\": \"Forbidden\", \"http_status\": 403, \"url\": \"https://www.imf.org/-/media/files/publications/weo/weo-database/2020/02/weooct2020all.xls\"}]",
