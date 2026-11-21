@@ -3,6 +3,7 @@ from __future__ import annotations
 import csv
 import hashlib
 import json
+import math
 import sys
 from collections import Counter
 from decimal import Decimal, InvalidOperation
@@ -13,6 +14,7 @@ ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
 
 from chaos_governance_kernel.core import sha256_file, write_json  # noqa: E402
+from observation_foundation.record_identity_v1 import prepare_source_record  # noqa: E402
 
 AGENT_DIR = ROOT / "campaigns" / "agents" / "trade_v1"
 INPUT_CSV = AGENT_DIR / "WDI_TRADE_OBSERVED_RECORDS_2000_2024.csv"
@@ -87,6 +89,42 @@ def canonical_record(row: dict[str, str], metadata: dict[str, str]) -> dict[str,
     if not numeric.is_finite():
         raise ValueError(f"source_value_not_finite:{country_code}:{indicator_code}:{year}")
 
+    # JSON source-observation values must remain numeric. Accept float64 only
+    # when its canonical decimal round-trip is exact; otherwise fail closed.
+    numeric_value = float(numeric)
+    if not math.isfinite(numeric_value) or Decimal(str(numeric_value)) != numeric:
+        raise ValueError(
+            f"source_value_not_roundtrip_safe:{country_code}:{indicator_code}:{year}"
+        )
+    unit = metadata[indicator_code]["unit_of_measure"] or None
+    source_observation = prepare_source_record({
+        "source_namespace": "world_bank",
+        "dataset_id": "wdi_country_annual_indicators",
+        "series_semantics": "periodic_measurement",
+        "entity_id": country_code,
+        "metric_id": indicator_code,
+        "event_time": str(year),
+        # The source extract does not carry an auditable historical publication
+        # time or vintage; do not manufacture one from the retrieval date.
+        "available_at": None,
+        "source_record_id": None,
+        "source_revision": None,
+        "revision_status": None,
+        "value": numeric_value,
+        "unit": unit,
+        "observation_status": "observed",
+    })
+    source_record_identity = {
+        "identity_contract": "source-record-identity-v1",
+        "logical_record_id": source_observation["logical_record_id"],
+        "canonical_record_id": source_observation["canonical_record_id"],
+        "identity_basis": source_observation["identity_basis"],
+        "available_at": source_observation["available_at"],
+        "source_revision": source_observation["source_revision"],
+        "revision_status": source_observation["revision_status"],
+        "point_in_time_eligibility": "UNKNOWN",
+    }
+
     return {
         "pattern_id": f"WDI_TRADE_{indicator_code}_V1",
         "domain": "trade",
@@ -101,6 +139,7 @@ def canonical_record(row: dict[str, str], metadata: dict[str, str]) -> dict[str,
             "indicator_name": indicator_name,
             "value_raw": raw_value,
             "unit_of_measure": metadata[indicator_code]["unit_of_measure"],
+            "source_record_identity": source_record_identity,
         },
         "lead_profile": {},
         "uncertainty": [
@@ -201,7 +240,15 @@ def build_wdi_trade_domain_states(
             + f"unexpected={sorted(indicators - expected_indicators)}"
         )
     expected_years = extract_summary.get("years")
-    if isinstance(expected_years, list) and set(years) != set(expected_years):
+    if (
+        not isinstance(expected_years, list)
+        or not expected_years
+        or any(isinstance(value, bool) or not isinstance(value, int) for value in expected_years)
+    ):
+        raise ValueError("extract_source_declared_years_required_for_time_support")
+    if len(set(expected_years)) != len(expected_years):
+        raise ValueError("extract_source_declared_years_duplicate")
+    if set(years) != set(expected_years):
         raise ValueError(
             "extract_year_set_mismatch:"
             + f"missing={sorted(set(expected_years) - years)}:"
@@ -221,6 +268,18 @@ def build_wdi_trade_domain_states(
 
     metadata_hash = sha256_file(metadata_csv)
     output_hash = sha256_file(output_jsonl)
+    time_support = {
+        "observation_period_start": str(min(expected_years)),
+        "observation_period_end": str(max(expected_years)),
+        "native_frequency": "annual",
+        "boundary_semantics": "SOURCE_EXTRACT_DECLARED",
+    }
+    identities = [
+        record["source_observations"]["source_record_identity"]
+        for record in records
+    ]
+    logical_ids = {item["logical_record_id"] for item in identities}
+    canonical_ids = {item["canonical_record_id"] for item in identities}
     summary = {
         "adapter_id": "WDI_TRADE_DOMAIN_STATE_ADAPTER_V2",
         "status": "ready_for_domain_state_integrity_and_transition_layer",
@@ -238,6 +297,22 @@ def build_wdi_trade_domain_states(
         "indicators": sorted(indicators),
         "years": [min(years), max(years)] if years else [],
         "native_frequency": "annual",
+        "time_support": time_support,
+        "source_observation_identity": {
+            "contract": "source-record-identity-v1",
+            "source_namespace": "world_bank",
+            "dataset_id": "wdi_country_annual_indicators",
+            "series_semantics": "periodic_measurement",
+            "records": len(identities),
+            "unique_logical_slots": len(logical_ids),
+            "unique_canonical_versions": len(canonical_ids),
+            "known_available_at": sum(item["available_at"] is not None for item in identities),
+            "unknown_available_at": sum(item["available_at"] is None for item in identities),
+            "revision_metadata_available": sum(
+                item["source_revision"] is not None or item["revision_status"] is not None
+                for item in identities
+            ),
+        },
         "domain": "trade",
         "duplicate_source_slots": 0,
         "transformations": [],
