@@ -62,7 +62,7 @@
 - تقرير Behavioral Discovery يصف نفسه `CANDIDATE_GENERATION_ONLY`, و`forecasting_performed=false`, و`causal_claims_permitted=false`.
 - 1,529 سلسلة و38,225 ملاحظة و1,698 مرشحاً و45 shared patterns هي مخرجات المرشحات وفق artifacts الفرع؛ 697 مرشحاً حساس للتقسيم.
 - WDI Adapter status هو `ready_for_within_domain_edge_contract`. لكن نتائج الاختبار المسجلة في main-phase2 للـWDI within-domain max-stat تعطي `p=0.4547726137` (2,000 replicate)، ونتائج WDI-to-economic deterioration تعطي `p=0.5897051474` (2,000 replicate). كلاهما `research_evidence_only`، ولا يسمح بادعاء causal.
-- Conditional Calendar Null وWEO vintage runs الناجحة كانت على SHAs أقدم من رأس PR #28. أربع PR checks على رأس PR ناجحة (Governed Artifacts, Observation Foundation Contract, DomainState Integrity, experiments-immutable)، لكن WDI/Behavioral/WEO materialization لم يُتحقق منها على الرأس الحالي.
+- نجحت read-only validators الخاصة بـBehavioral/WDI/WEO على PR head النهائي، وأعيد فحص manifests/matrices قبل الدمج. يظل هذا دليلاً على إعادة الإنتاج البرمجية، لا على اعتماد العلاقات أو دقة WEO point-in-time.
 - بوابة Supervisor على main-phase2 تسجل pass، لكن `compiled_runtime_eligible=0` و`causal_claims=0`. نجاح البوابة ليس تصريح تشغيل.
 
 **قرار Stage B بعد PR #28:** Discovery V1 أصبح جزءاً من ACTIVE-BASE في `main-phase2` كقدرات توليد مرشحات وحوكمة/هوية. لا يعني ذلك اعتماد patterns أو اكتمال registry أو تجميد Engine 1؛ حالة registry هي `BLOCKED_INCOMPLETE_ASSET_SET`، ولا يبدأ Engine 2.
@@ -111,7 +111,7 @@ Run [44936295839](https://github.com/uniqueteamyemen/CHAOS/actions/runs/44936295
 | `erp-*`, `feat/erp-*`, `benchmark/erp-*`, `review/abc-adversarial` | BRANCH-ARCHIVE / SEPARATE PROJECT | مسار ERP مستقل عن Engine 1. PRs #2/#4/#9/#20/#3 أغلقت من طابور الدمج النشط دون حذف الفروع أو الملفات |
 | `archive/phase1-detector-freeze-v1.0`, `phase1-detector-freeze-phase2-real-data` | FROZEN-ARCHIVE | أرشيف Phase 1 ومرجعه، يحفظ دون تعديل |
 | `fix/p2-2-non-cancelling-concurrency` | SMALL-FIX-CANDIDATE | تعديل Workflow صغير فقط؛ لا يدمج قبل تحليل التشغيلات/الأثر |
-| `fix/50k-peer-benchmark-unit-gate-v1` | BRANCH-ARCHIVE | 3 commits ahead لكنه 197 behind عن main-phase2 ويعدل `experiments/**`; ليس مسار دمج |
+| `fix/50k-peer-benchmark-unit-gate-v1` | BRANCH-ARCHIVE | 3 commits ahead لكنه 200 behind عن main-phase2 ويعدل `experiments/**`; ليس مسار دمج |
 
 **مبدأ حفظ التاريخ:** إغلاق PR لا يعني حذف الفرع أو commit، وتصنيف branch كأرشيف لا يغير محتواه. لا تستخدم branch deletion أو directory deletion كآلية تنظيف في هذه المرحلة.
 
@@ -120,7 +120,7 @@ Run [44936295839](https://github.com/uniqueteamyemen/CHAOS/actions/runs/44936295
 | المصدر | ما أثبتته الملفات/التقارير الحالية | حالة الاستخدام |
 |---|---|---|
 | Macro + EIA Energy | لوحة 139 كياناً × 25 سنة (2000–2024) و11 متغيراً؛ توجد provenance وgap profiles | مصدر بيانات متاح لـDiscovery behavioral؛ اختبار Energy-intensity → deterioration في سجل agent رُفض كإضافة positive edge (`null_p=0.3013493253`) |
-| WDI Trade | 29,004 observed records، 259 كياناً، 5 indicators، annual 2000–2024 | بيانات WDI موجودة في main؛ adapter V2/DomainState JSONL مخرجات فرع Discovery. نتائج max-stat الحالية (p=.4548 within-domain، p=.5897 cross-domain) لا تدعم edge إيجابياً |
+| WDI Trade | 29,004 observed records، 259 كياناً، 5 indicators، annual 2000–2024 | بيانات WDI ومخرج adapter V2/DomainState JSONL أصبحت ضمن main بعد PR #28. نتائج max-stat الحالية (p=.4548 within-domain، p=.5897 cross-domain) لا تدعم edge إيجابياً |
 | UN Comtrade | Bounded preview واحد بصف واحد + world aggregate probe؛ acquisition الأوسع 124 records/5 reporters/2000–2024 مع فشل request واحد، لكنها لا تغطي partner/commodity/flow بالشكل اللازم لكل network | لا تزال غير كافية لربط تاريخي country-partner-commodity؛ `TRADE_AGENT_READINESS_V1` يقرر not_testable |
 | IMF IMTS | استعلام 15 reporter نجح لـXG/MG؛ acquisition لـ139 reporter مع XG فقط سجّل 139 استجابة 200؛ acquisition المزدوج XG+MG لـ139 reporter سجل 139 استجابة 403 | جزئي ومفيد لمسار export-only، لكن واردات/تغطية مؤشرات مزدوجة لجميع 139 غير مكتملة؛ لا تختزل الحالة إلى “4 ملفات ناقصة” أو “IMF جاهز” |
 | USGS M6.5+ | 1,141 حدثاً native event؛ integrity/de-dup/spatial/time checks في فرع USGS نجحت | الحدث موجود؛ cross-domain path blocked لغياب country attribution/production shock/recovery. لا annual alignment بلا contract |
