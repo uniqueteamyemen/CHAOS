@@ -1,0 +1,60 @@
+name: CHAOS — WDI Trade DomainState Build
+
+on:
+  push:
+    branches:
+      - discovery/d1-domainstate-integrity-v1
+    paths:
+      - 'scripts/adapters/build_wdi_trade_domain_states.py'
+      - 'tests/adapters/**'
+      - 'campaigns/agents/trade_v1/WDI_TRADE_OBSERVED_RECORDS_2000_2024.csv'
+      - 'campaigns/agents/trade_v1/WDI_TRADE_SELECTED_SERIES_METADATA.csv'
+      - 'campaigns/agents/trade_v1/WDI_TRADE_EXTRACT_SUMMARY.json'
+      - '.github/workflows/wdi-trade-domainstate-build.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-wdi-trade-domain-states:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout working branch
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Run adapter unit tests
+        run: python -m unittest discover -s tests/adapters -p 'test_wdi_trade_domain_states.py' -v
+      - name: Build WDI trade DomainStates from the committed observed records
+        run: python scripts/adapters/build_wdi_trade_domain_states.py
+      - name: Validate the generated states and all registered DomainState assets
+        run: python scripts/governance/validate_domain_state_registry.py
+      - name: Commit deterministic derived DomainState artifact
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add campaigns/agents/trade_v1/WDI_TRADE_DOMAIN_STATES_ANNUAL_V1.jsonl
+          git add campaigns/agents/trade_v1/WDI_TRADE_DOMAIN_ADAPTER_RUN_V2.json
+          if git diff --cached --quiet; then
+            echo "Derived DomainState artifact is already current."
+          else
+            git commit -m "data(chaos): materialize WDI trade DomainStates v1"
+            git push origin "HEAD:${GITHUB_REF_NAME}"
+          fi
+      - name: Upload generated DomainState and integrity report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: chaos-wdi-trade-domainstate-${{ github.sha }}
+          path: |
+            campaigns/agents/trade_v1/WDI_TRADE_DOMAIN_STATES_ANNUAL_V1.jsonl
+            campaigns/agents/trade_v1/WDI_TRADE_DOMAIN_ADAPTER_RUN_V2.json
+            governance/artifacts/DOMAIN_STATE_INTEGRITY_REPORT_V2.json
+          if-no-files-found: error
+          retention-days: 90
