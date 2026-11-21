@@ -3,7 +3,7 @@
 **الحالة:** مرشح دمج — لا يعني اعتماد Engine 1 أو السماح ببدء Engine 2.  
 **الفرع:** `discovery/d1-domainstate-integrity-v1`  
 **PR:** [#28](https://github.com/uniqueteamyemen/CHAOS/pull/28) → `main-phase2`  
-**آخر رأس فرع تحقق قبل إضافة هذه الوثيقة:** `5b7193eb8350c28075cb115a34cb8c943bb47709`  
+**رأس الفرع عند توثيق فحص DomainState:** `3761ef8a7b72276639571828cb455ee2e786a531` (قبل إضافة تقرير هذا التدقيق)  
 **رأس main-phase2:** `7eb619c1a7756b52aeffb32a06278e786c0dd762`  
 **قاعدة الدمج:** `main-phase2`، متزامن بالكامل؛ مقارنة GitHub قبل هذه الوثيقة كانت 150 commits ahead و0 behind.
 
@@ -71,7 +71,7 @@
 - WDI adapter tests + إعادة بناء 29,004 DomainStates + registry validator + byte-for-byte check للمخرجات.
 - WEO tests + تنزيل النسخ/المرآة المثبتة + SHA verification + تأكيد بقاء actual/estimate unknown حيث metadata غير متاحة.
 
-توجد PR checks ناجحة على رأس أقدم قبل آخر materialization commit، لكن GitHub وضع checks التي تبعت commits آلية على حالة `action_required`. أُضيفت هذه الوثيقة بواسطة commit مراجعة عادي لإطلاق مجموعة PR checks جديدة على رأس نهائي واحد. لا يُدمج PR #28 قبل أن تصبح جميع checks المطلوبة على ذلك الرأس `success`، بما فيها `stress` و`experiments-immutable` وValidation Workflows الثلاثة.
+نجحت جميع بوابات PR على الرأس `4c9b0c2219d6f0b834a80947a24819d268eb4ccb` في الجولة السابقة: `stress`, `experiments-immutable`, `domain-state-integrity`, `observation-foundation-contract`, `source-record-identity-v1`, `d0-baseline-artifact-validation`, ومهام `validate-pr` الثلاثة لـBehavioral/WDI/WEO. لكن تقرير DomainState كشف اكتمالاً جزئياً فقط، ثم أُصلح مقياس تصادمات الهوية وأضيف اختبار جديد؛ لذلك يلزم إعادة تشغيل جميع بوابات PR على الرأس الأحدث قبل الدمج.
 
 ## 6. قرار التسليم
 
@@ -80,3 +80,33 @@
 ما زال Engine 1 غير مجمّد: Pattern discovery, relationship/structural discovery, independent validation, and freeze manifest/handoff gate لم تجتز جميعها بوابة التسليم النهائية. لا يبدأ Engine 2 من هذه النتائج وحدها.
 
 لم تُجرَ أي تغييرات على `experiments/**` أو `structural_engine/isolated_break_detector_v1/**`. كل artifacts المولدة محفوظة في مناطق Discovery/Campaign المخصصة مع hashes وsource provenance؛ لم تُستبدل نتائج تاريخية داخل الأرشيف المجمد.
+
+
+## 7. DomainState registry — نتيجة التدقيق التفصيلية
+
+تقرير DomainState Integrity من تشغيل [44952544505](https://github.com/uniqueteamyemen/CHAOS/actions/runs/44952544505) أظهر:
+- 21 مساراً مسجلاً؛ 15 ملفاً موجوداً و6 مراجع مفقودة.
+- 94,231 سجلاً مقروءاً و0 سجلات غير صالحة.
+- `readiness = BLOCKED_INCOMPLETE_ASSET_SET`.
+
+نجاح job `domain-state-integrity` يعني أن المدقق نفّذ الاختبارات وقرأ الملفات ولم يجد records غير صالحة. لا يعني أن المجموعة كاملة؛ فالـvalidator مصمم لإرجاع exit code ناجح عند حالة BLOCKED، مع تسجيل readiness الحقيقية داخل report.
+
+المراجع الستة المفقودة:
+1. `campaigns/agents/institutions_policy_v1/WGI_INSTITUTIONAL_DOMAIN_STATES_ANNUAL_SOURCE_YEARS_V1.jsonl`
+2. `experiments/multi_domain_native_adapters_v1/WHO_COVID_DOMAIN_STATES_DAILY_V1.jsonl.gz`
+3. `experiments/multi_domain_native_adapters_v1/imf_imts_v1/domain_state_shards/IMF_IMTS_DOMAIN_STATES_BRA_ANNUAL_V1.jsonl`
+4. المسار نفسه مع `CAN`
+5. المسار نفسه مع `MEX`
+6. المسار نفسه مع `ZAF`
+
+خمسة من المراجع المفقودة داخل `experiments/**`، وهي محمية ولا يجوز إعادة إنشائها أو تعديلها في مسار التنظيف. السادس هو WGI output؛ يوجد WGI source provenance وadapter summary يذكر 32,403 estimates، لكن ملف DomainState المحدد غير موجود في الشجرة، ولا توجد هنا حزمة إعادة تشغيل تثبت إنتاجه.
+
+### تصحيح معنى تصادمات IMF IMTS
+
+كان المدقق يسجل `duplicate_state_slots` من مفتاح خشن يحتوي domain/entity/pattern/timestamp/frequency فقط. هذا المفتاح يتجاهل dimensions حقيقية داخل `source_observations` مثل counterpart country وindicator وtrade flow وvaluation. في 11 shard تاريخياً، سجّل هذا المفتاح 59,553 collision؛ لا يصح وصفها بأنها 59,553 duplicate records.
+
+تم تعديل الكود في هذا الفرع لعرض `coarse_identity_collisions` بدلاً من `duplicate_state_slots`، وتسمية الدالة `domain_state_coarse_key` وإضافة اختبار يثبت بقاء سجلين ذوي أبعاد مصدر مختلفة مع الإبلاغ عن تصادم المفتاح الخشن فقط. لم تُحذف أو تُعدّل أي بيانات تحت `experiments/**`.
+
+التقرير التفصيلي: [DOMAIN_STATE_REGISTRY_AUDIT_V1_AR.md](DOMAIN_STATE_REGISTRY_AUDIT_V1_AR.md).
+
+**قرار الدمج:** يجوز دمج كود Discovery باعتباره أساس Engine 1 مرشحاً، بشرط إبقاء registry completeness بحالة BLOCKED وعدم وصفها بأنها PASS. هذا الدمج لا يصادق على الأصول الستة المفقودة ولا على أي IMF duplicate claim؛ ولا يعني Engine 1 freeze أو السماح بEngine 2.
