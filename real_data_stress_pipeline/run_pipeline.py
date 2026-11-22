@@ -100,7 +100,12 @@ def get(url,retries=USGS_RETRIES,timeout=USGS_TIMEOUT):
  raise RuntimeError(f"GET failed {url}: {err}")
 def keep_raw(rel,data,provider,url,params=None):
  p=RAW/rel;p.parent.mkdir(parents=True,exist_ok=True);p.write_bytes(data)
- return {"path":str(p.relative_to(ROOT)),"sha256":digest(data),"bytes":len(data),"provider":provider,"url":url,"parameters":params or {},"retrieved_at_utc":stamp()}
+ resolved_path=p.resolve()
+ try:
+  recorded_path=str(resolved_path.relative_to(ROOT.resolve()))
+ except ValueError:
+  recorded_path=str(resolved_path)
+ return {"path":recorded_path,"sha256":digest(data),"bytes":len(data),"provider":provider,"url":url,"parameters":params or {},"retrieved_at_utc":stamp()}
 def clean(s):return re.sub(r"[^A-Za-z0-9_.-]+","_",str(s)).strip("._")[:100] or "series"
 def number(v):
  if v is None:return None
@@ -512,6 +517,7 @@ def boot(x,seed,block,g1_result,domain=None,series_representation="level"):
    "seed_sha256":seed_hash,
    "level_screen":g1_result,
    "first_difference_screen":None,
+   "series_representation":series_representation,
    "skip_reason":"GENERIC_STATIONARY_BOOTSTRAP_IS_NOT_A_SEISMIC_POINT_PROCESS_NULL",
    "note":"The detector still runs on the observed series. Seismic null calibration requires catalog completeness, declustering assessment and a fitted point-process model."
   }

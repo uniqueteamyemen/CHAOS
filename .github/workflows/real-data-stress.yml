@@ -29,7 +29,9 @@ concurrency:
 
 jobs:
   stress:
-    if: github.event_name != 'pull_request'
+    if: >-
+      github.event_name != 'pull_request' &&
+      (github.event_name != 'workflow_dispatch' || github.ref == 'refs/heads/main-phase2')
     runs-on: ubuntu-latest
     timeout-minutes: 360
     permissions:
@@ -114,6 +116,7 @@ jobs:
         run: |
           set -euo pipefail
           python -m unittest discover -s tests/audits -p 'test_p2_2_*.py' -v
+          python -m unittest discover -s tests/audits -p 'test_p2_codex_polish.py' -v
           python -m unittest discover -s tests/audits -p 'test_p2_null_eligibility.py' -v
           python -m unittest discover -s tests/seismic_null_contract -p 'test_*.py' -v
 
@@ -157,8 +160,8 @@ jobs:
       - name: Run full seismic integrity, declustering and exploratory null audit
         env:
           PYTHONUNBUFFERED: '1'
-          FRED_API_KEY: ${{ secrets.FRED_API_KEY }}
-          EIA_API_KEY: ${{ secrets.EIA_API_KEY }}
+          FRED_API_KEY: ${{ github.ref == 'refs/heads/main-phase2' && secrets.FRED_API_KEY || '' }}
+          EIA_API_KEY: ${{ github.ref == 'refs/heads/main-phase2' && secrets.EIA_API_KEY || '' }}
           EIA_SERIES_IDS: ${{ vars.EIA_SERIES_IDS }}
         run: |
           python -u scripts/audits/p2_2_3_domain_null_and_declustering.py \
@@ -274,6 +277,7 @@ jobs:
         run: |
           set -euo pipefail
           python -m unittest discover -s tests/audits -p 'test_p2_2_*.py' -v
+          python -m unittest discover -s tests/audits -p 'test_p2_codex_polish.py' -v
           python -m unittest discover -s tests/audits -p 'test_p2_null_eligibility.py' -v
           python -m unittest discover -s tests/seismic_null_contract -p 'test_*.py' -v
 
