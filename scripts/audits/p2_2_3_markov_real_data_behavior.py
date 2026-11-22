@@ -308,7 +308,7 @@ def run_audit(replicates, max_series=None, workers=None):
             summary["bootstrap_replicate_records"] = len(series_records)
 
     elapsed = time.monotonic() - started
-    engine_path = Path("structural_engine/isolated_break_detector_v1/engine_markov_cusum.py")
+    engine_path = ROOT / "structural_engine" / "isolated_break_detector_v1" / "engine_markov_cusum.py"
     result = {
         "audit_id": "CHAOS-P2.2.3-MARKOV-REAL-DATA-BEHAVIOR",
         "status": "completed",
