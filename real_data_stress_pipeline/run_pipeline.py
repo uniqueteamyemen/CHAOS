@@ -671,7 +671,7 @@ def eval_series(item,contract):
  )
  if series_representation not in {"level", "returns", "differences"}:
   raise ValueError(f"unsupported_series_representation:{series_representation}")
-bootstrap_result=boot(
+ bootstrap_result=boot(
   item["values"],item["id"]+str(item["sha256"]),block,g1_result,
   item["domain"],series_representation=series_representation
  )
