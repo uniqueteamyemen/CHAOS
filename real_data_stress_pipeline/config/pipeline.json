@@ -1,22 +1,54 @@
 {
-  "pipeline_version": "1.1",
+  "pipeline_version": "1.2",
   "period_start": "1980-01",
   "period_end": "2024-12",
   "primary_monthly_min_observations_exclusive": 500,
   "general_g0_min_observations_inclusive": 87,
   "mad_scaled_minimum": 1e-10,
   "stationarity": {
-    "method": "ADF plus KPSS",
+    "method": "ADF plus KPSS with explicit level, deterministic-trend residual, and first-difference screens",
     "adf_significance": 0.05,
     "kpss_significance": 0.05,
-    "bootstrap_requires_adf_p_less_than": 0.05,
-    "bootstrap_requires_kpss_p_greater_equal": 0.05
+    "detector_execution_requires_stationarity": false,
+    "detector_execution_policy": "Always run the frozen detector when minimum input quality/length requirements are met; stationarity screens govern null-family selection only.",
+    "null_family_selection_order": [
+      "LEVEL_STATIONARY_BLOCK",
+      "TREND_RESIDUAL_BLOCK",
+      "INTEGRATED_INCREMENT_BLOCK"
+    ],
+    "level_stationary_null": {
+      "adf_p_value_less_than": 0.05,
+      "kpss_p_value_greater_equal": 0.05,
+      "selection_status": "CONDITIONAL_DIAGNOSTIC_CANDIDATE"
+    },
+    "deterministic_trend_residual_null": {
+      "adf_regression": "ct",
+      "kpss_regression": "ct",
+      "residuals_must_pass_level_adf_kpss": true,
+      "selection_status": "CONDITIONAL_DIAGNOSTIC_CANDIDATE"
+    },
+    "integrated_increment_null": {
+      "first_difference_must_pass_level_adf_kpss": true,
+      "integration_anchor": "first_observed_level",
+      "selection_status": "CONDITIONAL_DIAGNOSTIC_CANDIDATE"
+    },
+    "seismic_policy": {
+      "generic_scalar_bootstrap_permitted": false,
+      "required_model_contract": "real_data_stress_pipeline/contracts/seismic_null_model_contract_v1.json",
+      "current_status": "DESIGN_CONTRACT_NOT_YET_VALIDATED"
+    },
+    "unresolved_null_policy": "Retain detector output; mark null unavailable and skip resampling."
   },
   "bootstrap": {
     "replicates": 999,
     "market_mean_block_length": 12,
     "seismic_mean_block_length_events": 25,
-    "base_seed": 20261117
+    "base_seed": 20261117,
+    "family_specific_block_bootstrap": true,
+    "alarm_probability_label": "conditional_null_alarm_probability",
+    "operational_fpr_claim_permitted": false,
+    "seismic_generic_block_bootstrap_enabled": false,
+    "seismic_mean_block_length_events_status": "reserved_until_point_process_null_is_validated"
   },
   "usgs": {
     "max_results_per_query": 20000,
