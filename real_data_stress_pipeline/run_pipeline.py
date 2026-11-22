@@ -698,42 +698,54 @@ def aggregate(results,contract):
    pre=sum(event["lead_months"]>0 for event in matched)
    out["shocks"][target["id"]][mode]={"eligible_series":len(evaluations),"matches":len(matched),"capture_rate":len(matched)/len(evaluations) if evaluations else None,"capture_rate_pct":100*len(matched)/len(evaluations) if evaluations else None,"pre_anchor":pre,"pre_anchor_rate_pct":100*pre/len(evaluations) if evaluations else None,"same_month":sum(event["lead_months"]==0 for event in matched),"post_anchor":sum(event["lead_months"]<0 for event in matched),"median_lead":float(np.median([event["lead_months"] for event in matched])) if matched else None,"series_matches":matched}
  for cohort in sorted({series["cohort"] for series in results}):
-  subset=[series for series in results if series["cohort"]==cohort]
-  cohort_stats={}
-  for mode in BreakDetectorV1.MODES:
-   alarms=0;years=0.0;unassociated=0;matched_years=0.0;matched_series=0
-   conditional_probabilities=[]
-   total_replicates=0
-   for series in subset:
-    alarms+=series["detector"][mode]["alarm_count"];years+=series["duration_years"]
-    boot=series["bootstrap"]["by_mode"][mode]
-    runs=int(boot.get("runs",0));total_replicates+=runs
-    if runs>0:
-     conditional_probabilities.append(float(boot["alarms"])/runs)
-    unassociated_count=series["detector"][mode]["unassociated_structural_alarm_count"]
-    if unassociated_count is not None:
-     unassociated+=unassociated_count;matched_years+=series["duration_years"];matched_series+=1
-   probs=np.asarray(conditional_probabilities,dtype=float)
-   cohort_stats[mode]={
-    "series":len(subset),
-    "g1_passed_series":sum(1 for series in subset if series["g1"].get("passed")),
-    "alarms":alarms,
-    "alarms_per_decade":alarms/years*10 if years else None,
-    "shock_matched_cohort_series":matched_series,
-    "unassociated_structural_alarms":unassociated if matched_series else None,
-    "unassociated_structural_alarms_per_decade":unassociated/matched_years*10 if matched_years else None,
-    "bootstrap_eligible_series":int(probs.size),
-    "bootstrap_replicates_total":total_replicates,
-    "conditional_bootstrap_alarm_probability_mean":float(np.mean(probs)) if probs.size else None,
-    "conditional_bootstrap_alarm_probability_median":float(np.median(probs)) if probs.size else None,
-    "conditional_bootstrap_alarm_probability_q25":float(np.quantile(probs,0.25)) if probs.size else None,
-    "conditional_bootstrap_alarm_probability_q75":float(np.quantile(probs,0.75)) if probs.size else None,
-    "conditional_bootstrap_alarm_probability_min":float(np.min(probs)) if probs.size else None,
-    "conditional_bootstrap_alarm_probability_max":float(np.max(probs)) if probs.size else None
-   }
+  cohort_subset=[series for series in results if series["cohort"]==cohort]
+  cohort_stats={"series_total":len(cohort_subset),"by_representation":{}}
+  for representation in sorted({
+   series.get("bootstrap",{}).get("series_representation",series.get("representation","unspecified"))
+   for series in cohort_subset
+  }):
+   subset=[
+    series for series in cohort_subset
+    if series.get("bootstrap",{}).get("series_representation",series.get("representation","unspecified"))==representation
+   ]
+   representation_stats={}
+   for mode in BreakDetectorV1.MODES:
+    alarms=0;years=0.0;unassociated=0;matched_years=0.0;matched_series=0
+    conditional_probabilities=[]
+    total_replicates=0
+    for series in subset:
+     alarms+=series["detector"][mode]["alarm_count"]
+     years+=series["duration_years"]
+     boot=series["bootstrap"]["by_mode"][mode]
+     runs=int(boot.get("runs",0));total_replicates+=runs
+     if runs>0:
+      conditional_probabilities.append(float(boot["alarms"])/runs)
+     unassociated_count=series["detector"][mode]["unassociated_structural_alarm_count"]
+     if unassociated_count is not None:
+      unassociated+=unassociated_count
+      matched_years+=series["duration_years"]
+      matched_series+=1
+    probs=np.asarray(conditional_probabilities,dtype=float)
+    representation_stats[mode]={
+     "series":len(subset),
+     "g1_passed_series":sum(1 for series in subset if series["g1"].get("passed")),
+     "alarms":alarms,
+     "alarms_per_decade":alarms/years*10 if years else None,
+     "shock_matched_cohort_series":matched_series,
+     "unassociated_structural_alarms":unassociated if matched_series else None,
+     "unassociated_structural_alarms_per_decade":unassociated/matched_years*10 if matched_years else None,
+     "bootstrap_eligible_series":int(probs.size),
+     "bootstrap_replicates_total":total_replicates,
+     "conditional_bootstrap_alarm_probability_mean":float(np.mean(probs)) if probs.size else None,
+     "conditional_bootstrap_alarm_probability_median":float(np.median(probs)) if probs.size else None,
+     "conditional_bootstrap_alarm_probability_q25":float(np.quantile(probs,0.25)) if probs.size else None,
+     "conditional_bootstrap_alarm_probability_q75":float(np.quantile(probs,0.75)) if probs.size else None,
+     "conditional_bootstrap_alarm_probability_min":float(np.min(probs)) if probs.size else None,
+     "conditional_bootstrap_alarm_probability_max":float(np.max(probs)) if probs.size else None
+    }
+   cohort_stats["by_representation"][representation]=representation_stats
   out["by_cohort"][cohort]=cohort_stats
  return out
-
 
 def make_report(m):
  z=m.get("aggregate",{})
@@ -772,21 +784,23 @@ def make_report(m):
   "",
   "## 3. الإنذارات حسب الفوج — دون تجميع أفواج غير متجانسة",
   "",
-  "| الفوج | الوضع | السلاسل | null مؤهل | الإنذارات البنيوية | إنذارات/عقد | متوسط احتمال الإنذار الشرطي | الوسيط | Q1–Q3 |",
+  "| الفوج | تمثيل السلسلة | الوضع | السلاسل | null مؤهل | الإنذارات البنيوية | إنذارات/عقد | متوسط احتمال الإنذار الشرطي | الوسيط | Q1–Q3 |
+  |---|---|---|---:|---:|---:|---:|---:|---:|---:|",
   "|---|---|---:|---:|---:|---:|---:|---:|---:|"
  ]
- for cohort,by_mode in z.get("by_cohort",{}).items():
-  for mode,label in (("fast","Fast"),("markov_cusum","Markov"),("consensus","Consensus")):
-   x=by_mode[mode]
-   rate=f"{x['alarms_per_decade']:.4f}" if x.get("alarms_per_decade") is not None else "—"
-   mean=x.get("conditional_bootstrap_alarm_probability_mean")
-   median=x.get("conditional_bootstrap_alarm_probability_median")
-   q25=x.get("conditional_bootstrap_alarm_probability_q25")
-   q75=x.get("conditional_bootstrap_alarm_probability_q75")
-   mean_s=f"{mean*100:.2f}%" if mean is not None else "—"
-   median_s=f"{median*100:.2f}%" if median is not None else "—"
-   quartile_s=f"{q25*100:.2f}–{q75*100:.2f}%" if q25 is not None and q75 is not None else "—"
-   lines.append(f"| {cohort} | {label} | {x['series']} | {x.get('bootstrap_eligible_series',0)} | {x['alarms']} | {rate} | {mean_s} | {median_s} | {quartile_s} |")
+ for cohort,cohort_data in z.get("by_cohort",{}).items():
+  for representation,by_mode in cohort_data.get("by_representation",{}).items():
+   for mode,label in (("fast","Fast"),("markov_cusum","Markov"),("consensus","Consensus")):
+    x=by_mode[mode]
+    rate=f"{x['alarms_per_decade']:.4f}" if x.get("alarms_per_decade") is not None else "—"
+    mean=x.get("conditional_bootstrap_alarm_probability_mean")
+    median=x.get("conditional_bootstrap_alarm_probability_median")
+    q25=x.get("conditional_bootstrap_alarm_probability_q25")
+    q75=x.get("conditional_bootstrap_alarm_probability_q75")
+    mean_s=f"{mean*100:.2f}%" if mean is not None else "—"
+    median_s=f"{median*100:.2f}%" if median is not None else "—"
+    quartile_s=f"{q25*100:.2f}–{q75*100:.2f}%" if q25 is not None and q75 is not None else "—"
+    lines.append(f"| {cohort} | {representation} | {label} | {x['series']} | {x.get('bootstrap_eligible_series',0)} | {x['alarms']} | {rate} | {mean_s} | {median_s} | {quartile_s} |")
  lines += [
   "",
   "احتمال الإنذار الشرطي هو نسبة إعادات Stationary Bootstrap للسلسلة نفسها التي أصدرت إنذاراً واحداً أو أكثر، بعد اجتياز فحص G1. يعرض المتوسط والوسيط والربيعان عبر السلاسل داخل الفوج نفسه؛ ولا تجمع الأفواج في معدل واحد. هذه الكمية ليست FPR مثبتة بحقيقة أرضية معروفة، كما أن فحص ADF/KPSS لا يثبت وحده ملاءمة نموذج العدم.",
