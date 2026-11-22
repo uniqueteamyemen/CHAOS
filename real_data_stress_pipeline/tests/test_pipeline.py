@@ -71,14 +71,15 @@ class StressPipelineContractTests(unittest.TestCase):
 
     def test_stationary_bootstrap_is_skipped_when_g1_fails(self):
         result = boot(
-            np.random.default_rng(4).normal(size=100),
+            np.zeros(120),
             "test-series",
             12,
-            {"passed": False, "status": "SCREEN_FAIL"},
+            {"passed": False, "status": "DEGENERATE"},
         )
-        self.assertEqual(result["status"], "SKIPPED_G1_SCREEN_FAILED")
+        self.assertEqual(result["status"], "SKIPPED_NO_VALIDATED_NULL")
         self.assertEqual(result["replicates"], 0)
         self.assertTrue(all(mode["runs"] == 0 for mode in result["by_mode"].values()))
+        self.assertIsNone(result["null_family"])
 
 
     def test_series_categories_respect_domain_terms(self):
