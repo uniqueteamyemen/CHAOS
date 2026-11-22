@@ -1111,7 +1111,14 @@ def run_audit(
             gem_future = executor.submit(fetch_world_bank_gem, output_dir, gem_snapshot_dir)
             fred_future = executor.submit(fetch_fred, output_dir, os.getenv("FRED_API_KEY"))
             eia_future = executor.submit(fetch_eia, output_dir, os.getenv("EIA_API_KEY"))
-            gem_result = gem_future.result()
+            try:
+                gem_result = gem_future.result()
+            except Exception as exc:
+                gem_result = {
+                    "status": "ERROR",
+                    "indicators": [],
+                    "error": f"{type(exc).__name__}: {exc}",
+                }
             fred_result = fred_future.result()
             eia_result = eia_future.result()
 
@@ -1157,6 +1164,7 @@ def run_audit(
             and bool(selected_belts)
             and all(
                 item.get("status") == "COMPLETED"
+                and int(item.get("source_events", 0) or 0) > 0
                 and isinstance(item.get("catalog_integrity"), dict)
                 and item["catalog_integrity"].get("status") == "PASS"
                 and item["catalog_integrity"].get("accounting_reconciled") is True
