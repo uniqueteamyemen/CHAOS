@@ -21,6 +21,23 @@ MANIFEST=OUT/"real_data_stress_manifest.json"; CHECKSUMS=OUT/"SHA256SUMS.txt"; D
 PIPELINE_CONFIG=json.loads((HERE/"config"/"pipeline.json").read_text(encoding="utf-8"))
 GEM_CONFIG=json.loads((HERE/"config"/"gem_indicators.json").read_text(encoding="utf-8"))
 SEISMIC_CONFIG=json.loads((HERE/"config"/"seismic_belts.json").read_text(encoding="utf-8"))
+STATIONARITY_CONFIG=PIPELINE_CONFIG["stationarity"]
+BOOTSTRAP_CONFIG=PIPELINE_CONFIG["bootstrap"]
+STATIONARITY_MIN_OBSERVATIONS=int(PIPELINE_CONFIG["general_g0_min_observations_inclusive"])
+STATIONARITY_ADF_SIGNIFICANCE=float(STATIONARITY_CONFIG["adf_significance"])
+STATIONARITY_KPSS_SIGNIFICANCE=float(STATIONARITY_CONFIG["kpss_significance"])
+LEVEL_NULL_FAMILY=str(STATIONARITY_CONFIG["level_null_family"])
+INTEGRATED_NULL_FAMILY=str(STATIONARITY_CONFIG["integrated_null_family"])
+INTEGRATED_NULL_DOMAINS=frozenset(STATIONARITY_CONFIG["integrated_null_domain_allowlist"])
+SEISMIC_NULL_POLICY=str(STATIONARITY_CONFIG["seismic_null_policy"])
+if STATIONARITY_CONFIG["detector_execution_requires_stationarity"] is not False:
+ raise ValueError("pipeline_config_invalid: observed-series detector execution must not require stationarity")
+if BOOTSTRAP_CONFIG["seismic_generic_bootstrap_enabled"] is not False:
+ raise ValueError("pipeline_config_invalid: generic seismic stationary bootstrap must remain disabled")
+if not INTEGRATED_NULL_DOMAINS or not INTEGRATED_NULL_DOMAINS.issubset({"macro","commodity"}):
+ raise ValueError("pipeline_config_invalid: integrated null domain allowlist is unsafe")
+if not (0.0<STATIONARITY_ADF_SIGNIFICANCE<1.0 and 0.0<STATIONARITY_KPSS_SIGNIFICANCE<1.0):
+ raise ValueError("pipeline_config_invalid: stationarity significance levels must be in (0,1)")
 Y0,Y1=int(PIPELINE_CONFIG["period_start"][:4]),int(PIPELINE_CONFIG["period_end"][:4])
 PINK_MIN=int(os.getenv("STRESS_MIN_COMMODITY_POINTS",str(int(PIPELINE_CONFIG["primary_monthly_min_observations_exclusive"])+1)))
 GEM_MIN=int(os.getenv("STRESS_MIN_GEM_POINTS",str(GEM_CONFIG.get("minimum_observations",PIPELINE_CONFIG["world_bank"]["gem_general_min_observations"]))))
@@ -109,8 +126,8 @@ def g1(x):
  a=np.asarray(x,dtype=float)
  if a.ndim!=1 or not np.all(np.isfinite(a)):
   return {"passed":False,"status":"INVALID_INPUT","reason":"nonfinite_or_nonvector","observations":int(a.size)}
- if len(a)<87:
-  return {"passed":False,"status":"NOT_TESTED","reason":"fewer_than_87_observations","observations":int(len(a))}
+ if len(a)<STATIONARITY_MIN_OBSERVATIONS:
+  return {"passed":False,"status":"NOT_TESTED","reason":f"fewer_than_{STATIONARITY_MIN_OBSERVATIONS}_observations","observations":int(len(a))}
  if mad(a)<=1e-10:
   return {"passed":False,"status":"DEGENERATE","reason":"degenerate_series_mad","observations":int(len(a))}
  try:
@@ -119,7 +136,8 @@ def g1(x):
    adf_result=adfuller(a,regression="c",autolag="AIC")
    kpss_result=kpss(a,regression="c",nlags="auto")
   adf_p=float(adf_result[1]);kpss_p=float(kpss_result[1])
-  adf_ok=adf_p<0.05;kpss_ok=kpss_p>=0.05
+  adf_ok=adf_p<STATIONARITY_ADF_SIGNIFICANCE
+  kpss_ok=kpss_p>=STATIONARITY_KPSS_SIGNIFICANCE
   passed=bool(adf_ok and kpss_ok)
   return {
    "passed":passed,
@@ -133,7 +151,9 @@ def g1(x):
    "kpss_p_value":kpss_p,
    "kpss_lags":int(kpss_result[2]),
    "kpss_does_not_reject_level_stationarity":kpss_ok,
-   "significance":0.05,
+   "significance":STATIONARITY_ADF_SIGNIFICANCE,
+   "adf_significance":STATIONARITY_ADF_SIGNIFICANCE,
+   "kpss_significance":STATIONARITY_KPSS_SIGNIFICANCE,
    "warnings":[str(item.message) for item in caught],
    "interpretation":"Conservative preliminary stationarity screen only; passing ADF and KPSS does not prove strict stationarity or validate a domain-specific stochastic model."
   }
@@ -467,8 +487,9 @@ def boot(x,seed,block,g1_result,domain=None):
    "status":"SKIPPED_DOMAIN_NULL_REQUIRED",
    "method":None,
    "null_family":None,
-   "null_eligibility":"DOMAIN_SPECIFIC_POINT_PROCESS_MODEL_REQUIRED",
+   "null_eligibility":SEISMIC_NULL_POLICY.split(";",1)[0].strip(),
    "alternative_null_status":"CONTRACT_ONLY_NOT_VALIDATED",
+   "seismic_null_policy":SEISMIC_NULL_POLICY,
    "replicates":0,
    "mean_block_length":block,
    "by_mode":r,
@@ -481,13 +502,13 @@ def boot(x,seed,block,g1_result,domain=None):
  use_integrated=False
  difference_screen=None
  if g1_result.get("passed"):
-  null_family="POLITIS_ROMANO_STATIONARY_BOOTSTRAP_LEVELS"
+  null_family=LEVEL_NULL_FAMILY
   eligibility="PRELIMINARY_LEVEL_STATIONARITY_SCREEN_PASS"
- elif domain in {"macro","commodity"} and len(x)>=88:
+ elif domain in INTEGRATED_NULL_DOMAINS and len(x)>=STATIONARITY_MIN_OBSERVATIONS+1:
   difference_screen=g1(np.diff(x))
   if difference_screen.get("passed"):
    use_integrated=True
-   null_family="INTEGRATED_STATIONARY_BOOTSTRAP_OF_FIRST_DIFFERENCES"
+   null_family=INTEGRATED_NULL_FAMILY
    eligibility="PRELIMINARY_FIRST_DIFFERENCE_STATIONARITY_SCREEN_PASS"
   else:
    return {
@@ -620,6 +641,7 @@ def eval_series(item,contract):
   "g1":g1_result,
   "evaluation_policy":{
    "detector_execution":"COMPLETED_BEFORE_NULL_SELECTION",
+   "detector_execution_requires_stationarity":STATIONARITY_CONFIG["detector_execution_requires_stationarity"],
    "stationary_level_screen_passed":bool(g1_result.get("passed")),
    "bootstrap_null_status":bootstrap_result.get("status"),
    "alternative_null_status":bootstrap_result.get("alternative_null_status"),
@@ -818,9 +840,32 @@ def main():
   "detector":"isolated_break_detector_v1",
   "markov_H":H,
   "period":f"{Y0}-01/{Y1}-12",
-  "stationarity_screen":{"method":"ADF plus KPSS at 5% significance","scope":"null eligibility only; observed-series detector execution is independent","bootstrap_policy":"economic and commodity series use level stationary bootstrap when eligible; otherwise first-difference stationary screening may route to an integrated bootstrap; seismic series require a point-process null"},
+  "stationarity_screen":{
+   "method":"ADF plus KPSS preliminary screens",
+   "scope":"null eligibility only; observed-series detector execution is independent",
+   "minimum_observations":STATIONARITY_MIN_OBSERVATIONS,
+   "adf_significance":STATIONARITY_ADF_SIGNIFICANCE,
+   "kpss_significance":STATIONARITY_KPSS_SIGNIFICANCE,
+   "level_null_family":LEVEL_NULL_FAMILY,
+   "integrated_null_family":INTEGRATED_NULL_FAMILY,
+   "integrated_null_domains":sorted(INTEGRATED_NULL_DOMAINS),
+   "seismic_null_policy":SEISMIC_NULL_POLICY
+  },
   "dependencies":dependencies,
-  "bootstrap":{"method":"domain-routed conditional null diagnostics","replicates":REPS,"monthly_mean_block":MONTH_BLOCK,"event_mean_block":EVENT_BLOCK,"economic_null_routing":["level_stationary_bootstrap","integrated_first_difference_bootstrap","no_null_when_both_screens_fail"],"seismic_null_routing":"point_process_model_required; generic stationary bootstrap disabled"},
+  "bootstrap":{
+   "method":"domain-routed conditional null diagnostics",
+   "replicates":REPS,
+   "monthly_mean_block":MONTH_BLOCK,
+   "event_mean_block":EVENT_BLOCK,
+   "economic_null_routing":["level_stationary_bootstrap","integrated_first_difference_bootstrap","no_null_when_both_screens_fail"],
+   "level_null_family":LEVEL_NULL_FAMILY,
+   "integrated_null_family":INTEGRATED_NULL_FAMILY,
+   "integrated_null_domains":sorted(INTEGRATED_NULL_DOMAINS),
+   "seismic_null_routing":"point_process_model_required",
+   "seismic_generic_bootstrap_enabled":BOOTSTRAP_CONFIG["seismic_generic_bootstrap_enabled"],
+   "conditional_alarm_probability_only":BOOTSTRAP_CONFIG["conditional_alarm_probability_only"],
+   "operational_fpr_claim_permitted":BOOTSTRAP_CONFIG["operational_fpr_claim_permitted"]
+  },
   "shock_contract":contract,
   "sources":[],
   "gem_indicators":[],
