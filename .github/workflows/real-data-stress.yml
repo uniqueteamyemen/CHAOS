@@ -281,10 +281,10 @@ jobs:
         env:
           PYTHONUNBUFFERED: '1'
         run: |
-          python -u scripts/audits/p2_2_3_domain_null_and_declustering.py \\
-            --isolated-usgs-only \\
-            --max-belts 1 \\
-            --poisson-replicates 5 \\
+          python -u scripts/audits/p2_2_3_domain_null_and_declustering.py \
+            --isolated-usgs-only \
+            --max-belts 1 \
+            --poisson-replicates 5 \
             --output-dir artifacts/domain_null_and_declustering
 
       - name: Upload PR gate audit artifacts
