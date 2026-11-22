@@ -1,6 +1,6 @@
 {
   "contract_id": "CHAOS-SEISMIC-POINT-PROCESS-NULL-READINESS-V1",
-  "status": "NOT_CALIBRATED_NOT_OPERATIONAL",
+  "status": "DESIGN_CONTRACT_NOT_YET_VALIDATED",
   "purpose": "Admission requirements for a seismic point-process null before the seismic cohort can receive bootstrap-based false-alarm calibration.",
   "current_pipeline_policy": {
     "detector_execution": "Allowed for descriptive diagnostics only; never suppressed by G1.",
@@ -52,5 +52,7 @@
     "frozen_detector_modified": false,
     "experiments_modified": false,
     "generic_null_relabelled_as_seismic": false
-  }
+  },
+  "source_contract": "real_data_stress_pipeline/contracts/seismic_null_model_contract_v1.json",
+  "note": "This readiness record points to the canonical seismic null model contract. No ETAS/Hawkes fit, Mc(t,region) estimate, or seismic null calibration has yet been validated."
 }
