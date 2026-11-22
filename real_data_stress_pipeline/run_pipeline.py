@@ -561,6 +561,7 @@ def boot(x,seed,block,g1_result,domain=None,series_representation="level"):
    "level_screen":g1_result,
    "first_difference_screen":difference_screen,
    "series_representation":series_representation,
+   "null_eligibility":"INCREMENT_SERIES_FAILED_ITS_OWN_NULL_SCREEN" if series_representation in {"returns", "differences"} else "NO_VALIDATED_NULL_FOR_THIS_SERIES",
    "skip_reason":"ALREADY_INCREMENT_SERIES_NOT_ELIGIBLE_FOR_REINTEGRATION" if series_representation in {"returns", "differences"} else g1_result.get("status","G1_NOT_PASSED"),
    "note":"Detector execution is independent of null eligibility; no valid null is established for this representation."
   }
