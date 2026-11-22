@@ -109,6 +109,9 @@ jobs:
       - name: Run independent Markov diagnostic contract tests
         run: python -m unittest discover -s tests/audits -p 'test_p2_2_2_markov_diagnostics.py' -v
 
+      - name: Run seismic null-model contract tests
+        run: python -m unittest discover -s tests/seismic_null_contract -p 'test_seismic_null_contract.py' -v
+
       - name: Run bounded live USGS pre-merge integrity gate
         if: github.event_name == 'pull_request'
         env:
