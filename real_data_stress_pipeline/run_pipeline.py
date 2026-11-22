@@ -458,20 +458,97 @@ def run_modes(x):
   r=BreakDetectorV1(mode=mode,markov_threshold=H).analyze(x);ev=r.get("structural_breaks",[])
   out[mode]={"alarm_count":len(ev),"provisional_count":len(r.get("provisional_events",[])),"confirmed_count":len(r.get("confirmed_events",[])),"transient_count":len(r.get("transient_anomalies",[])),"unresolved_count":len(r.get("unresolved_alerts",[])),"pending_lifecycle":r.get("pending_lifecycle"),"diagnostics":r.get("diagnostics",{}),"sample_adequacy":r.get("sample_adequacy",{}),"events":ev}
  return out
-def boot(x,seed,block,g1_result):
+def boot(x,seed,block,g1_result,domain=None):
+ x=np.asarray(x,dtype=float)
  r={k:{"alarms":0,"events":0,"runs":0,"errors":0,"alarm_probability":None,"wilson95":None} for k in BreakDetectorV1.MODES}
- if not g1_result.get("passed"):
-  return {"status":"SKIPPED_G1_SCREEN_FAILED","method":"Politis-Romano stationary bootstrap","replicates":0,"mean_block_length":block,"by_mode":r,"seed_sha256":hashlib.sha256(seed.encode()).hexdigest(),"skip_reason":g1_result.get("status","G1_NOT_PASSED"),"note":"Stationary block resampling is not run unless the ADF/KPSS screen passes."}
- rng=np.random.default_rng(int(hashlib.sha256(seed.encode()).hexdigest()[:16],16))
+ seed_hash=hashlib.sha256(seed.encode()).hexdigest()
+ if domain=="seismic":
+  return {
+   "status":"SKIPPED_DOMAIN_NULL_REQUIRED",
+   "method":None,
+   "null_family":None,
+   "null_eligibility":"DOMAIN_SPECIFIC_POINT_PROCESS_MODEL_REQUIRED",
+   "alternative_null_status":"CONTRACT_ONLY_NOT_VALIDATED",
+   "replicates":0,
+   "mean_block_length":block,
+   "by_mode":r,
+   "seed_sha256":seed_hash,
+   "level_screen":g1_result,
+   "first_difference_screen":None,
+   "skip_reason":"GENERIC_STATIONARY_BOOTSTRAP_IS_NOT_A_SEISMIC_POINT_PROCESS_NULL",
+   "note":"The detector still runs on the observed series. Seismic null calibration requires catalog completeness, declustering assessment and a fitted point-process model."
+  }
+ use_integrated=False
+ difference_screen=None
+ if g1_result.get("passed"):
+  null_family="POLITIS_ROMANO_STATIONARY_BOOTSTRAP_LEVELS"
+  eligibility="PRELIMINARY_LEVEL_STATIONARITY_SCREEN_PASS"
+ elif domain in {"macro","commodity"} and len(x)>=88:
+  difference_screen=g1(np.diff(x))
+  if difference_screen.get("passed"):
+   use_integrated=True
+   null_family="INTEGRATED_STATIONARY_BOOTSTRAP_OF_FIRST_DIFFERENCES"
+   eligibility="PRELIMINARY_FIRST_DIFFERENCE_STATIONARITY_SCREEN_PASS"
+  else:
+   return {
+    "status":"SKIPPED_NO_VALIDATED_NULL",
+    "method":"Politis-Romano stationary bootstrap not eligible",
+    "null_family":None,
+    "null_eligibility":"NO_PRELIMINARY_STATIONARY_LEVEL_OR_INCREMENT_NULL",
+    "alternative_null_status":"NOT_ESTABLISHED",
+    "replicates":0,
+    "mean_block_length":block,
+    "by_mode":r,
+    "seed_sha256":seed_hash,
+    "level_screen":g1_result,
+    "first_difference_screen":difference_screen,
+    "skip_reason":"LEVEL_AND_FIRST_DIFFERENCE_SCREENS_FAILED",
+    "note":"No generic fallback is applied when neither levels nor first differences pass the preliminary screen."
+   }
+ else:
+  return {
+   "status":"SKIPPED_G1_SCREEN_FAILED",
+   "method":"Politis-Romano stationary bootstrap not eligible",
+   "null_family":None,
+   "null_eligibility":"NO_VALIDATED_NULL_FOR_THIS_SERIES",
+   "alternative_null_status":"NOT_ESTABLISHED",
+   "replicates":0,
+   "mean_block_length":block,
+   "by_mode":r,
+   "seed_sha256":seed_hash,
+   "level_screen":g1_result,
+   "first_difference_screen":difference_screen,
+   "skip_reason":g1_result.get("status","G1_NOT_PASSED"),
+   "note":"Detector execution is independent of null eligibility; this series has no validated bootstrap null."
+  }
+ rng=np.random.default_rng(int(seed_hash[:16],16))
  for _ in range(REPS):
-  s=stationary_sample(x,rng,block)
+  if use_integrated:
+   sampled_differences=stationary_sample(np.diff(x),rng,block)
+   sample=np.concatenate(([x[0]],x[0]+np.cumsum(sampled_differences)))
+  else:
+   sample=stationary_sample(x,rng,block)
   for mode in BreakDetectorV1.MODES:
    try:
-    z=BreakDetectorV1(mode=mode,markov_threshold=H).analyze(s);ev=z.get("structural_breaks",[]);r[mode]["runs"]+=1;r[mode]["alarms"]+=int(bool(ev));r[mode]["events"]+=len(ev)
+    z=BreakDetectorV1(mode=mode,markov_threshold=H).analyze(sample);ev=z.get("structural_breaks",[]);r[mode]["runs"]+=1;r[mode]["alarms"]+=int(bool(ev));r[mode]["events"]+=len(ev)
    except Exception:r[mode]["errors"]+=1
  for v in r.values():
   v["alarm_probability"]=v["alarms"]/v["runs"] if v["runs"] else None;v["wilson95"]=wilson(v["alarms"],v["runs"])
- return {"method":"Politis-Romano stationary bootstrap","replicates":REPS,"mean_block_length":block,"by_mode":r,"seed_sha256":hashlib.sha256(seed.encode()).hexdigest(),"note":"Conditional resampling diagnostic; stationarity and domain-specific null assumptions require separate validation."}
+ method="Integrated stationary bootstrap of first differences" if use_integrated else "Politis-Romano stationary bootstrap of levels"
+ return {
+  "status":"ESTIMATED_CONDITIONAL_DIAGNOSTIC",
+  "method":method,
+  "null_family":null_family,
+  "null_eligibility":eligibility,
+  "alternative_null_status":"ESTIMATED_CONDITIONALLY" if use_integrated else "NOT_REQUIRED",
+  "replicates":REPS,
+  "mean_block_length":block,
+  "by_mode":r,
+  "seed_sha256":seed_hash,
+  "level_screen":g1_result,
+  "first_difference_screen":difference_screen,
+  "note":"Conditional null diagnostic only; ADF/KPSS screening does not prove model adequacy and alarm probability is not an operational FPR."
+}
 def series_category(item):
  if item["domain"]=="macro":return "macro"
  name=item["name"].casefold()
@@ -537,7 +614,20 @@ def eval_series(item,contract):
    v["unassociated_structural_alarm_count"]=None
    v["unassociated_structural_alarms_per_decade"]=None
  block=MONTH_BLOCK if item["frequency"]=="monthly" else EVENT_BLOCK
- return {"id":item["id"],"source":item["source"],"name":item["name"],"cohort":item["cohort"],"domain":item["domain"],"frequency":item["frequency"],"observations":len(item["values"]),"duration_years":duration,"first":item["axis"][0],"last":item["axis"][-1],"sha256":item["sha256"],"quality":item["quality"],"g1":g1_result,"detector":modes,"bootstrap":boot(item["values"],item["id"]+str(item["sha256"]),block,g1_result)}
+ bootstrap_result=boot(item["values"],item["id"]+str(item["sha256"]),block,g1_result,item["domain"])
+ return {
+  "id":item["id"],"source":item["source"],"name":item["name"],"cohort":item["cohort"],"domain":item["domain"],"frequency":item["frequency"],"observations":len(item["values"]),"duration_years":duration,"first":item["axis"][0],"last":item["axis"][-1],"sha256":item["sha256"],"quality":item["quality"],
+  "g1":g1_result,
+  "evaluation_policy":{
+   "detector_execution":"COMPLETED_BEFORE_NULL_SELECTION",
+   "stationary_level_screen_passed":bool(g1_result.get("passed")),
+   "bootstrap_null_status":bootstrap_result.get("status"),
+   "alternative_null_status":bootstrap_result.get("alternative_null_status"),
+   "interpretation":"A failed null-eligibility screen never suppresses observed-series detector execution."
+  },
+  "detector":modes,
+  "bootstrap":bootstrap_result
+ }
 def normalized_csv(items):
  p=DERIVED/"normalized_detector_inputs.csv";p.parent.mkdir(parents=True,exist_ok=True)
  with p.open("w",newline="",encoding="utf-8") as f:
@@ -620,9 +710,10 @@ def make_report(m):
   f"- Pink Sheet: يتطلب 501 عائد شهري على الأقل، أي 502 سعراً موجباً متصلاً على الأقل.",
   f"- GEM وفواصل USGS: يتطلب كل فوج ثانوي 87 مشاهدة/فاصلاً على الأقل.",
   "- G1: ADF يرفض جذر الوحدة (p < 0.05) وKPSS لا يرفض استقرار المستوى (p ≥ 0.05). هذا فحص أولي مزدوج وليس برهاناً على الاستقرارية الصارمة.",
-  f"- Stationary Block-Bootstrap: {REPS} إعادة توليد لكل سلسلة اجتازت G1 فقط؛ متوسط طول الكتلة الشهري {MONTH_BLOCK} شهراً، وللفواصل الزلزالية {EVENT_BLOCK} فواصل.",
-  "- إذا فشل G1، لا تُحسب FPR من Bootstrap لتلك السلسلة؛ تظهر حالة التجاوز صراحة في JSON.",
-  "- Bootstrap للفواصل الزلزالية تشخيص تسلسلي مشروط فقط، ولا يحل محل null قائم على نماذج point-process أو مراجعة declustering واكتمال الكتالوج.",
+  f"- السلاسل الاقتصادية والسلعية: {REPS} إعادة توليد عند اجتياز G1 للمستوى؛ وإذا فشل، يُختبر G1 على الفروق الأولى ويُستخدم integrated bootstrap فقط عند نجاحه. متوسط طول الكتلة الشهري {MONTH_BLOCK} شهراً.",
+  "- فشل فحص المستوى والفروق الأولى يترك null غير محسوم؛ لا يُنتج احتمال إنذار بديل مصطنع.",
+  "- فحص أهلية null لا يوقف تشغيل الكاشف على السلسلة المرصودة؛ يسجل كل منهما مستقلاً في manifest.",
+  "- التعرض الزلزالي لا يستخدم Stationary Bootstrap عاماً؛ يتطلب point-process null مع اكتمال الكتالوج وdeclustering وملاءمة النموذج قبل أي معايرة.",
   "",
   "## 3. الإنذارات حسب الفوج — دون تجميع أفواج غير متجانسة",
   "",
@@ -725,9 +816,9 @@ def main():
   "detector":"isolated_break_detector_v1",
   "markov_H":H,
   "period":f"{Y0}-01/{Y1}-12",
-  "stationarity_screen":{"method":"ADF plus KPSS at 5% significance","bootstrap_policy":"run Stationary Block-Bootstrap only when ADF rejects a unit root and KPSS does not reject level stationarity"},
+  "stationarity_screen":{"method":"ADF plus KPSS at 5% significance","scope":"null eligibility only; observed-series detector execution is independent","bootstrap_policy":"economic and commodity series use level stationary bootstrap when eligible; otherwise first-difference stationary screening may route to an integrated bootstrap; seismic series require a point-process null"},
   "dependencies":dependencies,
-  "bootstrap":{"method":"Politis-Romano Stationary Bootstrap","replicates":REPS,"monthly_mean_block":MONTH_BLOCK,"event_mean_block":EVENT_BLOCK},
+  "bootstrap":{"method":"domain-routed conditional null diagnostics","replicates":REPS,"monthly_mean_block":MONTH_BLOCK,"event_mean_block":EVENT_BLOCK,"economic_null_routing":["level_stationary_bootstrap","integrated_first_difference_bootstrap","no_null_when_both_screens_fail"],"seismic_null_routing":"point_process_model_required; generic stationary bootstrap disabled"},
   "shock_contract":contract,
   "sources":[],
   "gem_indicators":[],
