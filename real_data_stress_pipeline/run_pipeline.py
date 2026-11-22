@@ -492,9 +492,9 @@ def run_modes(x):
   out[mode]={"alarm_count":len(ev),"provisional_count":len(r.get("provisional_events",[])),"confirmed_count":len(r.get("confirmed_events",[])),"transient_count":len(r.get("transient_anomalies",[])),"unresolved_count":len(r.get("unresolved_alerts",[])),"pending_lifecycle":r.get("pending_lifecycle"),"diagnostics":r.get("diagnostics",{}),"sample_adequacy":r.get("sample_adequacy",{}),"events":ev}
  return out
 def boot(x,seed,block,g1_result,domain=None,series_representation="level"):
-"""Estimate a conditional null without re-integrating input returns/differences."""
+ """Estimate a conditional null without re-integrating input returns/differences."""
  if series_representation not in {"level", "returns", "differences"}:
- raise ValueError(f"unsupported_series_representation:{series_representation}")
+  raise ValueError(f"unsupported_series_representation:{series_representation}")
  x=np.asarray(x,dtype=float)
  r={k:{"alarms":0,"events":0,"runs":0,"errors":0,"alarm_probability":None,"wilson95":None} for k in BreakDetectorV1.MODES}
  seed_hash=hashlib.sha256(seed.encode()).hexdigest()
@@ -521,61 +521,61 @@ def boot(x,seed,block,g1_result,domain=None,series_representation="level"):
  null_family=LEVEL_NULL_FAMILY
  eligibility="PRELIMINARY_LEVEL_STATIONARITY_SCREEN_PASS"
  elif (domain in INTEGRATED_NULL_DOMAINS and series_representation == "level"
-      and len(x)>=STATIONARITY_MIN_OBSERVATIONS+1):
+ and len(x)>=STATIONARITY_MIN_OBSERVATIONS+1):
  difference_screen=g1(
-  np.diff(x),
-  adf_significance=INTEGRATED_ADF_SIGNIFICANCE,
-  kpss_significance=INTEGRATED_KPSS_SIGNIFICANCE
+ np.diff(x),
+ adf_significance=INTEGRATED_ADF_SIGNIFICANCE,
+ kpss_significance=INTEGRATED_KPSS_SIGNIFICANCE
  )
  if difference_screen.get("passed"):
-  use_integrated=True
-  null_family=INTEGRATED_NULL_FAMILY
-  eligibility="PRELIMINARY_FIRST_DIFFERENCE_STATIONARITY_SCREEN_PASS"
- else:
-  return {
-   "status":"SKIPPED_NO_VALIDATED_NULL",
-   "method":"Politis-Romano stationary bootstrap not eligible",
-   "null_family":None,
-   "null_eligibility":"NO_PRELIMINARY_STATIONARY_LEVEL_OR_INCREMENT_NULL",
-   "alternative_null_status":"NOT_ESTABLISHED",
-   "replicates":0,
-   "mean_block_length":block,
-   "by_mode":r,
-   "seed_sha256":seed_hash,
-   "level_screen":g1_result,
-   "first_difference_screen":difference_screen,
-   "skip_reason":"LEVEL_AND_FIRST_DIFFERENCE_SCREENS_FAILED",
-   "note":"No generic fallback is applied when neither levels nor first differences pass the preliminary screen."
-  }
+ use_integrated=True
+ null_family=INTEGRATED_NULL_FAMILY
+ eligibility="PRELIMINARY_FIRST_DIFFERENCE_STATIONARITY_SCREEN_PASS"
  else:
  return {
-  "status":"SKIPPED_G1_SCREEN_FAILED",
-  "method":"Politis-Romano stationary bootstrap not eligible",
-  "null_family":None,
-  
-  "alternative_null_status":"NOT_ESTABLISHED",
-  "replicates":0,
-  "mean_block_length":block,
-  "by_mode":r,
-  "seed_sha256":seed_hash,
-  "level_screen":g1_result,
-  "first_difference_screen":difference_screen,
-  "series_representation":series_representation,
-  "null_eligibility":"INCREMENT_SERIES_FAILED_ITS_OWN_NULL_SCREEN" if series_representation in {"returns", "differences"} else "NO_VALIDATED_NULL_FOR_THIS_SERIES",
-  "skip_reason":"ALREADY_INCREMENT_SERIES_NOT_ELIGIBLE_FOR_REINTEGRATION" if series_representation in {"returns", "differences"} else g1_result.get("status","G1_NOT_PASSED"),
-  "note":"Detector execution is independent of null eligibility; no valid null is established for this representation."
+ "status":"SKIPPED_NO_VALIDATED_NULL",
+ "method":"Politis-Romano stationary bootstrap not eligible",
+ "null_family":None,
+ "null_eligibility":"NO_PRELIMINARY_STATIONARY_LEVEL_OR_INCREMENT_NULL",
+ "alternative_null_status":"NOT_ESTABLISHED",
+ "replicates":0,
+ "mean_block_length":block,
+ "by_mode":r,
+ "seed_sha256":seed_hash,
+ "level_screen":g1_result,
+ "first_difference_screen":difference_screen,
+ "skip_reason":"LEVEL_AND_FIRST_DIFFERENCE_SCREENS_FAILED",
+ "note":"No generic fallback is applied when neither levels nor first differences pass the preliminary screen."
+ }
+ else:
+ return {
+ "status":"SKIPPED_G1_SCREEN_FAILED",
+ "method":"Politis-Romano stationary bootstrap not eligible",
+ "null_family":None,
+ 
+ "alternative_null_status":"NOT_ESTABLISHED",
+ "replicates":0,
+ "mean_block_length":block,
+ "by_mode":r,
+ "seed_sha256":seed_hash,
+ "level_screen":g1_result,
+ "first_difference_screen":difference_screen,
+ "series_representation":series_representation,
+ "null_eligibility":"INCREMENT_SERIES_FAILED_ITS_OWN_NULL_SCREEN" if series_representation in {"returns", "differences"} else "NO_VALIDATED_NULL_FOR_THIS_SERIES",
+ "skip_reason":"ALREADY_INCREMENT_SERIES_NOT_ELIGIBLE_FOR_REINTEGRATION" if series_representation in {"returns", "differences"} else g1_result.get("status","G1_NOT_PASSED"),
+ "note":"Detector execution is independent of null eligibility; no valid null is established for this representation."
  }
  rng=np.random.default_rng(int(seed_hash[:16],16))
  for _ in range(REPS):
  if use_integrated:
-  sampled_differences=stationary_sample(np.diff(x),rng,block)
-  sample=np.concatenate(([x[0]],x[0]+np.cumsum(sampled_differences)))
+ sampled_differences=stationary_sample(np.diff(x),rng,block)
+ sample=np.concatenate(([x[0]],x[0]+np.cumsum(sampled_differences)))
  else:
-  sample=stationary_sample(x,rng,block)
+ sample=stationary_sample(x,rng,block)
  for mode in BreakDetectorV1.MODES:
-  try:
-   z=BreakDetectorV1(mode=mode,markov_threshold=H).analyze(sample);ev=z.get("structural_breaks",[]);r[mode]["runs"]+=1;r[mode]["alarms"]+=int(bool(ev));r[mode]["events"]+=len(ev)
-  except Exception:r[mode]["errors"]+=1
+ try:
+ z=BreakDetectorV1(mode=mode,markov_threshold=H).analyze(sample);ev=z.get("structural_breaks",[]);r[mode]["runs"]+=1;r[mode]["alarms"]+=int(bool(ev));r[mode]["events"]+=len(ev)
+ except Exception:r[mode]["errors"]+=1
  for v in r.values():
  v["alarm_probability"]=v["alarms"]/v["runs"] if v["runs"] else None;v["wilson95"]=wilson(v["alarms"],v["runs"])
  method="Integrated stationary bootstrap of first differences" if use_integrated else "Politis-Romano stationary bootstrap of levels"
@@ -593,7 +593,7 @@ def boot(x,seed,block,g1_result,domain=None,series_representation="level"):
  "first_difference_screen":difference_screen,
  "series_representation":series_representation,
  "note":"Conditional null diagnostic only; ADF/KPSS screening does not prove model adequacy and alarm probability is not an operational FPR."
-}
+ }
 def series_category(item):
  if item["domain"]=="macro":return "macro"
  name=item["name"].casefold()
