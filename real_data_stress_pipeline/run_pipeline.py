@@ -701,7 +701,9 @@ def make_report(m):
   f"- أحزمة USGS المستعلم عنها: {len(m.get('belts',[]))}/5؛ سلاسل الزلازل المؤهلة: {m.get('seismic_eligible',0)}.",
   f"- إجمالي السلاسل التي وصلت إلى الكاشف: {len(m.get('series_results',[]))}.",
   f"- اجتازت G1 (ADF وKPSS): {sum(1 for s in m.get('series_results',[]) if s.get('g1',{}).get('passed'))}.",
-  f"- لم تجتز G1 وتجاوزت Bootstrap: {sum(1 for s in m.get('series_results',[]) if not s.get('g1',{}).get('passed'))}.",
+  f"- اجتازت G1 للمستوى: {sum(1 for s in m.get('series_results',[]) if s.get('g1',{}).get('passed'))}.",
+  f"- استخدمت null للفروق الأولى: {sum(1 for s in m.get('series_results',[]) if s.get('bootstrap',{}).get('null_family')=='INTEGRATED_STATIONARY_BOOTSTRAP_OF_FIRST_DIFFERENCES')}.",
+  f"- لم يتوفر لها null مؤهل: {sum(1 for s in m.get('series_results',[]) if not s.get('bootstrap',{}).get('replicates'))}.",
   f"- السلاسل المستبعدة: {len(m.get('rejected',[]))}؛ أخطاء المصادر: {len(m.get('errors',[]))}.",
   "",
   "## 2. G0 وG1 ومنهج Bootstrap",
@@ -717,7 +719,7 @@ def make_report(m):
   "",
   "## 3. الإنذارات حسب الفوج — دون تجميع أفواج غير متجانسة",
   "",
-  "| الفوج | الوضع | السلاسل | G1 مؤهلة | الإنذارات البنيوية | إنذارات/عقد | متوسط احتمال الإنذار الشرطي | الوسيط | Q1–Q3 |",
+  "| الفوج | الوضع | السلاسل | null مؤهل | الإنذارات البنيوية | إنذارات/عقد | متوسط احتمال الإنذار الشرطي | الوسيط | Q1–Q3 |",
   "|---|---|---:|---:|---:|---:|---:|---:|---:|"
  ]
  for cohort,by_mode in z.get("by_cohort",{}).items():
@@ -731,7 +733,7 @@ def make_report(m):
    mean_s=f"{mean*100:.2f}%" if mean is not None else "—"
    median_s=f"{median*100:.2f}%" if median is not None else "—"
    quartile_s=f"{q25*100:.2f}–{q75*100:.2f}%" if q25 is not None and q75 is not None else "—"
-   lines.append(f"| {cohort} | {label} | {x['series']} | {x.get('g1_passed_series',0)} | {x['alarms']} | {rate} | {mean_s} | {median_s} | {quartile_s} |")
+   lines.append(f"| {cohort} | {label} | {x['series']} | {x.get('bootstrap_eligible_series',0)} | {x['alarms']} | {rate} | {mean_s} | {median_s} | {quartile_s} |")
  lines += [
   "",
   "احتمال الإنذار الشرطي هو نسبة إعادات Stationary Bootstrap للسلسلة نفسها التي أصدرت إنذاراً واحداً أو أكثر، بعد اجتياز فحص G1. يعرض المتوسط والوسيط والربيعان عبر السلاسل داخل الفوج نفسه؛ ولا تجمع الأفواج في معدل واحد. هذه الكمية ليست FPR مثبتة بحقيقة أرضية معروفة، كما أن فحص ADF/KPSS لا يثبت وحده ملاءمة نموذج العدم.",
