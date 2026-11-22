@@ -139,27 +139,37 @@ def build_report(manifest: dict[str, Any]) -> dict[str, Any]:
     series = manifest.get("series_results")
     if not isinstance(series, list):
         raise ValueError("manifest.series_results must be a list")
-    grouped: dict[str, list[dict[str, Any]]] = {}
+    grouped: dict[str, dict[str, list[dict[str, Any]]]] = {}
     for item in series:
         if not isinstance(item, dict):
             raise ValueError("manifest contains a non-object series result")
         cohort = item.get("cohort")
         if not isinstance(cohort, str) or not cohort:
             raise ValueError("series result is missing a cohort name")
-        grouped.setdefault(cohort, []).append(item)
+        bootstrap = item.get("bootstrap", {})
+        representation = bootstrap.get("series_representation", item.get("series_representation", "unspecified"))
+        if representation not in {"level", "returns", "differences", "unspecified"}:
+            raise ValueError(f"invalid_series_representation:{representation}")
+        grouped.setdefault(cohort, {}).setdefault(representation, []).append(item)
 
     return {
-        "audit_version": "1.0",
+        "audit_version": "1.1",
         "source_manifest_version": manifest.get("version"),
         "source_run_timestamp_utc": manifest.get("run_timestamp_utc"),
         "source_git_commit": manifest.get("git_commit"),
         "method_note": (
-            "Conditional Stationary Bootstrap alarm probability within each cohort. "
-            "Not a ground-truth false-positive rate. Cohorts are never pooled."
+            "Conditional bootstrap alarm probabilities are summarized independently "
+            "by cohort and series representation. Level-null and increment-null "
+            "results are never pooled. Unspecified legacy representations remain isolated."
         ),
         "by_cohort": {
-            cohort: summarize_cohort(items)
-            for cohort, items in sorted(grouped.items())
+            cohort: {
+                "by_representation": {
+                    representation: summarize_cohort(items)
+                    for representation, items in sorted(representations.items())
+                }
+            }
+            for cohort, representations in sorted(grouped.items())
         },
     }
 
