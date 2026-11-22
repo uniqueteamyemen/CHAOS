@@ -67,6 +67,34 @@ class NullEligibilityTests(unittest.TestCase):
             "ESTIMATED_CONDITIONALLY",
         )
 
+    def test_already_differenced_returns_are_never_reintegrated(self):
+        returns = np.random.default_rng(120).normal(scale=0.03, size=120)
+        sampled_inputs = []
+
+        def sample(series, rng, block):
+            sampled_inputs.append(np.asarray(series, dtype=float).copy())
+            return np.full(len(series), 0.25, dtype=float)
+
+        with (
+            patch.object(p2, "g1", return_value={"passed": False, "status": "SCREEN_FAIL"}),
+            patch.object(p2, "REPS", 2),
+            patch.object(p2, "stationary_sample", side_effect=sample),
+        ):
+            result = p2.boot(
+                returns, "pink-sheet-returns", 12,
+                {"passed": False, "status": "SCREEN_FAIL"},
+                "commodity", series_representation="returns"
+            )
+
+        self.assertEqual(result["status"], "SKIPPED_G1_SCREEN_FAILED")
+        self.assertEqual(result["replicates"], 0)
+        self.assertEqual(result["series_representation"], "returns")
+        self.assertEqual(
+            result["skip_reason"],
+            "ALREADY_INCREMENT_SERIES_NOT_ELIGIBLE_FOR_REINTEGRATION",
+        )
+        self.assertEqual(sampled_inputs, [])
+
     def test_failed_level_and_increment_screens_do_not_create_a_fallback_null(self):
         with patch.object(
             p2, "g1",
