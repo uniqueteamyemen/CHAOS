@@ -1111,32 +1111,6 @@ def run_audit(
             fred_result = fred_future.result()
             eia_result = eia_future.result()
 
-        try:
-            _seismic_series = seismic_future.result()
-        except Exception as exc:
-            source_meta["errors"].append({
-                "provider": "USGS ComCat",
-                "error_type": type(exc).__name__,
-            })
-            _seismic_series = []
-        try:
-            gem_result = gem_future.result()
-        except Exception as exc:
-            gem_result = {
-                "status": "ERROR",
-                "error_type": type(exc).__name__,
-                "error": str(exc),
-                "per_page": WB_PER_PAGE,
-            }
-        try:
-            fred_result = fred_future.result()
-        except Exception as exc:
-            fred_result = {"status": "ERROR", "error_type": type(exc).__name__}
-        try:
-            eia_result = eia_future.result()
-        except Exception as exc:
-            eia_result = {"status": "ERROR", "error_type": type(exc).__name__}
-
     belt_results: list[dict[str, Any]] = []
     ingestion_by_belt = {
         str(item.get("id")): item
