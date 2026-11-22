@@ -90,6 +90,10 @@ class NullEligibilityTests(unittest.TestCase):
         self.assertEqual(result["replicates"], 0)
         self.assertEqual(result["series_representation"], "returns")
         self.assertEqual(
+            result["null_eligibility"],
+            "INCREMENT_SERIES_FAILED_ITS_OWN_NULL_SCREEN",
+        )
+        self.assertEqual(
             result["skip_reason"],
             "ALREADY_INCREMENT_SERIES_NOT_ELIGIBLE_FOR_REINTEGRATION",
         )
