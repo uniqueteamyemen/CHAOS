@@ -1,0 +1,56 @@
+{
+  "contract_id": "CHAOS-SEISMIC-POINT-PROCESS-NULL-READINESS-V1",
+  "status": "NOT_CALIBRATED_NOT_OPERATIONAL",
+  "purpose": "Admission requirements for a seismic point-process null before the seismic cohort can receive bootstrap-based false-alarm calibration.",
+  "current_pipeline_policy": {
+    "detector_execution": "Allowed for descriptive diagnostics only; never suppressed by G1.",
+    "generic_bootstrap": "Forbidden for seismic event-interarrival series.",
+    "reason": "A scalar stationarity screen and generic block bootstrap do not model magnitude completeness, temporal clustering, aftershock triggering, or catalog-scale heterogeneity."
+  },
+  "mandatory_admission_gates": [
+    {
+      "id": "CATALOG_INTEGRITY",
+      "requirement": "Validate raw USGS features, exact event identity, UTC range, spatial membership, magnitude threshold, duplicate conflicts, raw snapshots and SHA-256.",
+      "evidence": "USGS_CATALOG_INTEGRITY_V1_AR.md"
+    },
+    {
+      "id": "MAGNITUDE_COMPLETENESS",
+      "requirement": "Estimate Mc(t, region) with uncertainty by spatial-temporal strata; demonstrate stability/sensitivity and exclude intervals below defensible completeness."
+    },
+    {
+      "id": "MAGNITUDE_SCALE_HARMONIZATION",
+      "requirement": "Retain magType and magSource. Calibrate frequency-magnitude behavior within compatible scales; never pool incompatible scales solely because values are numeric."
+    },
+    {
+      "id": "PRIMARY_POINT_PROCESS_NULL",
+      "requirement": "Fit and validate a space-time ETAS-family conditional-intensity model on the completeness-filtered, non-declustered catalog; preserve background-rate variation and event-triggered clustering."
+    },
+    {
+      "id": "BASELINE_NULL_COMPARISON",
+      "requirement": "Compare against a time-varying inhomogeneous Poisson background-rate model as a simpler benchmark; homogeneous Poisson is not the final seismic null."
+    },
+    {
+      "id": "DECLUSTERED_SENSITIVITY",
+      "requirement": "Only for a separate declustered-background track, compare declared declustering methods and parameter uncertainty; keep this distinct from the full-catalog ETAS track."
+    },
+    {
+      "id": "SIMULATION_CALIBRATION",
+      "requirement": "Use fitted-model simulations, predictive diagnostics, held-out catalog periods, event-count distributions and spatial-temporal residual tests to estimate conditional alarm probabilities with uncertainty."
+    },
+    {
+      "id": "DETECTION_POWER",
+      "requirement": "Predeclare injected event-cluster and rate-change scenarios; measure detection power, false alarms and detection delay separately."
+    }
+  ],
+  "forbidden_claims_until_all_gates_pass": [
+    "Seismic detector false-positive rate",
+    "Earthquake prediction or operational warning capability",
+    "Seismic structural-break validation based only on inter-event intervals",
+    "Magnitude completeness inferred from the query minimum magnitude"
+  ],
+  "freeze_constraints": {
+    "frozen_detector_modified": false,
+    "experiments_modified": false,
+    "generic_null_relabelled_as_seismic": false
+  }
+}
