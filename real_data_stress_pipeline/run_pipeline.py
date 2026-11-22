@@ -491,7 +491,10 @@ def run_modes(x):
   r=BreakDetectorV1(mode=mode,markov_threshold=H).analyze(x);ev=r.get("structural_breaks",[])
   out[mode]={"alarm_count":len(ev),"provisional_count":len(r.get("provisional_events",[])),"confirmed_count":len(r.get("confirmed_events",[])),"transient_count":len(r.get("transient_anomalies",[])),"unresolved_count":len(r.get("unresolved_alerts",[])),"pending_lifecycle":r.get("pending_lifecycle"),"diagnostics":r.get("diagnostics",{}),"sample_adequacy":r.get("sample_adequacy",{}),"events":ev}
  return out
-def boot(x,seed,block,g1_result,domain=None):
+def boot(x,seed,block,g1_result,domain=None,series_representation="level"):
+  """Estimate a conditional null without re-integrating input returns/differences."""
+  if series_representation not in {"level", "returns", "differences"}:
+   raise ValueError(f"unsupported_series_representation:{series_representation}")
  x=np.asarray(x,dtype=float)
  r={k:{"alarms":0,"events":0,"runs":0,"errors":0,"alarm_probability":None,"wilson95":None} for k in BreakDetectorV1.MODES}
  seed_hash=hashlib.sha256(seed.encode()).hexdigest()
@@ -517,7 +520,8 @@ def boot(x,seed,block,g1_result,domain=None):
  if g1_result.get("passed"):
   null_family=LEVEL_NULL_FAMILY
   eligibility="PRELIMINARY_LEVEL_STATIONARITY_SCREEN_PASS"
- elif domain in INTEGRATED_NULL_DOMAINS and len(x)>=STATIONARITY_MIN_OBSERVATIONS+1:
+ elif (domain in INTEGRATED_NULL_DOMAINS and series_representation == "level"
+       and len(x)>=STATIONARITY_MIN_OBSERVATIONS+1):
   difference_screen=g1(
    np.diff(x),
    adf_significance=INTEGRATED_ADF_SIGNIFICANCE,
@@ -556,8 +560,9 @@ def boot(x,seed,block,g1_result,domain=None):
    "seed_sha256":seed_hash,
    "level_screen":g1_result,
    "first_difference_screen":difference_screen,
-   "skip_reason":g1_result.get("status","G1_NOT_PASSED"),
-   "note":"Detector execution is independent of null eligibility; this series has no validated bootstrap null."
+   "series_representation":series_representation,
+   "skip_reason":"ALREADY_INCREMENT_SERIES_NOT_ELIGIBLE_FOR_REINTEGRATION" if series_representation in {"returns", "differences"} else g1_result.get("status","G1_NOT_PASSED"),
+   "note":"Detector execution is independent of null eligibility; no valid null is established for this representation."
   }
  rng=np.random.default_rng(int(seed_hash[:16],16))
  for _ in range(REPS):
@@ -585,6 +590,7 @@ def boot(x,seed,block,g1_result,domain=None):
   "seed_sha256":seed_hash,
   "level_screen":g1_result,
   "first_difference_screen":difference_screen,
+  "series_representation":series_representation,
   "note":"Conditional null diagnostic only; ADF/KPSS screening does not prove model adequacy and alarm probability is not an operational FPR."
 }
 def series_category(item):
@@ -652,7 +658,14 @@ def eval_series(item,contract):
    v["unassociated_structural_alarm_count"]=None
    v["unassociated_structural_alarms_per_decade"]=None
  block=MONTH_BLOCK if item["frequency"]=="monthly" else EVENT_BLOCK
- bootstrap_result=boot(item["values"],item["id"]+str(item["sha256"]),block,g1_result,item["domain"])
+ series_representation = (
+  "returns" if item["source"] in {"pink_sheet", "gem"}
+  else "level"
+ )
+ bootstrap_result=boot(
+  item["values"],item["id"]+str(item["sha256"]),block,g1_result,
+  item["domain"],series_representation=series_representation
+ )
  return {
   "id":item["id"],"source":item["source"],"name":item["name"],"cohort":item["cohort"],"domain":item["domain"],"frequency":item["frequency"],"observations":len(item["values"]),"duration_years":duration,"first":item["axis"][0],"last":item["axis"][-1],"sha256":item["sha256"],"quality":item["quality"],
   "g1":g1_result,
