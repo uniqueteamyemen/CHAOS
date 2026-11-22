@@ -86,7 +86,8 @@ class NullEligibilityTests(unittest.TestCase):
                 "commodity", series_representation="returns"
             )
 
-        self.assertEqual(result["status"], "SKIPPED_G1_SCREEN_FAILED")
+        self.assertEqual(result["status"], "SKIPPED_NO_VALIDATED_NULL")
+        self.assertEqual(result["null_eligibility"], "INCREMENT_SERIES_FAILED_ITS_OWN_NULL_SCREEN")
         self.assertEqual(result["replicates"], 0)
         self.assertEqual(result["series_representation"], "returns")
         self.assertEqual(
