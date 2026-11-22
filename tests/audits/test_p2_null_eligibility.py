@@ -86,6 +86,20 @@ class NullEligibilityTests(unittest.TestCase):
         self.assertEqual(result["replicates"], 0)
         self.assertEqual(result["alternative_null_status"], "NOT_ESTABLISHED")
 
+
+    def test_pipeline_config_matches_null_routing_contract(self):
+        self.assertIs(
+            p2.PIPELINE_CONFIG["stationarity"]["detector_execution_requires_stationarity"],
+            False,
+        )
+        self.assertFalse(
+            p2.PIPELINE_CONFIG["bootstrap"]["seismic_generic_bootstrap_enabled"]
+        )
+        self.assertIn(
+            "INTEGRATED_STATIONARY_BOOTSTRAP_OF_FIRST_DIFFERENCES",
+            p2.PIPELINE_CONFIG["stationarity"]["integrated_null_family"],
+        )
+
     def test_detector_execution_is_independent_of_null_eligibility(self):
         item = {
             "id": "macro:test",
