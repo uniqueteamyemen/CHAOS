@@ -78,7 +78,14 @@ class MarkovAuditTests(unittest.TestCase):
             commodity["returns"]["by_mode"]["markov_cusum"]["observed_alert_count_g1_passed_series"]["mean"],
             1.0,
         )
-        self.assertEqual(report["by_cohort"]["strict_long_monthly"]["series_total"], 2)
+        self.assertEqual(
+            report["by_cohort"]["strict_long_monthly"]["by_representation"]["level"]["series_total"],
+            1,
+        )
+        self.assertEqual(
+            report["by_cohort"]["strict_long_monthly"]["by_representation"]["returns"]["series_total"],
+            1,
+        )
 
     def test_non_g1_series_is_not_in_bootstrap_comparison_denominator(self):
         def make_series(passed, alarms, runs):
