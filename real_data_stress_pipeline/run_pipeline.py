@@ -552,7 +552,7 @@ def boot(x,seed,block,g1_result,domain=None,series_representation="level"):
    "status":"SKIPPED_G1_SCREEN_FAILED",
    "method":"Politis-Romano stationary bootstrap not eligible",
    "null_family":None,
-   "null_eligibility":"NO_VALIDATED_NULL_FOR_THIS_SERIES",
+   
    "alternative_null_status":"NOT_ESTABLISHED",
    "replicates":0,
    "mean_block_length":block,
@@ -663,6 +663,8 @@ def eval_series(item,contract):
   "representation",
   "returns" if item["source"] in {"pink_sheet", "gem"} else "level"
  )
+ if series_representation not in {"level", "returns", "differences"}:
+  raise ValueError(f"unsupported_series_representation:{series_representation}")
 bootstrap_result=boot(
   item["values"],item["id"]+str(item["sha256"]),block,g1_result,
   item["domain"],series_representation=series_representation
