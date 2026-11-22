@@ -29,6 +29,8 @@ STATIONARITY_KPSS_SIGNIFICANCE=float(STATIONARITY_CONFIG["kpss_significance"])
 LEVEL_NULL_FAMILY=str(STATIONARITY_CONFIG["level_null_family"])
 INTEGRATED_NULL_FAMILY=str(STATIONARITY_CONFIG["integrated_null_family"])
 INTEGRATED_NULL_DOMAINS=frozenset(STATIONARITY_CONFIG["integrated_null_domain_allowlist"])
+INTEGRATED_ADF_SIGNIFICANCE=float(STATIONARITY_CONFIG["integrated_null_requires_first_difference_adf_p_less_than"])
+INTEGRATED_KPSS_SIGNIFICANCE=float(STATIONARITY_CONFIG["integrated_null_requires_first_difference_kpss_p_greater_equal"])
 SEISMIC_NULL_POLICY=str(STATIONARITY_CONFIG["seismic_null_policy"])
 if STATIONARITY_CONFIG["detector_execution_requires_stationarity"] is not False:
  raise ValueError("pipeline_config_invalid: observed-series detector execution must not require stationarity")
@@ -36,8 +38,15 @@ if BOOTSTRAP_CONFIG["seismic_generic_bootstrap_enabled"] is not False:
  raise ValueError("pipeline_config_invalid: generic seismic stationary bootstrap must remain disabled")
 if not INTEGRATED_NULL_DOMAINS or not INTEGRATED_NULL_DOMAINS.issubset({"macro","commodity"}):
  raise ValueError("pipeline_config_invalid: integrated null domain allowlist is unsafe")
-if not (0.0<STATIONARITY_ADF_SIGNIFICANCE<1.0 and 0.0<STATIONARITY_KPSS_SIGNIFICANCE<1.0):
+if not all(0.0<value<1.0 for value in (
+ STATIONARITY_ADF_SIGNIFICANCE,STATIONARITY_KPSS_SIGNIFICANCE,
+ INTEGRATED_ADF_SIGNIFICANCE,INTEGRATED_KPSS_SIGNIFICANCE
+)):
  raise ValueError("pipeline_config_invalid: stationarity significance levels must be in (0,1)")
+if BOOTSTRAP_CONFIG["conditional_alarm_probability_only"] is not True:
+ raise ValueError("pipeline_config_invalid: bootstrap metrics must remain conditional alarm probabilities")
+if BOOTSTRAP_CONFIG["operational_fpr_claim_permitted"] is not False:
+ raise ValueError("pipeline_config_invalid: operational FPR claims are prohibited without ground truth")
 Y0,Y1=int(PIPELINE_CONFIG["period_start"][:4]),int(PIPELINE_CONFIG["period_end"][:4])
 PINK_MIN=int(os.getenv("STRESS_MIN_COMMODITY_POINTS",str(int(PIPELINE_CONFIG["primary_monthly_min_observations_exclusive"])+1)))
 GEM_MIN=int(os.getenv("STRESS_MIN_GEM_POINTS",str(GEM_CONFIG.get("minimum_observations",PIPELINE_CONFIG["world_bank"]["gem_general_min_observations"]))))
@@ -122,7 +131,11 @@ def g0(x,n):
  if dm<=1e-10:return {"passed":False,"reason":"degenerate_baseline_diff_mad","baseline_diff_mad":dm,"baseline_level_mad":lm}
  if lm<=1e-10:return {"passed":False,"reason":"degenerate_baseline_level_mad","baseline_diff_mad":dm,"baseline_level_mad":lm}
  return {"passed":True,"observations":len(a),"minimum":n,"baseline_diff_mad":dm,"baseline_level_mad":lm}
-def g1(x):
+def g1(x,adf_significance=None,kpss_significance=None):
+ adf_alpha=STATIONARITY_ADF_SIGNIFICANCE if adf_significance is None else float(adf_significance)
+ kpss_alpha=STATIONARITY_KPSS_SIGNIFICANCE if kpss_significance is None else float(kpss_significance)
+ if not (0.0<adf_alpha<1.0 and 0.0<kpss_alpha<1.0):
+  return {"passed":False,"status":"INVALID_TEST_CONFIGURATION","reason":"significance_must_be_in_0_1"}
  a=np.asarray(x,dtype=float)
  if a.ndim!=1 or not np.all(np.isfinite(a)):
   return {"passed":False,"status":"INVALID_INPUT","reason":"nonfinite_or_nonvector","observations":int(a.size)}
@@ -136,8 +149,8 @@ def g1(x):
    adf_result=adfuller(a,regression="c",autolag="AIC")
    kpss_result=kpss(a,regression="c",nlags="auto")
   adf_p=float(adf_result[1]);kpss_p=float(kpss_result[1])
-  adf_ok=adf_p<STATIONARITY_ADF_SIGNIFICANCE
-  kpss_ok=kpss_p>=STATIONARITY_KPSS_SIGNIFICANCE
+  adf_ok=adf_p<adf_alpha
+  kpss_ok=kpss_p>=kpss_alpha
   passed=bool(adf_ok and kpss_ok)
   return {
    "passed":passed,
@@ -151,9 +164,9 @@ def g1(x):
    "kpss_p_value":kpss_p,
    "kpss_lags":int(kpss_result[2]),
    "kpss_does_not_reject_level_stationarity":kpss_ok,
-   "significance":STATIONARITY_ADF_SIGNIFICANCE,
-   "adf_significance":STATIONARITY_ADF_SIGNIFICANCE,
-   "kpss_significance":STATIONARITY_KPSS_SIGNIFICANCE,
+   "significance":adf_alpha,
+   "adf_significance":adf_alpha,
+   "kpss_significance":kpss_alpha,
    "warnings":[str(item.message) for item in caught],
    "interpretation":"Conservative preliminary stationarity screen only; passing ADF and KPSS does not prove strict stationarity or validate a domain-specific stochastic model."
   }
@@ -505,7 +518,11 @@ def boot(x,seed,block,g1_result,domain=None):
   null_family=LEVEL_NULL_FAMILY
   eligibility="PRELIMINARY_LEVEL_STATIONARITY_SCREEN_PASS"
  elif domain in INTEGRATED_NULL_DOMAINS and len(x)>=STATIONARITY_MIN_OBSERVATIONS+1:
-  difference_screen=g1(np.diff(x))
+  difference_screen=g1(
+   np.diff(x),
+   adf_significance=INTEGRATED_ADF_SIGNIFICANCE,
+   kpss_significance=INTEGRATED_KPSS_SIGNIFICANCE
+  )
   if difference_screen.get("passed"):
    use_integrated=True
    null_family=INTEGRATED_NULL_FAMILY
@@ -846,6 +863,8 @@ def main():
    "minimum_observations":STATIONARITY_MIN_OBSERVATIONS,
    "adf_significance":STATIONARITY_ADF_SIGNIFICANCE,
    "kpss_significance":STATIONARITY_KPSS_SIGNIFICANCE,
+   "integrated_adf_significance":INTEGRATED_ADF_SIGNIFICANCE,
+   "integrated_kpss_significance":INTEGRATED_KPSS_SIGNIFICANCE,
    "level_null_family":LEVEL_NULL_FAMILY,
    "integrated_null_family":INTEGRATED_NULL_FAMILY,
    "integrated_null_domains":sorted(INTEGRATED_NULL_DOMAINS),
