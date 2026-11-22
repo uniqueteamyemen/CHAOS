@@ -18,7 +18,7 @@
 
 ## 2. Seismic boundary
 
-The seismic cohort remains descriptive-only for P2.2 null calibration. Generic scalar stationary or integrated bootstraps are not accepted as a seismic point-process null. The readiness contract requires magnitude-completeness analysis, magnitude-scale handling, a full-catalog ETAS-family null, an inhomogeneous-Poisson benchmark, a separate declustering-sensitivity track, fitted-model simulation calibration, and predeclared injected-break power tests.
+The seismic cohort remains descriptive-only for P2.2 null calibration. Generic scalar stationary or integrated bootstraps are not accepted as a seismic point-process null. The canonical `real_data_stress_pipeline/contracts/seismic_null_model_contract_v1.json` and its Arabic design specification require magnitude-completeness analysis, magnitude-scale handling, a full-catalog ETAS-family null, an inhomogeneous-Poisson benchmark, a separate declustering-sensitivity track, fitted-model simulation calibration, and predeclared injected-break power tests.
 
 This closure does **not** certify seismic FPR, earthquake prediction, or operational warning.
 
