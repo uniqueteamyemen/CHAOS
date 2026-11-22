@@ -1,0 +1,75 @@
+{
+  "contract_id": "CHAOS_CROSS_SERIES_RELATIONSHIP_DISCOVERY_V1",
+  "status": "candidate_generation_only",
+  "scope": "Retrospective cross-series association discovery across active Macro-EIA and WDI Trade annual observations.",
+  "inputs": {
+    "macro_eia": "catalog_first/readiness_gate/macro_plus_eia_energy/MACRO_PLUS_EIA_ENERGY_COMPLETE_139_NUMERIC_RAW_2000_2024_WIDE.csv",
+    "macro_summary": "catalog_first/readiness_gate/macro_plus_eia_energy/NUMERIC_COMPLETE_MATRIX_V1_1_SUMMARY.json",
+    "wdi_trade": "campaigns/agents/trade_v1/WDI_TRADE_OBSERVED_RECORDS_2000_2024.csv",
+    "wdi_trade_extract_summary": "campaigns/agents/trade_v1/WDI_TRADE_EXTRACT_SUMMARY.json",
+    "wdi_trade_adapter_run": "campaigns/agents/trade_v1/WDI_TRADE_DOMAIN_ADAPTER_RUN_V2.json",
+    "wdi_trade_metadata": "campaigns/agents/trade_v1/WDI_TRADE_SELECTED_SERIES_METADATA.csv",
+    "macro_provenance": "catalog_first/readiness_gate/macro_plus_eia_energy/SELECTED_VARIABLE_PROVENANCE.csv",
+    "behavioral_manifest": "discovery/behavioral_v1/BEHAVIORAL_DISCOVERY_MANIFEST_V1.json"
+  },
+  "alignment": {
+    "native_frequency": "annual",
+    "entity_join": "exact_source_native_entity_code_only",
+    "time_join": "exact_annual_observation_year",
+    "first_difference": "value[t] - value[t-1] only when both exact consecutive annual observations exist",
+    "lag_definition": "source_change_at_year_t is paired with target_change_at_year_t_plus_lag",
+    "lag_years": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "contemporaneous": "one undirected metric pair per pair at lag zero",
+    "lead_lag": "both ordered directions are evaluated for positive lag",
+    "missing_data": "pairwise observed overlap only; never fill, interpolate, or convert missing values to zero",
+    "source_policy": "preserve source namespaces and raw metric identities; never average or merge source measures",
+    "change_transform_policy": "LOG_DIFFERENCE for strictly positive level/index/nominal measures; ABSOLUTE_DIFFERENCE for percentage/rate measures; mode pinned from source metadata and emitted per relationship"
+  },
+  "discovery": {
+    "minimum_entities": 20,
+    "minimum_pairs_per_entity": 8,
+    "minimum_median_abs_correlation": 0.35,
+    "minimum_direction_concordance": 0.65,
+    "maximum_lag_years": 3,
+    "early_window": [
+      2001,
+      2012
+    ],
+    "late_window": [
+      2013,
+      2024
+    ],
+    "temporal_minimum_entities": 15,
+    "temporal_minimum_pairs_per_entity": 6,
+    "association_measure": "median of within-entity Pearson correlations on metadata-selected annual changes",
+    "analysis_modes": [
+      "ENTITY_DEMEANED",
+      "ENTITY_AND_YEAR_EFFECT_ADJUSTED"
+    ],
+    "year_effect_adjustment": "subtract cross-entity median first-difference for each metric/year, then compute within-entity correlation",
+    "candidate_thresholds": "descriptive screening only; not inferential significance thresholds"
+  },
+  "inference_policy": {
+    "null_tests_performed": false,
+    "p_values_computed": false,
+    "multiple_testing_correction": false,
+    "causal_claims_permitted": false,
+    "forecasting_permitted": false,
+    "point_in_time_eligible": false,
+    "available_at_policy": "historical available_at and revision metadata are unknown; no point-in-time claim",
+    "candidate_status": "DISCOVERY_CANDIDATE_UNVALIDATED",
+    "all_search_outcomes_retained": true
+  },
+  "excluded_operations": [
+    "imputation",
+    "frequency_conversion",
+    "source_averaging",
+    "causal_inference",
+    "forecasting"
+  ]
+}

@@ -1,0 +1,42 @@
+{
+  "contract_id": "CHAOS_VARIANCE_VOLATILITY_SHIFT_V1",
+  "status": "candidate_generation_only",
+  "scope": "Retrospective scan for sustained changes in robust dispersion of exact annual first differences across active Macro-EIA and WDI Trade series.",
+  "input_alignment": {
+    "native_frequency": "annual",
+    "first_difference": "value[t] - value[t-1] only when both exact consecutive annual observations exist",
+    "missing_data": "no filling, interpolation, or zero substitution",
+    "series_identity": "source namespace + dataset + native metric + source entity"
+  },
+  "detection": {
+    "minimum_segment_changes": 8,
+    "minimum_variance_change_factor": 10,
+    "dispersion_estimator": "maximum of Qn, scaled MAD, and IQR/1.349 on transformed exact annual changes",
+    "variance_proxy": "squared robust scale estimate",
+    "selection": "maximum absolute post/pre robust variance ratio across eligible splits with at least eight exact annual changes on each side",
+    "candidate_directions": [
+      "VOLATILITY_EXPANSION",
+      "VOLATILITY_CONTRACTION"
+    ],
+    "zero_baseline": "retain emergence from or collapse to zero robust variance as a distinct candidate kind",
+    "candidate_thresholds": "descriptive screening only; not inferential significance thresholds",
+    "transform_policy": "LOG_DIFFERENCE for strictly positive level/index/nominal measures; ABSOLUTE_DIFFERENCE for percentage/rate measures; metric mode is pinned from source metadata and emitted on every scan"
+  },
+  "inference_policy": {
+    "null_tests_performed": false,
+    "p_values_computed": false,
+    "multiple_testing_correction": false,
+    "causal_claims_permitted": false,
+    "forecasting_permitted": false,
+    "point_in_time_eligible": false,
+    "candidate_status": "DISCOVERY_CANDIDATE_UNVALIDATED",
+    "all_scanned_series_retained": true
+  },
+  "excluded_operations": [
+    "imputation",
+    "frequency_conversion",
+    "source_averaging",
+    "causal_inference",
+    "forecasting"
+  ]
+}

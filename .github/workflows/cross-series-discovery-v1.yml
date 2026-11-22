@@ -1,0 +1,105 @@
+name: CHAOS Cross-Series Relationship and Volatility Discovery V1
+
+on:
+  push:
+    branches: ['discovery/**']
+    paths:
+      - 'discovery_engine/cross_series_relationship_discovery_v1.py'
+      - 'scripts/discovery/run_cross_series_and_volatility_v1.py'
+      - 'experimental_contracts/CROSS_SERIES_RELATIONSHIP_DISCOVERY_CONTRACT_V1.json'
+      - 'experimental_contracts/VARIANCE_VOLATILITY_SHIFT_CONTRACT_V1.json'
+      - 'tests/discovery/test_cross_series_relationship_discovery_v1.py'
+      - '.github/workflows/cross-series-discovery-v1.yml'
+      - 'catalog_first/readiness_gate/macro_plus_eia_energy/MACRO_PLUS_EIA_ENERGY_COMPLETE_139_NUMERIC_RAW_2000_2024_WIDE.csv'
+      - 'catalog_first/readiness_gate/macro_plus_eia_energy/NUMERIC_COMPLETE_MATRIX_V1_1_SUMMARY.json'
+      - 'catalog_first/readiness_gate/macro_plus_eia_energy/SELECTED_VARIABLE_PROVENANCE.csv'
+      - 'discovery/behavioral_v1/BEHAVIORAL_DISCOVERY_MANIFEST_V1.json'
+      - 'campaigns/agents/trade_v1/WDI_TRADE_OBSERVED_RECORDS_2000_2024.csv'
+      - 'campaigns/agents/trade_v1/WDI_TRADE_EXTRACT_SUMMARY.json'
+      - 'campaigns/agents/trade_v1/WDI_TRADE_DOMAIN_ADAPTER_RUN_V2.json'
+      - 'campaigns/agents/trade_v1/WDI_TRADE_SELECTED_SERIES_METADATA.csv'
+  pull_request:
+    branches: [main-phase2]
+    paths:
+      - 'discovery_engine/cross_series_relationship_discovery_v1.py'
+      - 'scripts/discovery/run_cross_series_and_volatility_v1.py'
+      - 'experimental_contracts/CROSS_SERIES_RELATIONSHIP_DISCOVERY_CONTRACT_V1.json'
+      - 'experimental_contracts/VARIANCE_VOLATILITY_SHIFT_CONTRACT_V1.json'
+      - 'tests/discovery/test_cross_series_relationship_discovery_v1.py'
+      - '.github/workflows/cross-series-discovery-v1.yml'
+      - 'catalog_first/readiness_gate/macro_plus_eia_energy/MACRO_PLUS_EIA_ENERGY_COMPLETE_139_NUMERIC_RAW_2000_2024_WIDE.csv'
+      - 'catalog_first/readiness_gate/macro_plus_eia_energy/NUMERIC_COMPLETE_MATRIX_V1_1_SUMMARY.json'
+      - 'catalog_first/readiness_gate/macro_plus_eia_energy/SELECTED_VARIABLE_PROVENANCE.csv'
+      - 'discovery/behavioral_v1/BEHAVIORAL_DISCOVERY_MANIFEST_V1.json'
+      - 'campaigns/agents/trade_v1/WDI_TRADE_OBSERVED_RECORDS_2000_2024.csv'
+      - 'campaigns/agents/trade_v1/WDI_TRADE_EXTRACT_SUMMARY.json'
+      - 'campaigns/agents/trade_v1/WDI_TRADE_DOMAIN_ADAPTER_RUN_V2.json'
+      - 'campaigns/agents/trade_v1/WDI_TRADE_SELECTED_SERIES_METADATA.csv'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: chaos-cross-series-volatility-v1-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  discovery-and-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout branch or pull-request candidate
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Compile modules and validate contracts
+        run: |
+          python -m py_compile discovery_engine/cross_series_relationship_discovery_v1.py scripts/discovery/run_cross_series_and_volatility_v1.py
+          python -m json.tool experimental_contracts/CROSS_SERIES_RELATIONSHIP_DISCOVERY_CONTRACT_V1.json
+          python -m json.tool experimental_contracts/VARIANCE_VOLATILITY_SHIFT_CONTRACT_V1.json
+      - name: Run focused unit tests
+        run: python -m unittest discover -s tests/discovery -p 'test_cross_series_relationship_discovery_v1.py' -v
+      - name: Execute both discovery layers against active repository data
+        run: python scripts/discovery/run_cross_series_and_volatility_v1.py
+      - name: Validate candidate-only outputs and artifact hashes
+        run: |
+          python - <<'PY'
+          import hashlib
+          import json
+          from pathlib import Path
+          root = Path.cwd()
+          manifest = json.loads((root / "discovery/cross_series_v1/CROSS_SERIES_DISCOVERY_MANIFEST_V1.json").read_text())
+          assert manifest["status"] == "CANDIDATE_GENERATION_ONLY"
+          assert manifest["inference_policy"]["causal_claims"] is False
+          assert manifest["inference_policy"]["forecasts"] is False
+          assert manifest["source_report"]["missing_values_filled"] is False
+          assert manifest["source_report"]["point_in_time_eligible"] is False
+          for item in manifest["artifacts"]:
+              path = root / item["path"]
+              assert hashlib.sha256(path.read_bytes()).hexdigest() == item["sha256"], item["path"]
+          rel = json.loads((root / "discovery/cross_series_v1/RELATIONSHIP_DISCOVERY_SUMMARY_V1.json").read_text())
+          vol = json.loads((root / "discovery/volatility_v1/VOLATILITY_SHIFT_SUMMARY_V1.json").read_text())
+          print(json.dumps({
+              "relationship_search_comparisons": rel["search_comparisons"],
+              "relationship_candidates": rel["candidate_count"],
+              "volatility_series_scanned": vol["series_scanned"],
+              "volatility_candidates": vol["candidate_count"],
+              "exact_entity_code_intersection": manifest["source_report"]["exact_entity_code_intersection"],
+              "metric_count": manifest["source_report"]["metric_count_total"],
+              "artifact_count": len(manifest["artifacts"])
+          }, sort_keys=True))
+          PY
+      - name: Upload reproducible discovery artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: chaos-cross-series-volatility-v1-${{ github.sha }}
+          path: |
+            discovery/cross_series_v1/
+            discovery/volatility_v1/
+          if-no-files-found: error
+          retention-days: 90
