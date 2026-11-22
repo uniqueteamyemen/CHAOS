@@ -92,6 +92,42 @@ class MarkovAuditTests(unittest.TestCase):
         self.assertEqual(summary["observed_alert_count_g1_passed_series"]["mean"], 1.0)
         self.assertEqual(summary["bootstrap_eligible_series"], 1)
 
+    def test_representation_paths_are_not_pooled(self):
+        def series(cohort, representation, probability):
+            return {
+                "cohort": cohort,
+                "duration_years": 8.0,
+                "g1": {"passed": True},
+                "detector": {
+                    mode: {"alarm_count": 1, "diagnostics": {}}
+                    for mode in ("fast", "markov_cusum", "consensus")
+                },
+                "bootstrap": {
+                    "series_representation": representation,
+                    "by_mode": {
+                        mode: {"alarms": int(probability * 10), "runs": 10, "events": 1, "errors": 0}
+                        for mode in ("fast", "markov_cusum", "consensus")
+                    }
+                },
+            }
+
+        report = build_report({
+            "series_results": [
+                series("commodity", "level", 0.1),
+                series("commodity", "returns", 0.9),
+            ]
+        })
+        paths = report["by_cohort"]["commodity"]["by_representation"]
+        self.assertEqual(
+            paths["level"]["by_mode"]["markov_cusum"]["conditional_bootstrap_probability_of_one_or_more_alerts"]["mean"],
+            0.1,
+        )
+        self.assertEqual(
+            paths["returns"]["by_mode"]["markov_cusum"]["conditional_bootstrap_probability_of_one_or_more_alerts"]["mean"],
+            0.9,
+        )
+        self.assertEqual(set(paths), {"level", "returns"})
+
     def test_rejects_missing_cohort(self):
         with self.assertRaises(ValueError):
             build_report({"series_results": [{"g1": {"passed": True}}]})
