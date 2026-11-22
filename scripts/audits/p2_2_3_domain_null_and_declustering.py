@@ -909,6 +909,7 @@ def audit_belt(
     events: list[dict[str, Any]],
     output_dir: Path,
     poisson_replicates: int,
+    catalog_path: Path,
     ingestion_record: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     catalog_integrity = validate_usgs_belt_catalog(belt, events, ingestion_record)
@@ -1137,7 +1138,7 @@ def run_audit(
         events = read_usgs_csv(catalog_path)
         belt_results.append(
             audit_belt(
-                belt, events, output_dir, poisson_replicates,
+                belt, events, output_dir, poisson_replicates, catalog_path,
                 ingestion_record=ingestion_by_belt.get(belt["id"]),
             )
         )
