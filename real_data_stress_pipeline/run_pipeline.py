@@ -492,9 +492,9 @@ def run_modes(x):
   out[mode]={"alarm_count":len(ev),"provisional_count":len(r.get("provisional_events",[])),"confirmed_count":len(r.get("confirmed_events",[])),"transient_count":len(r.get("transient_anomalies",[])),"unresolved_count":len(r.get("unresolved_alerts",[])),"pending_lifecycle":r.get("pending_lifecycle"),"diagnostics":r.get("diagnostics",{}),"sample_adequacy":r.get("sample_adequacy",{}),"events":ev}
  return out
 def boot(x,seed,block,g1_result,domain=None,series_representation="level"):
-  """Estimate a conditional null without re-integrating input returns/differences."""
-  if series_representation not in {"level", "returns", "differences"}:
-   raise ValueError(f"unsupported_series_representation:{series_representation}")
+ """Estimate a conditional null without re-integrating input returns/differences."""
+ if series_representation not in {"level", "returns", "differences"}:
+  raise ValueError(f"unsupported_series_representation:{series_representation}")
  x=np.asarray(x,dtype=float)
  r={k:{"alarms":0,"events":0,"runs":0,"errors":0,"alarm_probability":None,"wilson95":None} for k in BreakDetectorV1.MODES}
  seed_hash=hashlib.sha256(seed.encode()).hexdigest()
