@@ -1073,16 +1073,43 @@ def run_audit(
     output_dir: Path,
     poisson_replicates: int,
     gem_snapshot_dir: Path | None = None,
+    isolated_usgs_only: bool = False,
+    max_belts: int | None = None,
 ) -> dict[str, Any]:
     output_dir.mkdir(parents=True, exist_ok=True)
     source_meta: dict[str, Any] = {"sources": [], "errors": [], "rejected": [], "belts": []}
 
-    # Independent source ingestion runs concurrently; no source writes into the P2.2 manifest.
-    with ThreadPoolExecutor(max_workers=4) as executor:
-        seismic_future = executor.submit(p2.seismic, source_meta)
-        gem_future = executor.submit(fetch_world_bank_gem, output_dir, gem_snapshot_dir)
-        fred_future = executor.submit(fetch_fred, output_dir, os.getenv("FRED_API_KEY"))
-        eia_future = executor.submit(fetch_eia, output_dir, os.getenv("EIA_API_KEY"))
+    # Isolated audit storage prevents overwriting the historical P2.2 source archive.
+    audit_raw_root = output_dir / "source_snapshots" / "raw"
+    audit_derived_root = output_dir / "source_snapshots" / "derived"
+    audit_raw_root.mkdir(parents=True, exist_ok=True)
+    audit_derived_root.mkdir(parents=True, exist_ok=True)
+    original_raw, original_derived = p2.RAW, p2.DERIVED
+    try:
+        p2.RAW, p2.DERIVED = audit_raw_root, audit_derived_root
+        seismic_series = p2.seismic(source_meta)
+    finally:
+        p2.RAW, p2.DERIVED = original_raw, original_derived
+
+    if max_belts is not None:
+        if max_belts < 1:
+            raise ValueError("max_belts_must_be_positive")
+        selected_belts = p2.BELTS[:max_belts]
+    else:
+        selected_belts = p2.BELTS
+
+    if isolated_usgs_only:
+        gem_result = {"status": "SKIPPED_BY_BOUNDED_PR_POLICY"}
+        fred_result = {"status": "SKIPPED_BY_BOUNDED_PR_POLICY"}
+        eia_result = {"status": "SKIPPED_BY_BOUNDED_PR_POLICY"}
+    else:
+        with ThreadPoolExecutor(max_workers=3) as executor:
+            gem_future = executor.submit(fetch_world_bank_gem, output_dir, gem_snapshot_dir)
+            fred_future = executor.submit(fetch_fred, output_dir, os.getenv("FRED_API_KEY"))
+            eia_future = executor.submit(fetch_eia, output_dir, os.getenv("EIA_API_KEY"))
+            gem_result = gem_future.result()
+            fred_result = fred_future.result()
+            eia_result = eia_future.result()
 
         try:
             _seismic_series = seismic_future.result()
@@ -1116,8 +1143,8 @@ def run_audit(
         for item in source_meta["belts"]
         if isinstance(item, dict) and item.get("id")
     }
-    for belt in p2.BELTS:
-        catalog_path = p2.DERIVED / f"{belt['id']}_events.csv"
+    for belt in selected_belts:
+        catalog_path = audit_derived_root / f"{belt['id']}_events.csv"
         if not catalog_path.exists():
             belt_results.append({
                 "belt_id": belt["id"],
@@ -1152,6 +1179,8 @@ def run_audit(
         "status": "completed" if source_gate["passed"] else "incomplete",
         "required_source_gate": source_gate,
         "repository_commit": os.getenv("GITHUB_SHA", "local-unresolved"),
+        "audit_storage_isolated": True,
+        "source_snapshot_root": str((output_dir / "source_snapshots").as_posix()),
         "detector": {
             "name": "BreakDetectorV1",
             "mode": "markov_cusum",
@@ -1187,6 +1216,8 @@ def main() -> int:
                         default=Path("artifacts/domain_null_and_declustering"))
     parser.add_argument("--poisson-replicates", type=int, default=200)
     parser.add_argument("--gem-snapshot-dir", type=Path, default=None)
+    parser.add_argument("--isolated-usgs-only", action="store_true")
+    parser.add_argument("--max-belts", type=int, default=None)
     args = parser.parse_args()
     if args.poisson_replicates < 1:
         parser.error("--poisson-replicates must be positive")
@@ -1196,6 +1227,8 @@ def main() -> int:
             args.output_dir,
             args.poisson_replicates,
             args.gem_snapshot_dir,
+            isolated_usgs_only=args.isolated_usgs_only,
+            max_belts=args.max_belts,
         )
         print(
             "DOMAIN_NULL_AUDIT_COMPLETE "
