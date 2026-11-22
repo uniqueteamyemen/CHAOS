@@ -1085,6 +1085,7 @@ def run_audit(
     audit_raw_root.mkdir(parents=True, exist_ok=True)
     audit_derived_root.mkdir(parents=True, exist_ok=True)
     original_raw, original_derived = p2.RAW, p2.DERIVED
+    original_belts = p2.BELTS
     if max_belts is not None:
         if max_belts < 1:
             raise ValueError("max_belts_must_be_positive")
@@ -1092,17 +1093,16 @@ def run_audit(
     else:
         selected_belts = p2.BELTS
 
+    # USGS ingestion always uses an isolated snapshot root, for both PR and full runs.
+    try:
+        p2.BELTS = selected_belts
+        p2.RAW, p2.DERIVED = audit_raw_root, audit_derived_root
+        seismic_series = p2.seismic(source_meta)
+    finally:
+        p2.BELTS = original_belts
+        p2.RAW, p2.DERIVED = original_raw, original_derived
+
     if isolated_usgs_only:
-        # Keep only the requested belt in the live query and avoid touching
-        # the P2 archive. p2.seismic reads this list dynamically.
-        original_belts = p2.BELTS
-        try:
-            p2.BELTS = selected_belts
-            p2.RAW, p2.DERIVED = audit_raw_root, audit_derived_root
-            seismic_series = p2.seismic(source_meta)
-        finally:
-            p2.BELTS = original_belts
-            p2.RAW, p2.DERIVED = original_raw, original_derived
         gem_result = {"status": "SKIPPED_BY_BOUNDED_PR_POLICY"}
         fred_result = {"status": "SKIPPED_BY_BOUNDED_PR_POLICY"}
         eia_result = {"status": "SKIPPED_BY_BOUNDED_PR_POLICY"}
@@ -1151,7 +1151,29 @@ def run_audit(
         "rejected": source_meta["rejected"],
         "belts": source_meta["belts"],
     }
-    source_gate = required_source_gate(gem_result, usgs_result, belt_results)
+    if isolated_usgs_only:
+        selected_belts_complete = (
+            len(belt_results) == len(selected_belts)
+            and bool(selected_belts)
+            and all(
+                item.get("status") == "COMPLETED"
+                and isinstance(item.get("catalog_integrity"), dict)
+                and item["catalog_integrity"].get("status") == "PASS"
+                and item["catalog_integrity"].get("accounting_reconciled") is True
+                for item in belt_results
+            )
+        )
+        source_gate = {
+            "world_bank_gem": "SKIPPED_BY_BOUNDED_PR_POLICY",
+            "usgs_comcat": usgs_result.get("status") == "COMPLETED",
+            "usgs_catalog_integrity": selected_belts_complete,
+            "selected_seismic_belts": len(selected_belts),
+            "five_seismic_belts": "NOT_RUN_IN_BOUNDED_PR_MODE",
+            "passed": selected_belts_complete and usgs_result.get("status") == "COMPLETED",
+            "scope": "BOUNDED_PR_SMOKE_ONLY_NOT_FULL_DOMAIN_VALIDATION",
+        }
+    else:
+        source_gate = required_source_gate(gem_result, usgs_result, belt_results)
     result = {
         "audit_id": "CHAOS-P2.2.3-DOMAIN-NULL-DECLUSTERING",
         "status": "completed" if source_gate["passed"] else "incomplete",
