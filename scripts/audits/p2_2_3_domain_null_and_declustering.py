@@ -1076,12 +1076,13 @@ def run_audit(
     isolated_usgs_only: bool = False,
     max_belts: int | None = None,
 ) -> dict[str, Any]:
+    output_dir = output_dir.resolve()
     output_dir.mkdir(parents=True, exist_ok=True)
     source_meta: dict[str, Any] = {"sources": [], "errors": [], "rejected": [], "belts": []}
 
     # Isolated audit storage prevents overwriting the historical P2.2 source archive.
-    audit_raw_root = output_dir / "source_snapshots" / "raw"
-    audit_derived_root = output_dir / "source_snapshots" / "derived"
+    audit_raw_root = (output_dir / "source_snapshots" / "raw").resolve()
+    audit_derived_root = (output_dir / "source_snapshots" / "derived").resolve()
     audit_raw_root.mkdir(parents=True, exist_ok=True)
     audit_derived_root.mkdir(parents=True, exist_ok=True)
     original_raw, original_derived = p2.RAW, p2.DERIVED
