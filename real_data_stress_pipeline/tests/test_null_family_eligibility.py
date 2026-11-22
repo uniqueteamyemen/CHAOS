@@ -1,8 +1,11 @@
 import unittest
+from unittest.mock import patch
+
 import numpy as np
 
+from real_data_stress_pipeline import run_pipeline as p2
 from real_data_stress_pipeline.run_pipeline import (
-    assess_null_family, bootstrap_null_sample, boot, g1
+    assess_null_family, bootstrap_null_sample, boot, g1, PIPELINE_CONFIG
 )
 
 
@@ -43,6 +46,53 @@ class NullFamilyEligibilityTests(unittest.TestCase):
         self.assertEqual(sampled.size, values.size)
         self.assertEqual(sampled[0], values[0])
         self.assertTrue(np.all(np.isfinite(sampled)))
+
+
+    def test_detector_runs_even_when_g1_fails(self):
+        values = np.linspace(0.0, 10.0, 120)
+        item = {
+            "id": "nonstationary-test",
+            "source": "world_bank",
+            "name": "Synthetic nonstationary series",
+            "cohort": "macro",
+            "domain": "macro",
+            "frequency": "monthly",
+            "values": values,
+            "axis": [f"2000-{(i % 12) + 1:02d}" for i in range(values.size)],
+            "sha256": "a" * 64,
+            "quality": {"status": "PASS"},
+        }
+        detector_output = {
+            "markov_cusum": {"alarm_count": 1, "events": [], "shock_matches": []}
+        }
+        with (
+            patch.object(p2, "run_modes", return_value=detector_output) as detector,
+            patch.object(p2, "g1", return_value={"passed": False, "status": "SCREEN_FAIL"}),
+            patch.object(p2, "assess_null_family", return_value={
+                "status": "UNRESOLVED", "family": None
+            }),
+            patch.object(p2, "applicable_shock_series", return_value=False),
+            patch.object(p2, "boot", return_value={
+                "status": "SKIPPED_NO_VALIDATED_NULL", "replicates": 0,
+                "null_family": None
+            }),
+        ):
+            result = p2.eval_series(item, {"events": []})
+
+        detector.assert_called_once_with(values)
+        self.assertFalse(result["g1"]["passed"])
+        self.assertEqual(result["detector"]["markov_cusum"]["alarm_count"], 1)
+        self.assertEqual(result["bootstrap"]["status"], "SKIPPED_NO_VALIDATED_NULL")
+
+    def test_pipeline_config_disables_stationarity_gate_on_detector(self):
+        self.assertIs(
+            PIPELINE_CONFIG["stationarity"]["detector_execution_requires_stationarity"],
+            False,
+        )
+        self.assertIs(
+            PIPELINE_CONFIG["bootstrap"]["seismic_generic_block_bootstrap_enabled"],
+            False,
+        )
 
     def test_detector_null_skip_is_explicitly_domain_scoped(self):
         result = boot(
