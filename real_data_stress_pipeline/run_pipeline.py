@@ -658,11 +658,11 @@ def eval_series(item,contract):
    v["unassociated_structural_alarm_count"]=None
    v["unassociated_structural_alarms_per_decade"]=None
  block=MONTH_BLOCK if item["frequency"]=="monthly" else EVENT_BLOCK
- series_representation = (
-  "returns" if item["source"] in {"pink_sheet", "gem"}
-  else "level"
+ series_representation = item.get(
+  "representation",
+  "returns" if item["source"] in {"pink_sheet", "gem"} else "level"
  )
- bootstrap_result=boot(
+bootstrap_result=boot(
   item["values"],item["id"]+str(item["sha256"]),block,g1_result,
   item["domain"],series_representation=series_representation
  )
