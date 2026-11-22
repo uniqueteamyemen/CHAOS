@@ -116,6 +116,7 @@ jobs:
         run: |
           set -euo pipefail
           python -m unittest discover -s tests/audits -p 'test_p2_2_*.py' -v
+          python -m unittest discover -s tests/audits -p 'test_p2_codex_polish.py' -v
           python -m unittest discover -s tests/audits -p 'test_p2_null_eligibility.py' -v
           python -m unittest discover -s tests/seismic_null_contract -p 'test_*.py' -v
 
