@@ -104,19 +104,62 @@ jobs:
           fi
 
       - name: Run pipeline contract tests
-        run: python -m unittest discover -s real_data_stress_pipeline/tests -v
+        run: python -m unittest discover -s real_data_stress_pipeline/tests -p 'test_*.py' -v
+
+      - name: Run Markov, null-routing and seismic contract tests
+        run: |
+          set -euo pipefail
+          python -m unittest discover -s tests/audits -p 'test_p2_2_*.py' -v
+          python -m unittest discover -s tests/audits -p 'test_p2_null_eligibility.py' -v
+          python -m unittest discover -s tests/seismic_null_contract -p 'test_*.py' -v
 
       - name: Execute real historical stress pipeline
-        if: github.event_name != 'pull_request'
         env:
           GITHUB_SHA: ${{ github.sha }}
-          STRESS_BOOTSTRAP_REPLICATES: '999'
+          STRESS_BOOTSTRAP_REPLICATES: ${{ github.event_name == 'pull_request' && '19' || '999' }}
           STRESS_BOOTSTRAP_MEAN_BLOCK_MONTHS: '12'
           STRESS_BOOTSTRAP_MEAN_BLOCK_EVENTS: '25'
           STRESS_MIN_COMMODITY_POINTS: '501'
           STRESS_MIN_GEM_POINTS: '87'
           STRESS_USGS_MIN_MAGNITUDE: '4.5'
-        run: python -m real_data_stress_pipeline.run_pipeline
+        run: python -u -m real_data_stress_pipeline.run_pipeline
+
+      - name: Audit generated P2.2 Markov manifest
+        if: github.event_name == 'pull_request'
+        run: |
+          python scripts/audits/p2_2_2_markov_diagnostics.py \
+            real_data_stress_pipeline/results/real_data_stress_manifest.json \
+            --output artifacts/markov_calibration_audit.json
+
+      - name: Run bounded Markov real-series behavior audit
+        if: github.event_name == 'pull_request'
+        env:
+          PYTHONUNBUFFERED: '1'
+        run: |
+          python -u scripts/audits/p2_2_3_markov_real_data_behavior.py \
+            --replicates 19 --max-series 5 --workers 2 \
+            --output-dir artifacts/markov_real_data_behavior
+
+      - name: Run bounded paired injected-break power audit
+        if: github.event_name == 'pull_request'
+        env:
+          PYTHONUNBUFFERED: '1'
+        run: |
+          python -u scripts/audits/p2_2_4_markov_injected_break_power.py \
+            --replicates 9 --max-series 5 --workers 2 \
+            --output-dir artifacts/markov_injected_break_power
+
+      - name: Run seismic integrity, declustering and exploratory null audit
+        if: github.event_name == 'pull_request'
+        env:
+          PYTHONUNBUFFERED: '1'
+          FRED_API_KEY: ${{ secrets.FRED_API_KEY }}
+          EIA_API_KEY: ${{ secrets.EIA_API_KEY }}
+          EIA_SERIES_IDS: ${{ vars.EIA_SERIES_IDS }}
+        run: |
+          python -u scripts/audits/p2_2_3_domain_null_and_declustering.py \
+            --poisson-replicates 200 \
+            --output-dir artifacts/domain_null_and_declustering
 
       - name: Package reproducible source snapshots for permanent release
         if: success() && github.event_name != 'pull_request'
@@ -131,7 +174,7 @@ jobs:
           ls -lh chaos-p2-2-source-snapshots.tar.gz chaos-p2-2-source-snapshots.tar.gz.sha256
 
       - name: Upload raw source responses and complete numerical audit
-        if: always() && github.event_name != 'pull_request'
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: chaos-p2-2-stress-${{ github.run_id }}-${{ github.run_attempt }}
@@ -144,6 +187,10 @@ jobs:
             real_data_stress_pipeline/results/
             chaos-p2-2-source-snapshots.tar.gz
             chaos-p2-2-source-snapshots.tar.gz.sha256
+            artifacts/markov_calibration_audit.json
+            artifacts/markov_real_data_behavior/
+            artifacts/markov_injected_break_power/
+            artifacts/domain_null_and_declustering/
 
       - name: Create and publish the P2.2.1 audited release
         if: success() && github.event_name != 'pull_request'
