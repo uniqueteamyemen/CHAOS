@@ -192,11 +192,11 @@ jobs:
             artifacts/markov_injected_break_power/
             artifacts/domain_null_and_declustering/
 
-      - name: Create and publish the P2.2.1 audited release
+      - name: Create and publish the P2 phase-close audited release
         if: success() && github.event_name != 'pull_request'
         env:
           GH_TOKEN: ${{ github.token }}
-          TAG_NAME: p2.2-historical-stress-v1.0.1
+          TAG_NAME: p2-phase-close-v1.0
           SOURCE_SHA: ${{ github.sha }}
         run: |
           set -euo pipefail
@@ -206,7 +206,7 @@ jobs:
           TAG_SHA="${SOURCE_SHA}"
           if ! git ls-remote --exit-code --tags origin "refs/tags/${TAG_NAME}" >/dev/null 2>&1; then
             git tag -a "${TAG_NAME}" "${TAG_SHA}" \
-              -m "CHAOS P2.2.1 cohort-separated bootstrap audit v1.0.1; source commit ${TAG_SHA}"
+              -m "CHAOS P2 phase-close v1.0; source commit ${TAG_SHA}"
             git push origin "refs/tags/${TAG_NAME}"
           else
             existing="$(git ls-remote origin "refs/tags/${TAG_NAME}^{}" | awk '{print $1}')"
@@ -214,14 +214,14 @@ jobs:
               existing="$(git ls-remote origin "refs/tags/${TAG_NAME}" | awk '{print $1}')"
             fi
             if [ "${existing}" != "${TAG_SHA}" ]; then
-              echo "Existing P2.2.1 tag points to a different commit: ${existing}" >&2
+              echo "Existing P2 phase-close tag points to a different commit: ${existing}" >&2
               exit 1
             fi
           fi
           if ! gh release view "${TAG_NAME}" >/dev/null 2>&1; then
             gh release create "${TAG_NAME}" \
               --target "${TAG_SHA}" \
-              --title "CHAOS P2.2.1 — Cohort-Separated Bootstrap Audit v1.0.1" \
+              --title "CHAOS P2 — Clean Phase Closure v1.0" \
               --notes-file REAL_DATA_STRESS_REPORT_AR.md
           fi
           gh release upload "${TAG_NAME}" \
