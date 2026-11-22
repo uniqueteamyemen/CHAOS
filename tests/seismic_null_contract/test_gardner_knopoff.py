@@ -84,11 +84,14 @@ class GardnerKnopoffTests(unittest.TestCase):
             gardner_knopoff_declustering([event("one", 0, 5)], 1.5)
 
 
-    def test_decimal_year_uses_calendar_year_length(self):
+    def test_decimal_year_matches_hmtk_fixed_365_day_clock(self):
         start = datetime(2020, 1, 1, tzinfo=timezone.utc)
-        middle = datetime(2020, 7, 2, tzinfo=timezone.utc)
+        leap_day = datetime(2020, 2, 29, 23, 59, tzinfo=timezone.utc)
+        same_day = datetime(2020, 2, 29, 0, 1, tzinfo=timezone.utc)
         self.assertAlmostEqual(decimal_year(start), 2020.0)
-        self.assertAlmostEqual(decimal_year(middle), 2020.5, places=5)
+        self.assertAlmostEqual(decimal_year(leap_day), 2020.0 + 59 / 365.0, places=10)
+        # HMTK discards time-of-day; same UTC dates must share a coordinate.
+        self.assertAlmostEqual(decimal_year(leap_day), decimal_year(same_day), places=12)
 
 
 if __name__ == "__main__":

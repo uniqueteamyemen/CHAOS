@@ -491,7 +491,10 @@ def run_modes(x):
   r=BreakDetectorV1(mode=mode,markov_threshold=H).analyze(x);ev=r.get("structural_breaks",[])
   out[mode]={"alarm_count":len(ev),"provisional_count":len(r.get("provisional_events",[])),"confirmed_count":len(r.get("confirmed_events",[])),"transient_count":len(r.get("transient_anomalies",[])),"unresolved_count":len(r.get("unresolved_alerts",[])),"pending_lifecycle":r.get("pending_lifecycle"),"diagnostics":r.get("diagnostics",{}),"sample_adequacy":r.get("sample_adequacy",{}),"events":ev}
  return out
-def boot(x,seed,block,g1_result,domain=None):
+def boot(x,seed,block,g1_result,domain=None,series_representation="level"):
+ """Estimate a conditional null without re-integrating input returns/differences."""
+ if series_representation not in {"level", "returns", "differences"}:
+  raise ValueError(f"unsupported_series_representation:{series_representation}")
  x=np.asarray(x,dtype=float)
  r={k:{"alarms":0,"events":0,"runs":0,"errors":0,"alarm_probability":None,"wilson95":None} for k in BreakDetectorV1.MODES}
  seed_hash=hashlib.sha256(seed.encode()).hexdigest()
@@ -517,7 +520,8 @@ def boot(x,seed,block,g1_result,domain=None):
  if g1_result.get("passed"):
   null_family=LEVEL_NULL_FAMILY
   eligibility="PRELIMINARY_LEVEL_STATIONARITY_SCREEN_PASS"
- elif domain in INTEGRATED_NULL_DOMAINS and len(x)>=STATIONARITY_MIN_OBSERVATIONS+1:
+ elif (domain in INTEGRATED_NULL_DOMAINS and series_representation=="level"
+       and len(x)>=STATIONARITY_MIN_OBSERVATIONS+1):
   difference_screen=g1(
    np.diff(x),
    adf_significance=INTEGRATED_ADF_SIGNIFICANCE,
@@ -548,7 +552,7 @@ def boot(x,seed,block,g1_result,domain=None):
    "status":"SKIPPED_G1_SCREEN_FAILED",
    "method":"Politis-Romano stationary bootstrap not eligible",
    "null_family":None,
-   "null_eligibility":"NO_VALIDATED_NULL_FOR_THIS_SERIES",
+   "null_eligibility":"INCREMENT_SERIES_FAILED_ITS_OWN_NULL_SCREEN" if series_representation in {"returns", "differences"} else "NO_VALIDATED_NULL_FOR_THIS_SERIES",
    "alternative_null_status":"NOT_ESTABLISHED",
    "replicates":0,
    "mean_block_length":block,
@@ -556,8 +560,9 @@ def boot(x,seed,block,g1_result,domain=None):
    "seed_sha256":seed_hash,
    "level_screen":g1_result,
    "first_difference_screen":difference_screen,
-   "skip_reason":g1_result.get("status","G1_NOT_PASSED"),
-   "note":"Detector execution is independent of null eligibility; this series has no validated bootstrap null."
+   "series_representation":series_representation,
+   "skip_reason":"ALREADY_INCREMENT_SERIES_NOT_ELIGIBLE_FOR_REINTEGRATION" if series_representation in {"returns", "differences"} else g1_result.get("status","G1_NOT_PASSED"),
+   "note":"Detector execution is independent of null eligibility; no valid null is established for this representation."
   }
  rng=np.random.default_rng(int(seed_hash[:16],16))
  for _ in range(REPS):
@@ -568,10 +573,16 @@ def boot(x,seed,block,g1_result,domain=None):
    sample=stationary_sample(x,rng,block)
   for mode in BreakDetectorV1.MODES:
    try:
-    z=BreakDetectorV1(mode=mode,markov_threshold=H).analyze(sample);ev=z.get("structural_breaks",[]);r[mode]["runs"]+=1;r[mode]["alarms"]+=int(bool(ev));r[mode]["events"]+=len(ev)
-   except Exception:r[mode]["errors"]+=1
+    z=BreakDetectorV1(mode=mode,markov_threshold=H).analyze(sample)
+    ev=z.get("structural_breaks",[])
+    r[mode]["runs"]+=1
+    r[mode]["alarms"]+=int(bool(ev))
+    r[mode]["events"]+=len(ev)
+   except Exception:
+    r[mode]["errors"]+=1
  for v in r.values():
-  v["alarm_probability"]=v["alarms"]/v["runs"] if v["runs"] else None;v["wilson95"]=wilson(v["alarms"],v["runs"])
+  v["alarm_probability"]=v["alarms"]/v["runs"] if v["runs"] else None
+  v["wilson95"]=wilson(v["alarms"],v["runs"])
  method="Integrated stationary bootstrap of first differences" if use_integrated else "Politis-Romano stationary bootstrap of levels"
  return {
   "status":"ESTIMATED_CONDITIONAL_DIAGNOSTIC",
@@ -585,8 +596,10 @@ def boot(x,seed,block,g1_result,domain=None):
   "seed_sha256":seed_hash,
   "level_screen":g1_result,
   "first_difference_screen":difference_screen,
+  "series_representation":series_representation,
   "note":"Conditional null diagnostic only; ADF/KPSS screening does not prove model adequacy and alarm probability is not an operational FPR."
-}
+ }
+
 def series_category(item):
  if item["domain"]=="macro":return "macro"
  name=item["name"].casefold()
@@ -652,7 +665,16 @@ def eval_series(item,contract):
    v["unassociated_structural_alarm_count"]=None
    v["unassociated_structural_alarms_per_decade"]=None
  block=MONTH_BLOCK if item["frequency"]=="monthly" else EVENT_BLOCK
- bootstrap_result=boot(item["values"],item["id"]+str(item["sha256"]),block,g1_result,item["domain"])
+ series_representation = item.get(
+  "representation",
+  "returns" if item["source"] in {"pink_sheet", "gem"} else "level"
+ )
+ if series_representation not in {"level", "returns", "differences"}:
+  raise ValueError(f"unsupported_series_representation:{series_representation}")
+ bootstrap_result=boot(
+  item["values"],item["id"]+str(item["sha256"]),block,g1_result,
+  item["domain"],series_representation=series_representation
+ )
  return {
   "id":item["id"],"source":item["source"],"name":item["name"],"cohort":item["cohort"],"domain":item["domain"],"frequency":item["frequency"],"observations":len(item["values"]),"duration_years":duration,"first":item["axis"][0],"last":item["axis"][-1],"sha256":item["sha256"],"quality":item["quality"],
   "g1":g1_result,
@@ -684,42 +706,54 @@ def aggregate(results,contract):
    pre=sum(event["lead_months"]>0 for event in matched)
    out["shocks"][target["id"]][mode]={"eligible_series":len(evaluations),"matches":len(matched),"capture_rate":len(matched)/len(evaluations) if evaluations else None,"capture_rate_pct":100*len(matched)/len(evaluations) if evaluations else None,"pre_anchor":pre,"pre_anchor_rate_pct":100*pre/len(evaluations) if evaluations else None,"same_month":sum(event["lead_months"]==0 for event in matched),"post_anchor":sum(event["lead_months"]<0 for event in matched),"median_lead":float(np.median([event["lead_months"] for event in matched])) if matched else None,"series_matches":matched}
  for cohort in sorted({series["cohort"] for series in results}):
-  subset=[series for series in results if series["cohort"]==cohort]
-  cohort_stats={}
-  for mode in BreakDetectorV1.MODES:
-   alarms=0;years=0.0;unassociated=0;matched_years=0.0;matched_series=0
-   conditional_probabilities=[]
-   total_replicates=0
-   for series in subset:
-    alarms+=series["detector"][mode]["alarm_count"];years+=series["duration_years"]
-    boot=series["bootstrap"]["by_mode"][mode]
-    runs=int(boot.get("runs",0));total_replicates+=runs
-    if runs>0:
-     conditional_probabilities.append(float(boot["alarms"])/runs)
-    unassociated_count=series["detector"][mode]["unassociated_structural_alarm_count"]
-    if unassociated_count is not None:
-     unassociated+=unassociated_count;matched_years+=series["duration_years"];matched_series+=1
-   probs=np.asarray(conditional_probabilities,dtype=float)
-   cohort_stats[mode]={
-    "series":len(subset),
-    "g1_passed_series":sum(1 for series in subset if series["g1"].get("passed")),
-    "alarms":alarms,
-    "alarms_per_decade":alarms/years*10 if years else None,
-    "shock_matched_cohort_series":matched_series,
-    "unassociated_structural_alarms":unassociated if matched_series else None,
-    "unassociated_structural_alarms_per_decade":unassociated/matched_years*10 if matched_years else None,
-    "bootstrap_eligible_series":int(probs.size),
-    "bootstrap_replicates_total":total_replicates,
-    "conditional_bootstrap_alarm_probability_mean":float(np.mean(probs)) if probs.size else None,
-    "conditional_bootstrap_alarm_probability_median":float(np.median(probs)) if probs.size else None,
-    "conditional_bootstrap_alarm_probability_q25":float(np.quantile(probs,0.25)) if probs.size else None,
-    "conditional_bootstrap_alarm_probability_q75":float(np.quantile(probs,0.75)) if probs.size else None,
-    "conditional_bootstrap_alarm_probability_min":float(np.min(probs)) if probs.size else None,
-    "conditional_bootstrap_alarm_probability_max":float(np.max(probs)) if probs.size else None
-   }
+  cohort_subset=[series for series in results if series["cohort"]==cohort]
+  cohort_stats={"series_total":len(cohort_subset),"by_representation":{}}
+  for representation in sorted({
+   series.get("bootstrap",{}).get("series_representation",series.get("representation","unspecified"))
+   for series in cohort_subset
+  }):
+   subset=[
+    series for series in cohort_subset
+    if series.get("bootstrap",{}).get("series_representation",series.get("representation","unspecified"))==representation
+   ]
+   representation_stats={}
+   for mode in BreakDetectorV1.MODES:
+    alarms=0;years=0.0;unassociated=0;matched_years=0.0;matched_series=0
+    conditional_probabilities=[]
+    total_replicates=0
+    for series in subset:
+     alarms+=series["detector"][mode]["alarm_count"]
+     years+=series["duration_years"]
+     boot=series["bootstrap"]["by_mode"][mode]
+     runs=int(boot.get("runs",0));total_replicates+=runs
+     if runs>0:
+      conditional_probabilities.append(float(boot["alarms"])/runs)
+     unassociated_count=series["detector"][mode]["unassociated_structural_alarm_count"]
+     if unassociated_count is not None:
+      unassociated+=unassociated_count
+      matched_years+=series["duration_years"]
+      matched_series+=1
+    probs=np.asarray(conditional_probabilities,dtype=float)
+    representation_stats[mode]={
+     "series":len(subset),
+     "g1_passed_series":sum(1 for series in subset if series["g1"].get("passed")),
+     "alarms":alarms,
+     "alarms_per_decade":alarms/years*10 if years else None,
+     "shock_matched_cohort_series":matched_series,
+     "unassociated_structural_alarms":unassociated if matched_series else None,
+     "unassociated_structural_alarms_per_decade":unassociated/matched_years*10 if matched_years else None,
+     "bootstrap_eligible_series":int(probs.size),
+     "bootstrap_replicates_total":total_replicates,
+     "conditional_bootstrap_alarm_probability_mean":float(np.mean(probs)) if probs.size else None,
+     "conditional_bootstrap_alarm_probability_median":float(np.median(probs)) if probs.size else None,
+     "conditional_bootstrap_alarm_probability_q25":float(np.quantile(probs,0.25)) if probs.size else None,
+     "conditional_bootstrap_alarm_probability_q75":float(np.quantile(probs,0.75)) if probs.size else None,
+     "conditional_bootstrap_alarm_probability_min":float(np.min(probs)) if probs.size else None,
+     "conditional_bootstrap_alarm_probability_max":float(np.max(probs)) if probs.size else None
+    }
+   cohort_stats["by_representation"][representation]=representation_stats
   out["by_cohort"][cohort]=cohort_stats
  return out
-
 
 def make_report(m):
  z=m.get("aggregate",{})
@@ -751,28 +785,29 @@ def make_report(m):
   f"- Pink Sheet: يتطلب 501 عائد شهري على الأقل، أي 502 سعراً موجباً متصلاً على الأقل.",
   f"- GEM وفواصل USGS: يتطلب كل فوج ثانوي 87 مشاهدة/فاصلاً على الأقل.",
   "- G1: ADF يرفض جذر الوحدة (p < 0.05) وKPSS لا يرفض استقرار المستوى (p ≥ 0.05). هذا فحص أولي مزدوج وليس برهاناً على الاستقرارية الصارمة.",
-  f"- السلاسل الاقتصادية والسلعية: {REPS} إعادة توليد عند اجتياز G1 للمستوى؛ وإذا فشل، يُختبر G1 على الفروق الأولى ويُستخدم integrated bootstrap فقط عند نجاحه. متوسط طول الكتلة الشهري {MONTH_BLOCK} شهراً.",
+  f"- السلاسل التي تمثل مستويات: {REPS} إعادة توليد عند اجتياز G1 للمستوى؛ وإذا فشل، يُختبر G1 على الفروق الأولى ويُستخدم integrated bootstrap فقط عند نجاحه. أما Pink Sheet وGEM فهما عوائد شهرية جاهزة؛ لا يعاد أخذ فرقها ولا تكاملها. متوسط طول الكتلة الشهري {MONTH_BLOCK} شهراً.",
   "- فشل فحص المستوى والفروق الأولى يترك null غير محسوم؛ لا يُنتج احتمال إنذار بديل مصطنع.",
   "- فحص أهلية null لا يوقف تشغيل الكاشف على السلسلة المرصودة؛ يسجل كل منهما مستقلاً في manifest.",
   "- التعرض الزلزالي لا يستخدم Stationary Bootstrap عاماً؛ يتطلب point-process null مع اكتمال الكتالوج وdeclustering وملاءمة النموذج قبل أي معايرة.",
   "",
   "## 3. الإنذارات حسب الفوج — دون تجميع أفواج غير متجانسة",
   "",
-  "| الفوج | الوضع | السلاسل | null مؤهل | الإنذارات البنيوية | إنذارات/عقد | متوسط احتمال الإنذار الشرطي | الوسيط | Q1–Q3 |",
-  "|---|---|---:|---:|---:|---:|---:|---:|---:|"
+  "| الفوج | تمثيل السلسلة | الوضع | السلاسل | null مؤهل | الإنذارات البنيوية | إنذارات/عقد | متوسط احتمال الإنذار الشرطي | الوسيط | Q1–Q3 |",
+  "|---|---|---|---:|---:|---:|---:|---:|---:|---:|",
  ]
- for cohort,by_mode in z.get("by_cohort",{}).items():
-  for mode,label in (("fast","Fast"),("markov_cusum","Markov"),("consensus","Consensus")):
-   x=by_mode[mode]
-   rate=f"{x['alarms_per_decade']:.4f}" if x.get("alarms_per_decade") is not None else "—"
-   mean=x.get("conditional_bootstrap_alarm_probability_mean")
-   median=x.get("conditional_bootstrap_alarm_probability_median")
-   q25=x.get("conditional_bootstrap_alarm_probability_q25")
-   q75=x.get("conditional_bootstrap_alarm_probability_q75")
-   mean_s=f"{mean*100:.2f}%" if mean is not None else "—"
-   median_s=f"{median*100:.2f}%" if median is not None else "—"
-   quartile_s=f"{q25*100:.2f}–{q75*100:.2f}%" if q25 is not None and q75 is not None else "—"
-   lines.append(f"| {cohort} | {label} | {x['series']} | {x.get('bootstrap_eligible_series',0)} | {x['alarms']} | {rate} | {mean_s} | {median_s} | {quartile_s} |")
+ for cohort,cohort_data in z.get("by_cohort",{}).items():
+  for representation,by_mode in cohort_data.get("by_representation",{}).items():
+   for mode,label in (("fast","Fast"),("markov_cusum","Markov"),("consensus","Consensus")):
+    x=by_mode[mode]
+    rate=f"{x['alarms_per_decade']:.4f}" if x.get("alarms_per_decade") is not None else "—"
+    mean=x.get("conditional_bootstrap_alarm_probability_mean")
+    median=x.get("conditional_bootstrap_alarm_probability_median")
+    q25=x.get("conditional_bootstrap_alarm_probability_q25")
+    q75=x.get("conditional_bootstrap_alarm_probability_q75")
+    mean_s=f"{mean*100:.2f}%" if mean is not None else "—"
+    median_s=f"{median*100:.2f}%" if median is not None else "—"
+    quartile_s=f"{q25*100:.2f}–{q75*100:.2f}%" if q25 is not None and q75 is not None else "—"
+    lines.append(f"| {cohort} | {representation} | {label} | {x['series']} | {x.get('bootstrap_eligible_series',0)} | {x['alarms']} | {rate} | {mean_s} | {median_s} | {quartile_s} |")
  lines += [
   "",
   "احتمال الإنذار الشرطي هو نسبة إعادات Stationary Bootstrap للسلسلة نفسها التي أصدرت إنذاراً واحداً أو أكثر، بعد اجتياز فحص G1. يعرض المتوسط والوسيط والربيعان عبر السلاسل داخل الفوج نفسه؛ ولا تجمع الأفواج في معدل واحد. هذه الكمية ليست FPR مثبتة بحقيقة أرضية معروفة، كما أن فحص ADF/KPSS لا يثبت وحده ملاءمة نموذج العدم.",

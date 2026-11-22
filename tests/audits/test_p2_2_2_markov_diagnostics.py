@@ -14,7 +14,7 @@ class MarkovAuditTests(unittest.TestCase):
         self.assertIsNone(quantile([], 0.5))
 
     def test_cohorts_are_summarized_independently(self):
-        def series(cohort, alarm_probability):
+        def series(cohort, representation, alarm_probability):
             return {
                 "cohort": cohort,
                 "duration_years": 10.0,
@@ -22,17 +22,25 @@ class MarkovAuditTests(unittest.TestCase):
                 "detector": {
                     mode: {
                         "alarm_count": 1,
-                        "diagnostics": {"rho_raw": 0.1, "rho_used": 0.2,
-                                        "rho_bias_correction_enabled": False},
+                        "diagnostics": {
+                            "rho_raw": 0.1,
+                            "rho_used": 0.2,
+                            "rho_bias_correction_enabled": False,
+                        },
                     }
                     for mode in ("fast", "markov_cusum", "consensus")
                 },
                 "bootstrap": {
+                    "series_representation": representation,
                     "by_mode": {
-                        mode: {"alarms": int(alarm_probability * 100),
-                               "runs": 100, "events": 1, "errors": 0}
+                        mode: {
+                            "alarms": int(alarm_probability * 100),
+                            "runs": 100,
+                            "events": 1,
+                            "errors": 0,
+                        }
                         for mode in ("fast", "markov_cusum", "consensus")
-                    }
+                    },
                 },
             }
 
@@ -41,27 +49,42 @@ class MarkovAuditTests(unittest.TestCase):
             "run_timestamp_utc": "2026-11-17T00:00:00Z",
             "git_commit": "abc",
             "series_results": [
-                series("strict_long_monthly", 0.2),
-                series("seismic_event_interarrival", 0.8),
+                series("strict_long_monthly", "level", 0.2),
+                series("strict_long_monthly", "returns", 0.4),
+                series("seismic_event_interarrival", "differences", 0.8),
             ],
         })
 
-        commodity = report["by_cohort"]["strict_long_monthly"]["by_mode"]["markov_cusum"]
-        seismic = report["by_cohort"]["seismic_event_interarrival"]["by_mode"]["markov_cusum"]
+        commodity = report["by_cohort"]["strict_long_monthly"]["by_representation"]
+        seismic = report["by_cohort"]["seismic_event_interarrival"]["by_representation"]
+
         self.assertEqual(
-            commodity["conditional_bootstrap_probability_of_one_or_more_alerts"]["mean"],
+            commodity["level"]["by_mode"]["markov_cusum"]["conditional_bootstrap_probability_of_one_or_more_alerts"]["mean"],
             0.2,
         )
         self.assertEqual(
-            seismic["conditional_bootstrap_probability_of_one_or_more_alerts"]["mean"],
+            commodity["returns"]["by_mode"]["markov_cusum"]["conditional_bootstrap_probability_of_one_or_more_alerts"]["mean"],
+            0.4,
+        )
+        self.assertEqual(
+            seismic["differences"]["by_mode"]["markov_cusum"]["conditional_bootstrap_probability_of_one_or_more_alerts"]["mean"],
             0.8,
         )
-        self.assertNotIn("by_mode", report)
         self.assertEqual(
-            commodity["g1_passed_series_reporting_rho_bias_correction_enabled_false"], 1
+            commodity["level"]["by_mode"]["markov_cusum"]["g1_passed_series_reporting_rho_bias_correction_enabled_false"],
+            1,
         )
         self.assertEqual(
-            commodity["observed_alert_count_g1_passed_series"]["mean"], 1.0
+            commodity["returns"]["by_mode"]["markov_cusum"]["observed_alert_count_g1_passed_series"]["mean"],
+            1.0,
+        )
+        self.assertEqual(
+            report["by_cohort"]["strict_long_monthly"]["by_representation"]["level"]["series_total"],
+            1,
+        )
+        self.assertEqual(
+            report["by_cohort"]["strict_long_monthly"]["by_representation"]["returns"]["series_total"],
+            1,
         )
 
     def test_non_g1_series_is_not_in_bootstrap_comparison_denominator(self):
@@ -91,6 +114,42 @@ class MarkovAuditTests(unittest.TestCase):
         self.assertEqual(summary["observed_alert_count_g1_passed_series"]["n"], 1)
         self.assertEqual(summary["observed_alert_count_g1_passed_series"]["mean"], 1.0)
         self.assertEqual(summary["bootstrap_eligible_series"], 1)
+
+    def test_representation_paths_are_not_pooled(self):
+        def series(cohort, representation, probability):
+            return {
+                "cohort": cohort,
+                "duration_years": 8.0,
+                "g1": {"passed": True},
+                "detector": {
+                    mode: {"alarm_count": 1, "diagnostics": {}}
+                    for mode in ("fast", "markov_cusum", "consensus")
+                },
+                "bootstrap": {
+                    "series_representation": representation,
+                    "by_mode": {
+                        mode: {"alarms": int(probability * 10), "runs": 10, "events": 1, "errors": 0}
+                        for mode in ("fast", "markov_cusum", "consensus")
+                    }
+                },
+            }
+
+        report = build_report({
+            "series_results": [
+                series("commodity", "level", 0.1),
+                series("commodity", "returns", 0.9),
+            ]
+        })
+        paths = report["by_cohort"]["commodity"]["by_representation"]
+        self.assertEqual(
+            paths["level"]["by_mode"]["markov_cusum"]["conditional_bootstrap_probability_of_one_or_more_alerts"]["mean"],
+            0.1,
+        )
+        self.assertEqual(
+            paths["returns"]["by_mode"]["markov_cusum"]["conditional_bootstrap_probability_of_one_or_more_alerts"]["mean"],
+            0.9,
+        )
+        self.assertEqual(set(paths), {"level", "returns"})
 
     def test_rejects_missing_cohort(self):
         with self.assertRaises(ValueError):

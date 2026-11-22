@@ -149,10 +149,10 @@ class StressPipelineContractTests(unittest.TestCase):
         item = {"source": "gem", "frequency": "monthly", "domain": "macro", "name": "CPI"}
         self.assertTrue(applicable_shock_series(item, contract))
 
-    def test_bootstrap_aggregation_never_pools_different_cohorts(self):
+    def test_bootstrap_aggregation_separates_cohorts_and_representations(self):
         modes = ("fast", "markov_cusum", "consensus")
 
-        def make_series(cohort, alarms, runs=1000):
+        def make_series(cohort, representation, alarms, runs=1000):
             return {
                 "cohort": cohort,
                 "duration_years": 10.0,
@@ -166,32 +166,42 @@ class StressPipelineContractTests(unittest.TestCase):
                     for mode in modes
                 },
                 "bootstrap": {
+                    "series_representation": representation,
                     "by_mode": {
                         mode: {"alarms": alarms, "runs": runs}
                         for mode in modes
-                    }
+                    },
                 },
             }
 
         result = aggregate(
             [
-                make_series("strict_long_monthly", 200),
-                make_series("seismic_event_interarrival", 800),
+                make_series("strict_long_monthly", "level", 200),
+                make_series("strict_long_monthly", "returns", 900),
+                make_series("seismic_event_interarrival", "differences", 800),
             ],
             {"events": []},
         )
 
-        commodity = result["by_cohort"]["strict_long_monthly"]["markov_cusum"]
-        seismic = result["by_cohort"]["seismic_event_interarrival"]["markov_cusum"]
+        cohorts = result["by_cohort"]
+        commodity = cohorts["strict_long_monthly"]["by_representation"]
+        seismic = cohorts["seismic_event_interarrival"]["by_representation"]
 
         self.assertAlmostEqual(
-            commodity["conditional_bootstrap_alarm_probability_mean"], 0.20
+            commodity["level"]["markov_cusum"]["conditional_bootstrap_alarm_probability_mean"],
+            0.20,
         )
         self.assertAlmostEqual(
-            seismic["conditional_bootstrap_alarm_probability_mean"], 0.80
+            commodity["returns"]["markov_cusum"]["conditional_bootstrap_alarm_probability_mean"],
+            0.90,
         )
-        self.assertEqual(commodity["bootstrap_eligible_series"], 1)
-        self.assertEqual(seismic["bootstrap_eligible_series"], 1)
+        self.assertAlmostEqual(
+            seismic["differences"]["markov_cusum"]["conditional_bootstrap_alarm_probability_mean"],
+            0.80,
+        )
+        self.assertEqual(commodity["level"]["markov_cusum"]["bootstrap_eligible_series"], 1)
+        self.assertEqual(commodity["returns"]["markov_cusum"]["bootstrap_eligible_series"], 1)
+        self.assertEqual(seismic["differences"]["markov_cusum"]["bootstrap_eligible_series"], 1)
         self.assertNotIn("by_mode", result)
 
     def test_bootstrap_output_uses_conditional_alarm_probability_name(self):

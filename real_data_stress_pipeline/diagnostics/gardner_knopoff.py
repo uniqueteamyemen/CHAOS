@@ -30,13 +30,16 @@ def _as_utc_epoch(value: Any) -> float:
 
 
 def decimal_year(value: Any) -> float:
-    """Match the decimal-year clock used by OpenQuake HMTK."""
+    """Match the cited OpenQuake HMTK decimal_year: UTC day_count / 365.
+
+    The HMTK clock deliberately uses a fixed 365-day divisor and ignores
+    sub-day precision, including in leap years. This is a compatibility clock,
+    not a calendar-year fraction.
+    """
     parsed = _as_utc_datetime(value)
     year_start = datetime(parsed.year, 1, 1, tzinfo=timezone.utc)
-    next_year = datetime(parsed.year + 1, 1, 1, tzinfo=timezone.utc)
-    elapsed = (parsed - year_start).total_seconds()
-    year_seconds = (next_year - year_start).total_seconds()
-    return parsed.year + elapsed / year_seconds
+    day_count = (parsed.date() - year_start.date()).days
+    return parsed.year + day_count / 365.0
 
 
 def gardner_knopoff_windows(magnitude: float) -> tuple[float, float]:
