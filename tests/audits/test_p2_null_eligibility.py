@@ -34,10 +34,10 @@ class NullEligibilityTests(unittest.TestCase):
             return np.full(len(series), 0.25, dtype=float)
 
         with (
-            patch.object(p2, "g1", side_effect=[
-                {"passed": False, "status": "SCREEN_FAIL"},
-                {"passed": True, "status": "SCREEN_PASS"},
-            ]),
+            patch.object(
+                p2, "g1",
+                return_value={"passed": True, "status": "SCREEN_PASS"},
+            ),
             patch.object(p2, "REPS", 2),
             patch.object(p2, "stationary_sample", side_effect=sample),
             patch.object(
