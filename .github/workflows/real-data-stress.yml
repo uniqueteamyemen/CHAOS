@@ -4,6 +4,7 @@ on:
   pull_request:
     branches:
       - main-phase2
+      - p2/phase-close-v1
   push:
     branches:
       - main-phase2
@@ -20,7 +21,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
   group: chaos-p2-2-stress-v4-${{ github.ref }}
@@ -28,8 +29,11 @@ concurrency:
 
 jobs:
   stress:
+    if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     timeout-minutes: 360
+    permissions:
+      contents: write
     steps:
       - name: Checkout phase2 branch with history
         uses: actions/checkout@v4
@@ -104,7 +108,14 @@ jobs:
           fi
 
       - name: Run pipeline contract tests
-        run: python -m unittest discover -s real_data_stress_pipeline/tests -v
+        run: python -m unittest discover -s real_data_stress_pipeline/tests -p 'test_*.py' -v
+
+      - name: Run Markov, null-routing and seismic contract tests
+        run: |
+          set -euo pipefail
+          python -m unittest discover -s tests/audits -p 'test_p2_2_*.py' -v
+          python -m unittest discover -s tests/audits -p 'test_p2_null_eligibility.py' -v
+          python -m unittest discover -s tests/seismic_null_contract -p 'test_*.py' -v
 
       - name: Execute real historical stress pipeline
         if: github.event_name != 'pull_request'
@@ -116,7 +127,43 @@ jobs:
           STRESS_MIN_COMMODITY_POINTS: '501'
           STRESS_MIN_GEM_POINTS: '87'
           STRESS_USGS_MIN_MAGNITUDE: '4.5'
-        run: python -m real_data_stress_pipeline.run_pipeline
+        run: python -u -m real_data_stress_pipeline.run_pipeline
+
+      - name: Audit generated P2.2 Markov manifest
+        if: github.event_name != 'pull_request'
+        run: |
+          python scripts/audits/p2_2_2_markov_diagnostics.py \
+            real_data_stress_pipeline/results/real_data_stress_manifest.json \
+            --output artifacts/markov_calibration_audit.json
+
+      - name: Run bounded Markov real-series behavior audit
+        if: github.event_name != 'pull_request'
+        env:
+          PYTHONUNBUFFERED: '1'
+        run: |
+          python -u scripts/audits/p2_2_3_markov_real_data_behavior.py \
+            --replicates 999 --workers 2 \
+            --output-dir artifacts/markov_real_data_behavior
+
+      - name: Run bounded paired injected-break power audit
+        if: github.event_name != 'pull_request'
+        env:
+          PYTHONUNBUFFERED: '1'
+        run: |
+          python -u scripts/audits/p2_2_4_markov_injected_break_power.py \
+            --replicates 999 --workers 2 \
+            --output-dir artifacts/markov_injected_break_power
+
+      - name: Run full seismic integrity, declustering and exploratory null audit
+        env:
+          PYTHONUNBUFFERED: '1'
+          FRED_API_KEY: ${{ secrets.FRED_API_KEY }}
+          EIA_API_KEY: ${{ secrets.EIA_API_KEY }}
+          EIA_SERIES_IDS: ${{ vars.EIA_SERIES_IDS }}
+        run: |
+          python -u scripts/audits/p2_2_3_domain_null_and_declustering.py \
+            --poisson-replicates 200 \
+            --output-dir artifacts/domain_null_and_declustering
 
       - name: Package reproducible source snapshots for permanent release
         if: success() && github.event_name != 'pull_request'
@@ -131,7 +178,7 @@ jobs:
           ls -lh chaos-p2-2-source-snapshots.tar.gz chaos-p2-2-source-snapshots.tar.gz.sha256
 
       - name: Upload raw source responses and complete numerical audit
-        if: always() && github.event_name != 'pull_request'
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: chaos-p2-2-stress-${{ github.run_id }}-${{ github.run_attempt }}
@@ -144,12 +191,16 @@ jobs:
             real_data_stress_pipeline/results/
             chaos-p2-2-source-snapshots.tar.gz
             chaos-p2-2-source-snapshots.tar.gz.sha256
+            artifacts/markov_calibration_audit.json
+            artifacts/markov_real_data_behavior/
+            artifacts/markov_injected_break_power/
+            artifacts/domain_null_and_declustering/
 
-      - name: Create and publish the P2.2.1 audited release
+      - name: Create and publish the P2 phase-close audited release
         if: success() && github.event_name != 'pull_request'
         env:
           GH_TOKEN: ${{ github.token }}
-          TAG_NAME: p2.2-historical-stress-v1.0.1
+          TAG_NAME: p2-phase-close-v1.0
           SOURCE_SHA: ${{ github.sha }}
         run: |
           set -euo pipefail
@@ -159,7 +210,7 @@ jobs:
           TAG_SHA="${SOURCE_SHA}"
           if ! git ls-remote --exit-code --tags origin "refs/tags/${TAG_NAME}" >/dev/null 2>&1; then
             git tag -a "${TAG_NAME}" "${TAG_SHA}" \
-              -m "CHAOS P2.2.1 cohort-separated bootstrap audit v1.0.1; source commit ${TAG_SHA}"
+              -m "CHAOS P2 phase-close v1.0; source commit ${TAG_SHA}"
             git push origin "refs/tags/${TAG_NAME}"
           else
             existing="$(git ls-remote origin "refs/tags/${TAG_NAME}^{}" | awk '{print $1}')"
@@ -167,14 +218,14 @@ jobs:
               existing="$(git ls-remote origin "refs/tags/${TAG_NAME}" | awk '{print $1}')"
             fi
             if [ "${existing}" != "${TAG_SHA}" ]; then
-              echo "Existing P2.2.1 tag points to a different commit: ${existing}" >&2
+              echo "Existing P2 phase-close tag points to a different commit: ${existing}" >&2
               exit 1
             fi
           fi
           if ! gh release view "${TAG_NAME}" >/dev/null 2>&1; then
             gh release create "${TAG_NAME}" \
               --target "${TAG_SHA}" \
-              --title "CHAOS P2.2.1 — Cohort-Separated Bootstrap Audit v1.0.1" \
+              --title "CHAOS P2 — Clean Phase Closure v1.0" \
               --notes-file REAL_DATA_STRESS_REPORT_AR.md
           fi
           gh release upload "${TAG_NAME}" \
@@ -184,3 +235,64 @@ jobs:
             chaos-p2-2-source-snapshots.tar.gz \
             chaos-p2-2-source-snapshots.tar.gz.sha256 \
             --clobber
+
+  pr-gate:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout PR merge ref with history
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+          cache-dependency-path: real_data_stress_pipeline/requirements.txt
+
+      - name: Install pipeline dependencies
+        run: python -m pip install -r real_data_stress_pipeline/requirements.txt
+
+      - name: Verify frozen archives are unchanged
+        env:
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          python scripts/guards/check_experiments_immutable.py --base "$PR_BASE_SHA" --head "$PR_HEAD_SHA" --triple-dot
+
+      - name: Run pipeline contract tests
+        run: python -m unittest discover -s real_data_stress_pipeline/tests -p 'test_*.py' -v
+
+      - name: Run Markov, null-routing and seismic contract tests
+        run: |
+          set -euo pipefail
+          python -m unittest discover -s tests/audits -p 'test_p2_2_*.py' -v
+          python -m unittest discover -s tests/audits -p 'test_p2_null_eligibility.py' -v
+          python -m unittest discover -s tests/seismic_null_contract -p 'test_*.py' -v
+
+      - name: Run bounded credentialless seismic audit
+        env:
+          PYTHONUNBUFFERED: '1'
+        run: |
+          python -u scripts/audits/p2_2_3_domain_null_and_declustering.py \
+            --isolated-usgs-only \
+            --max-belts 1 \
+            --poisson-replicates 5 \
+            --output-dir artifacts/domain_null_and_declustering
+
+      - name: Upload PR gate audit artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: chaos-p2-pr-gate-${{ github.run_id }}-${{ github.run_attempt }}
+          retention-days: 30
+          if-no-files-found: warn
+          path: |
+            artifacts/domain_null_and_declustering/

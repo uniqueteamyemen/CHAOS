@@ -1,0 +1,204 @@
+{
+  "contract_id": "CHAOS-SEISMIC-NULL-V1",
+  "status": "design_contract_not_yet_validated",
+  "version": "1.0.0",
+  "created_utc": "2026-11-17",
+  "scope": {
+    "purpose": "Validate domain-appropriate null models for structural-change detection in earthquake catalogs",
+    "excluded_claims": [
+      "earthquake prediction",
+      "operational earthquake warning",
+      "causal inference"
+    ],
+    "frozen_detector": "structural_engine/isolated_break_detector_v1/",
+    "detector_changes_permitted": false
+  },
+  "data_scope": {
+    "provider": "USGS ComCat FDSN Event Web Service",
+    "period_start_utc": "1980-01-01T00:00:00Z",
+    "period_end_utc_exclusive": "2025-01-01T00:00:00Z",
+    "query_minimum_magnitude": 4.5,
+    "belts_config": "real_data_stress_pipeline/config/seismic_belts.json",
+    "spatial_windows_are_rectangular_proxies": true,
+    "preserve_fields": [
+      "event_id",
+      "time_utc",
+      "latitude",
+      "longitude",
+      "depth_km",
+      "magnitude",
+      "belt_id",
+      "query_parameters",
+      "retrieved_at_utc",
+      "source_sha256"
+    ],
+    "deduplicate_by": [
+      "event_id"
+    ],
+    "preserve_exact_timestamps": true,
+    "missing_catalog_intervals_must_not_be_zero_filled": true
+  },
+  "analysis_cohorts": {
+    "marked_point_process": {
+      "description": "Ordered earthquake events with time, location, depth and magnitude marks",
+      "observation_unit": "event",
+      "preserve_marked_event_sequence": true
+    },
+    "monthly_counts": {
+      "description": "UTC monthly event counts from a complete and validated query window",
+      "observation_unit": "calendar_month",
+      "zero_count_allowed_only_when_catalog_query_completeness_is_verified": true
+    },
+    "inter_event_intervals": {
+      "description": "Elapsed days between adjacent events within one belt",
+      "observation_unit": "event_interval",
+      "intervals_must_not_be_treated_as_independent": true
+    },
+    "pooling_policy": "No pooling across belts or representations until heterogeneity is reported and a predeclared hierarchical aggregation is justified"
+  },
+  "catalog_completeness": {
+    "required_estimate": "Mc(t,region)",
+    "required_before_null_fitting": true,
+    "assess_by": [
+      "belt",
+      "time_window",
+      "magnitude_frequency_distribution",
+      "catalog_version"
+    ],
+    "sensitivity_magnitude_thresholds": [
+      4.5,
+      5,
+      5.5,
+      6
+    ],
+    "threshold_policy": "Only evaluate a threshold when the catalog completeness analysis supports it for the belt and time interval",
+    "document_network_and_detection_changes": true
+  },
+  "null_model_families": [
+    {
+      "id": "N0_HOMOGENEOUS_POISSON",
+      "role": "baseline_control",
+      "intensity": "constant per belt over the fitted observation window",
+      "status": "benchmark_only",
+      "reject_when": [
+        "significant_rate_nonstationarity",
+        "residual_temporal_clustering",
+        "catalog_incompleteness"
+      ]
+    },
+    {
+      "id": "N1_INHOMOGENEOUS_POISSON",
+      "role": "slowly_varying_background_rate",
+      "intensity": "lambda(t,region) estimated on training data only",
+      "status": "candidate",
+      "limitations": [
+        "does_not_reproduce_aftershock_clustering"
+      ],
+      "leakage_policy": "No future validation events may influence intensity estimation or smoothing"
+    },
+    {
+      "id": "N2_HAWKES_ETAS",
+      "role": "self_exciting_spatiotemporal_null",
+      "components": [
+        "background_intensity",
+        "Omori_Utsu_temporal_kernel",
+        "spatial_triggering_kernel",
+        "Gutenberg_Richter_magnitude_marks",
+        "magnitude_dependent_productivity"
+      ],
+      "status": "primary_candidate_subject_to_fit_diagnostics",
+      "requirements": [
+        "stable_branching_ratio",
+        "identifiable_parameters",
+        "catalog_completeness_assessment",
+        "residual_diagnostics"
+      ],
+      "reject_when": [
+        "nonconverged_fit",
+        "unstable_branching_ratio",
+        "failed_time_rescaling",
+        "residual_dependence"
+      ]
+    }
+  ],
+  "fit_and_validation": {
+    "temporal_split_required": true,
+    "fit_on_training_only": true,
+    "use_rolling_origin_when_feasible": true,
+    "diagnostics": [
+      "time_rescaling_residuals_Exp1",
+      "KS_or_equivalent_distributional_check",
+      "residual_serial_independence",
+      "magnitude_mark_fit",
+      "spatial_residual_diagnostics",
+      "observed_vs_simulated_count_distribution",
+      "cluster_size_and_inter_event_distribution"
+    ],
+    "model_status_values": [
+      "NOT_FIT",
+      "FIT_REJECTED",
+      "FIT_ACCEPTED_FOR_EXPERIMENT",
+      "INSUFFICIENT_CATALOG"
+    ],
+    "no_null_model_may_be_selected_by_detector_alarm_rate": true
+  },
+  "simulation": {
+    "exploratory_minimum_replicates": 999,
+    "target_replicates": 9999,
+    "deterministic_seeds_required": true,
+    "preserve_per_replicate_records": true,
+    "required_per_replicate_fields": [
+      "replicate_id",
+      "seed",
+      "belt_id",
+      "null_model_id",
+      "model_parameters_hash",
+      "catalog_event_count",
+      "simulated_catalog_sha256",
+      "detector_mode",
+      "alarm_count",
+      "has_any_alarm",
+      "alarm_times",
+      "first_alarm_time",
+      "alarms_per_1000_belt_years",
+      "detector_input_sha256"
+    ],
+    "summary_fields": [
+      "probability_of_one_or_more_alerts_per_catalog",
+      "expected_alarm_count_per_catalog",
+      "alarm_count_distribution",
+      "first_alarm_time_distribution",
+      "alarms_per_1000_belt_years",
+      "monte_carlo_confidence_interval"
+    ]
+  },
+  "reporting": {
+    "primary_metric_name": "conditional_null_alarm_probability",
+    "forbidden_metric_name_without_ground_truth": "FPR",
+    "report_by": [
+      "belt",
+      "representation",
+      "null_model",
+      "magnitude_threshold",
+      "detector_mode"
+    ],
+    "report_all_models_that_pass_predeclared_fit_gates": true,
+    "report_model_failures_and_unavailable_belts": true,
+    "distinguish_detection_delay_from_warning_lead": true
+  },
+  "release_gates": [
+    "catalog_completeness_profile_accepted_for_each_belt",
+    "at_least_one_domain_appropriate_null_model_passes_fit_diagnostics_per_reported_belt",
+    "out_of_sample_null_size_assessment_completed",
+    "per_replicate_simulation_records_and_hashes_preserved",
+    "sensitivity_across_supported_magnitude_thresholds_reported",
+    "cross_belt_heterogeneity_reported_before_any_pooling",
+    "phase1_detector_and_experiments_archive_unchanged"
+  ],
+  "immutability": {
+    "phase1_detector_files_read_only": true,
+    "experiments_archive_read_only": true,
+    "p2_2_historical_outputs_read_only": true,
+    "all_new_code_and_outputs_outside_experiments": true
+  }
+}
