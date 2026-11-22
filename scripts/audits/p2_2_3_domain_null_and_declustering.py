@@ -980,9 +980,7 @@ def audit_belt(
         "belt_id": belt["id"],
         "belt_name": belt["name"],
         "source_events": len(events),
-        "source_catalog_csv_sha256": p2.hash_file(
-            p2.DERIVED / f"{belt['id']}_events.csv"
-        ),
+        "source_catalog_csv_sha256": p2.hash_file(catalog_path),
         "analysis_period": f"{p2.Y0}-01 through {p2.Y1}-12",
         "query_minimum_magnitude": p2.MAG,
         "catalog_completeness_status": "NOT_ASSESSED",
