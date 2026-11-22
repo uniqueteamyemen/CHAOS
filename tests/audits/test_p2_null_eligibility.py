@@ -99,6 +99,31 @@ class NullEligibilityTests(unittest.TestCase):
             "INTEGRATED_STATIONARY_BOOTSTRAP_OF_FIRST_DIFFERENCES",
             p2.PIPELINE_CONFIG["stationarity"]["integrated_null_family"],
         )
+        self.assertEqual(
+            p2.LEVEL_NULL_FAMILY,
+            p2.PIPELINE_CONFIG["stationarity"]["level_null_family"],
+        )
+        self.assertEqual(
+            p2.INTEGRATED_NULL_FAMILY,
+            p2.PIPELINE_CONFIG["stationarity"]["integrated_null_family"],
+        )
+        self.assertEqual(
+            p2.INTEGRATED_NULL_DOMAINS,
+            frozenset(p2.PIPELINE_CONFIG["stationarity"]["integrated_null_domain_allowlist"]),
+        )
+        self.assertFalse(p2.BOOTSTRAP_CONFIG["operational_fpr_claim_permitted"])
+
+    def test_g1_applies_explicit_configured_significance_thresholds(self):
+        values = np.random.default_rng(15).normal(size=100)
+        with (
+            patch.object(p2, "adfuller", return_value=(0.0, 0.04, 1, 98, {})),
+            patch.object(p2, "kpss", return_value=(0.0, 0.06, 1, {})),
+        ):
+            result = p2.g1(values, adf_significance=0.03, kpss_significance=0.08)
+
+        self.assertFalse(result["passed"])
+        self.assertEqual(result["adf_significance"], 0.03)
+        self.assertEqual(result["kpss_significance"], 0.08)
 
     def test_detector_execution_is_independent_of_null_eligibility(self):
         item = {
