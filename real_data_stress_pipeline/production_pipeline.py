@@ -451,6 +451,8 @@ def prepare(expected_candidates: int = EXPECTED_CANDIDATES, shard_count: int = S
     write_json(PINK_RESULTS, {
         "schema": SCHEMA_VERSION,
         "repository_commit": manifest_seed["git_commit"],
+        "worker_count": pink_workers,
+        "bootstrap_replicates": int(p2.REPS),
         "source_sha256": next(
             (source.get("sha256") for source in manifest_seed["sources"]
              if source.get("provider") == "World Bank Pink Sheet"),
@@ -624,6 +626,10 @@ def validate_result_records(
             raise IntegrityError(f"source_sha256_mismatch:{identifier}")
         if int(result.get("observations", -1)) != int(expected.get("values_count", -2)):
             raise IntegrityError(f"observation_count_mismatch:{identifier}")
+        if "bootstrap_replicates_expected" in expected:
+            actual_replicates = int(result.get("bootstrap", {}).get("replicates", -1))
+            if actual_replicates != int(expected["bootstrap_replicates_expected"]):
+                raise IntegrityError(f"bootstrap_replicate_mismatch:{identifier}")
         observed[identifier] = result
 
     missing = sorted(set(expected_by_id) - set(observed))
@@ -651,6 +657,12 @@ def _load_all_shard_results(state: dict[str, Any], registry: list[dict[str, Any]
             or int(envelope.get("shard_count", -1)) != int(state["shard_count"])
         ):
             raise IntegrityError(f"shard_envelope_header_mismatch:{shard_index}")
+        expected_replicates = int(state["manifest_seed"]["bootstrap"]["replicates"])
+        if int(envelope.get("bootstrap_replicates", -1)) != expected_replicates:
+            raise IntegrityError(f"shard_bootstrap_replicate_configuration_mismatch:{shard_index}")
+        worker_count = int(envelope.get("worker_count", 0))
+        if not 1 <= worker_count <= 4:
+            raise IntegrityError(f"shard_worker_count_out_of_bounds:{shard_index}")
         expected_ids = [
             item["id"] for item in registry
             if item.get("execution_stage") == "matrix"
@@ -724,6 +736,11 @@ def aggregate() -> dict[str, Any]:
         or pink_document.get("source_sha256") != state.get("pink_source_sha256")
     ):
         raise IntegrityError("pink_results_source_or_commit_mismatch")
+    expected_replicates = int(state["manifest_seed"]["bootstrap"]["replicates"])
+    if int(pink_document.get("bootstrap_replicates", -1)) != expected_replicates:
+        raise IntegrityError("pink_bootstrap_replicate_configuration_mismatch")
+    if not 1 <= int(pink_document.get("worker_count", 0)) <= 4:
+        raise IntegrityError("pink_worker_count_out_of_bounds")
     pink_entries = pink_document.get("results", [])
     pink_expected = [
         item for item in registry if item.get("execution_stage") == "prepare_private"

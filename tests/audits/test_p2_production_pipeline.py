@@ -192,6 +192,26 @@ class ProductionPipelineTests(unittest.TestCase):
         self.assertTrue(production.contains_key_recursive({"bootstrap": [{"values": [1, 2]}]}, "values"))
         self.assertFalse(production.contains_key_recursive({"series": {"observations": 180}}, "values"))
 
+    def test_aggregate_gate_rejects_bootstrap_replicate_mismatch(self):
+        item = synthetic_item("gem:bootstrap-mismatch", 9)
+        registry = [{
+            "id": item["id"],
+            "original_index": 0,
+            "source_sha256": item["sha256"],
+            "candidate_sha256": production.candidate_sha256(item),
+            "values_count": len(item["values"]),
+            "bootstrap_replicates_expected": 5,
+        }]
+        result = {
+            "id": item["id"],
+            "sha256": item["sha256"],
+            "candidate_sha256": production.candidate_sha256(item),
+            "observations": len(item["values"]),
+            "bootstrap": {"replicates": 4},
+        }
+        with self.assertRaisesRegex(production.IntegrityError, "bootstrap_replicate_mismatch"):
+            production.validate_result_records(registry, [result], expected_count=1)
+
     def test_aggregate_gate_rejects_source_hash_and_observation_mismatch(self):
         item = synthetic_item("gem:a", 4)
         registry = [{
