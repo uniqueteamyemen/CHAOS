@@ -327,7 +327,7 @@ jobs:
         run: |
           expected="$(python -c 'import json; m=json.load(open("real_data_stress_pipeline/results/real_data_stress_manifest.json", encoding="utf-8")); print(next(x["sha256"] for x in m["sources"] if x.get("provider") == "World Bank Pink Sheet"))')"
           python -u scripts/audits/p2_2_3_markov_real_data_behavior.py \
-            --replicates 999 --workers 2 \
+            --replicates 999 --workers 4 \
             --expected-source-sha256 "${expected}" \
             --output-dir artifacts/markov_real_data_behavior
 
@@ -383,7 +383,7 @@ jobs:
         run: |
           expected="$(python -c 'import json; m=json.load(open("real_data_stress_pipeline/results/real_data_stress_manifest.json", encoding="utf-8")); print(next(x["sha256"] for x in m["sources"] if x.get("provider") == "World Bank Pink Sheet"))')"
           python -u scripts/audits/p2_2_4_markov_injected_break_power.py \
-            --replicates 999 --workers 2 \
+            --replicates 999 --workers 4 \
             --expected-source-sha256 "${expected}" \
             --output-dir artifacts/markov_injected_break_power
 
@@ -407,8 +407,6 @@ jobs:
       MKL_NUM_THREADS: '1'
       NUMEXPR_NUM_THREADS: '1'
       VECLIB_MAXIMUM_THREADS: '1'
-      FRED_API_KEY: ${{ github.ref == 'refs/heads/main-phase2' && secrets.FRED_API_KEY || '' }}
-      EIA_API_KEY: ${{ github.ref == 'refs/heads/main-phase2' && secrets.EIA_API_KEY || '' }}
       EIA_SERIES_IDS: ${{ vars.EIA_SERIES_IDS }}
     steps:
       - name: Checkout exact audit commit
@@ -439,6 +437,8 @@ jobs:
       - name: Run seismic integrity, declustering and domain-null audit
         env:
           PYTHONUNBUFFERED: '1'
+          FRED_API_KEY: ${{ github.ref == 'refs/heads/main-phase2' && secrets.FRED_API_KEY || '' }}
+          EIA_API_KEY: ${{ github.ref == 'refs/heads/main-phase2' && secrets.EIA_API_KEY || '' }}
         run: |
           python -u scripts/audits/p2_2_3_domain_null_and_declustering.py \
             --poisson-replicates 200 \
@@ -498,6 +498,11 @@ jobs:
         with:
           name: chaos-p2-domain-null-${{ github.run_id }}-${{ github.run_attempt }}
           path: artifacts/domain_null_and_declustering
+
+      - name: Verify downloaded aggregate files against SHA-256 manifest
+        run: |
+          set -euo pipefail
+          sha256sum --strict -c real_data_stress_pipeline/results/SHA256SUMS.txt
 
       - name: Verify all release gates and package reproducible snapshots
         run: |
@@ -606,9 +611,50 @@ jobs:
             chaos-p2-2-source-snapshots.tar.gz.sha256
           )
 
+          verify_remote_assets() {
+            local remote_json
+            remote_json="$(gh release view "${TAG_NAME}" --json assets)"
+            REMOTE_ASSETS_JSON="${remote_json}" python - "${assets[@]}" <<'PY'
+          import hashlib
+          import json
+          import os
+          import sys
+          from pathlib import Path
+
+          remote_document = json.loads(os.environ["REMOTE_ASSETS_JSON"])
+          remote_by_name = {
+              item.get("name"): item
+              for item in remote_document.get("assets", [])
+              if isinstance(item, dict) and item.get("name")
+          }
+          for local_name in sys.argv[1:]:
+              local_path = Path(local_name)
+              asset_name = local_path.name
+              remote = remote_by_name.get(asset_name)
+              if remote is None:
+                  raise SystemExit(f"release_asset_missing_remote:{asset_name}")
+              digest = hashlib.sha256(local_path.read_bytes()).hexdigest()
+              expected_digest = f"sha256:{digest}"
+              remote_digest = remote.get("digest")
+              remote_size = remote.get("size")
+              local_size = local_path.stat().st_size
+              if remote_digest != expected_digest:
+                  raise SystemExit(
+                      f"release_asset_digest_mismatch:{asset_name}:"
+                      f"expected={expected_digest}:actual={remote_digest}"
+                  )
+              if isinstance(remote_size, bool) or int(remote_size or -1) != local_size:
+                  raise SystemExit(
+                      f"release_asset_size_mismatch:{asset_name}:"
+                      f"expected={local_size}:actual={remote_size}"
+                  )
+          print(f"REMOTE_RELEASE_ASSETS_VERIFIED count={len(sys.argv)-1}")
+          PY
+          }
+
           if ! gh release view "${TAG_NAME}" >/dev/null 2>&1; then
             # Create a draft first. A public release is published only after every
-            # required asset is uploaded successfully.
+            # required asset is uploaded and its remote digest/size are verified.
             gh release create "${TAG_NAME}" \
               --target "${SOURCE_SHA}" \
               --verify-tag \
@@ -618,20 +664,14 @@ jobs:
           else
             is_draft="$(gh release view "${TAG_NAME}" --json isDraft --jq '.isDraft')"
             if [[ "${is_draft}" == "false" ]]; then
-              existing_assets="$(gh release view "${TAG_NAME}" --json assets --jq '.assets[].name')"
-              for asset in "${assets[@]}"; do
-                asset_name="${asset##*/}"
-                if ! grep -Fxq -- "${asset_name}" <<< "${existing_assets}"; then
-                  echo "published_release_asset_missing:${asset_name}; refusing partial mutation" >&2
-                  exit 1
-                fi
-              done
-              echo "P2 phase-close release already published with all required assets; no mutation needed."
+              verify_remote_assets
+              echo "P2 phase-close release already published with all required assets, digests and sizes; no mutation needed."
               exit 0
             fi
           fi
 
           gh release upload "${TAG_NAME}" "${assets[@]}" --clobber
+          verify_remote_assets
           # This is the sole transition that makes the completed release public.
           gh release edit "${TAG_NAME}" --draft=false
 
