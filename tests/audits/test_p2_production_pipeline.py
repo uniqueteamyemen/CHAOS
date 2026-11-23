@@ -73,12 +73,14 @@ class ProductionPipelineTests(unittest.TestCase):
         self.assertNotIn('"values":', serialized)
         self.assertEqual(entry["candidate_sha256"], production.candidate_sha256(item))
 
-    def test_process_pool_and_weighted_shards_match_serial_results_bit_for_bit(self):
-        items = [synthetic_item("gem:fixture-a", 101), synthetic_item("gem:fixture-b", 202)]
+    def test_process_pool_and_four_weighted_shards_match_serial_results_bit_for_bit(self):
+        # Eight equal-cost, G1-eligible fixtures give every one of four shards
+        # two tasks, so each shard exercises its own two-process evaluator.
+        items = [synthetic_item(f"gem:fixture-{index}", 101) for index in range(8)]
         contract = {"events": [], "matching_window_months": 6}
-        self.assertTrue(p2.g1(items[0]["values"]).get("passed"))
+        self.assertTrue(all(p2.g1(item["values"]).get("passed") for item in items))
         sequential = production.evaluate_items(items, contract, workers=1, bootstrap_replicates=5)
-        parallel = production.evaluate_items(items, contract, workers=2, bootstrap_replicates=5)
+        parallel = production.evaluate_items(items, contract, workers=4, bootstrap_replicates=5)
         self.assertEqual(
             [production.json_bytes(item) for item in sequential],
             [production.json_bytes(item) for item in parallel],
@@ -87,6 +89,7 @@ class ProductionPipelineTests(unittest.TestCase):
         candidates = []
         for index, item in enumerate(items):
             weight, eligible = production.estimate_cost(item)
+            self.assertTrue(eligible)
             candidates.append({
                 "id": item["id"],
                 "original_index": index,
@@ -95,17 +98,17 @@ class ProductionPipelineTests(unittest.TestCase):
                 "source_sha256": item["sha256"],
                 "values_count": len(item["values"]),
             })
-        assignments = production.weighted_shard_assignments(candidates, 2)
+        assignments = production.weighted_shard_assignments(candidates, 4)
         shard_results = []
-        for shard in range(2):
+        for shard in range(4):
             shard_items = [item for item in items if assignments[item["id"]] == shard]
-            if shard_items:
-                shard_results.extend(
-                    production.evaluate_items(
-                        shard_items, contract, workers=2, bootstrap_replicates=5
-                    )
+            self.assertEqual(len(shard_items), 2)
+            shard_results.extend(
+                production.evaluate_items(
+                    shard_items, contract, workers=2, bootstrap_replicates=5
                 )
-        restored = production.validate_result_records(candidates, shard_results, expected_count=2)
+            )
+        restored = production.validate_result_records(candidates, shard_results, expected_count=8)
         self.assertEqual(
             [production.json_bytes(item) for item in sequential],
             [production.json_bytes(item) for item in restored],
