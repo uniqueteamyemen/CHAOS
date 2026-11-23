@@ -76,6 +76,49 @@ def file_sha256(path: Path) -> str:
     return digest.hexdigest()
 
 
+def validate_source_snapshots(
+    sources: list[dict[str, Any]],
+    root: Path = ROOT,
+) -> int:
+    """Verify every persisted raw source and enforce Pink's memory-only policy."""
+    verified = 0
+    resolved_root = root.resolve()
+    for source in sources:
+        provider = str(source.get("provider", ""))
+        if provider == "World Bank Pink Sheet":
+            if source.get("path") is not None:
+                raise IntegrityError("pink_sheet_raw_path_must_not_be_persisted")
+            if "in-memory only" not in str(source.get("raw_preserved", "")):
+                raise IntegrityError("pink_sheet_memory_only_policy_missing")
+            if not source.get("sha256"):
+                raise IntegrityError("pink_sheet_source_sha256_missing")
+            continue
+
+        relative_path = source.get("path")
+        if not isinstance(relative_path, str) or not relative_path:
+            raise IntegrityError(f"raw_source_path_missing:{provider}")
+        path = (resolved_root / relative_path).resolve()
+        try:
+            path.relative_to(resolved_root)
+        except ValueError as exc:
+            raise IntegrityError(f"raw_source_path_escapes_repository:{provider}") from exc
+        if not path.is_file():
+            raise IntegrityError(f"raw_source_snapshot_missing:{provider}:{relative_path}")
+        expected_hash = source.get("sha256")
+        if not expected_hash or file_sha256(path) != expected_hash:
+            raise IntegrityError(f"raw_source_sha256_mismatch:{provider}:{relative_path}")
+        verified += 1
+    return verified
+
+
+def contains_key_recursive(value: Any, key: str) -> bool:
+    if isinstance(value, dict):
+        return key in value or any(contains_key_recursive(item, key) for item in value.values())
+    if isinstance(value, list):
+        return any(contains_key_recursive(item, key) for item in value)
+    return False
+
+
 def _value_tokens(values: list[Any]) -> list[str]:
     tokens: list[str] = []
     for value in values:
@@ -669,6 +712,9 @@ def aggregate() -> dict[str, Any]:
     registry_doc = _verify_prepare_artifacts(state)
     registry = registry_doc.get("candidates", [])
     expected_count = int(state["expected_series_count"])
+    verified_raw_sources = validate_source_snapshots(
+        state["manifest_seed"].get("sources", [])
+    )
     if len(registry) != expected_count:
         raise IntegrityError("frozen_registry_count_mismatch")
 
@@ -687,7 +733,7 @@ def aggregate() -> dict[str, Any]:
     for entry, candidate in zip(pink_entries, pink_expected):
         if entry.get("candidate_sha256") != candidate.get("candidate_sha256"):
             raise IntegrityError(f"pink_candidate_sha256_mismatch:{candidate['id']}")
-        if "values" in entry.get("result", {}):
+        if contains_key_recursive(entry.get("result", {}), "values"):
             raise IntegrityError("pink_raw_values_must_not_be_published")
 
     matrix_results = _load_all_shard_results(state, registry)
@@ -733,6 +779,7 @@ def aggregate() -> dict[str, Any]:
         "weight_model": registry_doc["weight_model"],
         "shard_loads": state.get("shard_loads", []),
         "pink_sheet_data_policy": "raw_values_memory_only_in_prepare; no raw values in artifacts",
+        "verified_persisted_raw_source_files": verified_raw_sources,
         "prepare_elapsed_seconds": state.get("prepare_elapsed_seconds"),
         "aggregate_elapsed_seconds": round(time.monotonic() - started, 3),
     }

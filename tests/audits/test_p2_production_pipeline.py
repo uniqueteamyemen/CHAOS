@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 import json
+import tempfile
 import unittest
+from pathlib import Path
 
 import numpy as np
 
@@ -153,6 +155,39 @@ class ProductionPipelineTests(unittest.TestCase):
         changed["candidate_sha256"] = "wrong"
         with self.assertRaisesRegex(production.IntegrityError, "candidate_sha256_mismatch"):
             production.validate_result_records(registry, [changed], expected_count=1)
+
+
+    def test_raw_source_snapshot_hash_is_verified_and_path_traversal_rejected(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source_file = root / "raw.bin"
+            source_file.write_bytes(b"immutable-source-snapshot")
+            source = {
+                "provider": "World Bank GEM",
+                "path": "raw.bin",
+                "sha256": production.file_sha256(source_file),
+            }
+            self.assertEqual(production.validate_source_snapshots([source], root), 1)
+            source["sha256"] = "wrong"
+            with self.assertRaisesRegex(production.IntegrityError, "raw_source_sha256_mismatch"):
+                production.validate_source_snapshots([source], root)
+            source["sha256"] = production.file_sha256(source_file)
+            source["path"] = "../escape.bin"
+            with self.assertRaisesRegex(production.IntegrityError, "escapes_repository"):
+                production.validate_source_snapshots([source], root)
+
+    def test_pink_source_is_memory_only_and_nested_values_are_detected(self):
+        source = {
+            "provider": "World Bank Pink Sheet",
+            "sha256": "source-hash",
+            "raw_preserved": "in-memory only; workbook-specific redistribution terms not established",
+        }
+        self.assertEqual(production.validate_source_snapshots([source]), 0)
+        source["path"] = "raw/pink.xlsx"
+        with self.assertRaisesRegex(production.IntegrityError, "pink_sheet_raw_path"):
+            production.validate_source_snapshots([source])
+        self.assertTrue(production.contains_key_recursive({"bootstrap": [{"values": [1, 2]}]}, "values"))
+        self.assertFalse(production.contains_key_recursive({"series": {"observations": 180}}, "values"))
 
     def test_aggregate_gate_rejects_source_hash_and_observation_mismatch(self):
         item = synthetic_item("gem:a", 4)
