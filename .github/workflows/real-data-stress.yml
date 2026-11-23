@@ -58,32 +58,32 @@ jobs:
           set -euo pipefail
           git config user.name "uniqueteamyemen"
           git config user.email "uniqueteamyemen@gmail.com"
-          git cat-file -e "\${BASELINE_SHA}^{commit}"
-          if ! git ls-remote --exit-code --tags origin "refs/tags/\${TAG_NAME}" >/dev/null 2>&1; then
-            git tag -a "\${TAG_NAME}" "\${BASELINE_SHA}" \
-              -m "CHAOS Phase 1 frozen detector archive; canonical commit \${BASELINE_SHA}"
-            git push origin "refs/tags/\${TAG_NAME}"
+          git cat-file -e "${BASELINE_SHA}^{commit}"
+          if ! git ls-remote --exit-code --tags origin "refs/tags/${TAG_NAME}" >/dev/null 2>&1; then
+            git tag -a "${TAG_NAME}" "${BASELINE_SHA}" \
+              -m "CHAOS Phase 1 frozen detector archive; canonical commit ${BASELINE_SHA}"
+            git push origin "refs/tags/${TAG_NAME}"
           else
-            existing="$(git ls-remote origin "refs/tags/\${TAG_NAME}^{}" | awk '{print $1}')"
-            if [ -z "\${existing}" ]; then
-              existing="$(git ls-remote origin "refs/tags/\${TAG_NAME}" | awk '{print $1}')"
+            existing="$(git ls-remote origin "refs/tags/${TAG_NAME}^{}" | awk '{print $1}')"
+            if [ -z "${existing}" ]; then
+              existing="$(git ls-remote origin "refs/tags/${TAG_NAME}" | awk '{print $1}')"
             fi
-            if [ "\${existing}" != "\${BASELINE_SHA}" ]; then
-              echo "Existing Phase 1 tag points to a different commit: \${existing}" >&2
+            if [ "${existing}" != "${BASELINE_SHA}" ]; then
+              echo "Existing Phase 1 tag points to a different commit: ${existing}" >&2
               exit 1
             fi
           fi
-          if ! gh release view "\${TAG_NAME}" >/dev/null 2>&1; then
-            gh release create "\${TAG_NAME}" \
-              --target "\${BASELINE_SHA}" \
+          if ! gh release view "${TAG_NAME}" >/dev/null 2>&1; then
+            gh release create "${TAG_NAME}" \
+              --target "${BASELINE_SHA}" \
               --title "CHAOS Phase 1 — Frozen Detector Archive" \
               --notes-file docs/PHASE1_DETECTOR_FREEZE.md
           fi
           mkdir -p /tmp/chaos-phase1-release
-          git show "\${BASELINE_SHA}:docs/PHASE1_DETECTOR_FREEZE.md" > /tmp/chaos-phase1-release/PHASE1_DETECTOR_FREEZE.md
-          git show "\${BASELINE_SHA}:structural_engine/isolated_break_detector_v1/results/real_data_transition_scan.json" > /tmp/chaos-phase1-release/real_data_transition_scan.json
-          git show "\${BASELINE_SHA}:structural_engine/isolated_break_detector_v1/results/SHA256SUMS.txt" > /tmp/chaos-phase1-release/SHA256SUMS.txt
-          gh release upload "\${TAG_NAME}" \
+          git show "${BASELINE_SHA}:docs/PHASE1_DETECTOR_FREEZE.md" > /tmp/chaos-phase1-release/PHASE1_DETECTOR_FREEZE.md
+          git show "${BASELINE_SHA}:structural_engine/isolated_break_detector_v1/results/real_data_transition_scan.json" > /tmp/chaos-phase1-release/real_data_transition_scan.json
+          git show "${BASELINE_SHA}:structural_engine/isolated_break_detector_v1/results/SHA256SUMS.txt" > /tmp/chaos-phase1-release/SHA256SUMS.txt
+          gh release upload "${TAG_NAME}" \
             /tmp/chaos-phase1-release/PHASE1_DETECTOR_FREEZE.md \
             /tmp/chaos-phase1-release/real_data_transition_scan.json \
             /tmp/chaos-phase1-release/SHA256SUMS.txt \
@@ -105,8 +105,8 @@ jobs:
           PUSH_HEAD_SHA: ${{ github.sha }}
         run: |
           set -euo pipefail
-          if [[ -n "\${PUSH_BASE_SHA}" && "\${PUSH_BASE_SHA}" != "0000000000000000000000000000000000000000" ]]; then
-            python scripts/guards/check_experiments_immutable.py --base "\${PUSH_BASE_SHA}" --head "\${PUSH_HEAD_SHA}"
+          if [[ -n "${PUSH_BASE_SHA}" && "${PUSH_BASE_SHA}" != "0000000000000000000000000000000000000000" ]]; then
+            python scripts/guards/check_experiments_immutable.py --base "${PUSH_BASE_SHA}" --head "${PUSH_HEAD_SHA}"
           fi
 
       - name: Run three-stage prepare and freeze
@@ -319,7 +319,7 @@ jobs:
           expected="$(python -c 'import json; m=json.load(open("real_data_stress_pipeline/results/real_data_stress_manifest.json", encoding="utf-8")); print(next(x["sha256"] for x in m["sources"] if x.get("provider") == "World Bank Pink Sheet"))')"
           python -u scripts/audits/p2_2_3_markov_real_data_behavior.py \
             --replicates 999 --workers 2 \
-            --expected-source-sha256 "\${expected}" \
+            --expected-source-sha256 "${expected}" \
             --output-dir artifacts/markov_real_data_behavior
 
       - name: Upload real-series Markov audit
@@ -372,7 +372,7 @@ jobs:
           expected="$(python -c 'import json; m=json.load(open("real_data_stress_pipeline/results/real_data_stress_manifest.json", encoding="utf-8")); print(next(x["sha256"] for x in m["sources"] if x.get("provider") == "World Bank Pink Sheet"))')"
           python -u scripts/audits/p2_2_4_markov_injected_break_power.py \
             --replicates 999 --workers 2 \
-            --expected-source-sha256 "\${expected}" \
+            --expected-source-sha256 "${expected}" \
             --output-dir artifacts/markov_injected_break_power
 
       - name: Upload injected-break power audit
@@ -528,27 +528,27 @@ jobs:
           set -euo pipefail
           git config user.name "uniqueteamyemen"
           git config user.email "uniqueteamyemen@gmail.com"
-          git cat-file -e "\${SOURCE_SHA}^{commit}"
-          if ! git ls-remote --exit-code --tags origin "refs/tags/\${TAG_NAME}" >/dev/null 2>&1; then
-            git tag -a "\${TAG_NAME}" "\${SOURCE_SHA}" -m "CHAOS P2 phase-close v1.0; source commit \${SOURCE_SHA}"
-            git push origin "refs/tags/\${TAG_NAME}"
+          git cat-file -e "${SOURCE_SHA}^{commit}"
+          if ! git ls-remote --exit-code --tags origin "refs/tags/${TAG_NAME}" >/dev/null 2>&1; then
+            git tag -a "${TAG_NAME}" "${SOURCE_SHA}" -m "CHAOS P2 phase-close v1.0; source commit ${SOURCE_SHA}"
+            git push origin "refs/tags/${TAG_NAME}"
           else
-            existing="$(git ls-remote origin "refs/tags/\${TAG_NAME}^{}" | awk '{print $1}')"
-            if [ -z "\${existing}" ]; then
-              existing="$(git ls-remote origin "refs/tags/\${TAG_NAME}" | awk '{print $1}')"
+            existing="$(git ls-remote origin "refs/tags/${TAG_NAME}^{}" | awk '{print $1}')"
+            if [ -z "${existing}" ]; then
+              existing="$(git ls-remote origin "refs/tags/${TAG_NAME}" | awk '{print $1}')"
             fi
-            if [ "\${existing}" != "\${SOURCE_SHA}" ]; then
-              echo "Existing P2 phase-close tag points to a different commit: \${existing}" >&2
+            if [ "${existing}" != "${SOURCE_SHA}" ]; then
+              echo "Existing P2 phase-close tag points to a different commit: ${existing}" >&2
               exit 1
             fi
           fi
-          if ! gh release view "\${TAG_NAME}" >/dev/null 2>&1; then
-            gh release create "\${TAG_NAME}" \
-              --target "\${SOURCE_SHA}" \
+          if ! gh release view "${TAG_NAME}" >/dev/null 2>&1; then
+            gh release create "${TAG_NAME}" \
+              --target "${SOURCE_SHA}" \
               --title "CHAOS P2 — Clean Phase Closure v1.0" \
               --notes-file REAL_DATA_STRESS_REPORT_AR.md
           fi
-          gh release upload "\${TAG_NAME}" \
+          gh release upload "${TAG_NAME}" \
             REAL_DATA_STRESS_REPORT_AR.md \
             real_data_stress_pipeline/results/real_data_stress_manifest.json \
             real_data_stress_pipeline/results/SHA256SUMS.txt \
@@ -614,7 +614,7 @@ jobs:
           PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
         run: |
           set -euo pipefail
-          python scripts/guards/check_experiments_immutable.py --base "\${PR_BASE_SHA}" --head "\${PR_HEAD_SHA}" --triple-dot
+          python scripts/guards/check_experiments_immutable.py --base "${PR_BASE_SHA}" --head "${PR_HEAD_SHA}" --triple-dot
 
       - name: Run pipeline contract tests
         run: python -m unittest discover -s real_data_stress_pipeline/tests -p 'test_*.py' -v
