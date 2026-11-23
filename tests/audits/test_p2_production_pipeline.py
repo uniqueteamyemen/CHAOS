@@ -1,9 +1,11 @@
 from __future__ import annotations
 
+import copy
 import json
 import os
 import tempfile
 import unittest
+from contextlib import ExitStack
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from unittest.mock import patch
@@ -36,6 +38,108 @@ def synthetic_item(identifier: str, seed: int) -> dict:
 
 
 class ProductionPipelineTests(unittest.TestCase):
+    def _frozen_prepare_state(self):
+        commit = "fixture-commit"
+        with patch.dict(os.environ, {"GITHUB_SHA": commit}, clear=False):
+            contract_path = p2.HERE / "shock_event_contract.json"
+            contract = json.loads(contract_path.read_text(encoding="utf-8"))
+            manifest_seed = production._manifest_seed(
+                contract, p2.dependency_inventory()
+            )
+        return {
+            "schema": production.SCHEMA_VERSION,
+            "repository_commit": commit,
+            "manifest_seed": manifest_seed,
+        }
+
+    def _assert_runtime_entrypoints_reject(
+        self, state, expected_error, environ, patcher_factories=()
+    ):
+        entrypoints = (
+            ("evaluate_shard", lambda: production.evaluate_shard(shard_index=0)),
+            ("aggregate", production.aggregate),
+        )
+        for name, invoke in entrypoints:
+            with self.subTest(entrypoint=name, expected_error=expected_error):
+                with ExitStack() as stack:
+                    stack.enter_context(patch.dict(os.environ, environ, clear=True))
+                    stack.enter_context(
+                        patch.object(production, "read_json", return_value=state)
+                    )
+                    for factory in patcher_factories:
+                        stack.enter_context(factory())
+                    with self.assertRaisesRegex(production.IntegrityError, expected_error):
+                        invoke()
+
+    def test_shard_and_aggregate_reject_missing_or_mismatched_github_sha(self):
+        state = self._frozen_prepare_state()
+        self._assert_runtime_entrypoints_reject(
+            state, "github_sha_missing", {}
+        )
+        self._assert_runtime_entrypoints_reject(
+            state,
+            "prepare_commit_mismatch",
+            {"GITHUB_SHA": "different-commit"},
+        )
+
+    def test_shard_and_aggregate_reject_all_frozen_config_drift(self):
+        state = self._frozen_prepare_state()
+        for attribute, label in (
+            ("PIPELINE_CONFIG", "PIPELINE_CONFIG"),
+            ("GEM_CONFIG", "GEM_CONFIG"),
+            ("SEISMIC_CONFIG", "SEISMIC_CONFIG"),
+        ):
+            changed = copy.deepcopy(getattr(p2, attribute))
+            changed["_test_drift"] = True
+            with self.subTest(config=label):
+                self._assert_runtime_entrypoints_reject(
+                    state,
+                    f"execution_config_mismatch:{label}",
+                    {"GITHUB_SHA": "fixture-commit"},
+                    (lambda attribute=attribute, changed=changed:
+                        patch.object(p2, attribute, changed),),
+                )
+
+    def test_shard_and_aggregate_reject_shock_contract_drift(self):
+        state = self._frozen_prepare_state()
+        with tempfile.TemporaryDirectory() as directory:
+            changed_root = Path(directory)
+            changed_contract = json.loads(
+                (p2.HERE / "shock_event_contract.json").read_text(encoding="utf-8")
+            )
+            changed_contract["matching_window_months"] = (
+                int(changed_contract.get("matching_window_months", 0)) + 1
+            )
+            (changed_root / "shock_event_contract.json").write_text(
+                json.dumps(changed_contract), encoding="utf-8"
+            )
+            self._assert_runtime_entrypoints_reject(
+                state,
+                "shock_contract_mismatch",
+                {"GITHUB_SHA": "fixture-commit"},
+                (lambda: patch.object(p2, "HERE", changed_root),),
+            )
+
+    def test_shard_and_aggregate_reject_each_frozen_execution_parameter_drift(self):
+        state = self._frozen_prepare_state()
+        parameter_changes = {
+            "REPS": p2.REPS + 1,
+            "PINK_MIN": p2.PINK_MIN + 1,
+            "GEM_MIN": p2.GEM_MIN + 1,
+            "SEISMIC_MIN": p2.SEISMIC_MIN + 1,
+            "MONTH_BLOCK": p2.MONTH_BLOCK + 1,
+            "EVENT_BLOCK": p2.EVENT_BLOCK + 1,
+            "MAG": p2.MAG + 0.1,
+        }
+        for name, value in parameter_changes.items():
+            with self.subTest(parameter=name):
+                self._assert_runtime_entrypoints_reject(
+                    state,
+                    "execution_parameters_mismatch",
+                    {"GITHUB_SHA": "fixture-commit"},
+                    (lambda name=name, value=value: patch.object(p2, name, value),),
+                )
+
     def test_weighted_sharding_is_deterministic_and_balances_load(self):
         candidates = [
             {"id": f"s{i}", "original_index": i, "estimated_weight": weight}
@@ -202,11 +306,35 @@ class ProductionPipelineTests(unittest.TestCase):
         publish = workflow.index("Publish P2 phase-close audited release")
         draft_create = workflow.index("--draft", publish)
         upload = workflow.index('gh release upload "${TAG_NAME}"', publish)
+        verify_remote = workflow.index("verify_remote_assets", upload)
         publish_release = workflow.index('gh release edit "${TAG_NAME}" --draft=false', publish)
         self.assertLess(preflight, publish)
         self.assertLess(draft_create, upload)
-        self.assertLess(upload, publish_release)
+        self.assertLess(upload, verify_remote)
+        self.assertLess(verify_remote, publish_release)
         self.assertIn("published_release_asset_missing", workflow)
+        self.assertIn("release_asset_digest_mismatch", workflow)
+        self.assertIn("release_asset_size_mismatch", workflow)
+        self.assertIn(
+            "sha256sum --strict -c real_data_stress_pipeline/results/SHA256SUMS.txt",
+            workflow,
+        )
+
+    def test_workflow_limits_secrets_to_domain_audit_step_and_uses_four_markov_workers(self):
+        workflow_path = Path(__file__).resolve().parents[2] / ".github" / "workflows" / "real-data-stress.yml"
+        workflow = workflow_path.read_text(encoding="utf-8")
+        domain_job = workflow.split("  audit-domain-null:", 1)[1].split(
+            "  publish-phase-close:", 1
+        )[0]
+        job_environment = domain_job.split("    steps:", 1)[0]
+        self.assertNotIn("FRED_API_KEY:", job_environment)
+        self.assertNotIn("EIA_API_KEY:", job_environment)
+        domain_step = domain_job.split(
+            "- name: Run seismic integrity, declustering and domain-null audit", 1
+        )[1].split("- name: Upload domain-null audit", 1)[0]
+        self.assertIn("FRED_API_KEY: ${{ github.ref == 'refs/heads/main-phase2'", domain_step)
+        self.assertIn("EIA_API_KEY: ${{ github.ref == 'refs/heads/main-phase2'", domain_step)
+        self.assertEqual(workflow.count("--replicates 999 --workers 4"), 2)
 
     def test_runtime_dependency_manifest_rejects_version_drift(self):
         expected = p2.dependency_inventory()
