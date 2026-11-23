@@ -363,6 +363,7 @@ def main():
     parser.add_argument("--replicates", type=int, default=200)
     parser.add_argument("--max-series", type=int, default=None)
     parser.add_argument("--workers", type=int, default=os.cpu_count() or 1)
+    parser.add_argument("--expected-source-sha256", type=str, default=None)
     parser.add_argument("--output-dir", type=Path,
                         default=Path("artifacts/markov_real_data_behavior"))
     args = parser.parse_args()
@@ -370,6 +371,9 @@ def main():
         if args.workers < 1:
             raise ValueError("workers_must_be_positive")
         result, records = run_audit(args.replicates, args.max_series, args.workers)
+        actual_source_sha = result.get("source", {}).get("sha256")
+        if args.expected_source_sha256 and actual_source_sha != args.expected_source_sha256:
+            raise RuntimeError(f"pink_source_sha256_mismatch:expected={args.expected_source_sha256}:actual={actual_source_sha}")
         args.output_dir.mkdir(parents=True, exist_ok=True)
         (args.output_dir/"summary.json").write_text(
             json.dumps(result, ensure_ascii=False, indent=2)+"\n", encoding="utf-8")

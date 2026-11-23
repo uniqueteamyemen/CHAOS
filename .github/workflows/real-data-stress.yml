@@ -25,10 +25,10 @@ permissions:
 
 concurrency:
   group: chaos-p2-2-stress-v4-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
-  stress:
+  prepare:
     if: >-
       github.event_name != 'pull_request' &&
       (github.event_name != 'workflow_dispatch' || github.ref == 'refs/heads/main-phase2')
@@ -36,6 +36,12 @@ jobs:
     timeout-minutes: 360
     permissions:
       contents: write
+    env:
+      OMP_NUM_THREADS: '1'
+      OPENBLAS_NUM_THREADS: '1'
+      MKL_NUM_THREADS: '1'
+      NUMEXPR_NUM_THREADS: '1'
+      VECLIB_MAXIMUM_THREADS: '1'
     steps:
       - name: Checkout phase2 branch with history
         uses: actions/checkout@v4
@@ -43,8 +49,7 @@ jobs:
           ref: ${{ github.sha }}
           fetch-depth: 0
 
-      - name: Create and publish the Phase 1 annotated tag and release
-        if: github.event_name != 'pull_request'
+      - name: Publish the immutable Phase 1 archive
         env:
           GH_TOKEN: ${{ github.token }}
           BASELINE_SHA: 51e4278309b7d32917b85903323a63f81d9e9b6a
@@ -53,32 +58,32 @@ jobs:
           set -euo pipefail
           git config user.name "uniqueteamyemen"
           git config user.email "uniqueteamyemen@gmail.com"
-          git cat-file -e "${BASELINE_SHA}^{commit}"
-          if ! git ls-remote --exit-code --tags origin "refs/tags/${TAG_NAME}" >/dev/null 2>&1; then
-            git tag -a "${TAG_NAME}" "${BASELINE_SHA}" \
-              -m "CHAOS Phase 1 frozen detector archive; canonical commit ${BASELINE_SHA}"
-            git push origin "refs/tags/${TAG_NAME}"
+          git cat-file -e "\${BASELINE_SHA}^{commit}"
+          if ! git ls-remote --exit-code --tags origin "refs/tags/\${TAG_NAME}" >/dev/null 2>&1; then
+            git tag -a "\${TAG_NAME}" "\${BASELINE_SHA}" \
+              -m "CHAOS Phase 1 frozen detector archive; canonical commit \${BASELINE_SHA}"
+            git push origin "refs/tags/\${TAG_NAME}"
           else
-            existing="$(git ls-remote origin "refs/tags/${TAG_NAME}^{}" | awk '{print $1}')"
-            if [ -z "${existing}" ]; then
-              existing="$(git ls-remote origin "refs/tags/${TAG_NAME}" | awk '{print $1}')"
+            existing="$(git ls-remote origin "refs/tags/\${TAG_NAME}^{}" | awk '{print $1}')"
+            if [ -z "\${existing}" ]; then
+              existing="$(git ls-remote origin "refs/tags/\${TAG_NAME}" | awk '{print $1}')"
             fi
-            if [ "${existing}" != "${BASELINE_SHA}" ]; then
-              echo "Existing Phase 1 tag points to a different commit: ${existing}" >&2
+            if [ "\${existing}" != "\${BASELINE_SHA}" ]; then
+              echo "Existing Phase 1 tag points to a different commit: \${existing}" >&2
               exit 1
             fi
           fi
-          if ! gh release view "${TAG_NAME}" >/dev/null 2>&1; then
-            gh release create "${TAG_NAME}" \
-              --target "${BASELINE_SHA}" \
+          if ! gh release view "\${TAG_NAME}" >/dev/null 2>&1; then
+            gh release create "\${TAG_NAME}" \
+              --target "\${BASELINE_SHA}" \
               --title "CHAOS Phase 1 — Frozen Detector Archive" \
               --notes-file docs/PHASE1_DETECTOR_FREEZE.md
           fi
           mkdir -p /tmp/chaos-phase1-release
-          git show "${BASELINE_SHA}:docs/PHASE1_DETECTOR_FREEZE.md" > /tmp/chaos-phase1-release/PHASE1_DETECTOR_FREEZE.md
-          git show "${BASELINE_SHA}:structural_engine/isolated_break_detector_v1/results/real_data_transition_scan.json" > /tmp/chaos-phase1-release/real_data_transition_scan.json
-          git show "${BASELINE_SHA}:structural_engine/isolated_break_detector_v1/results/SHA256SUMS.txt" > /tmp/chaos-phase1-release/SHA256SUMS.txt
-          gh release upload "${TAG_NAME}" \
+          git show "\${BASELINE_SHA}:docs/PHASE1_DETECTOR_FREEZE.md" > /tmp/chaos-phase1-release/PHASE1_DETECTOR_FREEZE.md
+          git show "\${BASELINE_SHA}:structural_engine/isolated_break_detector_v1/results/real_data_transition_scan.json" > /tmp/chaos-phase1-release/real_data_transition_scan.json
+          git show "\${BASELINE_SHA}:structural_engine/isolated_break_detector_v1/results/SHA256SUMS.txt" > /tmp/chaos-phase1-release/SHA256SUMS.txt
+          gh release upload "\${TAG_NAME}" \
             /tmp/chaos-phase1-release/PHASE1_DETECTOR_FREEZE.md \
             /tmp/chaos-phase1-release/real_data_transition_scan.json \
             /tmp/chaos-phase1-release/SHA256SUMS.txt \
@@ -94,113 +99,421 @@ jobs:
       - name: Install pipeline dependencies
         run: python -m pip install -r real_data_stress_pipeline/requirements.txt
 
-      - name: Verify both frozen archives are unchanged
+      - name: Verify frozen detector archives
         env:
-          EVENT_NAME: ${{ github.event_name }}
-          PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
-          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
           PUSH_BASE_SHA: ${{ github.event.before }}
           PUSH_HEAD_SHA: ${{ github.sha }}
         run: |
           set -euo pipefail
-          if [[ "$EVENT_NAME" == "pull_request" ]]; then
-            python scripts/guards/check_experiments_immutable.py --base "$PR_BASE_SHA" --head "$PR_HEAD_SHA" --triple-dot
-          elif [[ -n "$PUSH_BASE_SHA" && "$PUSH_BASE_SHA" != "0000000000000000000000000000000000000000" ]]; then
-            python scripts/guards/check_experiments_immutable.py --base "$PUSH_BASE_SHA" --head "$PUSH_HEAD_SHA"
+          if [[ -n "\${PUSH_BASE_SHA}" && "\${PUSH_BASE_SHA}" != "0000000000000000000000000000000000000000" ]]; then
+            python scripts/guards/check_experiments_immutable.py --base "\${PUSH_BASE_SHA}" --head "\${PUSH_HEAD_SHA}"
           fi
 
-      - name: Run pipeline contract tests
-        run: python -m unittest discover -s real_data_stress_pipeline/tests -p 'test_*.py' -v
-
-      - name: Run Markov, null-routing and seismic contract tests
-        run: |
-          set -euo pipefail
-          python -m unittest discover -s tests/audits -p 'test_p2_2_*.py' -v
-          python -m unittest discover -s tests/audits -p 'test_p2_codex_polish.py' -v
-          python -m unittest discover -s tests/audits -p 'test_p2_null_eligibility.py' -v
-          python -m unittest discover -s tests/seismic_null_contract -p 'test_*.py' -v
-
-      - name: Execute real historical stress pipeline
-        if: github.event_name != 'pull_request'
+      - name: Run three-stage prepare and freeze
         env:
           GITHUB_SHA: ${{ github.sha }}
+          GITHUB_REF_NAME: ${{ github.ref_name }}
           STRESS_BOOTSTRAP_REPLICATES: '999'
           STRESS_BOOTSTRAP_MEAN_BLOCK_MONTHS: '12'
           STRESS_BOOTSTRAP_MEAN_BLOCK_EVENTS: '25'
           STRESS_MIN_COMMODITY_POINTS: '501'
           STRESS_MIN_GEM_POINTS: '87'
           STRESS_USGS_MIN_MAGNITUDE: '4.5'
-        run: python -u -m real_data_stress_pipeline.run_pipeline
+          PYTHONUNBUFFERED: '1'
+        run: python -u -m real_data_stress_pipeline.production_pipeline prepare --expected-candidates 519 --shards 4
+
+      - name: Upload frozen source and candidate registry
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: chaos-p2-prepared-${{ github.run_id }}-${{ github.run_attempt }}
+          retention-days: 90
+          if-no-files-found: warn
+          path: |
+            artifacts/real_data_stress/
+            real_data_stress_pipeline/results/prepare_state.json
+            real_data_stress_pipeline/results/dependency_manifest.json
+
+  evaluate:
+    needs: prepare
+    if: needs.prepare.result == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    strategy:
+      fail-fast: false
+      max-parallel: 4
+      matrix:
+        shard: [0, 1, 2, 3]
+    env:
+      OMP_NUM_THREADS: '1'
+      OPENBLAS_NUM_THREADS: '1'
+      MKL_NUM_THREADS: '1'
+      NUMEXPR_NUM_THREADS: '1'
+      VECLIB_MAXIMUM_THREADS: '1'
+    steps:
+      - name: Checkout exact prepared commit
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+
+      - name: Download frozen prepare artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: chaos-p2-prepared-${{ github.run_id }}-${{ github.run_attempt }}
+          path: .
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+          cache-dependency-path: real_data_stress_pipeline/requirements.txt
+
+      - name: Install pipeline dependencies
+        run: python -m pip install -r real_data_stress_pipeline/requirements.txt
+
+      - name: Evaluate weighted shard with bounded ProcessPool
+        env:
+          GITHUB_SHA: ${{ github.sha }}
+          PYTHONUNBUFFERED: '1'
+        run: python -u -m real_data_stress_pipeline.production_pipeline evaluate --shard ${{ matrix.shard }} --shards 4 --workers 4
+
+      - name: Upload shard result
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: chaos-p2-eval-${{ matrix.shard }}-${{ github.run_id }}-${{ github.run_attempt }}
+          retention-days: 90
+          if-no-files-found: warn
+          path: real_data_stress_pipeline/results/shard_results/shard-${{ matrix.shard }}.json
+
+  aggregate-and-audit:
+    needs: [prepare, evaluate]
+    if: needs.prepare.result == 'success' && needs.evaluate.result == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    permissions:
+      contents: read
+    env:
+      OMP_NUM_THREADS: '1'
+      OPENBLAS_NUM_THREADS: '1'
+      MKL_NUM_THREADS: '1'
+      NUMEXPR_NUM_THREADS: '1'
+      VECLIB_MAXIMUM_THREADS: '1'
+    steps:
+      - name: Checkout exact evaluated commit
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+
+      - name: Download prepared source and registry
+        uses: actions/download-artifact@v4
+        with:
+          name: chaos-p2-prepared-${{ github.run_id }}-${{ github.run_attempt }}
+          path: .
+
+      - name: Download matrix shard 0
+        uses: actions/download-artifact@v4
+        with:
+          name: chaos-p2-eval-0-${{ github.run_id }}-${{ github.run_attempt }}
+          path: .
+
+      - name: Download matrix shard 1
+        uses: actions/download-artifact@v4
+        with:
+          name: chaos-p2-eval-1-${{ github.run_id }}-${{ github.run_attempt }}
+          path: .
+
+      - name: Download matrix shard 2
+        uses: actions/download-artifact@v4
+        with:
+          name: chaos-p2-eval-2-${{ github.run_id }}-${{ github.run_attempt }}
+          path: .
+
+      - name: Download matrix shard 3
+        uses: actions/download-artifact@v4
+        with:
+          name: chaos-p2-eval-3-${{ github.run_id }}-${{ github.run_attempt }}
+          path: .
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+          cache-dependency-path: real_data_stress_pipeline/requirements.txt
+
+      - name: Install pipeline dependencies
+        run: python -m pip install -r real_data_stress_pipeline/requirements.txt
+
+      - name: Strict aggregate gate and canonical manifest
+        env:
+          GITHUB_SHA: ${{ github.sha }}
+          PYTHONUNBUFFERED: '1'
+        run: python -u -m real_data_stress_pipeline.production_pipeline aggregate
 
       - name: Audit generated P2.2 Markov manifest
-        if: github.event_name != 'pull_request'
         run: |
           python scripts/audits/p2_2_2_markov_diagnostics.py \
             real_data_stress_pipeline/results/real_data_stress_manifest.json \
             --output artifacts/markov_calibration_audit.json
 
-      - name: Run bounded Markov real-series behavior audit
-        if: github.event_name != 'pull_request'
+      - name: Upload complete aggregate and audit input
+        uses: actions/upload-artifact@v4
+        with:
+          name: chaos-p2-aggregate-${{ github.run_id }}-${{ github.run_attempt }}
+          retention-days: 90
+          if-no-files-found: error
+          path: |
+            artifacts/real_data_stress/
+            real_data_stress_pipeline/results/
+            REAL_DATA_STRESS_REPORT_AR.md
+            artifacts/markov_calibration_audit.json
+
+  audit-markov-real-data:
+    needs: aggregate-and-audit
+    if: needs.aggregate-and-audit.result == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    env:
+      OMP_NUM_THREADS: '1'
+      OPENBLAS_NUM_THREADS: '1'
+      MKL_NUM_THREADS: '1'
+      NUMEXPR_NUM_THREADS: '1'
+      VECLIB_MAXIMUM_THREADS: '1'
+    steps:
+      - name: Checkout exact audit commit
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+
+      - name: Download aggregate manifest
+        uses: actions/download-artifact@v4
+        with:
+          name: chaos-p2-aggregate-${{ github.run_id }}-${{ github.run_attempt }}
+          path: .
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+          cache-dependency-path: real_data_stress_pipeline/requirements.txt
+
+      - name: Install audit dependencies
+        run: python -m pip install -r real_data_stress_pipeline/requirements.txt
+
+      - name: Run real-series Markov behavior audit against frozen source hash
         env:
           PYTHONUNBUFFERED: '1'
         run: |
+          expected="$(python -c 'import json; m=json.load(open("real_data_stress_pipeline/results/real_data_stress_manifest.json", encoding="utf-8")); print(next(x["sha256"] for x in m["sources"] if x.get("provider") == "World Bank Pink Sheet"))')"
           python -u scripts/audits/p2_2_3_markov_real_data_behavior.py \
             --replicates 999 --workers 2 \
+            --expected-source-sha256 "\${expected}" \
             --output-dir artifacts/markov_real_data_behavior
 
-      - name: Run bounded paired injected-break power audit
-        if: github.event_name != 'pull_request'
+      - name: Upload real-series Markov audit
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: chaos-p2-markov-real-${{ github.run_id }}-${{ github.run_attempt }}
+          retention-days: 90
+          if-no-files-found: warn
+          path: artifacts/markov_real_data_behavior/
+
+  audit-markov-injected-break:
+    needs: aggregate-and-audit
+    if: needs.aggregate-and-audit.result == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    env:
+      OMP_NUM_THREADS: '1'
+      OPENBLAS_NUM_THREADS: '1'
+      MKL_NUM_THREADS: '1'
+      NUMEXPR_NUM_THREADS: '1'
+      VECLIB_MAXIMUM_THREADS: '1'
+    steps:
+      - name: Checkout exact audit commit
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+
+      - name: Download aggregate manifest
+        uses: actions/download-artifact@v4
+        with:
+          name: chaos-p2-aggregate-${{ github.run_id }}-${{ github.run_attempt }}
+          path: .
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+          cache-dependency-path: real_data_stress_pipeline/requirements.txt
+
+      - name: Install audit dependencies
+        run: python -m pip install -r real_data_stress_pipeline/requirements.txt
+
+      - name: Run injected-break power audit against frozen source hash
         env:
           PYTHONUNBUFFERED: '1'
         run: |
+          expected="$(python -c 'import json; m=json.load(open("real_data_stress_pipeline/results/real_data_stress_manifest.json", encoding="utf-8")); print(next(x["sha256"] for x in m["sources"] if x.get("provider") == "World Bank Pink Sheet"))')"
           python -u scripts/audits/p2_2_4_markov_injected_break_power.py \
             --replicates 999 --workers 2 \
+            --expected-source-sha256 "\${expected}" \
             --output-dir artifacts/markov_injected_break_power
 
-      - name: Run full seismic integrity, declustering and exploratory null audit
+      - name: Upload injected-break power audit
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: chaos-p2-markov-power-${{ github.run_id }}-${{ github.run_attempt }}
+          retention-days: 90
+          if-no-files-found: warn
+          path: artifacts/markov_injected_break_power/
+
+  audit-domain-null:
+    needs: aggregate-and-audit
+    if: needs.aggregate-and-audit.result == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    env:
+      OMP_NUM_THREADS: '1'
+      OPENBLAS_NUM_THREADS: '1'
+      MKL_NUM_THREADS: '1'
+      NUMEXPR_NUM_THREADS: '1'
+      VECLIB_MAXIMUM_THREADS: '1'
+      FRED_API_KEY: ${{ github.ref == 'refs/heads/main-phase2' && secrets.FRED_API_KEY || '' }}
+      EIA_API_KEY: ${{ github.ref == 'refs/heads/main-phase2' && secrets.EIA_API_KEY || '' }}
+      EIA_SERIES_IDS: ${{ vars.EIA_SERIES_IDS }}
+    steps:
+      - name: Checkout exact audit commit
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+          cache-dependency-path: real_data_stress_pipeline/requirements.txt
+
+      - name: Install audit dependencies
+        run: python -m pip install -r real_data_stress_pipeline/requirements.txt
+
+      - name: Run seismic integrity, declustering and domain-null audit
         env:
           PYTHONUNBUFFERED: '1'
-          FRED_API_KEY: ${{ github.ref == 'refs/heads/main-phase2' && secrets.FRED_API_KEY || '' }}
-          EIA_API_KEY: ${{ github.ref == 'refs/heads/main-phase2' && secrets.EIA_API_KEY || '' }}
-          EIA_SERIES_IDS: ${{ vars.EIA_SERIES_IDS }}
         run: |
           python -u scripts/audits/p2_2_3_domain_null_and_declustering.py \
             --poisson-replicates 200 \
             --output-dir artifacts/domain_null_and_declustering
 
-      - name: Package reproducible source snapshots for permanent release
-        if: success() && github.event_name != 'pull_request'
+      - name: Upload domain-null audit
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: chaos-p2-domain-null-${{ github.run_id }}-${{ github.run_attempt }}
+          retention-days: 90
+          if-no-files-found: warn
+          path: artifacts/domain_null_and_declustering/
+
+  publish-phase-close:
+    needs:
+      - aggregate-and-audit
+      - audit-markov-real-data
+      - audit-markov-injected-break
+      - audit-domain-null
+    if: >-
+      needs.aggregate-and-audit.result == 'success' &&
+      needs.audit-markov-real-data.result == 'success' &&
+      needs.audit-markov-injected-break.result == 'success' &&
+      needs.audit-domain-null.result == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout exact release commit
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+
+      - name: Download aggregate outputs
+        uses: actions/download-artifact@v4
+        with:
+          name: chaos-p2-aggregate-${{ github.run_id }}-${{ github.run_attempt }}
+          path: .
+
+      - name: Download Markov real-data audit
+        uses: actions/download-artifact@v4
+        with:
+          name: chaos-p2-markov-real-${{ github.run_id }}-${{ github.run_attempt }}
+          path: .
+
+      - name: Download Markov injected-break audit
+        uses: actions/download-artifact@v4
+        with:
+          name: chaos-p2-markov-power-${{ github.run_id }}-${{ github.run_attempt }}
+          path: .
+
+      - name: Download domain-null audit
+        uses: actions/download-artifact@v4
+        with:
+          name: chaos-p2-domain-null-${{ github.run_id }}-${{ github.run_attempt }}
+          path: .
+
+      - name: Verify all release gates and package reproducible snapshots
         run: |
           set -euo pipefail
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          manifest = json.loads(Path("real_data_stress_pipeline/results/real_data_stress_manifest.json").read_text(encoding="utf-8"))
+          expected = int(manifest.get("distributed_evaluation", {}).get("expected_series", 0))
+          verified = int(manifest.get("distributed_evaluation", {}).get("verified_series", 0))
+          if expected != 519 or verified != 519:
+              raise SystemExit(f"release_blocked:series_integrity:{verified}/{expected}")
+          for path in (
+              "artifacts/markov_real_data_behavior/summary.json",
+              "artifacts/markov_injected_break_power/summary.json",
+              "artifacts/domain_null_and_declustering/summary.json",
+              "artifacts/markov_calibration_audit.json",
+          ):
+              if not Path(path).is_file():
+                  raise SystemExit(f"release_blocked:missing_audit:{path}")
+          real = json.loads(Path("artifacts/markov_real_data_behavior/summary.json").read_text(encoding="utf-8"))
+          power = json.loads(Path("artifacts/markov_injected_break_power/summary.json").read_text(encoding="utf-8"))
+          pink_sha = next(x["sha256"] for x in manifest["sources"] if x.get("provider") == "World Bank Pink Sheet")
+          if real.get("source", {}).get("sha256") != pink_sha:
+              raise SystemExit("release_blocked:markov_real_source_sha_mismatch")
+          if power.get("source", {}).get("source_sha256") != pink_sha:
+              raise SystemExit("release_blocked:markov_power_source_sha_mismatch")
+          domain = json.loads(Path("artifacts/domain_null_and_declustering/summary.json").read_text(encoding="utf-8"))
+          if not domain.get("required_source_gate", {}).get("passed"):
+              raise SystemExit("release_blocked:domain_null_source_gate_failed")
+          print("RELEASE_GATES_PASSED")
+          PY
           tar -czf chaos-p2-2-source-snapshots.tar.gz \
             artifacts/real_data_stress/raw/ \
             artifacts/real_data_stress/derived/ \
+            artifacts/real_data_stress/frozen_candidates.json \
             real_data_stress_pipeline/results/real_data_stress_manifest.json \
             real_data_stress_pipeline/results/SHA256SUMS.txt
           sha256sum chaos-p2-2-source-snapshots.tar.gz > chaos-p2-2-source-snapshots.tar.gz.sha256
           ls -lh chaos-p2-2-source-snapshots.tar.gz chaos-p2-2-source-snapshots.tar.gz.sha256
 
-      - name: Upload raw source responses and complete numerical audit
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: chaos-p2-2-stress-${{ github.run_id }}-${{ github.run_attempt }}
-          retention-days: 90
-          if-no-files-found: warn
-          path: |
-            artifacts/real_data_stress/raw/
-            artifacts/real_data_stress/derived/
-            REAL_DATA_STRESS_REPORT_AR.md
-            real_data_stress_pipeline/results/
-            chaos-p2-2-source-snapshots.tar.gz
-            chaos-p2-2-source-snapshots.tar.gz.sha256
-            artifacts/markov_calibration_audit.json
-            artifacts/markov_real_data_behavior/
-            artifacts/markov_injected_break_power/
-            artifacts/domain_null_and_declustering/
-
-      - name: Create and publish the P2 phase-close audited release
-        if: success() && github.event_name != 'pull_request'
+      - name: Publish P2 phase-close audited release
         env:
           GH_TOKEN: ${{ github.token }}
           TAG_NAME: p2-phase-close-v1.0
@@ -209,35 +522,56 @@ jobs:
           set -euo pipefail
           git config user.name "uniqueteamyemen"
           git config user.email "uniqueteamyemen@gmail.com"
-          git cat-file -e "${SOURCE_SHA}^{commit}"
-          TAG_SHA="${SOURCE_SHA}"
-          if ! git ls-remote --exit-code --tags origin "refs/tags/${TAG_NAME}" >/dev/null 2>&1; then
-            git tag -a "${TAG_NAME}" "${TAG_SHA}" \
-              -m "CHAOS P2 phase-close v1.0; source commit ${TAG_SHA}"
-            git push origin "refs/tags/${TAG_NAME}"
+          git cat-file -e "\${SOURCE_SHA}^{commit}"
+          if ! git ls-remote --exit-code --tags origin "refs/tags/\${TAG_NAME}" >/dev/null 2>&1; then
+            git tag -a "\${TAG_NAME}" "\${SOURCE_SHA}" -m "CHAOS P2 phase-close v1.0; source commit \${SOURCE_SHA}"
+            git push origin "refs/tags/\${TAG_NAME}"
           else
-            existing="$(git ls-remote origin "refs/tags/${TAG_NAME}^{}" | awk '{print $1}')"
-            if [ -z "${existing}" ]; then
-              existing="$(git ls-remote origin "refs/tags/${TAG_NAME}" | awk '{print $1}')"
+            existing="$(git ls-remote origin "refs/tags/\${TAG_NAME}^{}" | awk '{print $1}')"
+            if [ -z "\${existing}" ]; then
+              existing="$(git ls-remote origin "refs/tags/\${TAG_NAME}" | awk '{print $1}')"
             fi
-            if [ "${existing}" != "${TAG_SHA}" ]; then
-              echo "Existing P2 phase-close tag points to a different commit: ${existing}" >&2
+            if [ "\${existing}" != "\${SOURCE_SHA}" ]; then
+              echo "Existing P2 phase-close tag points to a different commit: \${existing}" >&2
               exit 1
             fi
           fi
-          if ! gh release view "${TAG_NAME}" >/dev/null 2>&1; then
-            gh release create "${TAG_NAME}" \
-              --target "${TAG_SHA}" \
+          if ! gh release view "\${TAG_NAME}" >/dev/null 2>&1; then
+            gh release create "\${TAG_NAME}" \
+              --target "\${SOURCE_SHA}" \
               --title "CHAOS P2 — Clean Phase Closure v1.0" \
               --notes-file REAL_DATA_STRESS_REPORT_AR.md
           fi
-          gh release upload "${TAG_NAME}" \
+          gh release upload "\${TAG_NAME}" \
             REAL_DATA_STRESS_REPORT_AR.md \
             real_data_stress_pipeline/results/real_data_stress_manifest.json \
             real_data_stress_pipeline/results/SHA256SUMS.txt \
+            artifacts/markov_calibration_audit.json \
+            artifacts/markov_real_data_behavior/summary.json \
+            artifacts/markov_real_data_behavior/replicates.jsonl.gz \
+            artifacts/markov_injected_break_power/summary.json \
+            artifacts/markov_injected_break_power/replicates.jsonl.gz \
+            artifacts/domain_null_and_declustering/summary.json \
             chaos-p2-2-source-snapshots.tar.gz \
             chaos-p2-2-source-snapshots.tar.gz.sha256 \
             --clobber
+
+      - name: Upload complete phase-close deliverables
+        uses: actions/upload-artifact@v4
+        with:
+          name: chaos-p2-phase-close-${{ github.run_id }}-${{ github.run_attempt }}
+          retention-days: 90
+          if-no-files-found: error
+          path: |
+            REAL_DATA_STRESS_REPORT_AR.md
+            real_data_stress_pipeline/results/real_data_stress_manifest.json
+            real_data_stress_pipeline/results/SHA256SUMS.txt
+            chaos-p2-2-source-snapshots.tar.gz
+            chaos-p2-2-source-snapshots.tar.gz.sha256
+            artifacts/markov_calibration_audit.json
+            artifacts/markov_real_data_behavior/
+            artifacts/markov_injected_break_power/
+            artifacts/domain_null_and_declustering/
 
   pr-gate:
     if: github.event_name == 'pull_request'
@@ -245,6 +579,12 @@ jobs:
     timeout-minutes: 25
     permissions:
       contents: read
+    env:
+      OMP_NUM_THREADS: '1'
+      OPENBLAS_NUM_THREADS: '1'
+      MKL_NUM_THREADS: '1'
+      NUMEXPR_NUM_THREADS: '1'
+      VECLIB_MAXIMUM_THREADS: '1'
     steps:
       - name: Checkout PR merge ref with history
         uses: actions/checkout@v4
@@ -268,16 +608,17 @@ jobs:
           PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
         run: |
           set -euo pipefail
-          python scripts/guards/check_experiments_immutable.py --base "$PR_BASE_SHA" --head "$PR_HEAD_SHA" --triple-dot
+          python scripts/guards/check_experiments_immutable.py --base "\${PR_BASE_SHA}" --head "\${PR_HEAD_SHA}" --triple-dot
 
       - name: Run pipeline contract tests
         run: python -m unittest discover -s real_data_stress_pipeline/tests -p 'test_*.py' -v
 
-      - name: Run Markov, null-routing and seismic contract tests
+      - name: Run Markov, null-routing, seismic and production-pipeline contract tests
         run: |
           set -euo pipefail
           python -m unittest discover -s tests/audits -p 'test_p2_2_*.py' -v
           python -m unittest discover -s tests/audits -p 'test_p2_codex_polish.py' -v
+          python -m unittest discover -s tests/audits -p 'test_p2_production_pipeline.py' -v
           python -m unittest discover -s tests/audits -p 'test_p2_null_eligibility.py' -v
           python -m unittest discover -s tests/seismic_null_contract -p 'test_*.py' -v
 
