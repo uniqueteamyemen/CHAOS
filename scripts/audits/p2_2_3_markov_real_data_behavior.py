@@ -239,11 +239,14 @@ def run_bootstrap_jobs(payloads, workers):
     return [completed[index] for index in range(len(payloads))]
 
 
-def run_audit(replicates, max_series=None, workers=None):
+def run_audit(replicates, max_series=None, workers=None, expected_source_sha256=None):
     if replicates < 1:
         raise ValueError("replicates_must_be_positive")
     source_metadata = {"sources": [], "errors": [], "rejected": []}
     items = p2.pink(source_metadata)
+    actual_source_sha = source_metadata["sources"][0].get("sha256") if source_metadata["sources"] else None
+    if expected_source_sha256 and actual_source_sha != expected_source_sha256:
+        raise RuntimeError(f"pink_source_sha256_mismatch:expected={expected_source_sha256}:actual={actual_source_sha}")
     if not items:
         raise RuntimeError("World Bank Pink Sheet returned no eligible series")
     if max_series is not None:
@@ -370,7 +373,7 @@ def main():
     try:
         if args.workers < 1:
             raise ValueError("workers_must_be_positive")
-        result, records = run_audit(args.replicates, args.max_series, args.workers)
+        result, records = run_audit(args.replicates, args.max_series, args.workers, args.expected_source_sha256)
         actual_source_sha = result.get("source", {}).get("sha256")
         if args.expected_source_sha256 and actual_source_sha != args.expected_source_sha256:
             raise RuntimeError(f"pink_source_sha256_mismatch:expected={args.expected_source_sha256}:actual={actual_source_sha}")

@@ -395,11 +395,15 @@ def run_audit(
     replicates: int,
     max_series: int | None = None,
     workers: int | None = None,
+    expected_source_sha256: str | None = None,
 ) -> tuple[dict[str, Any], list[dict[str, Any]]]:
     if replicates < 1:
         raise ValueError("replicates_must_be_positive")
     metadata: dict[str, Any] = {"sources": [], "errors": [], "rejected": []}
     items = p2.pink(metadata)
+    actual_source_sha = metadata["sources"][0].get("sha256") if metadata["sources"] else None
+    if expected_source_sha256 and actual_source_sha != expected_source_sha256:
+        raise RuntimeError(f"pink_source_sha256_mismatch:expected={expected_source_sha256}:actual={actual_source_sha}")
     if not items:
         raise RuntimeError("World Bank Pink Sheet returned no eligible long monthly series")
     if max_series is not None:
@@ -520,7 +524,7 @@ def main() -> int:
     if args.workers < 1:
         parser.error("--workers must be positive")
     try:
-        result, records = run_audit(args.replicates, args.max_series, args.workers)
+        result, records = run_audit(args.replicates, args.max_series, args.workers, args.expected_source_sha256)
         actual_source_sha = result.get("source", {}).get("source_sha256")
         if args.expected_source_sha256 and actual_source_sha != args.expected_source_sha256:
             raise RuntimeError(f"pink_source_sha256_mismatch:expected={args.expected_source_sha256}:actual={actual_source_sha}")
