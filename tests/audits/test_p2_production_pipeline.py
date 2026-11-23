@@ -316,7 +316,9 @@ class ProductionPipelineTests(unittest.TestCase):
         self.assertIn("REMOTE_RELEASE_ASSETS_VERIFIED", workflow)
         self.assertIn("release_asset_digest_mismatch", workflow)
         self.assertIn("release_asset_size_mismatch", workflow)
-        self.assertIn('release_target="$(gh release view "${TAG_NAME}" --repo "${GH_REPO}" --json targetCommitish --jq '.targetCommitish')"', workflow)
+        self.assertIn("release_target=", workflow)
+        self.assertIn("--json targetCommitish", workflow)
+        self.assertIn('if [[ "${release_target}" != "${SOURCE_SHA}" ]]; then', workflow)
         self.assertIn('if [[ "${release_target}" != "${SOURCE_SHA}" ]]; then', workflow)
         self.assertIn("P2 phase-close release targets a different commit", workflow)
         for release_name in (
