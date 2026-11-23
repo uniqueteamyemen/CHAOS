@@ -553,16 +553,24 @@ jobs:
       - name: Preflight every public release asset
         run: |
           set -euo pipefail
+          # Release asset names must be unique; several audit outputs share generic
+          # source filenames, so copy them to stable, descriptive release names.
+          mkdir -p release_assets
+          cp artifacts/markov_real_data_behavior/summary.json release_assets/markov-real-data-summary.json
+          cp artifacts/markov_real_data_behavior/replicates.jsonl.gz release_assets/markov-real-data-replicates.jsonl.gz
+          cp artifacts/markov_injected_break_power/summary.json release_assets/markov-injected-break-summary.json
+          cp artifacts/markov_injected_break_power/replicates.jsonl.gz release_assets/markov-injected-break-replicates.jsonl.gz
+          cp artifacts/domain_null_and_declustering/summary.json release_assets/domain-null-declustering-summary.json
           required_assets=(
             REAL_DATA_STRESS_REPORT_AR.md
             real_data_stress_pipeline/results/real_data_stress_manifest.json
             real_data_stress_pipeline/results/SHA256SUMS.txt
             artifacts/markov_calibration_audit.json
-            artifacts/markov_real_data_behavior/summary.json
-            artifacts/markov_real_data_behavior/replicates.jsonl.gz
-            artifacts/markov_injected_break_power/summary.json
-            artifacts/markov_injected_break_power/replicates.jsonl.gz
-            artifacts/domain_null_and_declustering/summary.json
+            release_assets/markov-real-data-summary.json
+            release_assets/markov-real-data-replicates.jsonl.gz
+            release_assets/markov-injected-break-summary.json
+            release_assets/markov-injected-break-replicates.jsonl.gz
+            release_assets/domain-null-declustering-summary.json
             chaos-p2-2-source-snapshots.tar.gz
             chaos-p2-2-source-snapshots.tar.gz.sha256
           )
@@ -602,11 +610,11 @@ jobs:
             real_data_stress_pipeline/results/real_data_stress_manifest.json
             real_data_stress_pipeline/results/SHA256SUMS.txt
             artifacts/markov_calibration_audit.json
-            artifacts/markov_real_data_behavior/summary.json
-            artifacts/markov_real_data_behavior/replicates.jsonl.gz
-            artifacts/markov_injected_break_power/summary.json
-            artifacts/markov_injected_break_power/replicates.jsonl.gz
-            artifacts/domain_null_and_declustering/summary.json
+            release_assets/markov-real-data-summary.json
+            release_assets/markov-real-data-replicates.jsonl.gz
+            release_assets/markov-injected-break-summary.json
+            release_assets/markov-injected-break-replicates.jsonl.gz
+            release_assets/domain-null-declustering-summary.json
             chaos-p2-2-source-snapshots.tar.gz
             chaos-p2-2-source-snapshots.tar.gz.sha256
           )
@@ -622,6 +630,9 @@ jobs:
           from pathlib import Path
 
           remote_document = json.loads(os.environ["REMOTE_ASSETS_JSON"])
+          asset_names = [Path(local_name).name for local_name in sys.argv[1:]]
+          if len(asset_names) != len(set(asset_names)):
+              raise SystemExit("release_asset_local_names_not_unique")
           remote_by_name = {
               item.get("name"): item
               for item in remote_document.get("assets", [])
