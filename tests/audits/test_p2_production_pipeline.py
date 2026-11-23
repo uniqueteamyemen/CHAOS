@@ -312,7 +312,8 @@ class ProductionPipelineTests(unittest.TestCase):
         self.assertLess(draft_create, upload)
         self.assertLess(upload, verify_remote)
         self.assertLess(verify_remote, publish_release)
-        self.assertIn("published_release_asset_missing", workflow)
+        self.assertIn("release_asset_missing_remote", workflow)
+        self.assertIn("REMOTE_RELEASE_ASSETS_VERIFIED", workflow)
         self.assertIn("release_asset_digest_mismatch", workflow)
         self.assertIn("release_asset_size_mismatch", workflow)
         self.assertIn(
