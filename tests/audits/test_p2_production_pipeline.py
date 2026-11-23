@@ -4,6 +4,7 @@ import json
 import os
 import tempfile
 import unittest
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from unittest.mock import patch
 
@@ -272,8 +273,7 @@ class ProductionPipelineTests(unittest.TestCase):
                 "domain": "seismic",
                 "frequency": "event_interarrival",
                 "axis": [
-                    (np.datetime64("2000-01-01") + np.timedelta64(2 * index, "D"))
-                    .astype("datetime64[ns]").astype(object).isoformat()
+                    (datetime(2000, 1, 1, tzinfo=timezone.utc) + timedelta(days=2 * index)).isoformat()
                     for index in range(180)
                 ],
                 "values": np.random.default_rng(505).uniform(0.1, 5.0, 180).tolist(),
