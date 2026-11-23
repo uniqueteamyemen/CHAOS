@@ -307,7 +307,7 @@ class ProductionPipelineTests(unittest.TestCase):
         draft_create = workflow.index("--draft", publish)
         upload = workflow.index('gh release upload "${TAG_NAME}"', publish)
         verify_remote = workflow.index("verify_remote_assets", upload)
-        publish_release = workflow.index('gh release edit "${TAG_NAME}" --draft=false', publish)
+        publish_release = workflow.index('gh release edit "${TAG_NAME}" --repo "${GH_REPO}" --draft=false', publish)
         self.assertLess(preflight, publish)
         self.assertLess(draft_create, upload)
         self.assertLess(upload, verify_remote)
@@ -563,21 +563,51 @@ class ProductionPipelineTests(unittest.TestCase):
             production.validate_result_records(registry, [result], expected_count=1)
 
 
-    def test_phase1_archive_write_permission_is_isolated_from_prepare(self):
+    def test_write_publish_jobs_have_no_checkout_and_consume_read_only_artifacts(self):
         workflow_path = Path(__file__).resolve().parents[2] / ".github" / "workflows" / "real-data-stress.yml"
         workflow = workflow_path.read_text(encoding="utf-8")
-        self.assertLess(workflow.index("  publish-phase1-archive:"), workflow.index("  prepare:"))
-        phase1_job = workflow.split("  publish-phase1-archive:", 1)[1].split("\n  prepare:", 1)[0]
-        self.assertIn("contents: write", phase1_job)
-        self.assertIn("GH_TOKEN: ${{ github.token }}", phase1_job)
-        self.assertIn("persist-credentials: false", phase1_job)
+
         prepare_job = workflow.split("  prepare:", 1)[1].split("\n  evaluate:", 1)[0]
         prepare_header = prepare_job.split("    steps:", 1)[0]
-        self.assertIn("needs: publish-phase1-archive", prepare_job)
         self.assertIn("contents: read", prepare_header)
         self.assertNotIn("contents: write", prepare_header)
-        self.assertNotIn("GH_TOKEN", prepare_job)
-        self.assertIn("persist-credentials: false", prepare_job)
+        self.assertIn("Stage immutable Phase 1 release assets", prepare_job)
+        self.assertIn("Upload immutable Phase 1 release assets", prepare_job)
+        self.assertIn("actions/upload-artifact@v7", prepare_job)
+        self.assertNotIn("needs: publish-phase1-archive", prepare_job)
+
+        phase1_job = workflow.split("  publish-phase1-archive:", 1)[1].split("\n  prepare:", 1)[0]
+        self.assertIn("needs: prepare", phase1_job)
+        self.assertIn("contents: write", phase1_job)
+        self.assertNotIn("actions/checkout@", phase1_job)
+        self.assertNotIn("git ", phase1_job)
+        self.assertIn("actions/download-artifact@v8", phase1_job)
+        self.assertIn("digest-mismatch: error", phase1_job)
+        self.assertIn("gh release create", phase1_job)
+        self.assertIn("gh release upload", phase1_job)
+
+        evaluate_job = workflow.split("  evaluate:", 1)[1].split("\n  aggregate-and-audit:", 1)[0]
+        self.assertIn("needs: [prepare, publish-phase1-archive]", evaluate_job)
+
+        stage_job = workflow.split("  stage-phase-close-release:", 1)[1].split("\n  publish-phase-close:", 1)[0]
+        stage_header = stage_job.split("    steps:", 1)[0]
+        self.assertIn("contents: read", stage_header)
+        self.assertNotIn("contents: write", stage_header)
+        self.assertIn("Preflight every public release asset", stage_job)
+        self.assertIn("Upload preflighted P2 phase-close release bundle", stage_job)
+        self.assertIn("actions/upload-artifact@v7", stage_job)
+        self.assertNotIn("GH_TOKEN", stage_job)
+
+        phase_close_job = workflow.split("  publish-phase-close:", 1)[1].split("\n  pr-gate:", 1)[0]
+        self.assertIn("needs: stage-phase-close-release", phase_close_job)
+        self.assertIn("contents: write", phase_close_job)
+        self.assertNotIn("actions/checkout@", phase_close_job)
+        self.assertNotIn("git ", phase_close_job)
+        self.assertIn("actions/download-artifact@v8", phase_close_job)
+        self.assertIn("digest-mismatch: error", phase_close_job)
+        self.assertIn("gh release create", phase_close_job)
+        self.assertIn("gh release upload", phase_close_job)
+        self.assertIn("gh release edit", phase_close_job)
 
     def test_all_artifact_downloads_fail_closed_on_digest_mismatch(self):
         workflow_path = Path(__file__).resolve().parents[2] / ".github" / "workflows" / "real-data-stress.yml"
