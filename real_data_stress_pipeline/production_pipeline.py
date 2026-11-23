@@ -845,6 +845,8 @@ def aggregate() -> dict[str, Any]:
         if path.is_file()
     ]
     sum_paths += [
+        *SHARD_PAYLOAD_ROOT.rglob("*"),
+        *SHARD_RESULT_ROOT.rglob("*"),
         p2.HERE / "run_pipeline.py",
         p2.HERE / "production_pipeline.py",
         p2.HERE / "shock_event_contract.json",
@@ -865,7 +867,7 @@ def aggregate() -> dict[str, Any]:
         ROOT / "tests" / "audits" / "test_p2_production_pipeline.py",
     ]
     checksums = []
-    for path in sorted(set(path for path in sum_paths if path.exists())):
+    for path in sorted(set(path for path in sum_paths if path.is_file())):
         checksums.append(
             f"{file_sha256(path)}  {path.relative_to(ROOT).as_posix()}"
         )

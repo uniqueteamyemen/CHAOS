@@ -534,7 +534,12 @@ jobs:
           tar -czf chaos-p2-2-source-snapshots.tar.gz \
             artifacts/real_data_stress/raw/ \
             artifacts/real_data_stress/derived/ \
+            artifacts/real_data_stress/candidate_shards/ \
             artifacts/real_data_stress/frozen_candidates.json \
+            artifacts/real_data_stress/pink_precomputed_results.json \
+            real_data_stress_pipeline/results/prepare_state.json \
+            real_data_stress_pipeline/results/dependency_manifest.json \
+            real_data_stress_pipeline/results/shard_results/ \
             real_data_stress_pipeline/results/real_data_stress_manifest.json \
             real_data_stress_pipeline/results/SHA256SUMS.txt
           sha256sum chaos-p2-2-source-snapshots.tar.gz > chaos-p2-2-source-snapshots.tar.gz.sha256
