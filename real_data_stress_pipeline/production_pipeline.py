@@ -320,6 +320,18 @@ def evaluate_items(
     return [completed[index] for index in range(len(payloads))]
 
 
+def _execution_parameters() -> dict[str, int | float]:
+    return {
+        "REPS": int(p2.REPS),
+        "PINK_MIN": int(p2.PINK_MIN),
+        "GEM_MIN": int(p2.GEM_MIN),
+        "SEISMIC_MIN": int(p2.SEISMIC_MIN),
+        "MONTH_BLOCK": int(p2.MONTH_BLOCK),
+        "EVENT_BLOCK": int(p2.EVENT_BLOCK),
+        "MAG": float(p2.MAG),
+    }
+
+
 def _manifest_seed(contract: dict[str, Any], dependencies: dict[str, Any]) -> dict[str, Any]:
     return {
         "version": "1.6",
@@ -365,6 +377,7 @@ def _manifest_seed(contract: dict[str, Any], dependencies: dict[str, Any]) -> di
             "operational_fpr_claim_permitted": p2.BOOTSTRAP_CONFIG["operational_fpr_claim_permitted"],
         },
         "shock_contract": contract,
+        "execution_parameters": _execution_parameters(),
         "sources": [],
         "gem_indicators": [],
         "belts": [],
@@ -535,16 +548,64 @@ def prepare(expected_candidates: int = EXPECTED_CANDIDATES, shard_count: int = S
     return state
 
 
+def _verify_manifest_configuration(manifest_seed: dict[str, Any]) -> None:
+    """Prove that every worker and the aggregator use Prepare's exact settings."""
+    configs = (
+        ("PIPELINE_CONFIG", "pipeline_config", p2.PIPELINE_CONFIG),
+        ("GEM_CONFIG", "gem_config", p2.GEM_CONFIG),
+        ("SEISMIC_CONFIG", "seismic_config", p2.SEISMIC_CONFIG),
+    )
+    for label, key, actual in configs:
+        if key not in manifest_seed:
+            raise IntegrityError(f"execution_config_missing:{label}")
+        if json_bytes(manifest_seed[key]) != json_bytes(actual):
+            raise IntegrityError(f"execution_config_mismatch:{label}")
+
+    contract_path = p2.HERE / "shock_event_contract.json"
+    if not contract_path.is_file():
+        raise IntegrityError("shock_contract_file_missing")
+    live_contract = json.loads(contract_path.read_text(encoding="utf-8"))
+    frozen_contract = manifest_seed.get("shock_contract")
+    if frozen_contract is None:
+        raise IntegrityError("shock_contract_missing")
+    if json_bytes(frozen_contract) != json_bytes(live_contract):
+        raise IntegrityError("shock_contract_mismatch")
+
+    frozen_parameters = manifest_seed.get("execution_parameters")
+    if not isinstance(frozen_parameters, dict):
+        raise IntegrityError("execution_parameters_missing")
+    if json_bytes(frozen_parameters) != json_bytes(_execution_parameters()):
+        raise IntegrityError("execution_parameters_mismatch")
+
+
 def _verify_prepare_artifacts(state: dict[str, Any]) -> dict[str, Any]:
     if state.get("schema") != SCHEMA_VERSION:
         raise IntegrityError("prepare_schema_mismatch")
-    if state.get("repository_commit") != os.getenv("GITHUB_SHA", state.get("repository_commit")):
+
+    actual_commit = os.environ.get("GITHUB_SHA", "").strip()
+    expected_commit = str(state.get("repository_commit") or "").strip()
+    if not actual_commit:
+        raise IntegrityError("github_sha_missing")
+    if not expected_commit:
+        raise IntegrityError("prepare_commit_missing")
+    if actual_commit != expected_commit:
         raise IntegrityError("prepare_commit_mismatch")
+
+    manifest_seed = state.get("manifest_seed")
+    if not isinstance(manifest_seed, dict):
+        raise IntegrityError("manifest_seed_missing")
+    if manifest_seed.get("git_commit") != expected_commit:
+        raise IntegrityError("manifest_seed_commit_mismatch")
+    _verify_manifest_configuration(manifest_seed)
+
     if file_sha256(FROZEN_CANDIDATES) != state.get("candidate_registry_sha256"):
         raise IntegrityError("candidate_registry_sha256_mismatch")
     if file_sha256(PINK_RESULTS) != state.get("pink_results_sha256"):
         raise IntegrityError("pink_results_sha256_mismatch")
-    return read_json(FROZEN_CANDIDATES)
+    registry_doc = read_json(FROZEN_CANDIDATES)
+    if registry_doc.get("repository_commit") != expected_commit:
+        raise IntegrityError("candidate_registry_commit_mismatch")
+    return registry_doc
 
 
 def evaluate_shard(
@@ -577,6 +638,12 @@ def evaluate_shard(
     verify_runtime_dependencies(state["manifest_seed"]["dependencies"])
     if int(state["manifest_seed"]["bootstrap"]["replicates"]) != int(p2.REPS):
         raise IntegrityError("bootstrap_replicate_configuration_mismatch")
+    expected_replicates = int(state["manifest_seed"]["execution_parameters"]["REPS"])
+    requested_replicates = int(
+        p2.REPS if bootstrap_replicates is None else bootstrap_replicates
+    )
+    if requested_replicates != expected_replicates:
+        raise IntegrityError("shard_bootstrap_replicates_do_not_match_prepare")
     registry = registry_doc["candidates"]
     expected_entries = [
         item for item in registry
