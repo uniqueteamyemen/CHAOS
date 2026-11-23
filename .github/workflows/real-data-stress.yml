@@ -28,26 +28,21 @@ concurrency:
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
-  prepare:
+  publish-phase1-archive:
     if: >-
       github.event_name != 'pull_request' &&
       (github.event_name != 'workflow_dispatch' || github.ref == 'refs/heads/main-phase2')
     runs-on: ubuntu-latest
-    timeout-minutes: 360
+    timeout-minutes: 20
     permissions:
       contents: write
-    env:
-      OMP_NUM_THREADS: '1'
-      OPENBLAS_NUM_THREADS: '1'
-      MKL_NUM_THREADS: '1'
-      NUMEXPR_NUM_THREADS: '1'
-      VECLIB_MAXIMUM_THREADS: '1'
     steps:
-      - name: Checkout phase2 branch with history
+      - name: Checkout immutable Phase 1 source
         uses: actions/checkout@v4
         with:
           ref: ${{ github.sha }}
           fetch-depth: 0
+          persist-credentials: false
 
       - name: Publish the immutable Phase 1 archive
         env:
@@ -62,7 +57,7 @@ jobs:
           if ! git ls-remote --exit-code --tags origin "refs/tags/${TAG_NAME}" >/dev/null 2>&1; then
             git tag -a "${TAG_NAME}" "${BASELINE_SHA}" \
               -m "CHAOS Phase 1 frozen detector archive; canonical commit ${BASELINE_SHA}"
-            git push origin "refs/tags/${TAG_NAME}"
+            git -c http.extraheader="AUTHORIZATION: basic $(printf 'x-access-token:%s' "${GH_TOKEN}" | base64 -w0)" push origin "refs/tags/${TAG_NAME}"
           else
             existing="$(git ls-remote origin "refs/tags/${TAG_NAME}^{}" | awk '{print $1}')"
             if [ -z "${existing}" ]; then
@@ -88,6 +83,29 @@ jobs:
             /tmp/chaos-phase1-release/real_data_transition_scan.json \
             /tmp/chaos-phase1-release/SHA256SUMS.txt \
             --clobber
+
+  prepare:
+    needs: publish-phase1-archive
+    if: >-
+      github.event_name != 'pull_request' &&
+      (github.event_name != 'workflow_dispatch' || github.ref == 'refs/heads/main-phase2')
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    permissions:
+      contents: read
+    env:
+      OMP_NUM_THREADS: '1'
+      OPENBLAS_NUM_THREADS: '1'
+      MKL_NUM_THREADS: '1'
+      NUMEXPR_NUM_THREADS: '1'
+      VECLIB_MAXIMUM_THREADS: '1'
+    steps:
+      - name: Checkout phase2 branch with history
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -164,8 +182,9 @@ jobs:
           fetch-depth: 0
 
       - name: Download frozen prepare artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
+          digest-mismatch: error
           name: chaos-p2-prepared-${{ github.run_id }}-${{ github.run_attempt }}
           path: .
 
@@ -218,32 +237,37 @@ jobs:
           fetch-depth: 0
 
       - name: Download prepared source and registry
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
+          digest-mismatch: error
           name: chaos-p2-prepared-${{ github.run_id }}-${{ github.run_attempt }}
           path: .
 
       - name: Download matrix shard 0
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
+          digest-mismatch: error
           name: chaos-p2-eval-0-${{ github.run_id }}-${{ github.run_attempt }}
           path: real_data_stress_pipeline/results/shard_results
 
       - name: Download matrix shard 1
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
+          digest-mismatch: error
           name: chaos-p2-eval-1-${{ github.run_id }}-${{ github.run_attempt }}
           path: real_data_stress_pipeline/results/shard_results
 
       - name: Download matrix shard 2
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
+          digest-mismatch: error
           name: chaos-p2-eval-2-${{ github.run_id }}-${{ github.run_attempt }}
           path: real_data_stress_pipeline/results/shard_results
 
       - name: Download matrix shard 3
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
+          digest-mismatch: error
           name: chaos-p2-eval-3-${{ github.run_id }}-${{ github.run_attempt }}
           path: real_data_stress_pipeline/results/shard_results
 
@@ -303,8 +327,9 @@ jobs:
           fetch-depth: 0
 
       - name: Download aggregate manifest
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
+          digest-mismatch: error
           name: chaos-p2-aggregate-${{ github.run_id }}-${{ github.run_attempt }}
           path: .
 
@@ -359,8 +384,9 @@ jobs:
           fetch-depth: 0
 
       - name: Download aggregate manifest
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
+          digest-mismatch: error
           name: chaos-p2-aggregate-${{ github.run_id }}-${{ github.run_attempt }}
           path: .
 
@@ -416,8 +442,9 @@ jobs:
           fetch-depth: 0
 
       - name: Download aggregate dependency manifest
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
+          digest-mismatch: error
           name: chaos-p2-aggregate-${{ github.run_id }}-${{ github.run_attempt }}
           path: .
 
@@ -476,26 +503,30 @@ jobs:
           fetch-depth: 0
 
       - name: Download aggregate outputs
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
+          digest-mismatch: error
           name: chaos-p2-aggregate-${{ github.run_id }}-${{ github.run_attempt }}
           path: .
 
       - name: Download Markov real-data audit
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
+          digest-mismatch: error
           name: chaos-p2-markov-real-${{ github.run_id }}-${{ github.run_attempt }}
           path: artifacts/markov_real_data_behavior
 
       - name: Download Markov injected-break audit
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
+          digest-mismatch: error
           name: chaos-p2-markov-power-${{ github.run_id }}-${{ github.run_attempt }}
           path: artifacts/markov_injected_break_power
 
       - name: Download domain-null audit
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
+          digest-mismatch: error
           name: chaos-p2-domain-null-${{ github.run_id }}-${{ github.run_attempt }}
           path: artifacts/domain_null_and_declustering
 
