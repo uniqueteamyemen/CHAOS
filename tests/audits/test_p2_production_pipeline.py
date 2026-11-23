@@ -195,6 +195,19 @@ class ProductionPipelineTests(unittest.TestCase):
         self.assertTrue(production.contains_key_recursive({"bootstrap": [{"values": [1, 2]}]}, "values"))
         self.assertFalse(production.contains_key_recursive({"series": {"observations": 180}}, "values"))
 
+    def test_public_release_is_created_as_draft_and_published_after_asset_upload(self):
+        workflow_path = Path(__file__).resolve().parents[2] / ".github" / "workflows" / "real-data-stress.yml"
+        workflow = workflow_path.read_text(encoding="utf-8")
+        preflight = workflow.index("Preflight every public release asset")
+        publish = workflow.index("Publish P2 phase-close audited release")
+        draft_create = workflow.index("--draft", publish)
+        upload = workflow.index('gh release upload "${TAG_NAME}"', publish)
+        publish_release = workflow.index('gh release edit "${TAG_NAME}" --draft=false', publish)
+        self.assertLess(preflight, publish)
+        self.assertLess(draft_create, upload)
+        self.assertLess(upload, publish_release)
+        self.assertIn("published_release_asset_missing", workflow)
+
     def test_runtime_dependency_manifest_rejects_version_drift(self):
         expected = p2.dependency_inventory()
         self.assertTrue(production.verify_runtime_dependencies(expected))

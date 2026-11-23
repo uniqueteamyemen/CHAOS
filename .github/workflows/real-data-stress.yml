@@ -545,6 +545,30 @@ jobs:
           sha256sum chaos-p2-2-source-snapshots.tar.gz > chaos-p2-2-source-snapshots.tar.gz.sha256
           ls -lh chaos-p2-2-source-snapshots.tar.gz chaos-p2-2-source-snapshots.tar.gz.sha256
 
+      - name: Preflight every public release asset
+        run: |
+          set -euo pipefail
+          required_assets=(
+            REAL_DATA_STRESS_REPORT_AR.md
+            real_data_stress_pipeline/results/real_data_stress_manifest.json
+            real_data_stress_pipeline/results/SHA256SUMS.txt
+            artifacts/markov_calibration_audit.json
+            artifacts/markov_real_data_behavior/summary.json
+            artifacts/markov_real_data_behavior/replicates.jsonl.gz
+            artifacts/markov_injected_break_power/summary.json
+            artifacts/markov_injected_break_power/replicates.jsonl.gz
+            artifacts/domain_null_and_declustering/summary.json
+            chaos-p2-2-source-snapshots.tar.gz
+            chaos-p2-2-source-snapshots.tar.gz.sha256
+          )
+          for asset in "${required_assets[@]}"; do
+            if [[ ! -s "${asset}" ]]; then
+              echo "release_preflight_missing_or_empty_asset:${asset}" >&2
+              exit 1
+            fi
+          done
+          echo "RELEASE_ASSET_PREFLIGHT_PASSED count=${#required_assets[@]}"
+
       - name: Publish P2 phase-close audited release
         env:
           GH_TOKEN: ${{ github.token }}
@@ -568,25 +592,48 @@ jobs:
               exit 1
             fi
           fi
+          assets=(
+            REAL_DATA_STRESS_REPORT_AR.md
+            real_data_stress_pipeline/results/real_data_stress_manifest.json
+            real_data_stress_pipeline/results/SHA256SUMS.txt
+            artifacts/markov_calibration_audit.json
+            artifacts/markov_real_data_behavior/summary.json
+            artifacts/markov_real_data_behavior/replicates.jsonl.gz
+            artifacts/markov_injected_break_power/summary.json
+            artifacts/markov_injected_break_power/replicates.jsonl.gz
+            artifacts/domain_null_and_declustering/summary.json
+            chaos-p2-2-source-snapshots.tar.gz
+            chaos-p2-2-source-snapshots.tar.gz.sha256
+          )
+
           if ! gh release view "${TAG_NAME}" >/dev/null 2>&1; then
+            # Create a draft first. A public release is published only after every
+            # required asset is uploaded successfully.
             gh release create "${TAG_NAME}" \
               --target "${SOURCE_SHA}" \
+              --verify-tag \
+              --draft \
               --title "CHAOS P2 — Clean Phase Closure v1.0" \
               --notes-file REAL_DATA_STRESS_REPORT_AR.md
+          else
+            is_draft="$(gh release view "${TAG_NAME}" --json isDraft --jq '.isDraft')"
+            if [[ "${is_draft}" == "false" ]]; then
+              existing_assets="$(gh release view "${TAG_NAME}" --json assets --jq '.assets[].name')"
+              for asset in "${assets[@]}"; do
+                asset_name="${asset##*/}"
+                if ! grep -Fxq -- "${asset_name}" <<< "${existing_assets}"; then
+                  echo "published_release_asset_missing:${asset_name}; refusing partial mutation" >&2
+                  exit 1
+                fi
+              done
+              echo "P2 phase-close release already published with all required assets; no mutation needed."
+              exit 0
+            fi
           fi
-          gh release upload "${TAG_NAME}" \
-            REAL_DATA_STRESS_REPORT_AR.md \
-            real_data_stress_pipeline/results/real_data_stress_manifest.json \
-            real_data_stress_pipeline/results/SHA256SUMS.txt \
-            artifacts/markov_calibration_audit.json \
-            artifacts/markov_real_data_behavior/summary.json \
-            artifacts/markov_real_data_behavior/replicates.jsonl.gz \
-            artifacts/markov_injected_break_power/summary.json \
-            artifacts/markov_injected_break_power/replicates.jsonl.gz \
-            artifacts/domain_null_and_declustering/summary.json \
-            chaos-p2-2-source-snapshots.tar.gz \
-            chaos-p2-2-source-snapshots.tar.gz.sha256 \
-            --clobber
+
+          gh release upload "${TAG_NAME}" "${assets[@]}" --clobber
+          # This is the sole transition that makes the completed release public.
+          gh release edit "${TAG_NAME}" --draft=false
 
       - name: Upload complete phase-close deliverables
         uses: actions/upload-artifact@v4
