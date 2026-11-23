@@ -29,6 +29,7 @@ concurrency:
 
 jobs:
   publish-phase1-archive:
+    needs: prepare
     if: >-
       github.event_name != 'pull_request' &&
       (github.event_name != 'workflow_dispatch' || github.ref == 'refs/heads/main-phase2')
@@ -37,55 +38,36 @@ jobs:
     permissions:
       contents: write
     steps:
-      - name: Checkout immutable Phase 1 source
-        uses: actions/checkout@v4
+      - name: Download immutable Phase 1 release assets
+        uses: actions/download-artifact@v8
         with:
-          ref: ${{ github.sha }}
-          fetch-depth: 0
-          persist-credentials: false
-
-      - name: Publish the immutable Phase 1 archive
+          digest-mismatch: error
+          name: chaos-p2-phase1-archive-${{ github.run_id }}-${{ github.run_attempt }}
+          path: phase1-release-assets
+      - name: Publish immutable Phase 1 archive
         env:
           GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
           BASELINE_SHA: 51e4278309b7d32917b85903323a63f81d9e9b6a
           TAG_NAME: phase1-detector-freeze-v1.0
         run: |
           set -euo pipefail
-          git config user.name "uniqueteamyemen"
-          git config user.email "uniqueteamyemen@gmail.com"
-          git cat-file -e "${BASELINE_SHA}^{commit}"
-          if ! git ls-remote --exit-code --tags origin "refs/tags/${TAG_NAME}" >/dev/null 2>&1; then
-            git tag -a "${TAG_NAME}" "${BASELINE_SHA}" \
-              -m "CHAOS Phase 1 frozen detector archive; canonical commit ${BASELINE_SHA}"
-            git -c http.extraheader="AUTHORIZATION: basic $(printf 'x-access-token:%s' "${GH_TOKEN}" | base64 -w0)" push origin "refs/tags/${TAG_NAME}"
+          assets=(
+            phase1-release-assets/PHASE1_DETECTOR_FREEZE.md
+            phase1-release-assets/real_data_transition_scan.json
+            phase1-release-assets/SHA256SUMS.txt
+          )
+          for asset in "${assets[@]}"; do
+            test -s "${asset}" || { echo "phase1_release_asset_missing_or_empty:${asset}" >&2; exit 1; }
+          done
+          if gh release view "${TAG_NAME}" --repo "${GH_REPO}" >/dev/null 2>&1; then
+            existing_target="$(gh release view "${TAG_NAME}" --repo "${GH_REPO}" --json targetCommitish --jq '.targetCommitish')"
+            [[ "${existing_target}" == "${BASELINE_SHA}" ]] || { echo "Existing Phase 1 release targets a different commit: ${existing_target}" >&2; exit 1; }
           else
-            existing="$(git ls-remote origin "refs/tags/${TAG_NAME}^{}" | awk '{print $1}')"
-            if [ -z "${existing}" ]; then
-              existing="$(git ls-remote origin "refs/tags/${TAG_NAME}" | awk '{print $1}')"
-            fi
-            if [ "${existing}" != "${BASELINE_SHA}" ]; then
-              echo "Existing Phase 1 tag points to a different commit: ${existing}" >&2
-              exit 1
-            fi
+            gh release create "${TAG_NAME}" --repo "${GH_REPO}" --target "${BASELINE_SHA}" --title "CHAOS Phase 1 — Frozen Detector Archive" --notes-file phase1-release-assets/PHASE1_DETECTOR_FREEZE.md
           fi
-          if ! gh release view "${TAG_NAME}" >/dev/null 2>&1; then
-            gh release create "${TAG_NAME}" \
-              --target "${BASELINE_SHA}" \
-              --title "CHAOS Phase 1 — Frozen Detector Archive" \
-              --notes-file docs/PHASE1_DETECTOR_FREEZE.md
-          fi
-          mkdir -p /tmp/chaos-phase1-release
-          git show "${BASELINE_SHA}:docs/PHASE1_DETECTOR_FREEZE.md" > /tmp/chaos-phase1-release/PHASE1_DETECTOR_FREEZE.md
-          git show "${BASELINE_SHA}:structural_engine/isolated_break_detector_v1/results/real_data_transition_scan.json" > /tmp/chaos-phase1-release/real_data_transition_scan.json
-          git show "${BASELINE_SHA}:structural_engine/isolated_break_detector_v1/results/SHA256SUMS.txt" > /tmp/chaos-phase1-release/SHA256SUMS.txt
-          gh release upload "${TAG_NAME}" \
-            /tmp/chaos-phase1-release/PHASE1_DETECTOR_FREEZE.md \
-            /tmp/chaos-phase1-release/real_data_transition_scan.json \
-            /tmp/chaos-phase1-release/SHA256SUMS.txt \
-            --clobber
-
+          gh release upload "${TAG_NAME}" "${assets[@]}" --repo "${GH_REPO}" --clobber
   prepare:
-    needs: publish-phase1-archive
     if: >-
       github.event_name != 'pull_request' &&
       (github.event_name != 'workflow_dispatch' || github.ref == 'refs/heads/main-phase2')
@@ -152,9 +134,28 @@ jobs:
             real_data_stress_pipeline/results/prepare_state.json
             real_data_stress_pipeline/results/dependency_manifest.json
 
+
+      - name: Stage immutable Phase 1 release assets
+        env:
+          PHASE1_BASELINE_SHA: 51e4278309b7d32917b85903323a63f81d9e9b6a
+        run: |
+          set -euo pipefail
+          git cat-file -e "${PHASE1_BASELINE_SHA}"
+          mkdir -p phase1-release-assets
+          git show "${PHASE1_BASELINE_SHA}:docs/PHASE1_DETECTOR_FREEZE.md" > phase1-release-assets/PHASE1_DETECTOR_FREEZE.md
+          git show "${PHASE1_BASELINE_SHA}:structural_engine/isolated_break_detector_v1/results/real_data_transition_scan.json" > phase1-release-assets/real_data_transition_scan.json
+          git show "${PHASE1_BASELINE_SHA}:structural_engine/isolated_break_detector_v1/results/SHA256SUMS.txt" > phase1-release-assets/SHA256SUMS.txt
+      - name: Upload immutable Phase 1 release assets
+        uses: actions/upload-artifact@v7
+        with:
+          name: chaos-p2-phase1-archive-${{ github.run_id }}-${{ github.run_attempt }}
+          retention-days: 90
+          if-no-files-found: error
+          path: phase1-release-assets/
+
   evaluate:
-    needs: prepare
-    if: needs.prepare.result == 'success'
+    needs: [prepare, publish-phase1-archive]
+    if: needs.prepare.result == 'success' && needs.publish-phase1-archive.result == 'success'
     runs-on: ubuntu-latest
     timeout-minutes: 360
     strategy:
@@ -480,7 +481,7 @@ jobs:
           if-no-files-found: warn
           path: artifacts/domain_null_and_declustering/
 
-  publish-phase-close:
+  stage-phase-close-release:
     needs:
       - aggregate-and-audit
       - audit-markov-real-data
@@ -494,7 +495,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 60
     permissions:
-      contents: write
+      contents: read
     steps:
       - name: Checkout exact release commit
         uses: actions/checkout@v4
@@ -612,47 +613,78 @@ jobs:
             fi
           done
           echo "RELEASE_ASSET_PREFLIGHT_PASSED count=${#required_assets[@]}"
+          cp REAL_DATA_STRESS_REPORT_AR.md release_assets/REAL_DATA_STRESS_REPORT_AR.md
+          cp real_data_stress_pipeline/results/real_data_stress_manifest.json release_assets/real_data_stress_manifest.json
+          cp real_data_stress_pipeline/results/SHA256SUMS.txt release_assets/SHA256SUMS.txt
+          cp artifacts/markov_calibration_audit.json release_assets/markov-calibration-audit.json
+          cp chaos-p2-2-source-snapshots.tar.gz release_assets/chaos-p2-2-source-snapshots.tar.gz
+          cp chaos-p2-2-source-snapshots.tar.gz.sha256 release_assets/chaos-p2-2-source-snapshots.tar.gz.sha256
 
+      - name: Upload preflighted P2 phase-close release bundle
+        uses: actions/upload-artifact@v7
+        with:
+          name: chaos-p2-phase-close-release-${{ github.run_id }}-${{ github.run_attempt }}
+          retention-days: 90
+          if-no-files-found: error
+          path: release_assets/
+
+      - name: Upload complete phase-close deliverables from read-only staging
+        uses: actions/upload-artifact@v7
+        with:
+          name: chaos-p2-phase-close-${{ github.run_id }}-${{ github.run_attempt }}
+          retention-days: 90
+          if-no-files-found: error
+          path: |
+            REAL_DATA_STRESS_REPORT_AR.md
+            real_data_stress_pipeline/results/real_data_stress_manifest.json
+            real_data_stress_pipeline/results/SHA256SUMS.txt
+            chaos-p2-2-source-snapshots.tar.gz
+            chaos-p2-2-source-snapshots.tar.gz.sha256
+            artifacts/markov_calibration_audit.json
+            artifacts/markov_real_data_behavior/
+            artifacts/markov_injected_break_power/
+            artifacts/domain_null_and_declustering/
+  publish-phase-close:
+    needs: stage-phase-close-release
+    if: needs.stage-phase-close-release.result == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: write
+    steps:
+      - name: Download preflighted P2 phase-close release bundle
+        uses: actions/download-artifact@v8
+        with:
+          digest-mismatch: error
+          name: chaos-p2-phase-close-release-${{ github.run_id }}-${{ github.run_attempt }}
+          path: release_assets/
       - name: Publish P2 phase-close audited release
         env:
           GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
           TAG_NAME: p2-phase-close-v1.0
           SOURCE_SHA: ${{ github.sha }}
         run: |
           set -euo pipefail
-          git config user.name "uniqueteamyemen"
-          git config user.email "uniqueteamyemen@gmail.com"
-          git cat-file -e "${SOURCE_SHA}^{commit}"
-          if ! git ls-remote --exit-code --tags origin "refs/tags/${TAG_NAME}" >/dev/null 2>&1; then
-            git tag -a "${TAG_NAME}" "${SOURCE_SHA}" -m "CHAOS P2 phase-close v1.0; source commit ${SOURCE_SHA}"
-            git push origin "refs/tags/${TAG_NAME}"
-          else
-            existing="$(git ls-remote origin "refs/tags/${TAG_NAME}^{}" | awk '{print $1}')"
-            if [ -z "${existing}" ]; then
-              existing="$(git ls-remote origin "refs/tags/${TAG_NAME}" | awk '{print $1}')"
-            fi
-            if [ "${existing}" != "${SOURCE_SHA}" ]; then
-              echo "Existing P2 phase-close tag points to a different commit: ${existing}" >&2
-              exit 1
-            fi
-          fi
           assets=(
-            REAL_DATA_STRESS_REPORT_AR.md
-            real_data_stress_pipeline/results/real_data_stress_manifest.json
-            real_data_stress_pipeline/results/SHA256SUMS.txt
-            artifacts/markov_calibration_audit.json
+            release_assets/REAL_DATA_STRESS_REPORT_AR.md
+            release_assets/real_data_stress_manifest.json
+            release_assets/SHA256SUMS.txt
+            release_assets/markov-calibration-audit.json
             release_assets/markov-real-data-summary.json
             release_assets/markov-real-data-replicates.jsonl.gz
             release_assets/markov-injected-break-summary.json
             release_assets/markov-injected-break-replicates.jsonl.gz
             release_assets/domain-null-declustering-summary.json
-            chaos-p2-2-source-snapshots.tar.gz
-            chaos-p2-2-source-snapshots.tar.gz.sha256
+            release_assets/chaos-p2-2-source-snapshots.tar.gz
+            release_assets/chaos-p2-2-source-snapshots.tar.gz.sha256
           )
-
+          for asset in "${assets[@]}"; do
+            test -s "${asset}" || { echo "release_bundle_missing_or_empty:${asset}" >&2; exit 1; }
+          done
           verify_remote_assets() {
             local remote_json
-            remote_json="$(gh release view "${TAG_NAME}" --json assets)"
+            remote_json="$(gh release view "${TAG_NAME}" --repo "${GH_REPO}" --json assets)"
             REMOTE_ASSETS_JSON="${remote_json}" python - "${assets[@]}" <<'PY'
           import hashlib
           import json
@@ -675,8 +707,7 @@ jobs:
               remote = remote_by_name.get(asset_name)
               if remote is None:
                   raise SystemExit(f"release_asset_missing_remote:{asset_name}")
-              digest = hashlib.sha256(local_path.read_bytes()).hexdigest()
-              expected_digest = f"sha256:{digest}"
+              expected_digest = f"sha256:{hashlib.sha256(local_path.read_bytes()).hexdigest()}"
               remote_digest = remote.get("digest")
               remote_size = remote.get("size")
               local_size = local_path.stat().st_size
@@ -693,46 +724,25 @@ jobs:
           print(f"REMOTE_RELEASE_ASSETS_VERIFIED count={len(sys.argv)-1}")
           PY
           }
-
-          if ! gh release view "${TAG_NAME}" >/dev/null 2>&1; then
-            # Create a draft first. A public release is published only after every
-            # required asset is uploaded and its remote digest/size are verified.
+          if ! gh release view "${TAG_NAME}" --repo "${GH_REPO}" >/dev/null 2>&1; then
             gh release create "${TAG_NAME}" \
+              --repo "${GH_REPO}" \
               --target "${SOURCE_SHA}" \
-              --verify-tag \
               --draft \
               --title "CHAOS P2 — Clean Phase Closure v1.0" \
-              --notes-file REAL_DATA_STRESS_REPORT_AR.md
+              --notes-file release_assets/REAL_DATA_STRESS_REPORT_AR.md
           else
-            is_draft="$(gh release view "${TAG_NAME}" --json isDraft --jq '.isDraft')"
+            is_draft="$(gh release view "${TAG_NAME}" --repo "${GH_REPO}" --json isDraft --jq '.isDraft')"
             if [[ "${is_draft}" == "false" ]]; then
               verify_remote_assets
               echo "P2 phase-close release already published with all required assets, digests and sizes; no mutation needed."
               exit 0
             fi
           fi
-
-          gh release upload "${TAG_NAME}" "${assets[@]}" --clobber
+          gh release upload "${TAG_NAME}" "${assets[@]}" --repo "${GH_REPO}" --clobber
           verify_remote_assets
-          # This is the sole transition that makes the completed release public.
-          gh release edit "${TAG_NAME}" --draft=false
+          gh release edit "${TAG_NAME}" --repo "${GH_REPO}" --draft=false
 
-      - name: Upload complete phase-close deliverables
-        uses: actions/upload-artifact@v7
-        with:
-          name: chaos-p2-phase-close-${{ github.run_id }}-${{ github.run_attempt }}
-          retention-days: 90
-          if-no-files-found: error
-          path: |
-            REAL_DATA_STRESS_REPORT_AR.md
-            real_data_stress_pipeline/results/real_data_stress_manifest.json
-            real_data_stress_pipeline/results/SHA256SUMS.txt
-            chaos-p2-2-source-snapshots.tar.gz
-            chaos-p2-2-source-snapshots.tar.gz.sha256
-            artifacts/markov_calibration_audit.json
-            artifacts/markov_real_data_behavior/
-            artifacts/markov_injected_break_power/
-            artifacts/domain_null_and_declustering/
 
   pr-gate:
     if: github.event_name == 'pull_request'
