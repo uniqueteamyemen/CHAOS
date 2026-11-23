@@ -113,11 +113,11 @@ def verify_runtime_dependencies(expected: dict[str, Any]) -> str:
 
 def validate_source_snapshots(
     sources: list[dict[str, Any]],
-    root: Path = ROOT,
+    root: Path | None = None,
 ) -> int:
     """Verify every persisted raw source and enforce Pink's memory-only policy."""
     verified = 0
-    resolved_root = root.resolve()
+    resolved_root = (ROOT if root is None else root).resolve()
     for source in sources:
         provider = str(source.get("provider", ""))
         if provider == "World Bank Pink Sheet":

@@ -1,9 +1,11 @@
 from __future__ import annotations
 
 import json
+import os
 import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 import numpy as np
 
@@ -219,6 +221,164 @@ class ProductionPipelineTests(unittest.TestCase):
         }
         with self.assertRaisesRegex(production.IntegrityError, "bootstrap_replicate_mismatch"):
             production.validate_result_records(registry, [result], expected_count=1)
+
+
+    def test_prepare_four_shards_and_aggregate_complete_fixture_without_network(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            artifact_root = root / "artifacts" / "real_data_stress"
+            raw_root = artifact_root / "raw"
+            derived_root = artifact_root / "derived"
+            here = root / "real_data_stress_pipeline"
+            output_root = here / "results"
+            here.mkdir(parents=True, exist_ok=True)
+            output_root.mkdir(parents=True, exist_ok=True)
+            (here / "shock_event_contract.json").write_text(
+                json.dumps({"events": [], "matching_window_months": 6}),
+                encoding="utf-8",
+            )
+
+            pink_source_sha = __import__("hashlib").sha256(b"pink-source-fixture").hexdigest()
+            gem_raw = raw_root / "world_bank" / "gem" / "fixture.json"
+            usgs_raw = raw_root / "usgs" / "fixture" / "events.geojson"
+            gem_raw.parent.mkdir(parents=True, exist_ok=True)
+            usgs_raw.parent.mkdir(parents=True, exist_ok=True)
+            gem_raw.write_bytes(b'{"fixture":"gem"}')
+            usgs_raw.write_bytes(b'{"fixture":"usgs"}')
+            gem_sha = production.file_sha256(gem_raw)
+            usgs_sha = production.file_sha256(usgs_raw)
+
+            pink_item = synthetic_item("pink:fixture", 101)
+            pink_item.update({
+                "source": "pink_sheet",
+                "source_name": "World Bank Pink Sheet",
+                "name": "Pink fixture",
+                "cohort": "strict_long_monthly",
+                "domain": "commodity",
+                "sha256": pink_source_sha,
+                "representation": "returns",
+            })
+            gem_items = []
+            for index in range(3):
+                item = synthetic_item(f"gem:fixture-{index}", 202 + index)
+                item.update({"sha256": gem_sha, "source_name": "World Bank GEM"})
+                gem_items.append(item)
+
+            seismic_item = synthetic_item("usgs:fixture", 404)
+            seismic_item.update({
+                "source": "usgs",
+                "source_name": "USGS ComCat",
+                "cohort": "seismic_event_interarrival",
+                "domain": "seismic",
+                "frequency": "event_interarrival",
+                "axis": [
+                    (np.datetime64("2000-01-01") + np.timedelta64(2 * index, "D"))
+                    .astype("datetime64[ns]").astype(object).isoformat()
+                    for index in range(180)
+                ],
+                "values": np.random.default_rng(505).uniform(0.1, 5.0, 180).tolist(),
+                "sha256": usgs_sha,
+                "representation": "level",
+            })
+
+            def fake_pink(metadata):
+                metadata["sources"].append({
+                    "provider": "World Bank Pink Sheet",
+                    "sha256": pink_source_sha,
+                    "raw_preserved": "in-memory only; workbook-specific redistribution terms not established",
+                    "retrieved_at_utc": "2000-01-01T00:00:00+00:00",
+                })
+                return [pink_item]
+
+            def fake_gem(metadata):
+                metadata["sources"].append({
+                    "provider": "World Bank GEM",
+                    "path": gem_raw.relative_to(root).as_posix(),
+                    "sha256": gem_sha,
+                    "bytes": gem_raw.stat().st_size,
+                })
+                return gem_items
+
+            def fake_seismic(metadata):
+                metadata["sources"].append({
+                    "provider": "USGS ComCat",
+                    "path": usgs_raw.relative_to(root).as_posix(),
+                    "sha256": usgs_sha,
+                    "bytes": usgs_raw.stat().st_size,
+                })
+                return [seismic_item]
+
+            patch_targets = {
+                production: {
+                    "ROOT": root,
+                    "ARTIFACT_ROOT": artifact_root,
+                    "FROZEN_CANDIDATES": artifact_root / "frozen_candidates.json",
+                    "PINK_RESULTS": artifact_root / "pink_precomputed_results.json",
+                    "PREPARE_STATE": output_root / "prepare_state.json",
+                    "SHARD_PAYLOAD_ROOT": artifact_root / "candidate_shards",
+                    "SHARD_RESULT_ROOT": output_root / "shard_results",
+                    "RESULTS_ROOT": output_root,
+                },
+                p2: {
+                    "ROOT": root,
+                    "HERE": here,
+                    "RAW": raw_root,
+                    "DERIVED": derived_root,
+                    "OUT": output_root,
+                    "REPORT": root / "REAL_DATA_STRESS_REPORT_AR.md",
+                    "MANIFEST": output_root / "real_data_stress_manifest.json",
+                    "CHECKSUMS": output_root / "SHA256SUMS.txt",
+                    "DEPENDENCIES": output_root / "dependency_manifest.json",
+                    "REPS": 3,
+                    "pink": fake_pink,
+                    "gem": fake_gem,
+                    "seismic": fake_seismic,
+                },
+            }
+            with patch.dict(os.environ, {
+                "GITHUB_SHA": "fixture-commit",
+                "GITHUB_REF_NAME": "fixture-branch",
+            }):
+                with patch.multiple(production, **patch_targets[production]):
+                    with patch.multiple(p2, **patch_targets[p2]):
+                        prepared = production.prepare(expected_candidates=5, shard_count=4)
+                        self.assertEqual(prepared["expected_series_count"], 5)
+                        self.assertEqual(prepared["pink_count"], 1)
+                        self.assertEqual(prepared["matrix_count"], 4)
+
+                        for shard_index in range(4):
+                            envelope = production.evaluate_shard(
+                                shard_index=shard_index,
+                                shard_count=4,
+                                workers=2,
+                            )
+                            self.assertEqual(len(envelope["results"]), 1)
+
+                        aggregate = production.aggregate()
+                        self.assertEqual(aggregate["status"], "COMPLETED")
+                        self.assertEqual(aggregate["series_count"], 5)
+
+                        manifest = json.loads(
+                            (output_root / "real_data_stress_manifest.json").read_text(encoding="utf-8")
+                        )
+                        self.assertEqual(manifest["distributed_evaluation"]["verified_series"], 5)
+                        self.assertEqual(manifest["distributed_evaluation"]["missing_series"], 0)
+                        self.assertEqual(manifest["distributed_evaluation"]["duplicate_series"], 0)
+                        frozen = json.loads(
+                            (artifact_root / "frozen_candidates.json").read_text(encoding="utf-8")
+                        )
+                        self.assertEqual(len(frozen["candidates"]), 5)
+                        pink_entry = next(x for x in frozen["candidates"] if x["source"] == "pink_sheet")
+                        self.assertNotIn("values", pink_entry["item_metadata"])
+                        pink_results = json.loads(
+                            (artifact_root / "pink_precomputed_results.json").read_text(encoding="utf-8")
+                        )
+                        self.assertFalse(production.contains_key_recursive(pink_results, "values"))
+                        for shard_index in range(4):
+                            self.assertTrue(
+                                (output_root / "shard_results" / f"shard-{shard_index}.json").is_file()
+                            )
+
 
     def test_aggregate_gate_rejects_source_hash_and_observation_mismatch(self):
         item = synthetic_item("gem:a", 4)
