@@ -586,6 +586,9 @@ class ProductionPipelineTests(unittest.TestCase):
         self.assertGreater(download_count, 0)
         self.assertNotIn("uses: actions/download-artifact@v4", workflow)
         self.assertEqual(download_count, workflow.count("digest-mismatch: error"))
+        upload_count = workflow.count("uses: actions/upload-artifact@v7")
+        self.assertGreater(upload_count, 0)
+        self.assertNotIn("uses: actions/upload-artifact@v4", workflow)
 
 
 if __name__ == "__main__":
