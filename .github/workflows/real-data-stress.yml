@@ -142,7 +142,7 @@ jobs:
 
       - name: Upload frozen source and candidate registry
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: chaos-p2-prepared-${{ github.run_id }}-${{ github.run_attempt }}
           retention-days: 90
@@ -209,7 +209,7 @@ jobs:
 
       - name: Upload shard result
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: chaos-p2-eval-${{ matrix.shard }}-${{ github.run_id }}-${{ github.run_attempt }}
           retention-days: 90
@@ -297,7 +297,7 @@ jobs:
             --output artifacts/markov_calibration_audit.json
 
       - name: Upload complete aggregate and audit input
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: chaos-p2-aggregate-${{ github.run_id }}-${{ github.run_attempt }}
           retention-days: 90
@@ -358,7 +358,7 @@ jobs:
 
       - name: Upload real-series Markov audit
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: chaos-p2-markov-real-${{ github.run_id }}-${{ github.run_attempt }}
           retention-days: 90
@@ -415,7 +415,7 @@ jobs:
 
       - name: Upload injected-break power audit
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: chaos-p2-markov-power-${{ github.run_id }}-${{ github.run_attempt }}
           retention-days: 90
@@ -473,7 +473,7 @@ jobs:
 
       - name: Upload domain-null audit
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: chaos-p2-domain-null-${{ github.run_id }}-${{ github.run_attempt }}
           retention-days: 90
@@ -718,7 +718,7 @@ jobs:
           gh release edit "${TAG_NAME}" --draft=false
 
       - name: Upload complete phase-close deliverables
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: chaos-p2-phase-close-${{ github.run_id }}-${{ github.run_attempt }}
           retention-days: 90
@@ -795,7 +795,7 @@ jobs:
 
       - name: Upload PR gate audit artifacts
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: chaos-p2-pr-gate-${{ github.run_id }}-${{ github.run_attempt }}
           retention-days: 30
