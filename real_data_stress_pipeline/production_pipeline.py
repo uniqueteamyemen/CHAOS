@@ -76,6 +76,41 @@ def file_sha256(path: Path) -> str:
     return digest.hexdigest()
 
 
+def verify_runtime_dependencies(expected: dict[str, Any]) -> str:
+    """Fail closed if a job's Python or numerical packages differ from Prepare."""
+    actual = p2.dependency_inventory()
+    expected_python = str(expected.get("python_version", "")).split()[0]
+    actual_python = str(actual.get("python_version", "")).split()[0]
+    if expected_python != actual_python:
+        raise IntegrityError(
+            f"python_runtime_mismatch:expected={expected_python}:actual={actual_python}"
+        )
+    if expected.get("python_implementation") != actual.get("python_implementation"):
+        raise IntegrityError("python_implementation_mismatch")
+
+    expected_packages = expected.get("packages", {})
+    actual_packages = actual.get("packages", {})
+    for package_name, expected_metadata in expected_packages.items():
+        actual_metadata = actual_packages.get(package_name)
+        if not isinstance(actual_metadata, dict):
+            raise IntegrityError(f"runtime_package_missing:{package_name}")
+        if actual_metadata.get("version") != expected_metadata.get("version"):
+            raise IntegrityError(
+                f"runtime_package_version_mismatch:{package_name}:"
+                f"expected={expected_metadata.get('version')}:"
+                f"actual={actual_metadata.get('version')}"
+            )
+    normalized = {
+        "python_version": expected_python,
+        "python_implementation": expected.get("python_implementation"),
+        "packages": {
+            name: value.get("version")
+            for name, value in sorted(expected_packages.items())
+        },
+    }
+    return hashlib.sha256(json_bytes(normalized)).hexdigest()
+
+
 def validate_source_snapshots(
     sources: list[dict[str, Any]],
     root: Path = ROOT,
@@ -539,6 +574,7 @@ def evaluate_shard(
     ):
         raise IntegrityError(f"shard_payload_header_mismatch:{shard_index}")
 
+    verify_runtime_dependencies(state["manifest_seed"]["dependencies"])
     if int(state["manifest_seed"]["bootstrap"]["replicates"]) != int(p2.REPS):
         raise IntegrityError("bootstrap_replicate_configuration_mismatch")
     registry = registry_doc["candidates"]
@@ -722,6 +758,7 @@ def aggregate() -> dict[str, Any]:
     started = time.monotonic()
     state = read_json(PREPARE_STATE)
     registry_doc = _verify_prepare_artifacts(state)
+    verify_runtime_dependencies(state["manifest_seed"]["dependencies"])
     registry = registry_doc.get("candidates", [])
     expected_count = int(state["expected_series_count"])
     verified_raw_sources = validate_source_snapshots(
@@ -867,6 +904,13 @@ def main() -> int:
 
     aggregate_parser = subparsers.add_parser("aggregate")
 
+    runtime_parser = subparsers.add_parser("verify-runtime")
+    runtime_parser.add_argument(
+        "--expected-manifest",
+        type=Path,
+        default=p2.DEPENDENCIES,
+    )
+
     args = parser.parse_args()
     try:
         if args.command == "prepare":
@@ -876,6 +920,10 @@ def main() -> int:
         elif args.command == "aggregate":
             result = aggregate()
             print(json.dumps(result, ensure_ascii=False), flush=True)
+        elif args.command == "verify-runtime":
+            expected = read_json(args.expected_manifest)
+            digest = verify_runtime_dependencies(expected)
+            print(f"RUNTIME_DEPENDENCIES_VERIFIED sha256={digest}", flush=True)
         else:
             parser.error("unknown_command")
     except (OSError, ValueError, RuntimeError, ArithmeticError, KeyError, TypeError) as exc:

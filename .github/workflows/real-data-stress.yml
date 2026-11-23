@@ -179,6 +179,9 @@ jobs:
       - name: Install pipeline dependencies
         run: python -m pip install -r real_data_stress_pipeline/requirements.txt
 
+      - name: Verify frozen runtime dependencies
+        run: python -m real_data_stress_pipeline.production_pipeline verify-runtime
+
       - name: Evaluate weighted shard with bounded ProcessPool
         env:
           GITHUB_SHA: ${{ github.sha }}
@@ -254,6 +257,9 @@ jobs:
       - name: Install pipeline dependencies
         run: python -m pip install -r real_data_stress_pipeline/requirements.txt
 
+      - name: Verify frozen runtime dependencies
+        run: python -m real_data_stress_pipeline.production_pipeline verify-runtime
+
       - name: Strict aggregate gate and canonical manifest
         env:
           GITHUB_SHA: ${{ github.sha }}
@@ -312,6 +318,9 @@ jobs:
       - name: Install audit dependencies
         run: python -m pip install -r real_data_stress_pipeline/requirements.txt
 
+      - name: Verify frozen runtime dependencies
+        run: python -m real_data_stress_pipeline.production_pipeline verify-runtime
+
       - name: Run real-series Markov behavior audit against frozen source hash
         env:
           PYTHONUNBUFFERED: '1'
@@ -365,6 +374,9 @@ jobs:
       - name: Install audit dependencies
         run: python -m pip install -r real_data_stress_pipeline/requirements.txt
 
+      - name: Verify frozen runtime dependencies
+        run: python -m real_data_stress_pipeline.production_pipeline verify-runtime
+
       - name: Run injected-break power audit against frozen source hash
         env:
           PYTHONUNBUFFERED: '1'
@@ -405,6 +417,12 @@ jobs:
           ref: ${{ github.sha }}
           fetch-depth: 0
 
+      - name: Download aggregate dependency manifest
+        uses: actions/download-artifact@v4
+        with:
+          name: chaos-p2-aggregate-${{ github.run_id }}-${{ github.run_attempt }}
+          path: .
+
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
@@ -414,6 +432,9 @@ jobs:
 
       - name: Install audit dependencies
         run: python -m pip install -r real_data_stress_pipeline/requirements.txt
+
+      - name: Verify frozen runtime dependencies
+        run: python -m real_data_stress_pipeline.production_pipeline verify-runtime
 
       - name: Run seismic integrity, declustering and domain-null audit
         env:

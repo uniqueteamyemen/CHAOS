@@ -192,6 +192,14 @@ class ProductionPipelineTests(unittest.TestCase):
         self.assertTrue(production.contains_key_recursive({"bootstrap": [{"values": [1, 2]}]}, "values"))
         self.assertFalse(production.contains_key_recursive({"series": {"observations": 180}}, "values"))
 
+    def test_runtime_dependency_manifest_rejects_version_drift(self):
+        expected = p2.dependency_inventory()
+        self.assertTrue(production.verify_runtime_dependencies(expected))
+        changed = json.loads(json.dumps(expected))
+        changed["packages"]["numpy"]["version"] = "0.0.0-not-the-prepare-version"
+        with self.assertRaisesRegex(production.IntegrityError, "runtime_package_version_mismatch"):
+            production.verify_runtime_dependencies(changed)
+
     def test_aggregate_gate_rejects_bootstrap_replicate_mismatch(self):
         item = synthetic_item("gem:bootstrap-mismatch", 9)
         registry = [{
