@@ -731,13 +731,18 @@ jobs:
               --draft \
               --title "CHAOS P2 — Clean Phase Closure v1.0" \
               --notes-file release_assets/REAL_DATA_STRESS_REPORT_AR.md
-          else
-            is_draft="$(gh release view "${TAG_NAME}" --repo "${GH_REPO}" --json isDraft --jq '.isDraft')"
-            if [[ "${is_draft}" == "false" ]]; then
-              verify_remote_assets
-              echo "P2 phase-close release already published with all required assets, digests and sizes; no mutation needed."
-              exit 0
-            fi
+          fi
+          release_target="$(gh release view "${TAG_NAME}" --repo "${GH_REPO}" --json targetCommitish --jq '.targetCommitish')"
+          if [[ "${release_target}" != "${SOURCE_SHA}" ]]; then
+            echo "P2 phase-close release targets a different commit: expected=${SOURCE_SHA} actual=${release_target}" >&2
+            exit 1
+          fi
+
+          is_draft="$(gh release view "${TAG_NAME}" --repo "${GH_REPO}" --json isDraft --jq '.isDraft')"
+          if [[ "${is_draft}" == "false" ]]; then
+            verify_remote_assets
+            echo "P2 phase-close release already published with all required assets, digests and sizes; no mutation needed."
+            exit 0
           fi
           gh release upload "${TAG_NAME}" "${assets[@]}" --repo "${GH_REPO}" --clobber
           verify_remote_assets
