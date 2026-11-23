@@ -54,7 +54,6 @@ def json_bytes(value: Any) -> bytes:
             ensure_ascii=False,
             sort_keys=True,
             separators=(",", ":"),
-            allow_nan=False,
         ) + "\n"
     ).encode("utf-8")
 
@@ -495,6 +494,8 @@ def evaluate_shard(
     ):
         raise IntegrityError(f"shard_payload_header_mismatch:{shard_index}")
 
+    if int(state["manifest_seed"]["bootstrap"]["replicates"]) != int(p2.REPS):
+        raise IntegrityError("bootstrap_replicate_configuration_mismatch")
     registry = registry_doc["candidates"]
     expected_entries = [
         item for item in registry
@@ -625,10 +626,10 @@ def _load_all_shard_results(state: dict[str, Any], registry: list[dict[str, Any]
 
 
 def _restore_items_in_original_order(
-    registry: list[dict[str, Any]],
+    registry: list[dict[str, Any]], shard_count: int = SHARD_COUNT,
 ) -> list[dict[str, Any]]:
     payload_by_id: dict[str, dict[str, Any]] = {}
-    for shard_index in range(SHARD_COUNT):
+    for shard_index in range(int(shard_count)):
         path = SHARD_PAYLOAD_ROOT / f"shard-{shard_index}.json"
         payload = read_json(path)
         for entry in payload.get("items", []):
@@ -695,7 +696,7 @@ def aggregate() -> dict[str, Any]:
 
     # Original source and candidate identity checks are completed before any
     # final report, checksum manifest, or release-ready output is written.
-    items = _restore_items_in_original_order(registry)
+    items = _restore_items_in_original_order(registry, int(state["shard_count"]))
     if [item["id"] for item in items] != [
         item["id"] for item in sorted(registry, key=lambda value: int(value["original_index"]))
     ]:

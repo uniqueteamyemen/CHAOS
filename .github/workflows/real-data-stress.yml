@@ -150,6 +150,12 @@ jobs:
       MKL_NUM_THREADS: '1'
       NUMEXPR_NUM_THREADS: '1'
       VECLIB_MAXIMUM_THREADS: '1'
+      STRESS_BOOTSTRAP_REPLICATES: '999'
+      STRESS_BOOTSTRAP_MEAN_BLOCK_MONTHS: '12'
+      STRESS_BOOTSTRAP_MEAN_BLOCK_EVENTS: '25'
+      STRESS_MIN_COMMODITY_POINTS: '501'
+      STRESS_MIN_GEM_POINTS: '87'
+      STRESS_USGS_MIN_MAGNITUDE: '4.5'
     steps:
       - name: Checkout exact prepared commit
         uses: actions/checkout@v4
@@ -186,7 +192,7 @@ jobs:
           name: chaos-p2-eval-${{ matrix.shard }}-${{ github.run_id }}-${{ github.run_attempt }}
           retention-days: 90
           if-no-files-found: warn
-          path: real_data_stress_pipeline/results/shard_results/shard-${{ matrix.shard }}.json
+          path: real_data_stress_pipeline/results/shard_results/
 
   aggregate-and-audit:
     needs: [prepare, evaluate]
@@ -218,25 +224,25 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: chaos-p2-eval-0-${{ github.run_id }}-${{ github.run_attempt }}
-          path: .
+          path: real_data_stress_pipeline/results/shard_results
 
       - name: Download matrix shard 1
         uses: actions/download-artifact@v4
         with:
           name: chaos-p2-eval-1-${{ github.run_id }}-${{ github.run_attempt }}
-          path: .
+          path: real_data_stress_pipeline/results/shard_results
 
       - name: Download matrix shard 2
         uses: actions/download-artifact@v4
         with:
           name: chaos-p2-eval-2-${{ github.run_id }}-${{ github.run_attempt }}
-          path: .
+          path: real_data_stress_pipeline/results/shard_results
 
       - name: Download matrix shard 3
         uses: actions/download-artifact@v4
         with:
           name: chaos-p2-eval-3-${{ github.run_id }}-${{ github.run_attempt }}
-          path: .
+          path: real_data_stress_pipeline/results/shard_results
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -458,19 +464,19 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: chaos-p2-markov-real-${{ github.run_id }}-${{ github.run_attempt }}
-          path: .
+          path: artifacts/markov_real_data_behavior
 
       - name: Download Markov injected-break audit
         uses: actions/download-artifact@v4
         with:
           name: chaos-p2-markov-power-${{ github.run_id }}-${{ github.run_attempt }}
-          path: .
+          path: artifacts/markov_injected_break_power
 
       - name: Download domain-null audit
         uses: actions/download-artifact@v4
         with:
           name: chaos-p2-domain-null-${{ github.run_id }}-${{ github.run_attempt }}
-          path: .
+          path: artifacts/domain_null_and_declustering
 
       - name: Verify all release gates and package reproducible snapshots
         run: |
