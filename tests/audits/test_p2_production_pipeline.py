@@ -316,6 +316,24 @@ class ProductionPipelineTests(unittest.TestCase):
         self.assertIn("REMOTE_RELEASE_ASSETS_VERIFIED", workflow)
         self.assertIn("release_asset_digest_mismatch", workflow)
         self.assertIn("release_asset_size_mismatch", workflow)
+        for release_name in (
+            "markov-real-data-summary.json",
+            "markov-real-data-replicates.jsonl.gz",
+            "markov-injected-break-summary.json",
+            "markov-injected-break-replicates.jsonl.gz",
+            "domain-null-declustering-summary.json",
+        ):
+            self.assertIn(f"release_assets/{release_name}", workflow)
+        self.assertIn("release_asset_local_names_not_unique", workflow)
+        publish_block = workflow.split("Publish P2 phase-close audited release", 1)[1]
+        asset_block = publish_block.split("          assets=(\n", 1)[1].split(
+            "          )", 1
+        )[0]
+        asset_paths = [
+            line.strip() for line in asset_block.splitlines() if line.strip()
+        ]
+        asset_names = [Path(asset_path).name for asset_path in asset_paths]
+        self.assertEqual(len(asset_names), len(set(asset_names)))
         self.assertIn(
             "sha256sum --strict -c real_data_stress_pipeline/results/SHA256SUMS.txt",
             workflow,
