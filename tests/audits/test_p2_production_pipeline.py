@@ -563,5 +563,30 @@ class ProductionPipelineTests(unittest.TestCase):
             production.validate_result_records(registry, [result], expected_count=1)
 
 
+    def test_phase1_archive_write_permission_is_isolated_from_prepare(self):
+        workflow_path = Path(__file__).resolve().parents[2] / ".github" / "workflows" / "real-data-stress.yml"
+        workflow = workflow_path.read_text(encoding="utf-8")
+        self.assertLess(workflow.index("  publish-phase1-archive:"), workflow.index("  prepare:"))
+        phase1_job = workflow.split("  publish-phase1-archive:", 1)[1].split("\n  prepare:", 1)[0]
+        self.assertIn("contents: write", phase1_job)
+        self.assertIn("GH_TOKEN: ${{ github.token }}", phase1_job)
+        self.assertIn("persist-credentials: false", phase1_job)
+        prepare_job = workflow.split("  prepare:", 1)[1].split("\n  evaluate:", 1)[0]
+        prepare_header = prepare_job.split("    steps:", 1)[0]
+        self.assertIn("needs: publish-phase1-archive", prepare_job)
+        self.assertIn("contents: read", prepare_header)
+        self.assertNotIn("contents: write", prepare_header)
+        self.assertNotIn("GH_TOKEN", prepare_job)
+        self.assertIn("persist-credentials: false", prepare_job)
+
+    def test_all_artifact_downloads_fail_closed_on_digest_mismatch(self):
+        workflow_path = Path(__file__).resolve().parents[2] / ".github" / "workflows" / "real-data-stress.yml"
+        workflow = workflow_path.read_text(encoding="utf-8")
+        download_count = workflow.count("uses: actions/download-artifact@v8")
+        self.assertGreater(download_count, 0)
+        self.assertNotIn("uses: actions/download-artifact@v4", workflow)
+        self.assertEqual(download_count, workflow.count("digest-mismatch: error"))
+
+
 if __name__ == "__main__":
     unittest.main()
