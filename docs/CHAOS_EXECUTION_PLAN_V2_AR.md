@@ -410,7 +410,8 @@ CHAOS محرك عام لاكتشاف البنية الزمنية داخل الس
 - الحقول المطلوبة: `observation_period_start`, `observation_period_end`, `native_frequency`; و`boundary_semantics` اختياري.
 - بقي `source_record_observation_v1.schema.json` على مستوى السجل الفردي دون تغيير؛ حقول الفترة لا تدخل في `logical_record_id` أو `canonical_record_id`.
 - نجح Workflow `observation-foundation-contract.yml` على PR، ثم نجح مجدداً على push بعد الدمج؛ كما نجح D0 baseline validation بعد الدمج.
-- لا يعني وجود schema أن جميع adapters صارت تعلن time_support. المهمة المتبقية في P1 هي ربط الغلاف ببيانات المصدر/السلسلة الفعلية حيث توجد حدود مصدرية موثقة، مع رفض الاستدلال من أول وآخر صف.
+- بدأ ربط الـadapter بالعقد في WDI Trade: يمرر قائمة السنوات المعلنة في extract summary عبر `normalize_time_support()` ويتحقق من تطابقها مع مجموعة سنوات المشاهدات قبل نشر غلاف الفترة `2000–2024` بتواتر annual. يظل هذا الغلاف في مستوى المجموعة/الملخص ولا يضاف إلى كل DomainState.
+- لا يعني هذا اكتمال time_support لجميع adapters. يبقى ربطه مطلوباً لكل مصدر/سلسلة أخرى فقط عندما يوفر المصدر حدوداً أصلية موثقة؛ لا تُستنتج الحدود من أول وآخر صف ولا تُملأ النسخ التاريخية المجهولة.
 - تبقى `available_at` و`source_revision` التاريخية المفقودة `UNKNOWN`; ولا تمنح إضافة time support أهلية as-of للنسخ القديمة.
 
 
