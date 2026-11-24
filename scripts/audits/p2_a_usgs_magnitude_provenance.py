@@ -126,7 +126,7 @@ def reconcile(belt_id, accepted, rows, out_dir):
     return {"belt_id":belt_id,"accepted_events":len(accepted),"matched_events":len(enriched),
             "missing_event_ids":len(missing),"missing_event_ids_sample":missing[:25],
             "magnitude_source_counts":dict(sorted(counts.items())),"magnitude_source_missing_events":missing_source,
-            "magnitude_type_counts":dict(sorted(Counter(r["mag_type"] for r in enriched).items())),
+            "magnitude_type_counts":dict(sorted(type_counts.items())),"magnitude_type_missing_events":missing_type,
             "network_counts":dict(sorted(Counter(r["network"] for r in enriched).items())),
             "extra_query_rows":len(set(by_id)-set(accepted)),"conflicts":conflicts,"mismatches":mismatches,
             "output_path":target.relative_to(out_dir).as_posix(),"output_sha256":digest(target),"status":status}
@@ -147,9 +147,11 @@ def run(source_root,out_dir,ledger_path,run_id,attempt):
         belts.append(reconcile(belt["id"],catalogs[belt["id"]],rows,out_dir))
     reconcile_ok=all(b["status"]!="FAIL_RECONCILIATION" for b in belts)
     source_complete=all(b["magnitude_source_missing_events"]==0 for b in belts)
-    homogeneous=all(len(b["magnitude_source_counts"])<=1 for b in belts)
+    type_complete=all(b["magnitude_type_missing_events"]==0 for b in belts)
+    homogeneous=all(len(b["magnitude_source_counts"])<=1 and len(b["magnitude_type_counts"])<=1 for b in belts)
     gate=("BLOCKED_RECONCILIATION_FAILURE" if not reconcile_ok else
           "BLOCKED_MAG_SOURCE_MISSING" if not source_complete else
+          "BLOCKED_MAGNITUDE_TYPE_MISSING" if not type_complete else
           "READY_FOR_Mc_CANDIDATE_ANALYSIS" if homogeneous else
           "READY_FOR_STRATIFIED_Mc_CANDIDATE_ANALYSIS")
     result={"audit_id":AUDIT_ID,"status":"COMPLETED" if reconcile_ok else "COMPLETED_WITH_RECONCILIATION_FAILURES",
@@ -162,7 +164,8 @@ def run(source_root,out_dir,ledger_path,run_id,attempt):
                             "minimum_magnitude_query_threshold":p2.MAG,"threshold_is_not_Mc":True,
                             "limit":LIMIT,"split_overlap":"deduplicate by event ID; conflicts fail closed"},
             "raw_query_snapshots":requests,"belts":belts,"reconciliation_passed":reconcile_ok,
-            "magnitude_source_complete":source_complete,"magnitude_source_homogeneous_by_belt":homogeneous,
+            "magnitude_source_complete":source_complete,"magnitude_type_complete":type_complete,
+            "magnitude_source_and_type_homogeneous_by_belt":homogeneous,
             "p2_a_mc_gate":gate,"scientific_decision":"UNRESOLVED",
             "immutability":{"input_artifact_modified":False,"historical_p2_2_outputs_modified":False,
                             "detector_modified":False,"experiments_archive_modified":False}}
@@ -170,7 +173,7 @@ def run(source_root,out_dir,ledger_path,run_id,attempt):
     summary_path=out_dir/"P2_A_MAGNITUDE_PROVENANCE_SUMMARY.json"
     summary_path.write_text(json.dumps(result,ensure_ascii=False,indent=2,sort_keys=True)+"\n",encoding="utf-8")
     contract="real_data_stress_pipeline/contracts/p2_a_magnitude_provenance_recovery_v1.json"
-    refs=[summary_path.relative_to(out_dir).as_posix()]+[b["output_path"] for b in belts]
+    refs=[summary_path.relative_to(out_dir).as_posix()]+[b["output_path"] for b in belts]+[r["path"] for r in requests]
     source_ref=f"GitHub Actions artifact: chaos-p2-domain-null-{run_id}-{attempt}"
     ledger_path.parent.mkdir(parents=True,exist_ok=True)
     run_rec=ledger_record("run",contract,[source_ref],{f"usgs:{k}":v for k,v in input_hashes.items()},refs,

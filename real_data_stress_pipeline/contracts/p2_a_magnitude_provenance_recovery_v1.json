@@ -37,7 +37,9 @@
     "origin_time_absolute_tolerance_seconds": 0.001,
     "missing_mag_source": "UNRESOLVED; never infer from network code",
     "source_mixture": "requires stratification; do not pool across sources",
-    "accepted_catalog_must_not_be_rewritten": true
+    "accepted_catalog_must_not_be_rewritten": true,
+    "magnitude_type_missing": "UNRESOLVED; do not pool missing magnitude scales",
+    "magnitude_type_mixture": "requires stratification by magnitude type; do not pool across types"
   },
   "decision_states": [
     "FAIL_RECONCILIATION",
@@ -45,7 +47,7 @@
     "SOURCE_MIXTURE_REQUIRES_STRATIFICATION",
     "SOURCE_HOMOGENEOUS_CANDIDATE_PENDING_CALIBRATION"
   ],
-  "downstream_gate": "Mc(t,region) candidate analysis may start only after every accepted event is reconciled and magSource is present; mixed sources must be analyzed in separate source strata.",
+  "downstream_gate": "Mc(t,region) candidate analysis may start only after every accepted event is reconciled and magSource and magType are present; stratify by both magnitude source and magnitude type. Never infer magSource from network code.",
   "research_ledger": {
     "contract_id": "CHAOS_RESEARCH_LEDGER_V1",
     "path": "governance/ledger/RESEARCH_LEDGER_V1.jsonl",

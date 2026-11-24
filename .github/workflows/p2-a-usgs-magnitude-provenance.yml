@@ -1,6 +1,12 @@
 name: CHAOS P2-A — USGS Magnitude Provenance Recovery
 
 on:
+  push:
+    branches: [feat/p2-a-usgs-mag-source-recovery-v1]
+    paths:
+      - 'scripts/audits/p2_a_usgs_magnitude_provenance.py'
+      - '.github/workflows/p2-a-usgs-magnitude-provenance.yml'
+      - 'real_data_stress_pipeline/contracts/p2_a_magnitude_provenance_recovery_v1.json'
   workflow_dispatch:
     inputs:
       source_run_id:
