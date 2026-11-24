@@ -562,6 +562,12 @@ def _verify_manifest_configuration(manifest_seed: dict[str, Any]) -> None:
         if json_bytes(manifest_seed[key]) != json_bytes(actual):
             raise IntegrityError(f"execution_config_mismatch:{label}")
 
+    frozen_parameters = manifest_seed.get("execution_parameters")
+    if not isinstance(frozen_parameters, dict):
+        raise IntegrityError("execution_parameters_missing")
+    if json_bytes(frozen_parameters) != json_bytes(_execution_parameters()):
+        raise IntegrityError("execution_parameters_mismatch")
+
     frozen_time_support = manifest_seed.get("observation_time_support")
     if frozen_time_support is None:
         raise IntegrityError("observation_time_support_missing")
@@ -578,11 +584,7 @@ def _verify_manifest_configuration(manifest_seed: dict[str, Any]) -> None:
     if json_bytes(frozen_contract) != json_bytes(live_contract):
         raise IntegrityError("shock_contract_mismatch")
 
-    frozen_parameters = manifest_seed.get("execution_parameters")
-    if not isinstance(frozen_parameters, dict):
-        raise IntegrityError("execution_parameters_missing")
-    if json_bytes(frozen_parameters) != json_bytes(_execution_parameters()):
-        raise IntegrityError("execution_parameters_mismatch")
+
 
 
 def _verify_prepare_artifacts(state: dict[str, Any]) -> dict[str, Any]:
@@ -943,9 +945,14 @@ def aggregate() -> dict[str, Any]:
     ]
     checksums = []
     for path in sorted(set(path for path in sum_paths if path.is_file())):
-        checksums.append(
-            f"{file_sha256(path)}  {path.relative_to(ROOT).as_posix()}"
-        )
+        try:
+            relative_path = path.relative_to(ROOT).as_posix()
+        except ValueError:
+            # Isolated fixtures may use a temporary ROOT while the shared
+            # observation-time schema remains in the checked-out repository.
+            # Do not hash an external absolute path into a fixture manifest.
+            continue
+        checksums.append(f"{file_sha256(path)}  {relative_path}")
     p2.CHECKSUMS.write_text("\n".join(checksums) + "\n", encoding="utf-8")
     p2.MANIFEST.write_text(
         json.dumps(manifest, ensure_ascii=False, indent=2) + "\n",
