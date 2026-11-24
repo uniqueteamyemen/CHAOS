@@ -41,3 +41,20 @@
 6. فحص immutability ضد `main-phase2`.
 
 نجاح هذه البوابة يعني أن حزمة التنفيذ اجتازت اختبارات البرمجيات والتدقيق المحدد في هذا PR. لا يحوّل ذلك عقود البحث غير المتحققة إلى نتائج علمية معتمدة.
+
+
+## 5. تحديث الحالة بعد دمج PR #36 — 2026-11-24
+
+رأس `main-phase2` الحالي عند استعادة MP0 هو `72edc44b183e0c7c92e1edae362426d189e0c886`. دُمج PR #36 (`feat(P2): deterministic three-stage production stress pipeline`) في هذا الرأس.
+
+- أصبحت مراحل `prepare → evaluate → aggregate-and-audit` جزءاً من `main-phase2` عبر `real_data_stress_pipeline/production_pipeline.py`.
+- السجل المخطط يضم 519 مرشحاً: 51 Pink Sheet و468 GEM/USGS؛ تحفظ Pink Sheet الخام في الذاكرة داخل prepare، وتوزع السلاسل الأخرى في أربعة shards حتمية، ثم يتحقق aggregate من العضوية والترتيب والبصمات.
+- PR gate في تشغيل PR #36 نجح، لكن وظائف prepare/evaluate/aggregate والتدقيقات والنشر كانت skipped على حدث PR. لذلك لا يُستخدم نجاح gate كدليل تشغيل إنتاجي كامل.
+- في الأدلة التي تمت مراجعتها لهذا التحديث لم يثبت بعد تشغيل كامل ناجح على `main-phase2@72edc44` مع artifacts نهائية لجميع المراحل. حالة التنفيذ الإنتاجي لذلك الرأس: `NOT_YET_VERIFIED`، وليست `SUCCESS` أو `FAILED`.
+- لا يُعلن إغلاق P2 علمياً بمجرد دمج pipeline. يبقى كل cohort مرتبطاً ببوابته وقياساته، ولا تتحول احتمالات الإنذار الشرطية من bootstrap إلى FPR تلقائياً.
+
+### قرار تقدم الأفواج
+
+نقص أصول WGI/WHO/IMF لا يوقف P2 المستقل على Pink Sheet وGEM وUSGS. يسجل كل مصدر أو vintage غير متاح `UNKNOWN` ولا يُختلق. يستمر USGS في catalog integrity وdetector diagnostics، مع بقاء الاعتماد الإحصائي للـseismic null وFPR معلقاً حتى إثبات completeness و`Mc(t,region)` وpoint-process null. لا يستخدم stationary bootstrap العام للزلازل.
+
+هذا تحديث لحالة التنفيذ، ولا يغير الكاشف المجمد أو `experiments/**`، ولا يجيز Engine 2 قبل D6.
