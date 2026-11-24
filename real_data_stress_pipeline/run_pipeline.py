@@ -101,7 +101,7 @@ def get(url,retries=USGS_RETRIES,timeout=USGS_TIMEOUT):
    err=e
    if i+1<retries:time.sleep(2**i)
  raise RuntimeError(f"GET failed {url}: {err}")
-def keep_raw(rel,data,provider,url,params=None,time_support=None):
+def keep_raw(rel,data,provider,url,params=None,time_support=None,analysis_window=None):
  p=RAW/rel;p.parent.mkdir(parents=True,exist_ok=True);p.write_bytes(data)
  resolved_path=p.resolve()
  try:
@@ -111,6 +111,8 @@ def keep_raw(rel,data,provider,url,params=None,time_support=None):
  record={"path":recorded_path,"sha256":digest(data),"bytes":len(data),"provider":provider,"url":url,"parameters":params or {},"retrieved_at_utc":stamp()}
  if time_support is not None:
   record["time_support"]=time_support
+ if analysis_window is not None:
+  record["analysis_window"]=analysis_window
  return record
 def clean(s):return re.sub(r"[^A-Za-z0-9_.-]+","_",str(s)).strip("._")[:100] or "series"
 def number(v):
@@ -185,8 +187,15 @@ def time_support_registry():
   usgs_start,
   usgs_end,
   "event_timestamp",
-  f"USGS_COMCAT_QUERY_WINDOW_START_INCLUSIVE_END_EXCLUSIVE; MINIMUM_MAGNITUDE_QUERY_THRESHOLD={MAG}; NOT_MAGNITUDE_COMPLETENESS",
+  f"USGS_COMCAT_API_QUERY_WINDOW_START_AND_END_INCLUSIVE; SOURCE_COVERAGE_NOT_ASSERTED; MINIMUM_MAGNITUDE_QUERY_THRESHOLD={MAG}; NOT_MAGNITUDE_COMPLETENESS",
  )
+ usgs_analysis_window={
+  "period_start":usgs_start,
+  "period_end":usgs_end,
+  "start_inclusive":True,
+  "end_inclusive":False,
+  "boundary_semantics":"CLIENT_SIDE_ANALYSIS_FILTER_START_INCLUSIVE_END_EXCLUSIVE",
+ }
  return {
   "schema_id":TIME_SUPPORT_SCHEMA.get("$id"),
   "schema_path":TIME_SUPPORT_SCHEMA_RELATIVE_PATH,
@@ -202,9 +211,11 @@ def time_support_registry():
     "source_coverage_status":"NOT_ASSERTED_FROM_API_QUERY_WINDOW",
    },
    "usgs":{
+    "analysis_window":dict(usgs_analysis_window),
     "by_belt":{
      belt["id"]:{
       "time_support":dict(usgs_support),
+      "analysis_window":dict(usgs_analysis_window),
       "source_coverage_status":"NOT_ASSERTED_FROM_API_QUERY_WINDOW",
       "minimum_magnitude_query_threshold":MAG,
       "magnitude_completeness_status":"NOT_ESTABLISHED_BY_QUERY_THRESHOLD",
@@ -244,6 +255,7 @@ USGS_TIME_SUPPORT_BY_BELT={
 USGS_COLLECTION_TIME_SUPPORT=next(
  iter(TIME_SUPPORT_REGISTRY["sources"]["usgs"]["by_belt"].values())
 )["time_support"]
+USGS_ANALYSIS_WINDOW=TIME_SUPPORT_REGISTRY["sources"]["usgs"]["analysis_window"]
 
 
 def mad(x):
@@ -403,7 +415,7 @@ def gem(m):
 def usgs_query(belt,start,end,m,depth=0):
  p={"format":"geojson","starttime":start,"endtime":end,"minmagnitude":MAG,"minlatitude":belt["minlatitude"],"maxlatitude":belt["maxlatitude"],"minlongitude":belt["minlongitude"],"maxlongitude":belt["maxlongitude"],"orderby":"time-asc","limit":USGS_QUERY_LIMIT}
  url="https://earthquake.usgs.gov/fdsnws/event/1/query?"+urllib.parse.urlencode(p)
- raw=get(url,4,120);request_support=make_time_support(_utc_iso(start),_utc_iso(end),"event_timestamp",f"USGS_COMCAT_QUERY_WINDOW_START_INCLUSIVE_END_EXCLUSIVE; MINIMUM_MAGNITUDE_QUERY_THRESHOLD={MAG}; NOT_MAGNITUDE_COMPLETENESS");r=keep_raw(f"usgs/{belt['id']}/{start.replace(':','_')}_{end.replace(':','_')}.geojson",raw,"USGS ComCat",url,p,request_support);m["sources"].append(r)
+ raw=get(url,4,120);request_support=make_time_support(_utc_iso(start),_utc_iso(end),"event_timestamp",f"USGS_COMCAT_API_QUERY_WINDOW_START_AND_END_INCLUSIVE; MINIMUM_MAGNITUDE_QUERY_THRESHOLD={MAG}; NOT_MAGNITUDE_COMPLETENESS");r=keep_raw(f"usgs/{belt['id']}/{start.replace(':','_')}_{end.replace(':','_')}.geojson",raw,"USGS ComCat",url,p,request_support,USGS_ANALYSIS_WINDOW);m["sources"].append(r)
  fs=json.loads(raw).get("features",[])
  if len(fs)>=19999:
   a=datetime.fromisoformat(start);b=datetime.fromisoformat(end)
@@ -558,7 +570,7 @@ def seismic(m):
    rec={
     "id":belt["id"],"name":belt["name"],
     "bbox":{k:belt[k] for k in ("minlatitude","maxlatitude","minlongitude","maxlongitude")},
-    "min_magnitude":MAG,"minimum_magnitude_query_threshold":MAG,"magnitude_completeness_status":"NOT_ESTABLISHED_BY_QUERY_THRESHOLD","time_support":USGS_TIME_SUPPORT_BY_BELT.get(belt["id"],USGS_COLLECTION_TIME_SUPPORT),"events":len(rows),
+    "min_magnitude":MAG,"minimum_magnitude_query_threshold":MAG,"magnitude_completeness_status":"NOT_ESTABLISHED_BY_QUERY_THRESHOLD","time_support":USGS_TIME_SUPPORT_BY_BELT.get(belt["id"],USGS_COLLECTION_TIME_SUPPORT),"analysis_window":USGS_ANALYSIS_WINDOW,"events":len(rows),
     "events_received":len(fs),"events_accepted":len(rows),
     "events_quarantined":rejected_count,
     "duplicate_features_deduplicated":duplicate_count,

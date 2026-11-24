@@ -1,4 +1,5 @@
 import unittest
+from datetime import datetime, timezone
 import numpy as np
 from io import BytesIO
 from openpyxl import Workbook
@@ -7,7 +8,7 @@ from real_data_stress_pipeline.run_pipeline import (
     g0, g1, boot, parse_pink, longest_run, month, label_month, returns,
     stationary_sample, wilson, series_category, shock_eval, applicable_shock_series,
     aggregate, make_time_support, time_support_registry, TIME_SUPPORT_SCHEMA,
-    P2_SOURCE_SCOPE_DECISIONS,
+    P2_SOURCE_SCOPE_DECISIONS, usgs_record_rejection_reasons, BELTS, Y1,
 )
 
 class StressPipelineContractTests(unittest.TestCase):
@@ -43,9 +44,43 @@ class StressPipelineContractTests(unittest.TestCase):
             self.assertEqual(support["native_frequency"], "event_timestamp")
             self.assertEqual(support["observation_period_start"], "1980-01-01T00:00:00Z")
             self.assertEqual(support["observation_period_end"], "2025-01-01T00:00:00Z")
-            self.assertIn("END_EXCLUSIVE", support["boundary_semantics"])
+            self.assertIn("USGS_COMCAT_API_QUERY_WINDOW_START_AND_END_INCLUSIVE", support["boundary_semantics"])
             self.assertIn("NOT_MAGNITUDE_COMPLETENESS", support["boundary_semantics"])
+            analysis_window = belt["analysis_window"]
+            self.assertTrue(analysis_window["start_inclusive"])
+            self.assertFalse(analysis_window["end_inclusive"])
+            self.assertEqual(
+                analysis_window["boundary_semantics"],
+                "CLIENT_SIDE_ANALYSIS_FILTER_START_INCLUSIVE_END_EXCLUSIVE",
+            )
             self.assertFalse(belt["magnitude_completeness_status"] == "ESTABLISHED")
+
+        source_analysis_window = sources["usgs"]["analysis_window"]
+        self.assertEqual(source_analysis_window["period_start"], "1980-01-01T00:00:00Z")
+        self.assertEqual(source_analysis_window["period_end"], "2025-01-01T00:00:00Z")
+        self.assertTrue(source_analysis_window["start_inclusive"])
+        self.assertFalse(source_analysis_window["end_inclusive"])
+
+    def test_usgs_api_includes_end_boundary_but_analysis_excludes_it(self):
+        belt = BELTS[0]
+        latitude = (float(belt["minlatitude"]) + float(belt["maxlatitude"])) / 2
+        longitude = (float(belt["minlongitude"]) + float(belt["maxlongitude"])) / 2
+        analysis_end_ms = int(
+            datetime(Y1 + 1, 1, 1, tzinfo=timezone.utc).timestamp() * 1000
+        )
+        at_exclusive_analysis_end = usgs_record_rejection_reasons(
+            belt, latitude, longitude, 5.0, analysis_end_ms
+        )
+        just_before_analysis_end = usgs_record_rejection_reasons(
+            belt, latitude, longitude, 5.0, analysis_end_ms - 1
+        )
+        self.assertIn("OUTSIDE_ANALYSIS_TIME_WINDOW", at_exclusive_analysis_end)
+        self.assertNotIn("OUTSIDE_ANALYSIS_TIME_WINDOW", just_before_analysis_end)
+
+        registry = time_support_registry()["sources"]["usgs"]
+        query_semantics = registry["by_belt"][belt["id"]]["time_support"]["boundary_semantics"]
+        self.assertIn("USGS_COMCAT_API_QUERY_WINDOW_START_AND_END_INCLUSIVE", query_semantics)
+        self.assertFalse(registry["analysis_window"]["end_inclusive"])
 
     def test_p2_source_scope_quarantines_deferred_sources_without_rewriting_engine1_lineage(self):
         decisions = P2_SOURCE_SCOPE_DECISIONS
