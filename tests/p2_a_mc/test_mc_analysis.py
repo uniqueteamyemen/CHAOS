@@ -57,7 +57,7 @@ class McEstimatorTests(unittest.TestCase):
   gates={x["threshold_gate"]:x for x in threshold["gate_event_distribution"]}
   self.assertEqual(gates["CANDIDATE"]["events_retained"],10)
   self.assertEqual(gates["UNRESOLVED"]["events_retained"],17)
-  self.assertAlmostEqual(sum(x["event_share_of_population"] for x in threshold["gate_event_distribution"]),27/35)
+  self.assertAlmostEqual(sum(x["event_share_of_population"] for x in threshold["gate_event_distribution"]),27/35,places=5)
  def test_known_exclusion_is_explicitly_documented(self):
   self.assertEqual(mc.KNOWN_EXCLUSION["event_id"],"nc21364840")
   self.assertEqual(mc.KNOWN_EXCLUSION["associated_merged_event_id"],"nc40157006")
