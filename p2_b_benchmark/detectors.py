@@ -42,11 +42,12 @@ def focus(values):
     return {"hits":hits,"metadata":{"status":"OK","claim":"FOCuS-inspired bounded candidate scan","windows":list(windows),"threshold":4.25}}
 
 def rfpop(values):
-    """R-FPOP-inspired robust online segmentation with O(80*n) bounded candidates.
+    """R-FPOP-inspired online robust segmentation with irrevocable first-crossing alerts.
 
-    A winsorized quadratic segment cost is evaluated from prefix sums, avoiding
-    repeated scans of historical windows. It is a documented adaptation, not a
-    paper-conformance claim for the reference R-FPOP algorithm.
+    Segment-cost improvements are evaluated on bounded candidate split points.
+    Once a split crosses the penalty, the alert is emitted immediately and
+    cannot be revised by later observations. This causal adaptation is not
+    represented as exact reference R-FPOP.
     """
     x, centre, scale = _base(values)
     if _abstain(scale):
@@ -56,7 +57,6 @@ def rfpop(values):
     prefix2 = np.concatenate(([0.0], np.cumsum(y * y, dtype=float)))
 
     def segment_sse(start, end):
-        # Half-open [start, end), using only already observed points.
         count = end - start
         if count <= 0:
             return 0.0
@@ -68,34 +68,41 @@ def rfpop(values):
     candidates = [QUIET]
     min_seg = 8
     penalty = 8.0 * math.log(max(len(x), 2))
+    last_emitted_end = QUIET
     for t in range(QUIET + 2 * min_seg - 1, len(x)):
         split = t - min_seg + 1
-        if split >= QUIET + min_seg:
+        if split >= last_emitted_end + min_seg:
             candidates.append(split)
         candidates = candidates[-80:]
-        base_loss = segment_sse(QUIET, t + 1)
+        base_loss = segment_sse(last_emitted_end, t + 1)
         best_gain = 0.0
         best_split = None
         for s in candidates:
-            if s - QUIET < min_seg or (t + 1) - s < min_seg:
+            if s < last_emitted_end + min_seg or (t + 1) - s < min_seg:
                 continue
-            gain = base_loss - segment_sse(QUIET, s) - segment_sse(s, t + 1) - penalty
+            gain = (base_loss - segment_sse(last_emitted_end, s)
+                    - segment_sse(s, t + 1) - penalty)
             if gain > best_gain:
                 best_gain, best_split = gain, s
-        if best_split is not None and (not hits or t - hits[-1]["index"] >= 12):
-            left_mean = (prefix[best_split] - prefix[QUIET]) / (best_split - QUIET)
+        # Emit at the first time a candidate split becomes significant.
+        # Do not revise this decision as the right-hand segment grows.
+        if best_split is not None:
+            left_mean = (prefix[best_split] - prefix[last_emitted_end]) / (best_split - last_emitted_end)
             right_mean = (prefix[t + 1] - prefix[best_split]) / (t + 1 - best_split)
             hits.append({
                 "index": t, "sign": 1 if right_mean >= left_mean else -1,
                 "detector": "rfpop_robust_segment", "gain": float(best_gain),
+                "split_index": int(best_split),
             })
-            candidates = [t + 1]
+            last_emitted_end = t + 1
+            candidates = [last_emitted_end]
     return {
         "hits": hits,
         "metadata": {
-            "status": "OK", "claim": "R-FPOP-inspired bounded winsorized segmentation",
+            "status": "OK", "claim": "R-FPOP-inspired bounded winsorized segmentation with irrevocable alerts",
             "loss": "winsorized_quadratic", "winsor_cap_sigma": 4.0,
             "penalty": penalty, "min_segment": min_seg, "candidate_cap": 80,
+            "decision_policy": "first_crossing_irrevocable",
         },
     }
 
