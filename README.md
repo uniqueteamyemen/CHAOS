@@ -1,5 +1,7 @@
 # CHAOS — Governed Historical Signals and Structural Discovery
 
+> **Start here:** [STATUS.md — current execution status, active phase, and mandatory entry point](STATUS.md)
+
 **CHAOS** is a research and engineering workspace for discovering, testing, and governing temporal structure across independent real-world domains. Its purpose is broader than any single forecasting task or dataset: preserve source evidence, identify transitions, test whether signals repeat or connect, and only then evaluate whether they support sensing or prediction.
 
 This repository keeps raw observations, source provenance, data contracts, detector experiments, and derived outputs auditable. It does not treat correlation as causality, an anomaly as a structural transition, or a detected transition as a forecast.
@@ -13,16 +15,11 @@ This repository keeps raw observations, source provenance, data contracts, detec
 - ظهرت تحولات داخلية مؤكدة في سلاسل الفواصل بين الزلازل، لكنها لم تُتحقق بعد مقابل مرجع جيولوجي مستقل، ولذلك لا تُعد تنبؤات زلزالية.
 - أُرشفت نتائج الفحص وبصمات SHA-256 داخل الفرع المستقل.
 
-## Current state — Phase 1 frozen / Phase 2 historical scan completed
+## Current repository state
 
-The working branch is `phase1-detector-freeze-phase2-real-data`. Phase 1 is frozen, and the first Phase 2 historical scan is archived.
+The authoritative working and default branch is `main-phase2`. The active phase, accepted decisions, current baselines, and mandatory next steps are maintained in **[STATUS.md — authoritative execution status](STATUS.md)**.
 
-- **Phase 1:** the B-v7.1 detector lineage is isolated under `structural_engine/isolated_break_detector_v1/`; the B6.1 and B7 engine source files were copied byte-for-byte.
-- **Phase 2:** the detector was run on USGS event-time intervals, monthly and quarterly activity counts, and 179 eligible UN AMA annual GDP-growth country series (screening only).
-- The synthetic B-v7.1 benchmark is closed as historical evidence and has not been modified or rerun.
-- The real-data transition ledger and SHA-256 inventory are committed under `structural_engine/isolated_break_detector_v1/results/`. The successful CI run is [43972264171](https://github.com/uniqueteamyemen/CHAOS/actions/runs/43972264171).
-
-See [Phase 1 detector freeze and Phase 2 transition plan](docs/PHASE1_DETECTOR_FREEZE.md) and the [Predictive Early-Warning Engine architecture](docs/PREDICTIVE_EARLY_WARNING_ENGINE_PLAN_AR.md).
+This README retains historical research context and archived results. Historical branch names and detector recommendations below do not override the current state in STATUS.md.
 
 ## How the detector reached this point
 
