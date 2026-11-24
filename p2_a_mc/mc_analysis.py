@@ -2,6 +2,7 @@ from __future__ import annotations
 import argparse, csv, hashlib, json, math, statistics, sys, tempfile, zipfile
 from collections import Counter, defaultdict
 from datetime import datetime, timezone
+from decimal import Decimal, ROUND_HALF_UP
 from pathlib import Path
 
 SOURCE_ARTIFACT_SHA256="5f5b0c571c1423caef4cfc9001271c8bea261f1b89e2ba0a341f733f677ed683"
@@ -12,6 +13,8 @@ MIN_N=50
 GFT_MIN_FIT=90.0
 WINDOW_YEARS=5
 THRESHOLDS=(4.5,5.0,5.5,6.0)
+MC_STATUS_ORDER=("ESTIMATED_PENDING_REVIEW","ESTIMATED_LEFT_TRUNCATION_BOUNDARY","GFT_NOT_PASSED","INSUFFICIENT_EVENTS","INSUFFICIENT_MAGNITUDE_RESOLUTION")
+MIN_GFT_AXIS_BINS=4
 KNOWN_EXCLUSION={
  "event_id":"nc21364840","associated_merged_event_id":"nc40157006",
  "disposition":"EXCLUDED_UPSTREAM_COMCAT_INDEX_MISMATCH",
@@ -36,8 +39,14 @@ def utc_year(value):
  if dt.tzinfo is None: raise ValueError("timestamp_without_timezone:"+value)
  return dt.astimezone(timezone.utc).year
 
+def round_magnitude(value):
+ return float(Decimal(str(value)).quantize(Decimal("0.1"),rounding=ROUND_HALF_UP))
+
+def magnitude_bin_index(value):
+ return int((Decimal(str(value))/Decimal(str(BIN_WIDTH))).quantize(Decimal("1"),rounding=ROUND_HALF_UP))
+
 def estimate_mc(values):
- mags=[round(float(x),1) for x in values]; n=len(mags)
+ mags=[round_magnitude(x) for x in values]; n=len(mags)
  out={"event_count":n,"min_observed_magnitude":min(mags) if mags else None,
       "max_observed_magnitude":max(mags) if mags else None,"max_curvature_mc":None,
       "gft_mc":None,"gft_fit_percent_at_mc":None,"b_value_at_gft_mc":None,
@@ -56,7 +65,10 @@ def estimate_mc(values):
   if denom<=0: continue
   b=math.log10(math.e)/denom
   if not math.isfinite(b) or b<=0: continue
-  axis=[i*BIN_WIDTH for i in range(round(mc/BIN_WIDTH),round(max(mags)/BIN_WIDTH)+1)]
+  first_bin=magnitude_bin_index(mc); last_bin=magnitude_bin_index(max(mags))
+  axis=[float(Decimal(i)*Decimal(str(BIN_WIDTH))) for i in range(first_bin,last_bin+1)]
+  if len(axis)<MIN_GFT_AXIS_BINS:
+   continue
   obs=[sum(v>=x-1e-9 for v in mags) for x in axis]
   pred=[len(tail)*10**(-b*(x-mc)) for x in axis]
   fit=100*(1-sum(abs(a-p) for a,p in zip(obs,pred))/sum(obs))
@@ -87,6 +99,63 @@ def sensitivity(events,mc):
   out.append({"analysis_threshold":t,"events_retained":n,"retained_fraction":round(n/len(vals),6) if vals else None,
               "threshold_gate":gate,"threshold_is_not_an_mc_estimate":True})
  return out
+
+def event_weighted_mc_status_rollup(strata,population_event_count=None):
+ total=sum(int(s["event_count"]) for s in strata)
+ denominator=int(population_event_count if population_event_count is not None else total)
+ statuses=sorted(set(MC_STATUS_ORDER)|{s["mc"]["status"] for s in strata})
+ result=[]
+ for status in statuses:
+  selected=[s for s in strata if s["mc"]["status"]==status]
+  events=sum(int(s["event_count"]) for s in selected)
+  result.append({"mc_status":status,"strata_count":len(selected),"events":events,
+   "event_share_of_population":round(events/denominator,6) if denominator else 0.0,
+   "event_share_percent_of_population":round(100*events/denominator,4) if denominator else 0.0})
+ if sum(x["events"] for x in result)!=total: raise ValueError("mc_status_event_rollup_does_not_reconcile")
+ return {"population_events":denominator,"strata_count":len(strata),"events_accounted_for":total,"statuses":result}
+
+def threshold_event_gate_rollup(strata,population_event_count=None):
+ total_population=int(population_event_count if population_event_count is not None else sum(int(s["event_count"]) for s in strata))
+ output=[]
+ for index,threshold in enumerate(THRESHOLDS):
+  gates=defaultdict(lambda:{"strata_count":0,"events_retained":0})
+  retained_total=0
+  for stratum in strata:
+   item=stratum["threshold_sensitivity"][index]; gate=item["threshold_gate"]
+   gates[gate]["strata_count"]+=1
+   gates[gate]["events_retained"]+=int(item["events_retained"])
+   retained_total+=int(item["events_retained"])
+  gate_rows=[]
+  for gate,counts in sorted(gates.items()):
+   events=counts["events_retained"]
+   gate_rows.append({"threshold_gate":gate,"strata_count":counts["strata_count"],"events_retained":events,
+    "event_share_of_threshold_retained":round(events/retained_total,6) if retained_total else 0.0,
+    "event_share_percent_of_threshold_retained":round(100*events/retained_total,4) if retained_total else 0.0,
+    "event_share_of_population":round(events/total_population,6) if total_population else 0.0,
+    "event_share_percent_of_population":round(100*events/total_population,4) if total_population else 0.0})
+  if sum(x["events_retained"] for x in gate_rows)!=retained_total:
+   raise ValueError("threshold_gate_event_rollup_does_not_reconcile")
+  output.append({"analysis_threshold":threshold,"strata_count":len(strata),
+   "events_retained_across_strata":retained_total,"gate_counts_unit":"strata",
+   "gate_counts":{x["threshold_gate"]:x["strata_count"] for x in gate_rows},
+   "gate_event_distribution":gate_rows})
+ return output
+
+def compact_stratum_record(belt_id,belt_name,stratum):
+ mc=stratum["mc"]
+ return {"belt_id":belt_id,"belt_name":belt_name,"time_window":stratum["time_window"],
+  "mag_source":stratum["mag_source"],"mag_type":stratum["mag_type"],
+  "event_count":stratum["event_count"],"mc_status":mc["status"],
+  "mc_estimate":mc.get("mc_estimate"),"max_curvature_mc":mc.get("max_curvature_mc"),
+  "gft_mc":mc.get("gft_mc"),"gft_fit_percent_at_mc":mc.get("gft_fit_percent_at_mc"),
+  "threshold_gate_by_threshold":[{"analysis_threshold":x["analysis_threshold"],
+   "events_retained":x["events_retained"],"threshold_gate":x["threshold_gate"]}
+   for x in stratum["threshold_sensitivity"]]}
+
+def top_strata_records(strata,belt_id,belt_name,limit=10,predicate=None):
+ selected=[s for s in strata if predicate is None or predicate(s)]
+ return [compact_stratum_record(belt_id,belt_name,s)
+  for s in sorted(selected,key=lambda x:(-int(x["event_count"]),x["time_window"]["start_year"],x["mag_source"],x["mag_type"]))[:limit]]
 
 def analyze(source_zip,prov_zip,config_dir,output_dir):
  source_digest=sha256(source_zip); prov_digest=sha256(prov_zip)
@@ -160,16 +229,18 @@ def analyze(source_zip,prov_zip,config_dir,output_dir):
     strata.append({"time_window":{"start_year":start,"end_year_exclusive":end},"mag_source":source,"mag_type":kind,
       "event_count":len(items),"network_counts":dict(sorted(Counter(e["network"] for e in items).items())),
       "mc":mc,"threshold_sensitivity":sensitivity(items,mc)})
-   rollup=[]
-   for i,t in enumerate(THRESHOLDS):
-    selected=[s["threshold_sensitivity"][i] for s in strata]
-    rollup.append({"analysis_threshold":t,"strata_count":len(selected),
-     "events_retained_across_strata":sum(x["events_retained"] for x in selected),
-     "gate_counts":dict(sorted(Counter(x["threshold_gate"] for x in selected).items()))})
-   belt_results.append({"belt_id":belt_id,"belt_name":names[belt_id],"accepted_events":len(events),
+   rollup=threshold_event_gate_rollup(strata,len(events))
+   belt_name=names[belt_id]
+   belt_results.append({"belt_id":belt_id,"belt_name":belt_name,"accepted_events":len(events),
     "strata_count":len(strata),"estimable_strata_count":sum(s["mc"]["mc_estimate"] is not None for s in strata),
     "unresolved_strata_count":sum(s["mc"]["mc_estimate"] is None for s in strata),
-    "threshold_sensitivity_rollup":rollup,"strata":strata})
+    "event_weighted_mc_status_rollup":event_weighted_mc_status_rollup(strata,len(events)),
+    "threshold_sensitivity_rollup":rollup,
+    "top_strata_by_event_count":top_strata_records(strata,belt_id,belt_name,10),
+    "largest_gft_not_passed_strata":top_strata_records(strata,belt_id,belt_name,10,lambda s:s["mc"]["status"]=="GFT_NOT_PASSED"),
+    "largest_estimated_above_query_floor_strata":top_strata_records(strata,belt_id,belt_name,10,
+     lambda s:s["mc"].get("mc_estimate") is not None and s["mc"]["mc_estimate"]>QUERY_FLOOR+1e-9),
+    "strata":strata})
   payload={
    "schema_version":"chaos.p2a.mc_assessment.v1","generated_at_utc":datetime.now(timezone.utc).isoformat(),
    "status":"COMPLETED_SCREENING_WITH_UNRESOLVED_SCIENTIFIC_DECISION",
@@ -183,7 +254,7 @@ def analyze(source_zip,prov_zip,config_dir,output_dir):
     "magnitude_source_complete":provenance_summary["magnitude_source_complete"],"magnitude_type_complete":provenance_summary["magnitude_type_complete"],
     "accepted_event_count":total,"extra_query_row_count":sum(b["extra_query_row_count"] for b in provenance_summary["belts"])},
    "analysis":{"method":{"name":"MAXC plus Gutenberg-Richter goodness-of-fit (GFT-90)","version":"1.0.0",
-     "magnitude_bin_width":BIN_WIDTH,"minimum_events_for_point_estimate":MIN_N,"gft_acceptance_percent":GFT_MIN_FIT,
+     "magnitude_bin_width":BIN_WIDTH,"magnitude_rounding":"decimal ROUND_HALF_UP to 0.1","minimum_events_for_point_estimate":MIN_N,"gft_acceptance_percent":GFT_MIN_FIT,"minimum_gft_axis_bins":MIN_GFT_AXIS_BINS,
      "combination_rule":"Mc = max(MAXC, lowest GFT candidate passing 90% fit)","time_window_years":WINDOW_YEARS,
      "threshold_sensitivity":list(THRESHOLDS),"query_floor":QUERY_FLOOR,"query_floor_is_not_mc":True,
      "no_uncertainty_interval_claimed":True,"point_estimates_are_not_scientific_acceptance":True,
@@ -192,8 +263,15 @@ def analyze(source_zip,prov_zip,config_dir,output_dir):
       "No magnitude-scale conversion or pooling occurs across magSource or magType strata.",
       "Threshold sensitivity filters counts and gates against the base point estimate; it does not re-estimate Mc on artificially truncated subsets.",
       "Five-year UTC windows are fixed non-overlapping windows and do not assert within-window stationarity.",
-      "Sparse or GFT-failing strata remain unresolved; no pooled fallback is used."]},
+      "Sparse or GFT-failing strata remain unresolved; no pooled fallback is used.",
+      "INSUFFICIENT_MAGNITUDE_RESOLUTION is retained as a separate fifth status rather than mislabeled as INSUFFICIENT_EVENTS."]},
     "time_windows":windows_cfg,"belts":belt_results,"sensitivity_thresholds":list(THRESHOLDS),
+    "event_weighted_mc_status_rollup":event_weighted_mc_status_rollup([s for b in belt_results for s in b["strata"]],total),
+    "threshold_sensitivity_event_weighted_rollup":threshold_event_gate_rollup([s for b in belt_results for s in b["strata"]],total),
+    "strata_diagnostics":{"top_strata_by_event_count":top_strata_records([s for b in belt_results for s in b["strata"]],"all_belts","All belts",20),
+     "largest_gft_not_passed_strata":top_strata_records([s for b in belt_results for s in b["strata"]],"all_belts","All belts",20,lambda s:s["mc"]["status"]=="GFT_NOT_PASSED"),
+     "largest_estimated_above_query_floor_strata":top_strata_records([s for b in belt_results for s in b["strata"]],"all_belts","All belts",20,
+      lambda s:s["mc"].get("mc_estimate") is not None and s["mc"]["mc_estimate"]>QUERY_FLOOR+1e-9)},
     "catalog_minimum_magnitude_from_config":float(belts_cfg["minimum_magnitude"]),
     "pipeline_config_seismic_null_policy":pipeline_cfg["stationarity"]["seismic_null_policy"],
     "n1_etas_fit_performed":False,"zaliapin_randomization_performed":False,
