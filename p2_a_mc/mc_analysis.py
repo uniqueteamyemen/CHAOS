@@ -143,7 +143,7 @@ def threshold_event_gate_rollup(strata,population_event_count=None):
 
 def compact_stratum_record(belt_id,belt_name,stratum):
  mc=stratum["mc"]
- return {"belt_id":belt_id,"belt_name":belt_name,"time_window":stratum["time_window"],
+ return {"belt_id":stratum.get("belt_id",belt_id),"belt_name":stratum.get("belt_name",belt_name),"time_window":stratum["time_window"],
   "mag_source":stratum["mag_source"],"mag_type":stratum["mag_type"],
   "event_count":stratum["event_count"],"mc_status":mc["status"],
   "mc_estimate":mc.get("mc_estimate"),"max_curvature_mc":mc.get("max_curvature_mc"),
@@ -226,7 +226,7 @@ def analyze(source_zip,prov_zip,config_dir,output_dir):
    strata=[]
    for (start,end,source,kind),items in sorted(buckets.items()):
     mc=estimate_mc([e["magnitude"] for e in items])
-    strata.append({"time_window":{"start_year":start,"end_year_exclusive":end},"mag_source":source,"mag_type":kind,
+    strata.append({"belt_id":belt_id,"belt_name":names[belt_id],"time_window":{"start_year":start,"end_year_exclusive":end},"mag_source":source,"mag_type":kind,
       "event_count":len(items),"network_counts":dict(sorted(Counter(e["network"] for e in items).items())),
       "mc":mc,"threshold_sensitivity":sensitivity(items,mc)})
    rollup=threshold_event_gate_rollup(strata,len(events))
