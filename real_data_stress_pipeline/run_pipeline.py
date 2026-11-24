@@ -223,6 +223,9 @@ USGS_TIME_SUPPORT_BY_BELT={
  belt_id:entry["time_support"]
  for belt_id,entry in TIME_SUPPORT_REGISTRY["sources"]["usgs"]["by_belt"].items()
 }
+USGS_COLLECTION_TIME_SUPPORT=next(
+ iter(TIME_SUPPORT_REGISTRY["sources"]["usgs"]["by_belt"].values())
+)["time_support"]
 
 
 def mad(x):
@@ -537,7 +540,7 @@ def seismic(m):
    rec={
     "id":belt["id"],"name":belt["name"],
     "bbox":{k:belt[k] for k in ("minlatitude","maxlatitude","minlongitude","maxlongitude")},
-    "min_magnitude":MAG,"minimum_magnitude_query_threshold":MAG,"magnitude_completeness_status":"NOT_ESTABLISHED_BY_QUERY_THRESHOLD","time_support":USGS_TIME_SUPPORT_BY_BELT[belt["id"]],"events":len(rows),
+    "min_magnitude":MAG,"minimum_magnitude_query_threshold":MAG,"magnitude_completeness_status":"NOT_ESTABLISHED_BY_QUERY_THRESHOLD","time_support":USGS_TIME_SUPPORT_BY_BELT.get(belt["id"],USGS_COLLECTION_TIME_SUPPORT),"events":len(rows),
     "events_received":len(fs),"events_accepted":len(rows),
     "events_quarantined":rejected_count,
     "duplicate_features_deduplicated":duplicate_count,
