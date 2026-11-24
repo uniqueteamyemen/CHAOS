@@ -78,6 +78,33 @@ jobs:
           path: |
             artifacts/p2_b/P2_B_DETECTOR_COMPETITION_V1.json
             artifacts/p2_b/P2_B_DETECTOR_COMPETITION_V1_AR.md
+      - name: Publish Arabic report and aggregate JSON to GitHub Step Summary
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          {
+            echo "# P2-B — Detector competition results"
+            if [[ -s artifacts/p2_b/P2_B_DETECTOR_COMPETITION_V1_AR.md ]]; then
+              cat artifacts/p2_b/P2_B_DETECTOR_COMPETITION_V1_AR.md
+            else
+              echo "Benchmark report was not generated; inspect the run step logs."
+            fi
+            echo
+            echo "## Aggregate summary JSON (no raw series values)"
+            if [[ -s artifacts/p2_b/P2_B_DETECTOR_COMPETITION_V1.json ]]; then
+              echo '```json'
+              python - <<'PY'
+          import json
+          from pathlib import Path
+          report = json.loads(Path("artifacts/p2_b/P2_B_DETECTOR_COMPETITION_V1.json").read_text(encoding="utf-8"))
+          print(json.dumps(report["summary"], ensure_ascii=False, indent=2, sort_keys=True))
+          PY
+              echo '```'
+            else
+              echo "Aggregate summary JSON is unavailable because the benchmark did not complete."
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
       - name: Enforce causal replay gate after preserving results
         if: success()
         run: |
