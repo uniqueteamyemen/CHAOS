@@ -39,6 +39,7 @@ jobs:
       SOURCE_RUN_ID: ${{ inputs.source_run_id || '45244943216' }}
       SOURCE_RUN_ATTEMPT: ${{ inputs.source_run_attempt || '1' }}
       LEDGER_PATH: governance/ledger/RESEARCH_LEDGER_V1.jsonl
+      LEDGER_BRANCH: governance/research-ledger-v1
       OMP_NUM_THREADS: '1'
       OPENBLAS_NUM_THREADS: '1'
       MKL_NUM_THREADS: '1'
@@ -53,19 +54,19 @@ jobs:
           fetch-depth: 0
           persist-credentials: true
 
-      - name: Restore canonical Research Ledger from main-phase2
+      - name: Restore canonical Research Ledger from its protected-state branch
         shell: bash
         run: |
           set -euo pipefail
           mkdir -p "$(dirname "$LEDGER_PATH")"
-          git fetch --no-tags origin main-phase2
-          if git cat-file -e "FETCH_HEAD:$LEDGER_PATH" 2>/dev/null; then
-            git show "FETCH_HEAD:$LEDGER_PATH" > "$LEDGER_PATH"
-            echo "Restored canonical ledger from main-phase2."
-          else
-            : > "$LEDGER_PATH"
-            echo "No canonical ledger exists yet; initialized an empty append-only ledger."
-          fi
+          git fetch --no-tags origin "$LEDGER_BRANCH"
+          git cat-file -e "FETCH_HEAD:$LEDGER_PATH" 2>/dev/null || {
+            echo "canonical_research_ledger_missing_on:$LEDGER_BRANCH" >&2
+            exit 1
+          }
+          git show "FETCH_HEAD:$LEDGER_PATH" > "$LEDGER_PATH"
+          test -s "$LEDGER_PATH"
+          echo "Restored canonical append-only ledger from $LEDGER_BRANCH."
 
       - name: Download immutable P2.2.3 source artifact
         uses: actions/download-artifact@v8
@@ -95,19 +96,26 @@ jobs:
             --source-run-id "$SOURCE_RUN_ID" \
             --source-run-attempt "$SOURCE_RUN_ATTEMPT"
 
-      - name: Persist append-only Research Ledger to main-phase2
+      - name: Persist append-only Research Ledger to its dedicated repository branch
         if: github.ref == 'refs/heads/main-phase2'
         shell: bash
         run: |
           set -euo pipefail
+          ledger_snapshot="$RUNNER_TEMP/RESEARCH_LEDGER_V1.jsonl"
+          cp "$LEDGER_PATH" "$ledger_snapshot"
+          git fetch --no-tags origin "$LEDGER_BRANCH"
+          rm -f "$LEDGER_PATH"
+          git checkout -B "$LEDGER_BRANCH" FETCH_HEAD
+          mkdir -p "$(dirname "$LEDGER_PATH")"
+          cp "$ledger_snapshot" "$LEDGER_PATH"
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add "$LEDGER_PATH"
           if git diff --cached --quiet; then
             echo "Research Ledger already contains these records; nothing to persist."
           else
-            git commit -m "chore(governance): persist P2-A Research Ledger"
-            git push origin HEAD:main-phase2
+            git commit -m "chore(governance): append P2-A Research Ledger records"
+            git push origin "HEAD:refs/heads/$LEDGER_BRANCH"
           fi
 
       - name: Upload P2-A provenance and Research Ledger evidence

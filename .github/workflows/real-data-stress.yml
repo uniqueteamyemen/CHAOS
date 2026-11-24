@@ -11,6 +11,7 @@ on:
     paths:
       - 'real_data_stress_pipeline/**'
       - '!real_data_stress_pipeline/results/**'
+      - '!real_data_stress_pipeline/contracts/p2_a_magnitude_provenance_recovery_v1.json'
       - 'structural_engine/isolated_break_detector_v1/**.py'
       - 'AGENTS.md'
       - 'LICENSE'
