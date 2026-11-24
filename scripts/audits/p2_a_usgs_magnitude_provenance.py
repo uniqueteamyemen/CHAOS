@@ -192,7 +192,6 @@ def run(source_root,out_dir,ledger_path,run_id,attempt):
                             "detector_modified":False,"experiments_archive_modified":False}}
     out_dir.mkdir(parents=True,exist_ok=True)
     summary_path=out_dir/"P2_A_MAGNITUDE_PROVENANCE_SUMMARY.json"
-    summary_path.write_text(json.dumps(result,ensure_ascii=False,indent=2,sort_keys=True)+"\n",encoding="utf-8")
     contract="real_data_stress_pipeline/contracts/p2_a_magnitude_provenance_recovery_v1.json"
     refs=[summary_path.relative_to(out_dir).as_posix()]+[b["output_path"] for b in belts]+[r["path"] for r in requests]
     source_ref=f"GitHub Actions artifact: chaos-p2-domain-null-{run_id}-{attempt}"
