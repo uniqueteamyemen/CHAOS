@@ -59,6 +59,7 @@ This is a deterministic snapshot builder, not yet a storage service or integrati
 - The envelope has its own JSON Schema: `observation_foundation/contracts/observation_time_support_v1.schema.json`. It is not embedded in `source_record_observation_v1.schema.json` because period coverage belongs to a series/collection, not an individual observation.
 - `normalize_time_support(...)` is the runtime semantic validator; it preserves native year/month/day labels or timezone-aware instants, defaults `boundary_semantics` to `SOURCE_DECLARED`, and rejects missing, reversed, blank, or unrecognized values.
 - `build_epoch_snapshot(..., time_support=...)` persists this envelope in the content-addressed manifest. An omitted envelope is retained as `NOT_DECLARED`; a reversed interval is rejected. The envelope does not participate in individual `logical_record_id` or `canonical_record_id` hashes.
+- The WDI Trade adapter now passes the extract-summary `years` list through `normalize_time_support()` before publishing the adapter summary. It first checks that the declared years are unique integers and exactly cover the observed year set; the envelope uses the declared range, `annual` frequency, and `SOURCE_EXTRACT_DECLARED` semantics. The envelope remains in the adapter/collection summary, not copied into each DomainState record.
 - Same-`available_at` conflicting versions remain `AMBIGUOUS_SAME_AVAILABLE_AT`; no lexical source-revision or ingest-order tie-break is introduced.
 
 ## Verification commands
