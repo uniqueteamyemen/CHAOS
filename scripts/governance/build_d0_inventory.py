@@ -31,6 +31,10 @@ CORE_ARTIFACTS = {
     "tsconfig.json": "typescript_ui_build_contract",
     "docs/PHASE1_DETECTOR_FREEZE.md": "frozen_detector_decision",
     "docs/P2.2_STATISTICAL_AUDIT_AR.md": "real_data_audit",
+    "docs/ENGINE1_DISCOVERY_INTEGRATION_STATUS_V1_AR.md": "engine1_discovery_integration_status",
+    "docs/P2_PHASE_CLOSE_STATUS_AR.md": "p2_phase_close_status",
+    "docs/MP0_REPOSITORY_STATE_AND_EXECUTION_RECOVERY_2026-11-24_AR.md": "mp0_repository_recovery_report",
+
     "docs/EVENT_PATH_PREDICTION_MECHANICS_AUDIT_V1_AR.md": "event_path_audit",
     "docs/EVENT_PATH_ENGINE_SPEC_V1_AR.md": "event_path_contract",
     "docs/EVENT_PATH_KERNEL_REPAIR_V2_AR.md": "event_path_repair",
