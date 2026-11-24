@@ -88,6 +88,5 @@ jobs:
           retention-days: 90
           if-no-files-found: warn
           path: |
-            artifacts/p2_a/input/*.zip
             artifacts/p2_a/mc_assessment/
             artifacts/p2_a/mc_assessment_stdout.json
