@@ -46,6 +46,16 @@ CORE_ARTIFACTS = {
     "structural_engine/isolated_break_detector_v1/engine_markov_cusum.py": "frozen_markov_detector",
     "structural_engine/isolated_break_detector_v1/tests/test_contract.py": "detector_contract_tests",
     "real_data_stress_pipeline/run_pipeline.py": "real_data_pipeline",
+    "real_data_stress_pipeline/production_pipeline.py": "deterministic_p2_production_orchestrator",
+    "real_data_stress_pipeline/contracts/seismic_declustering_contract_v1.json": "seismic_declustering_contract",
+    "real_data_stress_pipeline/contracts/seismic_null_model_contract_v1.json": "seismic_domain_null_contract",
+    "real_data_stress_pipeline/diagnostics/gardner_knopoff.py": "experimental_seismic_declustering_implementation",
+    "scripts/audits/p2_2_3_domain_null_and_declustering.py": "domain_specific_null_and_catalog_audit",
+    "scripts/audits/p2_2_3_markov_real_data_behavior.py": "read_only_markov_behavior_audit",
+    "scripts/audits/p2_2_4_markov_injected_break_power.py": "injected_break_power_audit",
+    "tests/audits/test_p2_production_pipeline.py": "p2_production_pipeline_tests",
+    "tests/audits/test_p2_2_3_domain_null_audit_helpers.py": "domain_null_audit_tests",
+
     "real_data_stress_pipeline/config/pipeline.json": "real_data_pipeline_config",
     "real_data_stress_pipeline/tests/test_pipeline.py": "pipeline_tests",
     "chaos_governance_kernel/core.py": "governance_kernel_core",
@@ -90,6 +100,22 @@ def git_output(*args: str) -> str:
         capture_output=True, text=True,
     )
     return proc.stdout.strip()
+
+
+def resolve_commit_ref(branch: str, fallback: str) -> str:
+    """Resolve a current branch head when fetched; otherwise retain its audited SHA."""
+    for ref in (f"refs/remotes/origin/{branch}", f"refs/heads/{branch}"):
+        proc = subprocess.run(
+            ["git", "rev-parse", "--verify", f"{ref}^{{commit}}"],
+            cwd=ROOT,
+            check=False,
+            capture_output=True,
+            text=True,
+        )
+        candidate = proc.stdout.strip()
+        if proc.returncode == 0 and len(candidate) == 40:
+            return candidate
+    return fallback
 
 
 def tracked_paths() -> list[str]:
@@ -323,10 +349,19 @@ def build() -> dict[str, Any]:
         "repository": "uniqueteamyemen/CHAOS",
         "checkout": checkout,
         "audited_refs": {
-            "main_phase2": "1b941282a4a415230a65098e066043fbd6a19155",
+            "main_phase2": resolve_commit_ref(
+                "main-phase2", "72edc44b183e0c7c92e1edae362426d189e0c886"
+            ),
             "archive_phase1_detector_freeze": "51e4278309b7d32917b85903323a63f81d9e9b6a",
-            "fix_p2_2_3_gem_snapshot": "094ab649394f0675b0d2ff2883c322612c548855",
-            "diag_markov_real_data_behavior": "ec84b3f1aca1e43121588031ed7efe4375679cfb",
+            "governance_p0_baseline_audit": resolve_commit_ref(
+                "governance/p0-baseline-audit-v1", "6fd7400a1c945feecf34c03d29ee95ace157774f"
+            ),
+            "fix_p2_2_3_gem_snapshot": resolve_commit_ref(
+                "fix/p2-2-3-gem-snapshot", "995487aa394d1b3bee77c1b62db55b7fd75329cd"
+            ),
+            "diag_markov_real_data_behavior": resolve_commit_ref(
+                "diag/markov-real-data-behavior", "fd758a157aaa7381957e4316f604f5134ac1b1ec"
+            ),
             "domain_neutral_observation_kernel": "e9c58c74296481af6553e13610ae1a7e37071b3a",
             "domain_neutral_residual_contract": "825212d385016877be94d0d03f79d0435dd270b9",
         },
@@ -359,10 +394,10 @@ def build() -> dict[str, Any]:
         "observed_governance": {
             "ruleset_id": 27488330,
             "ruleset_name": "main-phase2",
-            "ruleset_updated_at": "2026-11-20T18:48:16.764+03:00",
+            "ruleset_updated_at": "2026-11-21T22:11:43.748+03:00",
             "enforcement": "active",
             "target": "refs/heads/main-phase2",
-            "required_status_checks": ["stress", "experiments-immutable"],
+            "required_status_checks": ["experiments-immutable"],
             "experiments_immutable_workflow_exists": True,
             "experiments_immutable_is_required_check": True,
             "governance_artifact_workflow_exists": True,
@@ -388,8 +423,8 @@ def build() -> dict[str, Any]:
             "P0 performs static inventory and does not execute research workflows or certify scientific validity.",
             "Static source references show wiring, not necessarily runtime reachability for every code path.",
             "Branch-protection read endpoint was unavailable through the connected integration; ruleset state was read directly.",
-            "Ruleset/tag protection changes are not made by this workflow.",
-            "The 2026-11-20 ruleset read shows experiments-immutable newly required; permanent bypass and missing PR/approval rules remain unresolved.",
+            "Ruleset/tag protection changes are not made by this workflow; repository access, bypass actors, and approval policy are not modified by this MP0 work.",
+            "The 2026-11-21 live ruleset read shows experiments-immutable as the only required status check; bypass remains always and no pull-request or independent-approval rule was observed. This owner-approved access posture is recorded without changing repository permissions.",
             "The inventory must be regenerated after relevant source or governance changes.",
             "The domain_neutral.py branch divergence is resolved as KEEP_BOTH_ARCHIVED; neither experiments/** variant is changed or promoted."
         ],
@@ -409,7 +444,7 @@ def build() -> dict[str, Any]:
         ],
         "decision": {
             "status": "P0_IN_PROGRESS",
-            "summary": "D0 captures runtime and contract references; P0 still requires semantic contract reconciliation and external ruleset/tag enforcement."
+            "summary": "D0 records the current repository/runtime baseline and branch heads. P0 semantic reconciliation remains open; access-control enforcement changes are excluded by explicit owner instruction. Missing cross-domain assets are tracked as UNKNOWN and do not block independent cohort-scoped P2 execution."
         },
     }
     write_json(MANIFEST_PATH, manifest)
