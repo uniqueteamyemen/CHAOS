@@ -44,7 +44,8 @@
   "decision_states": [
     "FAIL_RECONCILIATION",
     "PARTIAL_MAG_SOURCE_MISSING_REQUIRES_REVIEW",
-    "SOURCE_MIXTURE_REQUIRES_STRATIFICATION",
+    "MAGNITUDE_TYPE_MISSING_REQUIRES_REVIEW",
+    "SOURCE_OR_MAG_TYPE_MIXTURE_REQUIRES_STRATIFICATION",
     "SOURCE_HOMOGENEOUS_CANDIDATE_PENDING_CALIBRATION"
   ],
   "downstream_gate": "Mc(t,region) candidate analysis may start only after every accepted event is reconciled and magSource and magType are present; stratify by both magnitude source and magnitude type. Never infer magSource from network code.",
