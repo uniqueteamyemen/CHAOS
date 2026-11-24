@@ -8,6 +8,7 @@ on:
       - 'scripts/governance/**'
       - 'chaos_governance_kernel/**'
       - 'docs/CHAOS_EXECUTION_PLAN_V2_AR.md'
+      - 'docs/**'
       - '.github/workflows/chaos-governance-artifacts.yml'
   push:
     branches:
@@ -16,6 +17,7 @@ on:
       - 'scripts/governance/**'
       - 'chaos_governance_kernel/**'
       - 'docs/CHAOS_EXECUTION_PLAN_V2_AR.md'
+      - 'docs/**'
       - '.github/workflows/chaos-governance-artifacts.yml'
   workflow_dispatch:
 
