@@ -55,8 +55,10 @@ This is a deterministic snapshot builder, not yet a storage service or integrati
 ## Revision status and native time support
 
 - Each source-record version carries `revision_status` as a provider-native string or explicit `null` when the provider exposes no revision state. It participates in the canonical version digest; it does not change the stable logical record ID.
-- Each source/dataset/series declares `time_support` separately from its individual observations: `observation_period_start`, `observation_period_end`, and `native_frequency`. Boundaries are source-declared and are never inferred from the first/last rows.
-- `build_epoch_snapshot(..., time_support=...)` persists this envelope in the content-addressed manifest. An omitted envelope is retained as `NOT_DECLARED`; a reversed interval is rejected.
+- Each source/dataset/series declares `time_support` separately from its individual observations: `observation_period_start`, `observation_period_end`, and `native_frequency`.
+- The envelope has its own JSON Schema: `observation_foundation/contracts/observation_time_support_v1.schema.json`. It is not embedded in `source_record_observation_v1.schema.json` because period coverage belongs to a series/collection, not an individual observation.
+- `normalize_time_support(...)` is the runtime semantic validator; it preserves native year/month/day labels or timezone-aware instants, defaults `boundary_semantics` to `SOURCE_DECLARED`, and rejects missing, reversed, blank, or unrecognized values.
+- `build_epoch_snapshot(..., time_support=...)` persists this envelope in the content-addressed manifest. An omitted envelope is retained as `NOT_DECLARED`; a reversed interval is rejected. The envelope does not participate in individual `logical_record_id` or `canonical_record_id` hashes.
 - Same-`available_at` conflicting versions remain `AMBIGUOUS_SAME_AVAILABLE_AT`; no lexical source-revision or ingest-order tie-break is introduced.
 
 ## Verification commands

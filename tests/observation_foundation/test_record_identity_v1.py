@@ -1,4 +1,6 @@
+import json
 import unittest
+from pathlib import Path
 
 from observation_foundation.record_identity_v1 import (
     prepare_source_record,
@@ -6,6 +8,7 @@ from observation_foundation.record_identity_v1 import (
     build_vintage_chains,
     select_vintages_as_of,
     build_epoch_snapshot,
+    normalize_time_support,
 )
 
 
@@ -343,6 +346,113 @@ class SourceRecordIdentityTests(unittest.TestCase):
                 [dict(prepared, untracked_metadata="not in source contract")],
                 "2026-01-02T00:00:00Z",
             )
+
+
+    def test_time_support_schema_is_series_level_not_record_level(self):
+        schema_path = (
+            Path(__file__).resolve().parents[2]
+            / "observation_foundation"
+            / "contracts"
+            / "observation_time_support_v1.schema.json"
+        )
+        schema = json.loads(schema_path.read_text(encoding="utf-8"))
+        self.assertEqual(schema["type"], "object")
+        self.assertFalse(schema["additionalProperties"])
+        self.assertEqual(
+            set(schema["required"]),
+            {
+                "observation_period_start",
+                "observation_period_end",
+                "native_frequency",
+            },
+        )
+        self.assertEqual(
+            set(schema["properties"]),
+            {
+                "observation_period_start",
+                "observation_period_end",
+                "native_frequency",
+                "boundary_semantics",
+            },
+        )
+        record_schema_path = (
+            Path(__file__).resolve().parents[2]
+            / "observation_foundation"
+            / "contracts"
+            / "source_record_observation_v1.schema.json"
+        )
+        record_schema = json.loads(
+            record_schema_path.read_text(encoding="utf-8")
+        )
+        self.assertNotIn("observation_period_start", record_schema["properties"])
+        self.assertNotIn("observation_period_end", record_schema["properties"])
+
+    def test_time_support_accepts_native_annual_boundaries_and_default_semantics(self):
+        normalized = normalize_time_support({
+            "observation_period_start": "2000",
+            "observation_period_end": "2024",
+            "native_frequency": "annual",
+        })
+        self.assertEqual(normalized, {
+            "observation_period_start": "2000",
+            "observation_period_end": "2024",
+            "native_frequency": "annual",
+            "boundary_semantics": "SOURCE_DECLARED",
+        })
+
+    def test_time_support_preserves_monthly_and_timezone_aware_boundaries(self):
+        monthly = normalize_time_support({
+            "observation_period_start": "2000-01",
+            "observation_period_end": "2024-12",
+            "native_frequency": "monthly",
+            "boundary_semantics": "INCLUSIVE_PERIOD_LABELS",
+        })
+        event = normalize_time_support({
+            "observation_period_start": "2026-01-01T03:00:00+03:00",
+            "observation_period_end": "2026-01-31T23:59:59Z",
+            "native_frequency": "event",
+        })
+        self.assertEqual(monthly["observation_period_start"], "2000-01")
+        self.assertEqual(monthly["observation_period_end"], "2024-12")
+        self.assertEqual(monthly["boundary_semantics"], "INCLUSIVE_PERIOD_LABELS")
+        self.assertEqual(event["observation_period_start"], "2026-01-01T00:00:00Z")
+
+    def test_time_support_rejects_missing_unknown_and_empty_fields(self):
+        with self.assertRaisesRegex(ValueError, "time_support_fields_missing"):
+            normalize_time_support({
+                "observation_period_start": "2000",
+                "native_frequency": "annual",
+            })
+        with self.assertRaisesRegex(ValueError, "time_support_fields_invalid"):
+            normalize_time_support({
+                "observation_period_start": "2000",
+                "observation_period_end": "2024",
+                "native_frequency": "annual",
+                "retrieved_at": "2026-01-01T00:00:00Z",
+            })
+        with self.assertRaisesRegex(ValueError, "native_frequency"):
+            normalize_time_support({
+                "observation_period_start": "2000",
+                "observation_period_end": "2024",
+                "native_frequency": " ",
+            })
+
+    def test_time_support_is_not_added_to_record_identity_payload(self):
+        record = base_record()
+        first = prepare_source_record(record)
+        series_support = normalize_time_support({
+            "observation_period_start": "2026-01-01",
+            "observation_period_end": "2026-12-31",
+            "native_frequency": "event",
+        })
+        snapshot = build_epoch_snapshot(
+            [first],
+            "2026-02-01T00:00:00Z",
+            time_support=series_support,
+        )
+        self.assertNotIn("observation_period_start", first)
+        self.assertNotIn("observation_period_end", first)
+        self.assertEqual(snapshot["manifest"]["time_support"], series_support)
 
 
 if __name__ == "__main__":

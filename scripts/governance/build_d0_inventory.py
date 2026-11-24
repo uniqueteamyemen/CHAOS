@@ -75,6 +75,7 @@ CORE_ARTIFACTS = {
     "observation_foundation/record_identity_v1.py": "deterministic_record_identity_and_vintages",
     "observation_foundation/lifecycle_v1.py": "hypothesis_and_input_lifecycle",
     "observation_foundation/contracts/source_record_observation_v1.schema.json": "source_record_observation_contract",
+    "observation_foundation/contracts/observation_time_support_v1.schema.json": "series_level_observation_time_support_contract",
     "observation_foundation/contracts/hypothesis_lifecycle_v1.schema.json": "hypothesis_lifecycle_contract",
     "observation_foundation/contracts/input_disposition_v1.schema.json": "input_disposition_contract",
     "tests/observation_foundation/test_record_identity_v1.py": "record_identity_tests",
