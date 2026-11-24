@@ -50,7 +50,16 @@ class P2AMagnitudeProvenanceTests(unittest.TestCase):
               {"id":"us124","time":"2020-01-02T00:00:00Z","mag":"5.1","magType":"mb","magSource":"ak","net":"us"}]
         with tempfile.TemporaryDirectory() as d:
             result=audit.reconcile("test",accepted,rows,Path(d))
-        self.assertEqual(result["status"],"SOURCE_MIXTURE_REQUIRES_STRATIFICATION")
+        self.assertEqual(result["status"],"SOURCE_OR_MAG_TYPE_MIXTURE_REQUIRES_STRATIFICATION")
+
+    def test_magnitude_type_mixture_requires_stratification(self):
+        accepted={"us123":{"time":"2020-01-01T00:00:00Z","mag":5.0,"type":"mb"},
+                  "us124":{"time":"2020-01-02T00:00:00Z","mag":5.1,"type":"mw"}}
+        rows=[{"id":"us123","time":"2020-01-01T00:00:00Z","mag":"5.0","magType":"mb","magSource":"us","net":"us"},
+              {"id":"us124","time":"2020-01-02T00:00:00Z","mag":"5.1","magType":"mw","magSource":"us","net":"us"}]
+        with tempfile.TemporaryDirectory() as d:
+            result=audit.reconcile("test",accepted,rows,Path(d))
+        self.assertEqual(result["status"],"SOURCE_OR_MAG_TYPE_MIXTURE_REQUIRES_STRATIFICATION")
 
     def test_magnitude_type_mixture_requires_stratification(self):
         accepted={"us123":{"time":"2020-01-01T00:00:00Z","mag":5.0,"type":"mb"},

@@ -119,9 +119,11 @@ def reconcile(belt_id, accepted, rows, out_dir):
     with target.open("w",encoding="utf-8",newline="") as f:
         writer=csv.DictWriter(f,fieldnames=fields); writer.writeheader(); writer.writerows(enriched)
     counts=Counter(r["mag_source"] for r in enriched); missing_source=counts.get("missing",0)
+    type_counts=Counter(r["mag_type"] for r in enriched); missing_type=type_counts.get("missing",0)
     status=("FAIL_RECONCILIATION" if missing or conflicts or mismatches else
             "PARTIAL_MAG_SOURCE_MISSING_REQUIRES_REVIEW" if missing_source else
-            "SOURCE_MIXTURE_REQUIRES_STRATIFICATION" if len(counts)>1 else
+            "MAGNITUDE_TYPE_MISSING_REQUIRES_REVIEW" if missing_type else
+            "SOURCE_OR_MAG_TYPE_MIXTURE_REQUIRES_STRATIFICATION" if len(counts)>1 or len(type_counts)>1 else
             "SOURCE_HOMOGENEOUS_CANDIDATE_PENDING_CALIBRATION")
     return {"belt_id":belt_id,"accepted_events":len(accepted),"matched_events":len(enriched),
             "missing_event_ids":len(missing),"missing_event_ids_sample":missing[:25],
