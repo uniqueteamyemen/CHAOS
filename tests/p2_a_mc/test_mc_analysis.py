@@ -58,6 +58,14 @@ class McEstimatorTests(unittest.TestCase):
   self.assertEqual(gates["CANDIDATE"]["events_retained"],10)
   self.assertEqual(gates["UNRESOLVED"]["events_retained"],17)
   self.assertAlmostEqual(sum(x["event_share_of_population"] for x in threshold["gate_event_distribution"]),27/35,places=5)
+ def test_global_top_strata_preserve_real_belt_identity(self):
+  strata=[{"belt_id":"belt_a","belt_name":"Belt A","time_window":{"start_year":2000,"end_year_exclusive":2005},
+   "mag_source":"us","mag_type":"mb","event_count":100,
+   "mc":{"status":"GFT_NOT_PASSED","mc_estimate":None,"max_curvature_mc":5.0,"gft_mc":None},
+   "threshold_sensitivity":[{"analysis_threshold":t,"events_retained":100,"threshold_gate":"UNRESOLVED"} for t in mc.THRESHOLDS]}]
+  top=mc.top_strata_records(strata,"all_belts","All belts",10)
+  self.assertEqual(top[0]["belt_id"],"belt_a")
+  self.assertEqual(top[0]["belt_name"],"Belt A")
  def test_known_exclusion_is_explicitly_documented(self):
   self.assertEqual(mc.KNOWN_EXCLUSION["event_id"],"nc21364840")
   self.assertEqual(mc.KNOWN_EXCLUSION["associated_merged_event_id"],"nc40157006")
