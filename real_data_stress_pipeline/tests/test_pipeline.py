@@ -4,10 +4,52 @@ from io import BytesIO
 from openpyxl import Workbook
 
 from real_data_stress_pipeline.run_pipeline import (
-    g0, g1, boot, parse_pink, longest_run, month, label_month, returns, stationary_sample, wilson, series_category, shock_eval, applicable_shock_series, aggregate,
+    g0, g1, boot, parse_pink, longest_run, month, label_month, returns,
+    stationary_sample, wilson, series_category, shock_eval, applicable_shock_series,
+    aggregate, make_time_support, time_support_registry, TIME_SUPPORT_SCHEMA,
 )
 
 class StressPipelineContractTests(unittest.TestCase):
+    def test_time_support_registry_matches_schema_and_labels_windows_honestly(self):
+        registry = time_support_registry()
+        self.assertEqual(registry["schema_id"], TIME_SUPPORT_SCHEMA["$id"])
+        self.assertEqual(registry["scope"], "source_collection")
+        self.assertEqual(registry["record_identity_hash_impact"], "NONE")
+
+        allowed = set(TIME_SUPPORT_SCHEMA["properties"])
+        sources = registry["sources"]
+        for source_name in ("pink_sheet", "gem"):
+            support = sources[source_name]["time_support"]
+            self.assertEqual(set(support), allowed)
+            self.assertTrue(set(TIME_SUPPORT_SCHEMA["required"]).issubset(support))
+            self.assertFalse(sources[source_name]["source_coverage_status"].startswith("ASSERTED"))
+
+        pink = sources["pink_sheet"]["time_support"]
+        self.assertEqual(pink["observation_period_start"], "1980-01")
+        self.assertEqual(pink["observation_period_end"], "2024-12")
+        self.assertIn("ANALYSIS_FILTER_WINDOW", pink["boundary_semantics"])
+
+        gem = sources["gem"]["time_support"]
+        self.assertEqual(gem["observation_period_start"], "1990-01")
+        self.assertEqual(gem["observation_period_end"], "2023-12")
+        self.assertIn("API_QUERY_WINDOW", gem["boundary_semantics"])
+
+        belts = sources["usgs"]["by_belt"]
+        self.assertEqual(len(belts), 5)
+        for belt in belts.values():
+            support = belt["time_support"]
+            self.assertEqual(set(support), allowed)
+            self.assertEqual(support["native_frequency"], "event_timestamp")
+            self.assertEqual(support["observation_period_start"], "1980-01-01T00:00:00Z")
+            self.assertEqual(support["observation_period_end"], "2025-01-01T00:00:00Z")
+            self.assertIn("END_EXCLUSIVE", support["boundary_semantics"])
+            self.assertIn("NOT_MAGNITUDE_COMPLETENESS", support["boundary_semantics"])
+            self.assertFalse(belt["magnitude_completeness_status"] == "ESTABLISHED")
+
+    def test_time_support_rejects_empty_schema_values(self):
+        with self.assertRaisesRegex(ValueError, "empty_required_value"):
+            make_time_support("", "2024-12", "monthly", "TEST")
+
     def test_world_bank_month_encodings(self):
         self.assertEqual(month("1980M01"), 1980 * 12)
         self.assertEqual(month("1980-M1"), 1980 * 12)

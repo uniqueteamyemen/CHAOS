@@ -52,6 +52,23 @@ class ProductionPipelineTests(unittest.TestCase):
             "manifest_seed": manifest_seed,
         }
 
+    def test_manifest_seed_freezes_time_support_contract(self):
+        state = self._frozen_prepare_state()
+        manifest_seed = state["manifest_seed"]
+        self.assertEqual(
+            manifest_seed["observation_time_support"],
+            p2.time_support_registry(),
+        )
+        production._verify_manifest_configuration(manifest_seed)
+
+        drifted = copy.deepcopy(p2.time_support_registry())
+        drifted["sources"]["pink_sheet"]["time_support"]["observation_period_start"] = "1970-01"
+        with patch.object(p2, "time_support_registry", return_value=drifted):
+            with self.assertRaisesRegex(
+                production.IntegrityError, "observation_time_support_mismatch"
+            ):
+                production._verify_manifest_configuration(manifest_seed)
+
     def _assert_runtime_entrypoints_reject(
         self, state, expected_error, environ, patcher_factories=()
     ):
@@ -529,6 +546,10 @@ class ProductionPipelineTests(unittest.TestCase):
                         self.assertEqual(manifest["distributed_evaluation"]["verified_series"], 5)
                         self.assertEqual(manifest["distributed_evaluation"]["missing_series"], 0)
                         self.assertEqual(manifest["distributed_evaluation"]["duplicate_series"], 0)
+                        self.assertEqual(
+                            manifest["observation_time_support"],
+                            p2.time_support_registry(),
+                        )
                         frozen = json.loads(
                             (artifact_root / "frozen_candidates.json").read_text(encoding="utf-8")
                         )

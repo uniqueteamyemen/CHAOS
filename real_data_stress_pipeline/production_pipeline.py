@@ -334,10 +334,11 @@ def _execution_parameters() -> dict[str, int | float]:
 
 def _manifest_seed(contract: dict[str, Any], dependencies: dict[str, Any]) -> dict[str, Any]:
     return {
-        "version": "1.6",
+        "version": "1.7",
         "pipeline_config": p2.PIPELINE_CONFIG,
         "gem_config": p2.GEM_CONFIG,
         "seismic_config": p2.SEISMIC_CONFIG,
+        "observation_time_support": p2.time_support_registry(),
         "run_timestamp_utc": p2.stamp(),
         "git_commit": os.getenv("GITHUB_SHA", "local-unresolved"),
         "branch": os.getenv("GITHUB_REF_NAME", "local"),
@@ -560,6 +561,12 @@ def _verify_manifest_configuration(manifest_seed: dict[str, Any]) -> None:
             raise IntegrityError(f"execution_config_missing:{label}")
         if json_bytes(manifest_seed[key]) != json_bytes(actual):
             raise IntegrityError(f"execution_config_mismatch:{label}")
+
+    frozen_time_support = manifest_seed.get("observation_time_support")
+    if frozen_time_support is None:
+        raise IntegrityError("observation_time_support_missing")
+    if json_bytes(frozen_time_support) != json_bytes(p2.time_support_registry()):
+        raise IntegrityError("observation_time_support_mismatch")
 
     contract_path = p2.HERE / "shock_event_contract.json"
     if not contract_path.is_file():
@@ -922,6 +929,7 @@ def aggregate() -> dict[str, Any]:
         p2.HERE / "config" / "pipeline.json",
         p2.HERE / "config" / "gem_indicators.json",
         p2.HERE / "config" / "seismic_belts.json",
+        p2.TIME_SUPPORT_SCHEMA_PATH,
         p2.HERE / "README_AR.md",
         p2.DEPENDENCIES,
         FROZEN_CANDIDATES,
