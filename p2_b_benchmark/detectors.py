@@ -42,28 +42,62 @@ def focus(values):
     return {"hits":hits,"metadata":{"status":"OK","claim":"FOCuS-inspired bounded candidate scan","windows":list(windows),"threshold":4.25}}
 
 def rfpop(values):
-    """R-FPOP-inspired robust online segmentation using a bounded candidate set."""
+    """R-FPOP-inspired robust online segmentation with O(80*n) bounded candidates.
+
+    A winsorized quadratic segment cost is evaluated from prefix sums, avoiding
+    repeated scans of historical windows. It is a documented adaptation, not a
+    paper-conformance claim for the reference R-FPOP algorithm.
+    """
     x, centre, scale = _base(values)
-    if _abstain(scale): return {"hits": [], "metadata": {"status":"ABSTAIN","reason":"ZERO_QUIET_SCALE"}}
-    y=(x-centre)/scale; hits=[]; candidates=[QUIET]; min_seg=8
-    penalty=8.0*math.log(max(len(x),2))
-    for t in range(QUIET+2*min_seg,len(x)):
-        candidates.append(t-min_seg); candidates=candidates[-80:]
-        left_all=y[QUIET:t+1]; med_all=float(np.median(left_all))
-        base=float(np.sum((left_all-med_all)**2))
-        best_gain=0.0; best_s=None
+    if _abstain(scale):
+        return {"hits": [], "metadata": {"status": "ABSTAIN", "reason": "ZERO_QUIET_SCALE"}}
+    y = np.clip((x - centre) / scale, -4.0, 4.0)
+    prefix = np.concatenate(([0.0], np.cumsum(y, dtype=float)))
+    prefix2 = np.concatenate(([0.0], np.cumsum(y * y, dtype=float)))
+
+    def segment_sse(start, end):
+        # Half-open [start, end), using only already observed points.
+        count = end - start
+        if count <= 0:
+            return 0.0
+        total = prefix[end] - prefix[start]
+        total2 = prefix2[end] - prefix2[start]
+        return max(0.0, float(total2 - total * total / count))
+
+    hits = []
+    candidates = [QUIET]
+    min_seg = 8
+    penalty = 8.0 * math.log(max(len(x), 2))
+    for t in range(QUIET + 2 * min_seg - 1, len(x)):
+        split = t - min_seg + 1
+        if split >= QUIET + min_seg:
+            candidates.append(split)
+        candidates = candidates[-80:]
+        base_loss = segment_sse(QUIET, t + 1)
+        best_gain = 0.0
+        best_split = None
         for s in candidates:
-            left,right=y[QUIET:s],y[s:t+1]
-            if left.size<min_seg or right.size<min_seg: continue
-            ml,mr=float(np.median(left)),float(np.median(right))
-            loss=float(np.sum((left-ml)**2)+np.sum((right-mr)**2))
-            gain=base-loss-penalty
-            if gain>best_gain: best_gain,best_s=gain,s
-        if best_s is not None and best_gain>0 and (not hits or t-hits[-1]["index"]>=12):
-            sign=1 if np.median(y[best_s:t+1])>=np.median(y[QUIET:best_s]) else -1
-            hits.append({"index":t,"sign":sign,"detector":"rfpop_robust_segment","gain":best_gain})
-            candidates=[t]
-    return {"hits":hits,"metadata":{"status":"OK","claim":"R-FPOP-inspired bounded robust segmentation","penalty":penalty,"min_segment":min_seg,"candidate_cap":80}}
+            if s - QUIET < min_seg or (t + 1) - s < min_seg:
+                continue
+            gain = base_loss - segment_sse(QUIET, s) - segment_sse(s, t + 1) - penalty
+            if gain > best_gain:
+                best_gain, best_split = gain, s
+        if best_split is not None and (not hits or t - hits[-1]["index"] >= 12):
+            left_mean = (prefix[best_split] - prefix[QUIET]) / (best_split - QUIET)
+            right_mean = (prefix[t + 1] - prefix[best_split]) / (t + 1 - best_split)
+            hits.append({
+                "index": t, "sign": 1 if right_mean >= left_mean else -1,
+                "detector": "rfpop_robust_segment", "gain": float(best_gain),
+            })
+            candidates = [t + 1]
+    return {
+        "hits": hits,
+        "metadata": {
+            "status": "OK", "claim": "R-FPOP-inspired bounded winsorized segmentation",
+            "loss": "winsorized_quadratic", "winsor_cap_sigma": 4.0,
+            "penalty": penalty, "min_segment": min_seg, "candidate_cap": 80,
+        },
+    }
 
 def bocpd(values):
     """Bayesian online change-point detection with a Gaussian predictive model."""
