@@ -16,7 +16,7 @@
 
 ### P2-A — فحص البيانات الزلزالية / USGS
 
-<badge>UNRESOLVED</badge>
+**[UNRESOLVED]**
 
 متوقف مرحلياً بعد PR #47. لم يُعتمد null زلزالي، ولا يجوز وصف نتائج الفحص الزلزالي بأنها تحقق إنذار أو صلاحية تشغيلية. تبقى أسئلة اكتمال الكتالوج، والتسجيل، والـcompleteness، والـnull الزمني غير محسومة.
 
@@ -24,7 +24,7 @@
 
 ### P2-B — منافسة خط الأساس الاقتصادي على 509 سلسلة
 
-<badge>COMPLETED</badge>
+**[COMPLETED]**
 
 أُغلقت ودمجت عبر PR #48 في `main-phase2` عند `3c8eab34`. cohort المثبت: 509 سلاسل (51 Pink Sheet و458 GEM)، منها 359 مؤهلة لتشخيصات stationary-bootstrap null (48 Pink Sheet و311 GEM).
 
@@ -37,7 +37,7 @@
 
 ### P2-C — دفعة الكواشف المستقلة
 
-<badge color="success">ACTIVE PHASE</badge>
+**[ACTIVE PHASE]**
 
 هذه هي المرحلة النشطة. تُنفّذ وفق وثيقة [P2-C Detector Batch Plan](docs/P2_C_DETECTOR_BATCH_PLAN_AR.md)، لا وفق فرع P2-B تجريبي سابق.
 
