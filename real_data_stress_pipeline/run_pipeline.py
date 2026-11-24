@@ -23,6 +23,7 @@ GEM_CONFIG=json.loads((HERE/"config"/"gem_indicators.json").read_text(encoding="
 SEISMIC_CONFIG=json.loads((HERE/"config"/"seismic_belts.json").read_text(encoding="utf-8"))
 TIME_SUPPORT_SCHEMA_PATH=ROOT/"observation_foundation"/"contracts"/"observation_time_support_v1.schema.json"
 TIME_SUPPORT_SCHEMA=json.loads(TIME_SUPPORT_SCHEMA_PATH.read_text(encoding="utf-8"))
+TIME_SUPPORT_SCHEMA_RELATIVE_PATH=TIME_SUPPORT_SCHEMA_PATH.relative_to(ROOT).as_posix()
 STATIONARITY_CONFIG=PIPELINE_CONFIG["stationarity"]
 BOOTSTRAP_CONFIG=PIPELINE_CONFIG["bootstrap"]
 STATIONARITY_MIN_OBSERVATIONS=int(PIPELINE_CONFIG["general_g0_min_observations_inclusive"])
@@ -188,7 +189,7 @@ def time_support_registry():
  )
  return {
   "schema_id":TIME_SUPPORT_SCHEMA.get("$id"),
-  "schema_path":TIME_SUPPORT_SCHEMA_PATH.relative_to(ROOT).as_posix(),
+  "schema_path":TIME_SUPPORT_SCHEMA_RELATIVE_PATH,
   "scope":"source_collection",
   "record_identity_hash_impact":"NONE",
   "sources":{
