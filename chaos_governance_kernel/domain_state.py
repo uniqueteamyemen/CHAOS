@@ -161,6 +161,8 @@ def audit_domain_state_file(
         "verify_local_evidence_refs": verify_local_evidence_refs,
         "evidence_ref_status": "NOT_CHECKED_SOURCE_MISSING" if verify_local_evidence_refs else "NOT_CHECKED",
         "evidence_refs_seen": 0,
+        "evidence_records_checked": 0,
+        "evidence_records_without_refs": 0,
         "evidence_refs_external_unverified": 0,
         "evidence_refs_absolute_unverified": 0,
         "evidence_refs_unique_local_paths": 0,
@@ -208,6 +210,9 @@ def audit_domain_state_file(
 
                 base["valid_records"] += 1
                 if verify_local_evidence_refs:
+                    base["evidence_records_checked"] += 1
+                    if not record["evidence_refs"]:
+                        base["evidence_records_without_refs"] += 1
                     for evidence_ref in record["evidence_refs"]:
                         base["evidence_refs_seen"] += 1
                         reference_status, relative_reference = _classify_evidence_reference(
@@ -266,6 +271,8 @@ def audit_domain_state_file(
             base["evidence_ref_status"] = "BLOCKED_NONPORTABLE_ABSOLUTE_PATHS"
         elif base["evidence_refs_external_unverified"]:
             base["evidence_ref_status"] = "BLOCKED_EXTERNAL_EVIDENCE_UNVERIFIED"
+        elif base["evidence_records_without_refs"]:
+            base["evidence_ref_status"] = "BLOCKED_RECORDS_WITHOUT_EVIDENCE_REFS"
         else:
             base["evidence_ref_status"] = "PASS"
     return base
@@ -335,6 +342,7 @@ def build_domain_state_integrity_report(
             "BLOCKED_MISSING_LOCAL_PATHS",
             "BLOCKED_NONPORTABLE_ABSOLUTE_PATHS",
             "BLOCKED_EXTERNAL_EVIDENCE_UNVERIFIED",
+            "BLOCKED_RECORDS_WITHOUT_EVIDENCE_REFS",
             "FAIL_UNSAFE_PATHS",
         }
     ]
@@ -349,12 +357,22 @@ def build_domain_state_integrity_report(
         readiness_conditions.append("NONPORTABLE_OR_EXTERNAL_UNVERIFIED_EVIDENCE_REFERENCES")
     if unsafe_evidence_references:
         readiness_conditions.append("UNSAFE_EVIDENCE_REFERENCES")
+    records_without_evidence_refs = [
+        {"domain_state_file": item["path"], "records": item["evidence_records_without_refs"]}
+        for item in file_reports
+        if item["evidence_records_without_refs"]
+    ]
+    evidence_records_without_refs = sum(
+        item["evidence_records_without_refs"] for item in file_reports
+    )
+    if evidence_records_without_refs:
+        readiness_conditions.append("RECORDS_WITHOUT_EVIDENCE_REFERENCES")
 
     if invalid_paths or empty_paths or unsafe_evidence_references:
         readiness = "FAIL"
     elif missing_paths:
         readiness = "BLOCKED_INCOMPLETE_ASSET_SET"
-    elif missing_evidence_references or nonportable_evidence_files:
+    elif missing_evidence_references or nonportable_evidence_files or evidence_records_without_refs:
         readiness = "BLOCKED_INCOMPLETE_SOURCE_LINEAGE"
     else:
         readiness = "PASS"
@@ -384,6 +402,9 @@ def build_domain_state_integrity_report(
             1 for item in file_reports if item["verify_local_evidence_refs"]
         ),
         "evidence_refs_seen": sum(item["evidence_refs_seen"] for item in file_reports),
+        "evidence_records_checked": sum(item["evidence_records_checked"] for item in file_reports),
+        "evidence_records_without_refs": evidence_records_without_refs,
+        "records_without_evidence_refs": records_without_evidence_refs,
         "evidence_refs_external_unverified": sum(
             item["evidence_refs_external_unverified"] for item in file_reports
         ),

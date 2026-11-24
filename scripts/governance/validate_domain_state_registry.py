@@ -26,6 +26,7 @@ def main() -> int:
         "missing_evidence_references": len(report["missing_evidence_references"]),
         "files_with_unresolved_evidence_refs": len(report["files_with_unresolved_evidence_refs"]),
         "evidence_ref_audit_files": report["evidence_ref_audit_files"],
+        "evidence_records_without_refs": report["evidence_records_without_refs"],
     }, ensure_ascii=False, sort_keys=True))
     # Missing assets or evidence block readiness but remain explicit in the report.
     # Malformed records and unsafe repository-relative paths are a hard CI failure.
