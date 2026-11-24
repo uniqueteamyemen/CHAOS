@@ -1,0 +1,198 @@
+name: CHAOS P2-B — Economic Detector Competition
+
+on:
+  pull_request:
+    branches: [main-phase2]
+    paths:
+      - "p2_b_benchmark/**"
+      - ".github/workflows/p2-b-detector-competition.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: chaos-p2-b-detector-competition-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  detector-competition-shard:
+    name: P2-B shard ${{ matrix.shard }} / 4
+    runs-on: ubuntu-latest
+    timeout-minutes: 240
+    strategy:
+      fail-fast: false
+      max-parallel: 4
+      matrix:
+        shard: [0, 1, 2, 3]
+    env:
+      OMP_NUM_THREADS: "1"
+      OPENBLAS_NUM_THREADS: "1"
+      MKL_NUM_THREADS: "1"
+      NUMEXPR_NUM_THREADS: "1"
+      VECLIB_MAXIMUM_THREADS: "1"
+      PYTHONUNBUFFERED: "1"
+    steps:
+      - name: Checkout exact PR head
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Enforce experiments archive immutability
+        if: github.event_name == 'pull_request'
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: python scripts/guards/check_experiments_immutable.py --base "$BASE_SHA" --head "$GITHUB_SHA"
+      - name: Verify frozen BreakDetectorV1 source blobs
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD:structural_engine/isolated_break_detector_v1/__init__.py)" = "fb7b305c6ec089ff1b120b3e821e10c60c042623"
+          test "$(git rev-parse HEAD:structural_engine/isolated_break_detector_v1/break_detector_v1.py)" = "10426c108b9786b7a565ba1796b943b6d44ee130"
+          test "$(git rev-parse HEAD:structural_engine/isolated_break_detector_v1/engine_fast_ref.py)" = "a19269d1c6a65f55548bbe01b0d2bb2ca27c6834"
+          test "$(git rev-parse HEAD:structural_engine/isolated_break_detector_v1/engine_markov_cusum.py)" = "9ca9bcd3adbc97a1aa296708d929d64fd0e3e81c"
+      - name: Verify P2-B package checksums
+        run: sha256sum --check p2_b_benchmark/SHA256SUMS.txt
+      - name: Install runtime dependencies
+        run: python -m pip install -r real_data_stress_pipeline/requirements.txt
+      - name: Fast contract and causal unit tests
+        run: python -m unittest p2_b_benchmark.tests.test_core -v
+      - name: Download pinned P2.2 prepared artifact
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          curl --fail --location --retry 3 \
+            -H "Authorization: Bearer ${GH_TOKEN}" \
+            -H "Accept: application/vnd.github+json" \
+            https://api.github.com/repos/${GITHUB_REPOSITORY}/actions/artifacts/14857826243/zip \
+            -o /tmp/chaos-p2-prepared-45244943216.zip
+          echo "c83f6e960296fbbdb687650a798959f08cb8d98db68de8ca713d7be278e824fe  /tmp/chaos-p2-prepared-45244943216.zip" | sha256sum --check
+      - name: Run assigned shard
+        run: |
+          set -euo pipefail
+          python -u -m p2_b_benchmark.run \
+            --prepared-zip /tmp/chaos-p2-prepared-45244943216.zip \
+            --null-replicates 99 \
+            --workers 4 \
+            --shard-index "${{ matrix.shard }}" \
+            --shard-count 4 \
+            --emit-shard-rows \
+            --run-id "${GITHUB_RUN_ID}" \
+            --run-attempt "${GITHUB_RUN_ATTEMPT}" \
+            --output-dir artifacts/p2_b_shards
+      - name: Upload shard metrics (no raw observations)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: chaos-p2-b-shard-${{ github.run_id }}-${{ github.run_attempt }}-${{ matrix.shard }}
+          retention-days: 7
+          if-no-files-found: warn
+          path: artifacts/p2_b_shards/shard_${{ matrix.shard }}_of_4.json
+
+  aggregate-and-gate:
+    name: Aggregate P2-B shards and enforce causal gate
+    needs: detector-competition-shard
+    if: ${{ !cancelled() }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      PYTHONUNBUFFERED: "1"
+    steps:
+      - name: Checkout exact PR head
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install aggregation dependency
+        run: python -m pip install -r real_data_stress_pipeline/requirements.txt
+      - name: Download shard artifacts from this run attempt
+        id: download-shards
+        if: always()
+        continue-on-error: true
+        uses: actions/download-artifact@v4
+        with:
+          pattern: chaos-p2-b-shard-${{ github.run_id }}-${{ github.run_attempt }}-*
+          path: artifacts/p2_b_shards
+          merge-multiple: true
+      - name: Aggregate and validate all four shards locally
+        id: aggregate
+        if: always()
+        run: |
+          python -u -m p2_b_benchmark.run \
+            --aggregate-shards artifacts/p2_b_shards \
+            --output-dir artifacts/p2_b
+      - name: Upload final metrics and aggregation diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: chaos-p2-b-economic-detector-competition-${{ github.run_id }}-${{ github.run_attempt }}
+          retention-days: 90
+          if-no-files-found: warn
+          path: |
+            artifacts/p2_b/P2_B_DETECTOR_COMPETITION_V1.json
+            artifacts/p2_b/P2_B_DETECTOR_COMPETITION_V1_AR.md
+            artifacts/p2_b/P2_B_SHARD_AGGREGATION_FAILURE.json
+            artifacts/p2_b/P2_B_SHARD_AGGREGATION_FAILURE_AR.md
+      - name: Publish report and aggregate summary to GitHub Step Summary
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          {
+            echo "# P2-B — Detector competition"
+            if [[ -s artifacts/p2_b/P2_B_DETECTOR_COMPETITION_V1_AR.md ]]; then
+              cat artifacts/p2_b/P2_B_DETECTOR_COMPETITION_V1_AR.md
+            elif [[ -s artifacts/p2_b/P2_B_SHARD_AGGREGATION_FAILURE_AR.md ]]; then
+              cat artifacts/p2_b/P2_B_SHARD_AGGREGATION_FAILURE_AR.md
+            else
+              echo "No final or diagnostic report was generated; inspect aggregate and shard job logs."
+            fi
+            echo
+            echo "## Aggregate summary JSON (no raw series values)"
+            if [[ -s artifacts/p2_b/P2_B_DETECTOR_COMPETITION_V1.json ]]; then
+              echo '```json'
+              python - <<'PY'
+          import json
+          from pathlib import Path
+          report = json.loads(Path("artifacts/p2_b/P2_B_DETECTOR_COMPETITION_V1.json").read_text(encoding="utf-8"))
+          print(json.dumps(report["summary"], ensure_ascii=False, indent=2, sort_keys=True))
+          PY
+              echo '```'
+            elif [[ -s artifacts/p2_b/P2_B_SHARD_AGGREGATION_FAILURE.json ]]; then
+              echo '```json'
+              cat artifacts/p2_b/P2_B_SHARD_AGGREGATION_FAILURE.json
+              echo '```'
+            else
+              echo "Aggregate summary JSON is unavailable."
+            fi
+            echo
+            echo "## Shard job result"
+            echo "${{ needs.detector-competition-shard.result }}"
+          } >> "$GITHUB_STEP_SUMMARY"
+      - name: Enforce causal replay gate after preserving results
+        if: ${{ needs.detector-competition-shard.result == 'success' && steps.aggregate.outcome == 'success' }}
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          report = json.loads(Path("artifacts/p2_b/P2_B_DETECTOR_COMPETITION_V1.json").read_text(encoding="utf-8"))
+          failures = {arm: row["all"]["prefix_replay_or_mutation_violations"]
+                      for arm, row in report["summary"]["causal"].items()
+                      if row["all"]["prefix_replay_or_mutation_violations"] > 0}
+          unverifiable = {arm: row["all"]["unverifiable_short_prefix_events"]
+                          for arm, row in report["summary"]["causal"].items()
+                          if row["all"]["unverifiable_short_prefix_events"] > 0}
+          print(json.dumps({"causal_gate_failures": failures,
+                            "unverifiable_short_prefix_events": unverifiable}, indent=2))
+          if failures:
+              raise SystemExit("P2-B_CAUSAL_REPLAY_GATE_FAILED")
+          if unverifiable:
+              raise SystemExit("P2-B_CAUSAL_REPLAY_UNVERIFIABLE_EVENTS")
+          PY
