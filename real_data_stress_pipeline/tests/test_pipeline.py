@@ -116,7 +116,7 @@ class StressPipelineContractTests(unittest.TestCase):
             analysis_semantics,
         )
         self.assertIn(
-            "SOURCE_COMTRADE_QUERY_WINDOW_START_AND_END_INCLUSIVE_THEN_FILTERED_ON_INGEST",
+            "SOURCE_COMCAT_QUERY_WINDOW_START_AND_END_INCLUSIVE_THEN_FILTERED_ON_INGEST",
             analysis_semantics,
         )
         self.assertIn(
