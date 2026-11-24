@@ -21,25 +21,29 @@
       "path": "campaigns/agents/institutions_policy_v1/WGI_INSTITUTIONAL_DOMAIN_STATES_ANNUAL_SOURCE_YEARS_V1.jsonl",
       "missing": [],
       "native_frequency": "annual_source_defined_years",
-      "edge_status": "not_testable"
+      "edge_status": "not_testable",
+      "verify_local_evidence_refs": true
     },
     {
       "path": "campaigns/agents/trade_v1/TRADE_DOMAIN_STATES_ANNUAL_V1.jsonl",
       "missing": [],
       "native_frequency": "annual",
-      "edge_status": "not_testable"
+      "edge_status": "not_testable",
+      "verify_local_evidence_refs": true
     },
     {
       "path": "campaigns/agents/trade_v1/WDI_TRADE_DOMAIN_STATES_ANNUAL_V1.jsonl",
       "missing": [],
       "native_frequency": "annual",
-      "edge_status": "not_testable"
+      "edge_status": "not_testable",
+      "verify_local_evidence_refs": true
     },
     {
       "path": "campaigns/research_rounds/20260827_BROWSER_DEEP_RESEARCH/OECD_PMR_DOMAIN_STATES_SOURCE_WAVES_V1.jsonl",
       "missing": [],
       "native_frequency": "source_defined_wave",
-      "edge_status": "not_testable"
+      "edge_status": "not_testable",
+      "verify_local_evidence_refs": true
     },
     {
       "path": "experiments/multi_domain_native_adapters_v1/USGS_EARTHQUAKE_DOMAIN_STATES_EVENT_V1.jsonl",
