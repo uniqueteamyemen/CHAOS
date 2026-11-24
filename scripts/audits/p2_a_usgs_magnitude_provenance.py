@@ -37,7 +37,7 @@ def load_inputs(root):
                 eid = str(row.get("id") or "").strip()
                 if not eid or eid in rows:
                     raise ValueError(f"accepted_catalog_id_missing_or_duplicate:{bid}")
-                rows[eid] = {"time": row["time"], "mag": float(row["magnitude"]), "type": (row.get("mag_type") or "missing").lower()}
+                rows[eid] = {"time": row["time"], "mag": float(row["magnitude"]), "type": normalized(row.get("mag_type")).lower()}
         if len(rows) != int(belt["events_accepted"]):
             raise ValueError(f"accepted_catalog_count_mismatch:{bid}")
         catalogs[bid], hashes[bid] = rows, actual
@@ -83,7 +83,7 @@ def reconcile(belt_id, accepted, rows, out_dir):
     by_id, conflicts, mismatches = {}, [], []
     for row in rows:
         item={"time":str(row.get("time") or "").strip(),"mag":str(row.get("mag") or "").strip(),
-              "type":str(row.get("magType") or "").strip().lower(),
+              "type":normalized(row.get("magType")).lower(),
               "mag_source":normalized(row.get("magSource")),"network":normalized(row.get("net"))}
         eid=str(row.get("id") or "").strip()
         if not eid:
@@ -92,27 +92,44 @@ def reconcile(belt_id, accepted, rows, out_dir):
             conflicts.append({"event_id":eid,"reason":"CONFLICTING_OVERLAP_RECORDS"})
         else:
             by_id[eid]=item
-    enriched, missing = [], []
+    enriched, missing, mismatches = [], [], []
     for eid, event in accepted.items():
         source=by_id.get(eid)
         if source is None:
             missing.append(eid); continue
+        event_mismatches=[]
         try:
             mag=float(source["mag"])
-        except ValueError:
-            mismatches.append({"event_id":eid,"reason":"CSV_MAG_INVALID"}); continue
+        except (TypeError, ValueError):
+            event_mismatches.append({"event_id":eid,"reason":"CSV_MAG_INVALID"})
+            mismatches.extend(event_mismatches)
+            continue
         if not math.isclose(mag,event["mag"],rel_tol=0,abs_tol=.001):
-            mismatches.append({"event_id":eid,"reason":"MAGNITUDE_MISMATCH"})
-        if source["type"] != event["type"]:
-            mismatches.append({"event_id":eid,"reason":"MAG_TYPE_MISMATCH"})
+            event_mismatches.append({"event_id":eid,"reason":"MAGNITUDE_MISMATCH","accepted_mag":event["mag"],"query_mag":mag})
+        if source["type"] != normalized(event.get("type")).lower():
+            event_mismatches.append({"event_id":eid,"reason":"MAG_TYPE_MISMATCH",
+                                     "accepted_mag_type":normalized(event.get("type")).lower(),
+                                     "query_mag_type":source["type"]})
         try:
             t0=datetime.fromisoformat(event["time"].replace("Z","+00:00")).timestamp()
             t1=datetime.fromisoformat(source["time"].replace("Z","+00:00")).timestamp()
-            if abs(t0-t1)>.001: mismatches.append({"event_id":eid,"reason":"ORIGIN_TIME_MISMATCH"})
-        except ValueError:
-            mismatches.append({"event_id":eid,"reason":"ORIGIN_TIME_INVALID"})
+            if abs(t0-t1)>.001:
+                event_mismatches.append({"event_id":eid,"reason":"ORIGIN_TIME_MISMATCH",
+                                         "accepted_time":event["time"],"query_time":source["time"]})
+        except (TypeError, ValueError, AttributeError):
+            event_mismatches.append({"event_id":eid,"reason":"ORIGIN_TIME_INVALID",
+                                     "accepted_time":event.get("time"),"query_time":source.get("time")})
+        if event_mismatches:
+            mismatches.extend(event_mismatches)
+            continue
         enriched.append({"event_id":eid,"time":event["time"],"magnitude":event["mag"],
-                         "mag_type":event["type"],"mag_source":source["mag_source"],"network":source["network"]})
+                         "mag_type":normalized(event.get("type")).lower(),
+                         "mag_source":source["mag_source"],"network":source["network"]})
+    extra_query_rows=[
+        {"event_id":eid,"time":item["time"],"mag":item["mag"],
+         "reason":"EVENT_NOT_PRESENT_IN_ACCEPTED_CATALOG"}
+        for eid,item in sorted(by_id.items()) if eid not in accepted
+    ]
     target=out_dir/"by_belt"/f"{belt_id}_magnitude_provenance.csv"
     target.parent.mkdir(parents=True,exist_ok=True)
     fields=["event_id","time","magnitude","mag_type","mag_source","network"]
@@ -130,7 +147,9 @@ def reconcile(belt_id, accepted, rows, out_dir):
             "magnitude_source_counts":dict(sorted(counts.items())),"magnitude_source_missing_events":missing_source,
             "magnitude_type_counts":dict(sorted(type_counts.items())),"magnitude_type_missing_events":missing_type,
             "network_counts":dict(sorted(Counter(r["network"] for r in enriched).items())),
-            "extra_query_rows":len(set(by_id)-set(accepted)),"conflicts":conflicts,"mismatches":mismatches,
+            "extra_query_row_count":len(extra_query_rows),"extra_query_rows":extra_query_rows,
+            "rejected_mismatch_event_count":len({m["event_id"] for m in mismatches if m.get("event_id")}),
+            "conflicts":conflicts,"mismatches":mismatches,
             "output_path":target.relative_to(out_dir).as_posix(),"output_sha256":digest(target),"status":status}
 
 def ledger_record(kind, contract, sources, hashes, outputs, status, notes, extra=None):
@@ -178,20 +197,35 @@ def run(source_root,out_dir,ledger_path,run_id,attempt):
     refs=[summary_path.relative_to(out_dir).as_posix()]+[b["output_path"] for b in belts]+[r["path"] for r in requests]
     source_ref=f"GitHub Actions artifact: chaos-p2-domain-null-{run_id}-{attempt}"
     ledger_path.parent.mkdir(parents=True,exist_ok=True)
+    ledger_before=ledger_path.stat().st_size if ledger_path.exists() else 0
     run_rec=ledger_record("run",contract,[source_ref],{f"usgs:{k}":v for k,v in input_hashes.items()},refs,
                           "UNRESOLVED",{"audit_id":AUDIT_ID,"reconciliation_passed":reconcile_ok,
-                          "magnitude_source_complete":source_complete,"p2_a_mc_gate":gate})
+                          "magnitude_source_complete":source_complete,"magnitude_type_complete":type_complete,
+                          "p2_a_mc_gate":gate})
     appended=[append_research_ledger_record(ledger_path,run_rec)]
+    ledger_records=[run_rec]
     for belt in belts:
         rec=ledger_record("pattern_decision",contract,
-            [f"USGS accepted catalog:{belt['belt_id']}","USGS CSV magSource reconciliation"],
+            [f"USGS accepted catalog:{belt['belt_id']}","USGS CSV magSource/magType reconciliation"],
             {f"usgs:{belt['belt_id']}":input_hashes[belt["belt_id"]]},[belt["output_path"]],"UNRESOLVED",
             {"belt_id":belt["belt_id"],"provenance_status":belt["status"],
-             "missing_mag_source_events":belt["magnitude_source_missing_events"]},
+             "missing_mag_source_events":belt["magnitude_source_missing_events"],
+             "missing_mag_type_events":belt["magnitude_type_missing_events"],
+             "extra_query_row_count":belt["extra_query_row_count"],
+             "rejected_mismatch_event_count":belt["rejected_mismatch_event_count"]},
             {"decision_context":{"input_disposition":"ABSTAIN","hypothesis_transition":"UNRESOLVED",
              "contract_refs":[contract,"real_data_stress_pipeline/contracts/seismic_null_model_contract_v1.json"]}})
         appended.append(append_research_ledger_record(ledger_path,rec))
-    result["research_ledger"]={"path":str(ledger_path),"append_results":appended}
+        ledger_records.append(rec)
+    ledger_after=ledger_path.stat().st_size if ledger_path.exists() else ledger_before
+    result["research_ledger"]={
+        "path":str(ledger_path),
+        "append_results":appended,
+        "record_ids":[record["ledger_id"] for record in ledger_records],
+        "records_in_this_run":len(ledger_records),
+        "bytes_before":ledger_before,
+        "bytes_after":ledger_after
+    }
     summary_path.write_text(json.dumps(result,ensure_ascii=False,indent=2,sort_keys=True)+"\n",encoding="utf-8")
     return result
 
