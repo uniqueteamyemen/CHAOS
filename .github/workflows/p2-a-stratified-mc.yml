@@ -50,10 +50,10 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p artifacts/p2_a/input
-          gh api --method GET "/repos/${{ GH_REPO }}/actions/artifacts/${{ SOURCE_ARTIFACT_ID }/zip" > artifacts/p2_a/input/source-45244943216.zip
-          gh api --method GET "/repos/${{ GH_REPO }}/actions/artifacts/${{ PROVENANCE_ARTIFACT_ID }/zip" > artifacts/p2_a/input/provenance-45421531702.zip
-          printf '%s  %s\n' "${{ SOURCE_ARTIFACT_SHA256 }" artifacts/p2_a/input/source-45244943216.zip | sha256sum --check --strict
-          printf '%s  %s\n' "${{ PROVENANCE_ARTIFACT_SHA256 }" artifacts/p2_a/input/provenance-45421531702.zip | sha256sum --check --strict
+          gh api --method GET "/repos/${GH_REPO}/actions/artifacts/${SOURCE_ARTIFACT_ID}/zip" > artifacts/p2_a/input/source-45244943216.zip
+          gh api --method GET "/repos/${GH_REPO}/actions/artifacts/${PROVENANCE_ARTIFACT_ID}/zip" > artifacts/p2_a/input/provenance-45421531702.zip
+          printf '%s  %s\n' "${SOURCE_ARTIFACT_SHA256}" artifacts/p2_a/input/source-45244943216.zip | sha256sum --check --strict
+          printf '%s  %s\n' "${PROVENANCE_ARTIFACT_SHA256}" artifacts/p2_a/input/provenance-45421531702.zip | sha256sum --check --strict
 
       - name: Run complete five-belt stratified Mc analysis
         env:
