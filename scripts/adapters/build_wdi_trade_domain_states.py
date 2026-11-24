@@ -14,7 +14,10 @@ ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
 
 from chaos_governance_kernel.core import sha256_file, write_json  # noqa: E402
-from observation_foundation.record_identity_v1 import prepare_source_record  # noqa: E402
+from observation_foundation.record_identity_v1 import (  # noqa: E402
+    normalize_time_support,
+    prepare_source_record,
+)
 
 AGENT_DIR = ROOT / "campaigns" / "agents" / "trade_v1"
 INPUT_CSV = AGENT_DIR / "WDI_TRADE_OBSERVED_RECORDS_2000_2024.csv"
@@ -255,6 +258,13 @@ def build_wdi_trade_domain_states(
             + f"unexpected={sorted(years - set(expected_years))}"
         )
 
+    time_support = normalize_time_support({
+        "observation_period_start": str(min(expected_years)),
+        "observation_period_end": str(max(expected_years)),
+        "native_frequency": "annual",
+        "boundary_semantics": "SOURCE_EXTRACT_DECLARED",
+    })
+
     records.sort(key=lambda item: (
         item["entity_id"], item["pattern_id"], item["timestamp"]
     ))
@@ -268,12 +278,6 @@ def build_wdi_trade_domain_states(
 
     metadata_hash = sha256_file(metadata_csv)
     output_hash = sha256_file(output_jsonl)
-    time_support = {
-        "observation_period_start": str(min(expected_years)),
-        "observation_period_end": str(max(expected_years)),
-        "native_frequency": "annual",
-        "boundary_semantics": "SOURCE_EXTRACT_DECLARED",
-    }
     identities = [
         record["source_observations"]["source_record_identity"]
         for record in records
