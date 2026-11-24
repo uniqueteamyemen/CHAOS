@@ -85,6 +85,7 @@ class WdiTradeDomainStateBuilderTests(unittest.TestCase):
             "native_frequency": "annual",
             "boundary_semantics": "SOURCE_EXTRACT_DECLARED",
         })
+        self.assertNotIn("time_support", trade_record)
         self.assertEqual(summary["source_observation_identity"]["records"], 2)
         self.assertEqual(summary["source_observation_identity"]["unknown_available_at"], 2)
         self.assertEqual(summary["source_observation_identity"]["known_available_at"], 0)
@@ -183,6 +184,43 @@ class WdiTradeDomainStateBuilderTests(unittest.TestCase):
                 build_wdi_trade_domain_states(
                     source, metadata, extract, root / "states.jsonl", root / "summary.json"
                 )
+
+    def test_source_declared_year_set_must_match_observed_rows(self):
+        with TemporaryDirectory() as directory:
+            root = Path(directory)
+            source, metadata, extract = self._write_inputs(root)
+            payload = json.loads(extract.read_text(encoding="utf-8"))
+            payload["years"] = [2000, 2002]
+            extract.write_text(json.dumps(payload), encoding="utf-8")
+            with self.assertRaisesRegex(ValueError, "extract_year_set_mismatch"):
+                build_wdi_trade_domain_states(
+                    source, metadata, extract, root / "states.jsonl", root / "summary.json"
+                )
+            self.assertFalse((root / "states.jsonl").exists())
+
+    def test_source_declared_years_must_be_present_unique_and_integer(self):
+        invalid_year_sets = [
+            None,
+            [],
+            [2000, 2000],
+            [2000, True],
+            ["2000", 2001],
+        ]
+        for years in invalid_year_sets:
+            with self.subTest(years=years), TemporaryDirectory() as directory:
+                root = Path(directory)
+                source, metadata, extract = self._write_inputs(root)
+                payload = json.loads(extract.read_text(encoding="utf-8"))
+                if years is None:
+                    payload.pop("years")
+                else:
+                    payload["years"] = years
+                extract.write_text(json.dumps(payload), encoding="utf-8")
+                with self.assertRaises(ValueError):
+                    build_wdi_trade_domain_states(
+                        source, metadata, extract, root / "states.jsonl", root / "summary.json"
+                    )
+                self.assertFalse((root / "states.jsonl").exists())
 
     def test_duplicate_source_slot_fails_closed_without_silent_deduplication(self):
         with TemporaryDirectory() as directory:
