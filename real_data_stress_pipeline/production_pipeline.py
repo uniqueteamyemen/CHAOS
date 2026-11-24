@@ -334,10 +334,12 @@ def _execution_parameters() -> dict[str, int | float]:
 
 def _manifest_seed(contract: dict[str, Any], dependencies: dict[str, Any]) -> dict[str, Any]:
     return {
-        "version": "1.6",
+        "version": "1.7",
         "pipeline_config": p2.PIPELINE_CONFIG,
         "gem_config": p2.GEM_CONFIG,
         "seismic_config": p2.SEISMIC_CONFIG,
+        "observation_time_support": p2.time_support_registry(),
+        "p2_source_scope_decisions": p2.P2_SOURCE_SCOPE_DECISIONS,
         "run_timestamp_utc": p2.stamp(),
         "git_commit": os.getenv("GITHUB_SHA", "local-unresolved"),
         "branch": os.getenv("GITHUB_REF_NAME", "local"),
@@ -561,6 +563,24 @@ def _verify_manifest_configuration(manifest_seed: dict[str, Any]) -> None:
         if json_bytes(manifest_seed[key]) != json_bytes(actual):
             raise IntegrityError(f"execution_config_mismatch:{label}")
 
+    frozen_parameters = manifest_seed.get("execution_parameters")
+    if not isinstance(frozen_parameters, dict):
+        raise IntegrityError("execution_parameters_missing")
+    if json_bytes(frozen_parameters) != json_bytes(_execution_parameters()):
+        raise IntegrityError("execution_parameters_mismatch")
+
+    frozen_time_support = manifest_seed.get("observation_time_support")
+    if frozen_time_support is None:
+        raise IntegrityError("observation_time_support_missing")
+    if json_bytes(frozen_time_support) != json_bytes(p2.time_support_registry()):
+        raise IntegrityError("observation_time_support_mismatch")
+
+    frozen_source_scope = manifest_seed.get("p2_source_scope_decisions")
+    if frozen_source_scope is None:
+        raise IntegrityError("p2_source_scope_decisions_missing")
+    if json_bytes(frozen_source_scope) != json_bytes(p2.P2_SOURCE_SCOPE_DECISIONS):
+        raise IntegrityError("p2_source_scope_decisions_mismatch")
+
     contract_path = p2.HERE / "shock_event_contract.json"
     if not contract_path.is_file():
         raise IntegrityError("shock_contract_file_missing")
@@ -571,11 +591,7 @@ def _verify_manifest_configuration(manifest_seed: dict[str, Any]) -> None:
     if json_bytes(frozen_contract) != json_bytes(live_contract):
         raise IntegrityError("shock_contract_mismatch")
 
-    frozen_parameters = manifest_seed.get("execution_parameters")
-    if not isinstance(frozen_parameters, dict):
-        raise IntegrityError("execution_parameters_missing")
-    if json_bytes(frozen_parameters) != json_bytes(_execution_parameters()):
-        raise IntegrityError("execution_parameters_mismatch")
+
 
 
 def _verify_prepare_artifacts(state: dict[str, Any]) -> dict[str, Any]:
@@ -922,6 +938,7 @@ def aggregate() -> dict[str, Any]:
         p2.HERE / "config" / "pipeline.json",
         p2.HERE / "config" / "gem_indicators.json",
         p2.HERE / "config" / "seismic_belts.json",
+        p2.TIME_SUPPORT_SCHEMA_PATH,
         p2.HERE / "README_AR.md",
         p2.DEPENDENCIES,
         FROZEN_CANDIDATES,
@@ -935,9 +952,14 @@ def aggregate() -> dict[str, Any]:
     ]
     checksums = []
     for path in sorted(set(path for path in sum_paths if path.is_file())):
-        checksums.append(
-            f"{file_sha256(path)}  {path.relative_to(ROOT).as_posix()}"
-        )
+        try:
+            relative_path = path.relative_to(ROOT).as_posix()
+        except ValueError:
+            # Isolated fixtures may use a temporary ROOT while the shared
+            # observation-time schema remains in the checked-out repository.
+            # Do not hash an external absolute path into a fixture manifest.
+            continue
+        checksums.append(f"{file_sha256(path)}  {relative_path}")
     p2.CHECKSUMS.write_text("\n".join(checksums) + "\n", encoding="utf-8")
     p2.MANIFEST.write_text(
         json.dumps(manifest, ensure_ascii=False, indent=2) + "\n",

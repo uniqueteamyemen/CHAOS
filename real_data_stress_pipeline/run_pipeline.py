@@ -21,6 +21,9 @@ MANIFEST=OUT/"real_data_stress_manifest.json"; CHECKSUMS=OUT/"SHA256SUMS.txt"; D
 PIPELINE_CONFIG=json.loads((HERE/"config"/"pipeline.json").read_text(encoding="utf-8"))
 GEM_CONFIG=json.loads((HERE/"config"/"gem_indicators.json").read_text(encoding="utf-8"))
 SEISMIC_CONFIG=json.loads((HERE/"config"/"seismic_belts.json").read_text(encoding="utf-8"))
+TIME_SUPPORT_SCHEMA_PATH=ROOT/"observation_foundation"/"contracts"/"observation_time_support_v1.schema.json"
+TIME_SUPPORT_SCHEMA=json.loads(TIME_SUPPORT_SCHEMA_PATH.read_text(encoding="utf-8"))
+TIME_SUPPORT_SCHEMA_RELATIVE_PATH=TIME_SUPPORT_SCHEMA_PATH.relative_to(ROOT).as_posix()
 STATIONARITY_CONFIG=PIPELINE_CONFIG["stationarity"]
 BOOTSTRAP_CONFIG=PIPELINE_CONFIG["bootstrap"]
 STATIONARITY_MIN_OBSERVATIONS=int(PIPELINE_CONFIG["general_g0_min_observations_inclusive"])
@@ -98,14 +101,19 @@ def get(url,retries=USGS_RETRIES,timeout=USGS_TIMEOUT):
    err=e
    if i+1<retries:time.sleep(2**i)
  raise RuntimeError(f"GET failed {url}: {err}")
-def keep_raw(rel,data,provider,url,params=None):
+def keep_raw(rel,data,provider,url,params=None,time_support=None,analysis_window=None):
  p=RAW/rel;p.parent.mkdir(parents=True,exist_ok=True);p.write_bytes(data)
  resolved_path=p.resolve()
  try:
   recorded_path=str(resolved_path.relative_to(ROOT.resolve()))
  except ValueError:
   recorded_path=str(resolved_path)
- return {"path":recorded_path,"sha256":digest(data),"bytes":len(data),"provider":provider,"url":url,"parameters":params or {},"retrieved_at_utc":stamp()}
+ record={"path":recorded_path,"sha256":digest(data),"bytes":len(data),"provider":provider,"url":url,"parameters":params or {},"retrieved_at_utc":stamp()}
+ if time_support is not None:
+  record["time_support"]=time_support
+ if analysis_window is not None:
+  record["analysis_window"]=analysis_window
+ return record
 def clean(s):return re.sub(r"[^A-Za-z0-9_.-]+","_",str(s)).strip("._")[:100] or "series"
 def number(v):
  if v is None:return None
@@ -124,6 +132,149 @@ def month(v):
  return y*12+k-1 if 1<=k<=12 else None
 def label_month(n):
  y,m=divmod(int(n),12);return f"{y:04d}-{m+1:02d}"
+
+
+def make_time_support(start, end, native_frequency, boundary_semantics):
+ required=set(TIME_SUPPORT_SCHEMA.get("required", []))
+ properties=TIME_SUPPORT_SCHEMA.get("properties", {})
+ support={
+  "observation_period_start":str(start),
+  "observation_period_end":str(end),
+  "native_frequency":str(native_frequency),
+  "boundary_semantics":str(boundary_semantics),
+ }
+ if not required.issubset(support):
+  raise ValueError("observation_time_support_missing_required_fields")
+ if set(support)-set(properties):
+  raise ValueError("observation_time_support_schema_property_mismatch")
+ if any(not isinstance(support[key],str) or not support[key].strip() for key in required):
+  raise ValueError("observation_time_support_empty_required_value")
+ if not support["boundary_semantics"].strip():
+  raise ValueError("observation_time_support_boundary_semantics_empty")
+ return support
+
+
+def _utc_iso(value):
+ parsed=datetime.fromisoformat(str(value).replace("Z","+00:00"))
+ if parsed.tzinfo is None:
+  parsed=parsed.replace(tzinfo=timezone.utc)
+ return parsed.astimezone(timezone.utc).isoformat().replace("+00:00","Z")
+
+
+def make_usgs_request_time_support(start,end):
+ return make_time_support(
+  _utc_iso(start),
+  _utc_iso(end),
+  "event_timestamp",
+  f"USGS_COMCAT_API_REQUEST_WINDOW_START_AND_END_INCLUSIVE; RAW_RESPONSE_CAPTURED_BEFORE_CLIENT_SIDE_ANALYSIS_FILTER; MINIMUM_MAGNITUDE_QUERY_THRESHOLD={MAG}; NOT_MAGNITUDE_COMPLETENESS",
+ )
+
+
+def time_support_registry():
+ gem_start_token,separator,gem_end_token=GEM_PERIOD_WINDOW.partition(":")
+ if not separator:
+  raise ValueError("gem_period_window_must_have_start_and_end")
+ gem_start_index=month(gem_start_token)
+ gem_end_index=month(gem_end_token)
+ if gem_start_index is None or gem_end_index is None:
+  raise ValueError("gem_period_window_must_use_explicit_months")
+ pink_support=make_time_support(
+  PIPELINE_CONFIG["period_start"],
+  PIPELINE_CONFIG["period_end"],
+  "monthly",
+  "PIPELINE_ANALYSIS_FILTER_WINDOW_INCLUSIVE; SOURCE_COVERAGE_NOT_ASSERTED",
+ )
+ gem_support=make_time_support(
+  label_month(gem_start_index),
+  label_month(gem_end_index),
+  "monthly",
+  "WORLD_BANK_API_QUERY_WINDOW_START_AND_END_INCLUSIVE; SOURCE_COVERAGE_NOT_ASSERTED",
+ )
+ usgs_start=_utc_iso(f"{Y0}-01-01T00:00:00")
+ usgs_end=_utc_iso(f"{Y1+1}-01-01T00:00:00")
+ usgs_analysis_support=make_time_support(
+  usgs_start,
+  usgs_end,
+  "event_timestamp",
+  f"ANALYSIS_COLLECTION_WINDOW_START_INCLUSIVE_END_EXCLUSIVE; SOURCE_COMCAT_QUERY_WINDOW_START_AND_END_INCLUSIVE_THEN_FILTERED_ON_INGEST; SOURCE_COVERAGE_NOT_ASSERTED; MINIMUM_MAGNITUDE_QUERY_THRESHOLD={MAG}; NOT_MAGNITUDE_COMPLETENESS",
+ )
+ usgs_source_query_support=make_time_support(
+  usgs_start,
+  usgs_end,
+  "event_timestamp",
+  f"USGS_COMCAT_API_QUERY_WINDOW_START_AND_END_INCLUSIVE; SOURCE_COVERAGE_NOT_ASSERTED; MINIMUM_MAGNITUDE_QUERY_THRESHOLD={MAG}; NOT_MAGNITUDE_COMPLETENESS",
+ )
+ usgs_analysis_window={
+  "period_start":usgs_start,
+  "period_end":usgs_end,
+  "start_inclusive":True,
+  "end_inclusive":False,
+  "boundary_semantics":"CLIENT_SIDE_ANALYSIS_FILTER_START_INCLUSIVE_END_EXCLUSIVE",
+ }
+ return {
+  "schema_id":TIME_SUPPORT_SCHEMA.get("$id"),
+  "schema_path":TIME_SUPPORT_SCHEMA_RELATIVE_PATH,
+  "scope":"source_collection",
+  "record_identity_hash_impact":"NONE",
+  "sources":{
+   "pink_sheet":{
+    "time_support":pink_support,
+    "source_coverage_status":"NOT_ASSERTED_FROM_ANALYSIS_FILTER_WINDOW",
+   },
+   "gem":{
+    "time_support":gem_support,
+    "source_coverage_status":"NOT_ASSERTED_FROM_API_QUERY_WINDOW",
+   },
+   "usgs":{
+    "time_support":dict(usgs_analysis_support),
+    "source_query_time_support":dict(usgs_source_query_support),
+    "analysis_window":dict(usgs_analysis_window),
+    "by_belt":{
+     belt["id"]:{
+      "time_support":dict(usgs_analysis_support),
+      "source_query_time_support":dict(usgs_source_query_support),
+      "analysis_window":dict(usgs_analysis_window),
+      "source_coverage_status":"NOT_ASSERTED_FROM_API_QUERY_WINDOW",
+      "minimum_magnitude_query_threshold":MAG,
+      "magnitude_completeness_status":"NOT_ESTABLISHED_BY_QUERY_THRESHOLD",
+     }
+     for belt in BELTS
+    },
+   },
+  },
+ }
+
+
+TIME_SUPPORT_REGISTRY=time_support_registry()
+P2_SOURCE_SCOPE_DECISIONS={
+ "scope":"P2.2",
+ "decisions":{
+  "COMTRADE":{
+   "status":"QUARANTINED_OUT_OF_SCOPE",
+   "reason":"Deferred from the P2 Pink Sheet, GEM, and USGS cohorts; source recovery is not required by MP0 for this validation scope.",
+  },
+  "OECD_PMR":{
+   "status":"QUARANTINED_OUT_OF_SCOPE",
+   "reason":"Deferred from the P2 Pink Sheet, GEM, and USGS cohorts; source recovery is not required by MP0 for this validation scope.",
+  },
+  "WGI":{
+   "status":"QUARANTINED_OUT_OF_SCOPE",
+   "reason":"Deferred from the P2 Pink Sheet, GEM, and USGS cohorts; source recovery is not required by MP0 for this validation scope.",
+  },
+ },
+ "scope_effect":"P2_SCOPE_ONLY; ENGINE1_GLOBAL_SOURCE_LINEAGE_UNCHANGED",
+}
+PINK_TIME_SUPPORT=TIME_SUPPORT_REGISTRY["sources"]["pink_sheet"]["time_support"]
+GEM_TIME_SUPPORT=TIME_SUPPORT_REGISTRY["sources"]["gem"]["time_support"]
+USGS_TIME_SUPPORT_BY_BELT={
+ belt_id:entry["time_support"]
+ for belt_id,entry in TIME_SUPPORT_REGISTRY["sources"]["usgs"]["by_belt"].items()
+}
+USGS_COLLECTION_TIME_SUPPORT=TIME_SUPPORT_REGISTRY["sources"]["usgs"]["time_support"]
+USGS_SOURCE_QUERY_TIME_SUPPORT=TIME_SUPPORT_REGISTRY["sources"]["usgs"]["source_query_time_support"]
+USGS_ANALYSIS_WINDOW=TIME_SUPPORT_REGISTRY["sources"]["usgs"]["analysis_window"]
+
+
 def mad(x):
  a=np.asarray(x,dtype=float)
  return float(np.median(np.abs(a-np.median(a)))) if a.size and np.all(np.isfinite(a)) else 0.
@@ -240,7 +391,7 @@ def pink(m):
    if not q["passed"]:
     m["rejected"].append({"source":"pink_sheet","series":name,"source_points":len(ys),"quality":q});continue
    items.append({"id":"pink:"+clean(name),"source":"pink_sheet","source_name":"World Bank Pink Sheet","name":name,"cohort":"strict_long_monthly","domain":"commodity","frequency":"monthly","axis":axis,"values":vals,"sha256":sh,"points":len(ys),"quality":q})
-  m["sources"].append({"provider":"World Bank Pink Sheet","url":url,"discovery":discovery,"sha256":sh,"bytes":len(raw),"retrieved_at_utc":stamp(),"raw_preserved":"in-memory only; workbook-specific redistribution terms not established","layout":layout,"accepted_series":len(items)})
+  m["sources"].append({"provider":"World Bank Pink Sheet","url":url,"discovery":discovery,"sha256":sh,"bytes":len(raw),"retrieved_at_utc":stamp(),"raw_preserved":"in-memory only; workbook-specific redistribution terms not established","layout":layout,"accepted_series":len(items),"time_support":PINK_TIME_SUPPORT})
   return items
  except Exception as e:
   m["errors"].append({"provider":"World Bank Pink Sheet","url":url,"error":str(e),"time":stamp()});return []
@@ -256,7 +407,7 @@ def gem(m):
     if not isinstance(obj,list) or len(obj)<2 or not isinstance(obj[0],dict):raise ValueError("unexpected API response")
     pages=int(obj[0].get("pages",1));rows=obj[1]
     if not isinstance(rows,list):raise ValueError("API has no data rows")
-    rec=keep_raw(f"world_bank/gem/{code}_page_{page:03d}.json",raw,"World Bank GEM",url,{"source":GEM_SOURCE_ID,"indicator":code,"page":page})
+    rec=keep_raw(f"world_bank/gem/{code}_page_{page:03d}.json",raw,"World Bank GEM",url,{"source":GEM_SOURCE_ID,"indicator":code,"page":page},GEM_TIME_SUPPORT)
     m["sources"].append(rec);hashes.append(rec["sha256"])
     for row in rows:
      k=month(row.get("date"));v=number(row.get("value"))
@@ -269,7 +420,7 @@ def gem(m):
      m["rejected"].append({"source":"gem","series":f"{code}:{iso}","quality":q});continue
     out.append({"id":f"gem:{code}:{iso}","source":"gem","source_name":"World Bank GEM","name":f"{desc} — {names[iso]}","cohort":"secondary_gem_monthly_87_plus","domain":"macro","frequency":"monthly","axis":axis,"values":vals,"sha256":hashes[0] if hashes else None,"points":len(ys),"quality":q})
    accepted_for_code=sum(1 for x in out if x["id"].startswith("gem:"+code+":"))
-   summary={"code":code,"description":desc,"date_query":GEM_PERIOD_WINDOW,"frequency_policy":"monthly-only by actual year-month response keys; frequency query parameter omitted because World Bank documents frequency as an MRV modifier","records_with_monthly_dates":sum(map(len,groups.values())),"country_series":len(groups),"accepted":accepted_for_code,"raw_hashes":hashes,"status":"monthly_data_found" if groups else "no_monthly_records_for_indicator"}
+   summary={"code":code,"description":desc,"date_query":GEM_PERIOD_WINDOW,"frequency_policy":"monthly-only by actual year-month response keys; frequency query parameter omitted because World Bank documents frequency as an MRV modifier","records_with_monthly_dates":sum(map(len,groups.values())),"country_series":len(groups),"accepted":accepted_for_code,"raw_hashes":hashes,"status":"monthly_data_found" if groups else "no_monthly_records_for_indicator","time_support":GEM_TIME_SUPPORT}
    m["gem_indicators"].append(summary)
    print("GEM",code,"monthly_records",summary["records_with_monthly_dates"],"country_series",summary["country_series"],"accepted",accepted_for_code)
   except Exception as e:
@@ -281,7 +432,7 @@ def gem(m):
 def usgs_query(belt,start,end,m,depth=0):
  p={"format":"geojson","starttime":start,"endtime":end,"minmagnitude":MAG,"minlatitude":belt["minlatitude"],"maxlatitude":belt["maxlatitude"],"minlongitude":belt["minlongitude"],"maxlongitude":belt["maxlongitude"],"orderby":"time-asc","limit":USGS_QUERY_LIMIT}
  url="https://earthquake.usgs.gov/fdsnws/event/1/query?"+urllib.parse.urlencode(p)
- raw=get(url,4,120);r=keep_raw(f"usgs/{belt['id']}/{start.replace(':','_')}_{end.replace(':','_')}.geojson",raw,"USGS ComCat",url,p);m["sources"].append(r)
+ raw=get(url,4,120);request_support=make_usgs_request_time_support(start,end);r=keep_raw(f"usgs/{belt['id']}/{start.replace(':','_')}_{end.replace(':','_')}.geojson",raw,"USGS ComCat",url,p,request_support,USGS_ANALYSIS_WINDOW);m["sources"].append(r)
  fs=json.loads(raw).get("features",[])
  if len(fs)>=19999:
   a=datetime.fromisoformat(start);b=datetime.fromisoformat(end)
@@ -436,7 +587,7 @@ def seismic(m):
    rec={
     "id":belt["id"],"name":belt["name"],
     "bbox":{k:belt[k] for k in ("minlatitude","maxlatitude","minlongitude","maxlongitude")},
-    "min_magnitude":MAG,"events":len(rows),
+    "min_magnitude":MAG,"minimum_magnitude_query_threshold":MAG,"magnitude_completeness_status":"NOT_ESTABLISHED_BY_QUERY_THRESHOLD","time_support":USGS_TIME_SUPPORT_BY_BELT.get(belt["id"],USGS_COLLECTION_TIME_SUPPORT),"source_query_time_support":USGS_SOURCE_QUERY_TIME_SUPPORT,"analysis_window":USGS_ANALYSIS_WINDOW,"events":len(rows),
     "events_received":len(fs),"events_accepted":len(rows),
     "events_quarantined":rejected_count,
     "duplicate_features_deduplicated":duplicate_count,
@@ -891,7 +1042,9 @@ def main():
  dependencies=dependency_inventory()
  DEPENDENCIES.write_text(json.dumps(dependencies,ensure_ascii=False,indent=2)+"\n",encoding="utf-8")
  m={
-  "version":"1.5","pipeline_config":PIPELINE_CONFIG,"gem_config":GEM_CONFIG,"seismic_config":SEISMIC_CONFIG,
+  "version":"1.7","pipeline_config":PIPELINE_CONFIG,"gem_config":GEM_CONFIG,"seismic_config":SEISMIC_CONFIG,
+  "observation_time_support":TIME_SUPPORT_REGISTRY,
+  "p2_source_scope_decisions":P2_SOURCE_SCOPE_DECISIONS,
   "run_timestamp_utc":stamp(),
   "git_commit":os.getenv("GITHUB_SHA","local-unresolved"),
   "branch":os.getenv("GITHUB_REF_NAME","local"),
@@ -972,6 +1125,7 @@ def main():
   HERE/"config"/"pipeline.json",
   HERE/"config"/"gem_indicators.json",
   HERE/"config"/"seismic_belts.json",
+  TIME_SUPPORT_SCHEMA_PATH,
   HERE/"README_AR.md",
   DEPENDENCIES,
   ROOT/".github"/"workflows"/"real-data-stress.yml",

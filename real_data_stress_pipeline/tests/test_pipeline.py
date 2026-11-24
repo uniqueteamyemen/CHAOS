@@ -1,13 +1,148 @@
 import unittest
+from datetime import datetime, timezone
 import numpy as np
 from io import BytesIO
 from openpyxl import Workbook
 
 from real_data_stress_pipeline.run_pipeline import (
-    g0, g1, boot, parse_pink, longest_run, month, label_month, returns, stationary_sample, wilson, series_category, shock_eval, applicable_shock_series, aggregate,
+    g0, g1, boot, parse_pink, longest_run, month, label_month, returns,
+    stationary_sample, wilson, series_category, shock_eval, applicable_shock_series,
+    aggregate, make_time_support, time_support_registry, TIME_SUPPORT_SCHEMA,
+    P2_SOURCE_SCOPE_DECISIONS, usgs_record_rejection_reasons, make_usgs_request_time_support, BELTS, Y1,
 )
 
 class StressPipelineContractTests(unittest.TestCase):
+    def test_time_support_registry_matches_schema_and_labels_windows_honestly(self):
+        registry = time_support_registry()
+        self.assertEqual(registry["schema_id"], TIME_SUPPORT_SCHEMA["$id"])
+        self.assertEqual(registry["scope"], "source_collection")
+        self.assertEqual(registry["record_identity_hash_impact"], "NONE")
+
+        allowed = set(TIME_SUPPORT_SCHEMA["properties"])
+        sources = registry["sources"]
+        for source_name in ("pink_sheet", "gem"):
+            support = sources[source_name]["time_support"]
+            self.assertEqual(set(support), allowed)
+            self.assertTrue(set(TIME_SUPPORT_SCHEMA["required"]).issubset(support))
+            self.assertFalse(sources[source_name]["source_coverage_status"].startswith("ASSERTED"))
+
+        pink = sources["pink_sheet"]["time_support"]
+        self.assertEqual(pink["observation_period_start"], "1980-01")
+        self.assertEqual(pink["observation_period_end"], "2024-12")
+        self.assertIn("ANALYSIS_FILTER_WINDOW", pink["boundary_semantics"])
+
+        gem = sources["gem"]["time_support"]
+        self.assertEqual(gem["observation_period_start"], "1990-01")
+        self.assertEqual(gem["observation_period_end"], "2023-12")
+        self.assertIn("API_QUERY_WINDOW", gem["boundary_semantics"])
+
+        belts = sources["usgs"]["by_belt"]
+        self.assertEqual(len(belts), 5)
+        for belt in belts.values():
+            support = belt["time_support"]
+            self.assertEqual(set(support), allowed)
+            self.assertEqual(support["native_frequency"], "event_timestamp")
+            self.assertEqual(support["observation_period_start"], "1980-01-01T00:00:00Z")
+            self.assertEqual(support["observation_period_end"], "2025-01-01T00:00:00Z")
+            self.assertIn("ANALYSIS_COLLECTION_WINDOW_START_INCLUSIVE_END_EXCLUSIVE", support["boundary_semantics"])
+            self.assertIn(
+                "SOURCE_COMCAT_QUERY_WINDOW_START_AND_END_INCLUSIVE_THEN_FILTERED_ON_INGEST",
+                support["boundary_semantics"],
+            )
+            self.assertIn("NOT_MAGNITUDE_COMPLETENESS", support["boundary_semantics"])
+            source_query_support = belt["source_query_time_support"]
+            self.assertEqual(set(source_query_support), allowed)
+            self.assertIn(
+                "USGS_COMCAT_API_QUERY_WINDOW_START_AND_END_INCLUSIVE",
+                source_query_support["boundary_semantics"],
+            )
+            analysis_window = belt["analysis_window"]
+            self.assertTrue(analysis_window["start_inclusive"])
+            self.assertFalse(analysis_window["end_inclusive"])
+            self.assertEqual(
+                analysis_window["boundary_semantics"],
+                "CLIENT_SIDE_ANALYSIS_FILTER_START_INCLUSIVE_END_EXCLUSIVE",
+            )
+            self.assertFalse(belt["magnitude_completeness_status"] == "ESTABLISHED")
+
+        usgs_analysis_support = sources["usgs"]["time_support"]
+        self.assertIn(
+            "ANALYSIS_COLLECTION_WINDOW_START_INCLUSIVE_END_EXCLUSIVE",
+            usgs_analysis_support["boundary_semantics"],
+        )
+        source_query_support = sources["usgs"]["source_query_time_support"]
+        self.assertIn(
+            "USGS_COMCAT_API_QUERY_WINDOW_START_AND_END_INCLUSIVE",
+            source_query_support["boundary_semantics"],
+        )
+        self.assertEqual(
+            usgs_analysis_support["observation_period_start"],
+            source_query_support["observation_period_start"],
+        )
+        self.assertEqual(
+            usgs_analysis_support["observation_period_end"],
+            source_query_support["observation_period_end"],
+        )
+        source_analysis_window = sources["usgs"]["analysis_window"]
+        self.assertEqual(source_analysis_window["period_start"], "1980-01-01T00:00:00Z")
+        self.assertEqual(source_analysis_window["period_end"], "2025-01-01T00:00:00Z")
+        self.assertTrue(source_analysis_window["start_inclusive"])
+        self.assertFalse(source_analysis_window["end_inclusive"])
+
+    def test_usgs_api_includes_end_boundary_but_analysis_excludes_it(self):
+        belt = BELTS[0]
+        latitude = (float(belt["minlatitude"]) + float(belt["maxlatitude"])) / 2
+        longitude = (float(belt["minlongitude"]) + float(belt["maxlongitude"])) / 2
+        analysis_end_ms = int(
+            datetime(Y1 + 1, 1, 1, tzinfo=timezone.utc).timestamp() * 1000
+        )
+        at_exclusive_analysis_end = usgs_record_rejection_reasons(
+            belt, latitude, longitude, 5.0, analysis_end_ms
+        )
+        just_before_analysis_end = usgs_record_rejection_reasons(
+            belt, latitude, longitude, 5.0, analysis_end_ms - 1
+        )
+        self.assertIn("OUTSIDE_ANALYSIS_TIME_WINDOW", at_exclusive_analysis_end)
+        self.assertNotIn("OUTSIDE_ANALYSIS_TIME_WINDOW", just_before_analysis_end)
+
+        registry = time_support_registry()["sources"]["usgs"]
+        analysis_semantics = registry["time_support"]["boundary_semantics"]
+        request_semantics = make_usgs_request_time_support(
+            "1980-01-01T00:00:00",
+            "2025-01-01T00:00:00",
+        )["boundary_semantics"]
+        self.assertIn(
+            "ANALYSIS_COLLECTION_WINDOW_START_INCLUSIVE_END_EXCLUSIVE",
+            analysis_semantics,
+        )
+        self.assertIn(
+            "SOURCE_COMCAT_QUERY_WINDOW_START_AND_END_INCLUSIVE_THEN_FILTERED_ON_INGEST",
+            analysis_semantics,
+        )
+        self.assertIn(
+            "USGS_COMCAT_API_REQUEST_WINDOW_START_AND_END_INCLUSIVE",
+            request_semantics,
+        )
+        self.assertFalse(registry["analysis_window"]["end_inclusive"])
+
+    def test_p2_source_scope_quarantines_deferred_sources_without_rewriting_engine1_lineage(self):
+        decisions = P2_SOURCE_SCOPE_DECISIONS
+        self.assertEqual(decisions["scope"], "P2.2")
+        self.assertEqual(
+            set(decisions["decisions"]),
+            {"COMTRADE", "OECD_PMR", "WGI"},
+        )
+        for decision in decisions["decisions"].values():
+            self.assertEqual(decision["status"], "QUARANTINED_OUT_OF_SCOPE")
+        self.assertEqual(
+            decisions["scope_effect"],
+            "P2_SCOPE_ONLY; ENGINE1_GLOBAL_SOURCE_LINEAGE_UNCHANGED",
+        )
+
+    def test_time_support_rejects_empty_schema_values(self):
+        with self.assertRaisesRegex(ValueError, "empty_required_value"):
+            make_time_support("", "2024-12", "monthly", "TEST")
+
     def test_world_bank_month_encodings(self):
         self.assertEqual(month("1980M01"), 1980 * 12)
         self.assertEqual(month("1980-M1"), 1980 * 12)
