@@ -110,6 +110,7 @@
       "largest GFT_NOT_PASSED strata per belt",
       "largest strata with estimated Mc above 4.5 per belt"
     ],
-    "output_in_stdout_and_github_step_summary": true
+    "output_in_stdout_and_github_step_summary": true,
+    "preserve_belt_identity_in_overall_top_strata": true
   }
 }
