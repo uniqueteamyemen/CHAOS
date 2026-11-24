@@ -230,5 +230,46 @@ class DomainStateIntegrityTests(unittest.TestCase):
             )
         self.assertEqual(report["evidence_ref_status"], "BLOCKED_NONPORTABLE_ABSOLUTE_PATHS")
 
+    def test_empty_evidence_refs_block_file_replayability_without_invalidating_schema(self):
+        with TemporaryDirectory() as directory:
+            root = Path(directory)
+            path = root / "states.jsonl"
+            path.write_text(json.dumps(state(evidence_refs=[])) + "\n", encoding="utf-8")
+            report = audit_domain_state_file(
+                root, "states.jsonl", REQUIRED, "annual",
+                verify_local_evidence_refs=True,
+            )
+        self.assertEqual(report["status"], "pass")
+        self.assertEqual(report["invalid_records"], 0)
+        self.assertEqual(report["evidence_records_checked"], 1)
+        self.assertEqual(report["evidence_records_without_refs"], 1)
+        self.assertEqual(report["evidence_ref_status"], "BLOCKED_RECORDS_WITHOUT_EVIDENCE_REFS")
+
+    def test_registry_readiness_blocks_records_without_any_evidence_reference(self):
+        with TemporaryDirectory() as directory:
+            root = Path(directory)
+            registry_path = root / "registry.json"
+            output_path = root / "report.json"
+            existing = root / "present.jsonl"
+            existing.write_text(json.dumps(state(evidence_refs=[])) + "\n", encoding="utf-8")
+            registry_path.write_text(json.dumps({
+                "required_fields": REQUIRED,
+                "files": [{
+                    "path": "present.jsonl",
+                    "native_frequency": "annual",
+                    "verify_local_evidence_refs": True,
+                }],
+            }), encoding="utf-8")
+            report = build_domain_state_integrity_report(root, registry_path, output_path)
+        self.assertEqual(report["readiness"], "BLOCKED_INCOMPLETE_SOURCE_LINEAGE")
+        self.assertEqual(report["invalid_records"], 0)
+        self.assertEqual(report["evidence_records_without_refs"], 1)
+        self.assertEqual(
+            report["records_without_evidence_refs"],
+            [{"domain_state_file": "present.jsonl", "records": 1}],
+        )
+        self.assertEqual(report["files_with_unresolved_evidence_refs"], ["present.jsonl"])
+        self.assertIn("RECORDS_WITHOUT_EVIDENCE_REFERENCES", report["readiness_conditions"])
+
 if __name__ == "__main__":
     unittest.main()
