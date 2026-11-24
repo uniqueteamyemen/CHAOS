@@ -259,7 +259,16 @@ def bocpd_detector(values: Any, *, quiet_points: int = QUIET_POINTS,
     events: list[dict[str, Any]] = []
 
     for t in range(quiet_points, int(x.size)):
-        prior_map = int(np.argmax(posterior))
+        # Use the posterior MAP among established (long-run) states. A fresh
+        # change-point branch has a reset prior mean and must not overwrite the
+        # active previous-regime reference used for direction.
+        prior_long_indices = np.flatnonzero(run_lengths > int(short_run_max))
+        if prior_long_indices.size:
+            prior_map = int(prior_long_indices[
+                int(np.argmax(posterior[prior_long_indices]))
+            ])
+        else:
+            prior_map = int(np.argmax(posterior))
         prior_regime_mean = float(means[prior_map])
         df = 2.0 * alphas
         predictive_scale = np.sqrt(np.maximum(
@@ -691,19 +700,34 @@ def r_fpop_segment(values: Any, *, quiet_points: int = QUIET_POINTS,
         starts.append(start)
         cursor = start - 1
     starts = sorted(set(starts))
+    def prefix_contains_break(prefix_end: int, wanted: int) -> bool:
+        cursor = int(prefix_end)
+        visited: set[int] = set()
+        while cursor > 0:
+            if cursor in visited:
+                raise RuntimeError("R_FPOP_PREFIX_PATH_CYCLE")
+            visited.add(cursor)
+            previous = int(origin[cursor])
+            if previous <= 0:
+                return False
+            if previous == int(wanted):
+                return True
+            if previous > cursor:
+                raise RuntimeError(f"R_FPOP_PREFIX_ORIGIN_INVALID:{previous}:{cursor}")
+            cursor = previous - 1
+        return False
+
     breakpoints = []
     for cp in starts:
-        matches = np.flatnonzero(origin[cp:] == cp)
-        if matches.size == 0:
-            detection = n - 1
-            first_supported = False
-        else:
-            detection = int(cp + matches[0])
-            first_supported = True
+        detection = next(
+            (prefix_end for prefix_end in range(int(cp), n)
+             if prefix_contains_break(prefix_end, int(cp))),
+            None,
+        )
         breakpoints.append({
             "estimated_change_index": int(cp),
-            "detection_index": int(detection),
-            "first_supported_in_prefix": bool(first_supported),
+            "detection_index": int(detection) if detection is not None else None,
+            "first_supported_in_prefix": detection is not None,
             "retained_in_final_segmentation": True,
         })
     return {
@@ -715,7 +739,9 @@ def r_fpop_segment(values: Any, *, quiet_points: int = QUIET_POINTS,
             "penalty": penalty, "penalty_multiplier": float(penalty_multiplier),
             "quiet_scale": float(scale), "n": n,
             "track": "retrospective_segmentation_not_online_ranked",
-            "origin_trace": [int(v) for v in origin],
+            "origin_trace_sha256": hashlib.sha256(
+                np.asarray(origin, dtype="<i4").tobytes()
+            ).hexdigest(),
         },
     }
 
