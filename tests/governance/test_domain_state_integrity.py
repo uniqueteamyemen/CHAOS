@@ -142,5 +142,66 @@ class DomainStateIntegrityTests(unittest.TestCase):
         self.assertEqual(report["invalid_records"], 1)
 
 
+    def test_local_evidence_reference_audit_blocks_missing_paths_and_marks_external_refs_unverified(self):
+        with TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / "present.csv").write_text("source snapshot", encoding="utf-8")
+            path = root / "states.jsonl"
+            path.write_text(json.dumps(state(evidence_refs=[
+                "present.csv",
+                "missing.json",
+                "source://comtrade/124/2020",
+                "https://example.invalid/source",
+            ])) + "\n", encoding="utf-8")
+            report = audit_domain_state_file(
+                root, "states.jsonl", REQUIRED, "annual",
+                verify_local_evidence_refs=True,
+            )
+        self.assertEqual(report["status"], "pass")
+        self.assertEqual(report["evidence_ref_status"], "BLOCKED_MISSING_LOCAL_PATHS")
+        self.assertEqual(report["evidence_refs_seen"], 4)
+        self.assertEqual(report["evidence_refs_unique_local_paths"], 1)
+        self.assertEqual(report["evidence_refs_external_unverified"], 2)
+        self.assertEqual(
+            report["missing_evidence_references"],
+            [{"path": "missing.json", "occurrences": 1}],
+        )
+
+    def test_local_evidence_reference_audit_rejects_repository_escape(self):
+        with TemporaryDirectory() as directory:
+            root = Path(directory)
+            path = root / "states.jsonl"
+            path.write_text(json.dumps(state(evidence_refs=["../outside.csv"])) + "\n", encoding="utf-8")
+            report = audit_domain_state_file(
+                root, "states.jsonl", REQUIRED, "annual",
+                verify_local_evidence_refs=True,
+            )
+        self.assertEqual(report["evidence_ref_status"], "FAIL_UNSAFE_PATHS")
+        self.assertEqual(
+            report["unsafe_evidence_references"],
+            [{"path": "../outside.csv", "occurrences": 1}],
+        )
+
+    def test_registry_readiness_blocks_missing_source_lineage_separately_from_schema(self):
+        with TemporaryDirectory() as directory:
+            root = Path(directory)
+            registry_path = root / "registry.json"
+            output_path = root / "report.json"
+            existing = root / "present.jsonl"
+            existing.write_text(json.dumps(state(evidence_refs=["missing/source.csv"])) + "\n", encoding="utf-8")
+            registry_path.write_text(json.dumps({
+                "required_fields": REQUIRED,
+                "files": [{
+                    "path": "present.jsonl",
+                    "native_frequency": "annual",
+                    "verify_local_evidence_refs": True,
+                }],
+            }), encoding="utf-8")
+            report = build_domain_state_integrity_report(root, registry_path, output_path)
+        self.assertEqual(report["readiness"], "BLOCKED_INCOMPLETE_SOURCE_LINEAGE")
+        self.assertEqual(report["invalid_records"], 0)
+        self.assertEqual(report["files_with_unresolved_evidence_refs"], ["present.jsonl"])
+        self.assertIn("MISSING_LOCAL_EVIDENCE_REFERENCES", report["readiness_conditions"])
+
 if __name__ == "__main__":
     unittest.main()

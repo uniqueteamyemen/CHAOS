@@ -63,3 +63,23 @@ The Discovery code may be integrated as a candidate Engine 1 foundation only wit
 ## 5. Status after integration
 
 The Discovery V1 implementation and registry validator were merged into `main-phase2` via PR #28. This does not convert the recorded audit readiness into PASS. The six missing references remain a declared registry blocker until a separate source-backed change resolves the WGI output and an explicit policy decision addresses the five immutable historical paths. No missing artifact has been recreated, and no file under `experiments/**` was altered.
+
+
+## 6. Source replayability gate — 2026-11-24
+
+أُضيف فحص مستقل لمراجع الأدلة في ملفات DomainState غير المؤرشفة تحت `experiments/**`، ويُفعّل صراحةً من سجل الأصول عبر `verify_local_evidence_refs`. هذا الفحص منفصل عن صلاحية JSON/schema: قد يكون السجل صالح البنية لكنه غير قابل لإعادة البناء لغياب ملف المصدر الذي يشير إليه.
+
+نتيجة الجرد المباشر على `main-phase2@770224f2d0a08068b28f0375e5bccbff109bf88d`:
+
+- **WDI:** ملف DomainState ومداخل إعادة البناء الثلاثة المشار إليها (observed records CSV، metadata CSV، extract summary) موجودة في الشجرة. يستطيع builder إعادة إنتاج المخرج من هذه المدخلات المثبتة. لكن `available_at` و`source_revision` التاريخيين ما زالا مجهولين؛ لذلك هذا لا يمنح أهلية point-in-time.
+- **UN Comtrade:** ملف DomainState يحوي 124 سجلاً، لكن `evidence_refs` تشير إلى ملفات JSON وملفات request داخل `campaigns/agents/trade_v1/raw/comtrade_queries/`، وهذا المجلد غير موجود في شجرة الفرع. وجود السجلات والـsummary لا يكفي لإعادة تشغيل adapter؛ يُصنّف هذا الأصل `BLOCKED_MISSING_LOCAL_PATHS`.
+- **WGI:** ملف DomainState المسجل غير موجود، كما أن `catalog_first/readiness_gate/independent_sources/worldbank_wgi_2025/raw/WGI_CSV.zip` غير موجود في شجرة الفرع. بصمة SHA-256 في provenance تثبت قيمة بصمة معلنة فقط ولا توفر bytes المصدر؛ لا يمكن إعادة إنتاج 32,403 حالة من الملخص وحده.
+
+### حدود الفحص
+
+- يفحص المسارات المحلية المعلنة فقط، ويمنع خروج المسار المحسوب من جذر المستودع.
+- لا يجلب عناوين URI الخارجية، ولا يدّعي التحقق من محتواها أو بصماتها.
+- فحص الوجود ليس بديلاً عن SHA-256؛ تظل مطابقة hash مسؤولية adapter manifest واختبار إعادة البناء byte-for-byte.
+- تبقى ملفات `experiments/**` خارج التعديل والفحص الخاص بالمصادر النشطة.
+
+**القرار التنفيذي:** WDI هو مسار المصدر النشط الوحيد من المجموعة التي أمكن إثبات إمكانية إعادة بنائها من مدخلات committed. لا تُمرر COMTRADE أو WGI إلى تشغيل Discovery إنتاجي قابل لإعادة التشغيل قبل استعادة ملفات المصدر الأصلية وبناء adapter deterministic يعيد إنتاج المخرجات. نجاح CI في تشغيل المدقق لا يُحوّل حالة `BLOCKED` إلى `PASS`.

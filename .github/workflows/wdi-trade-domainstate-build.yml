@@ -6,6 +6,7 @@ on:
       - main-phase2
   push:
     branches:
+      - main-phase2
       - discovery/d1-domainstate-integrity-v1
     paths:
       - 'scripts/adapters/build_wdi_trade_domain_states.py'

@@ -15,6 +15,7 @@ on:
       - '.github/workflows/discovery-domain-state-integrity.yml'
   push:
     branches:
+      - main-phase2
       - discovery/d1-domainstate-integrity-v1
     paths:
       - 'chaos_governance_kernel/domain_state.py'

@@ -23,9 +23,12 @@ def main() -> int:
         "records_seen": report["records_seen"],
         "invalid_records": report["invalid_records"],
         "missing_references": len(report["missing_references"]),
+        "missing_evidence_references": len(report["missing_evidence_references"]),
+        "files_with_unresolved_evidence_refs": len(report["files_with_unresolved_evidence_refs"]),
+        "evidence_ref_audit_files": report["evidence_ref_audit_files"],
     }, ensure_ascii=False, sort_keys=True))
-    # Missing references block data readiness, but do not make the auditor itself fail.
-    # Malformed or schema-invalid records are a CI failure.
+    # Missing assets or evidence block readiness but remain explicit in the report.
+    # Malformed records and unsafe repository-relative paths are a hard CI failure.
     return 1 if report["readiness"] == "FAIL" else 0
 
 

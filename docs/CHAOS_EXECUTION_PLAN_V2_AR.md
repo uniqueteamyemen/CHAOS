@@ -444,3 +444,22 @@ MP0 يوثّق الحالة ولا يغيّر صلاحيات المستخدم أ
 ### 18.4 القرار
 
 P2 production engineering run مكتمل؛ إغلاق P2 علمياً غير مكتمل. تبقى المقاييس الخمسة في الخطة (false alarms/decade أو ARL0، conditional delay، miss rate، FDR/alpha-spending، coverage/abstention/intervals) بوابات اعتماد، منفصلة حسب cohort. لا يبدأ Engine 2 قبل D6.
+
+
+## 19. بوابة قابلية إعادة بناء مدخلات Engine 1 — 2026-11-24
+
+هذه خطوة هندسية في خط إدخال البيانات وليست جولة معايرة جديدة. تُفصل الآن ثلاثة مستويات لكل أصل غير مؤرشف تحت `experiments/**`:
+
+1. وجود ملف DomainState وسلامة بنيته.
+2. وجود كل مرجع محلي في `evidence_refs` داخل جذر المستودع وعدم خروجه عنه.
+3. قدرة adapter على إعادة إنتاج المخرج من ملفات المصدر المثبتة، مع مطابقة SHA-256 وbyte-for-byte.
+
+الفحص الجديد يغطي المستوى الثاني فقط؛ لا يجلب URI خارجياً ولا يثبت محتواه أو بصمته. يبقى المستوى الثالث مطلوباً لكل adapter.
+
+النتيجة على `main-phase2@770224f2`:
+- WDI لديه source extract وmetadata وsummary committed؛ ويمكن إعادة بناء DomainStates من هذه المدخلات. historical availability/revision يظل مجهولاً.
+- COMTRADE لديه 124 DomainState، لكن raw JSON/request المشار إليها غير موجودة في الشجرة؛ ليس replayable.
+- WGI يفتقد مخرج DomainState وملف WGI_CSV.zip؛ provenance hash أو summary لا يعوضان bytes المصدر.
+- الأصول الخمسة المفقودة تحت `experiments/**` تبقى دون أي تعديل أو إعادة إنشاء.
+
+يُمنع تمرير أصل إلى مسار إنتاجي قابل لإعادة التشغيل عند وجود مراجع محلية مفقودة أو غير محمولة. المرحلة التنفيذية التالية هي استعادة raw inputs الحقيقية، ثم بناء adapter deterministic واختبار إعادة إنتاج outputs، بدءاً من COMTRADE وWGI كلٌ على حدة.
