@@ -301,6 +301,7 @@ class P2AMagnitudeProvenanceTests(unittest.TestCase):
                 for line in ledger_path.read_text(encoding="utf-8").splitlines()
             ]
             summary = json.loads(summary_path.read_text(encoding="utf-8"))
+            ledger_size = ledger_path.stat().st_size
 
         self.assertEqual(len(records), 6)
         self.assertEqual([record["record_type"] for record in records].count("run"), 1)
@@ -315,7 +316,7 @@ class P2AMagnitudeProvenanceTests(unittest.TestCase):
         self.assertIn(
             "P2_A_MAGNITUDE_PROVENANCE_SUMMARY.json", records[0]["output_refs"]
         )
-        self.assertEqual(summary["research_ledger"]["bytes_after"], ledger_path.stat().st_size)
+        self.assertEqual(summary["research_ledger"]["bytes_after"], ledger_size)
 
     def test_contract_decision_states_match_all_reconcile_states(self):
         contract_path = (
