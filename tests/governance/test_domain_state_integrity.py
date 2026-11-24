@@ -203,5 +203,32 @@ class DomainStateIntegrityTests(unittest.TestCase):
         self.assertEqual(report["files_with_unresolved_evidence_refs"], ["present.jsonl"])
         self.assertIn("MISSING_LOCAL_EVIDENCE_REFERENCES", report["readiness_conditions"])
 
+    def test_external_only_evidence_references_block_replayability(self):
+        with TemporaryDirectory() as directory:
+            root = Path(directory)
+            path = root / "states.jsonl"
+            path.write_text(json.dumps(state(evidence_refs=[
+                "https://example.invalid/source.csv",
+            ])) + "\n", encoding="utf-8")
+            report = audit_domain_state_file(
+                root, "states.jsonl", REQUIRED, "annual",
+                verify_local_evidence_refs=True,
+            )
+        self.assertEqual(report["status"], "pass")
+        self.assertEqual(report["evidence_ref_status"], "BLOCKED_EXTERNAL_EVIDENCE_UNVERIFIED")
+
+    def test_absolute_evidence_paths_are_nonportable_and_block_replayability(self):
+        with TemporaryDirectory() as directory:
+            root = Path(directory)
+            absolute_source = (root / "source.csv").resolve()
+            absolute_source.write_text("source", encoding="utf-8")
+            path = root / "states.jsonl"
+            path.write_text(json.dumps(state(evidence_refs=[str(absolute_source)])) + "\n", encoding="utf-8")
+            report = audit_domain_state_file(
+                root, "states.jsonl", REQUIRED, "annual",
+                verify_local_evidence_refs=True,
+            )
+        self.assertEqual(report["evidence_ref_status"], "BLOCKED_NONPORTABLE_ABSOLUTE_PATHS")
+
 if __name__ == "__main__":
     unittest.main()

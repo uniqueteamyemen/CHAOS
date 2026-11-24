@@ -265,7 +265,7 @@ def audit_domain_state_file(
         elif base["evidence_refs_absolute_unverified"]:
             base["evidence_ref_status"] = "BLOCKED_NONPORTABLE_ABSOLUTE_PATHS"
         elif base["evidence_refs_external_unverified"]:
-            base["evidence_ref_status"] = "PASS_LOCAL_PATHS_EXTERNAL_UNVERIFIED"
+            base["evidence_ref_status"] = "BLOCKED_EXTERNAL_EVIDENCE_UNVERIFIED"
         else:
             base["evidence_ref_status"] = "PASS"
     return base
@@ -324,13 +324,17 @@ def build_domain_state_integrity_report(
     ]
     nonportable_evidence_files = [
         item["path"] for item in file_reports
-        if item["evidence_ref_status"] == "BLOCKED_NONPORTABLE_ABSOLUTE_PATHS"
+        if item["evidence_ref_status"] in {
+            "BLOCKED_NONPORTABLE_ABSOLUTE_PATHS",
+            "BLOCKED_EXTERNAL_EVIDENCE_UNVERIFIED",
+        }
     ]
     files_with_unresolved_evidence = [
         item["path"] for item in file_reports
         if item["evidence_ref_status"] in {
             "BLOCKED_MISSING_LOCAL_PATHS",
             "BLOCKED_NONPORTABLE_ABSOLUTE_PATHS",
+            "BLOCKED_EXTERNAL_EVIDENCE_UNVERIFIED",
             "FAIL_UNSAFE_PATHS",
         }
     ]
@@ -342,7 +346,7 @@ def build_domain_state_integrity_report(
     if missing_evidence_references:
         readiness_conditions.append("MISSING_LOCAL_EVIDENCE_REFERENCES")
     if nonportable_evidence_files:
-        readiness_conditions.append("NONPORTABLE_ABSOLUTE_EVIDENCE_REFERENCES")
+        readiness_conditions.append("NONPORTABLE_OR_EXTERNAL_UNVERIFIED_EVIDENCE_REFERENCES")
     if unsafe_evidence_references:
         readiness_conditions.append("UNSAFE_EVIDENCE_REFERENCES")
 
@@ -382,6 +386,9 @@ def build_domain_state_integrity_report(
         "evidence_refs_seen": sum(item["evidence_refs_seen"] for item in file_reports),
         "evidence_refs_external_unverified": sum(
             item["evidence_refs_external_unverified"] for item in file_reports
+        ),
+        "evidence_refs_absolute_unverified": sum(
+            item["evidence_refs_absolute_unverified"] for item in file_reports
         ),
         "readiness_conditions": readiness_conditions,
         "readiness": readiness,

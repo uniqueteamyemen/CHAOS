@@ -463,3 +463,6 @@ P2 production engineering run مكتمل؛ إغلاق P2 علمياً غير م�
 - الأصول الخمسة المفقودة تحت `experiments/**` تبقى دون أي تعديل أو إعادة إنشاء.
 
 يُمنع تمرير أصل إلى مسار إنتاجي قابل لإعادة التشغيل عند وجود مراجع محلية مفقودة أو غير محمولة. المرحلة التنفيذية التالية هي استعادة raw inputs الحقيقية، ثم بناء adapter deterministic واختبار إعادة إنتاج outputs، بدءاً من COMTRADE وWGI كلٌ على حدة.
+
+
+تقرير PR #41 أظهر بالتفصيل 250 مسار دليل محلياً مفقوداً (8,516 occurrence): 248 إحالة من COMTRADE و2 من OECD PMR، مع تكرار كل مرجع OECD 4,134 مرة. WDI اجتاز فحص المسارات المحلية الثلاثة. يجب استعادة raw inputs لـCOMTRADE وOECD، وWGI output/source، ثم إضافة deterministic rebuild checks. URI خارجي غير مفحوص أو absolute path لا يمنح replayability.
