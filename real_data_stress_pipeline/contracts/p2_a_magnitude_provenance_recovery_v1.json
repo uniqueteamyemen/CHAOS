@@ -1,0 +1,64 @@
+{
+  "contract_id": "CHAOS_P2_A_USGS_MAGNITUDE_PROVENANCE_RECOVERY_V1",
+  "purpose": "Recover preferred magnitude-source metadata required before regional/time-varying seismic magnitude-completeness estimation.",
+  "source": {
+    "provider": "USGS ANSS ComCat",
+    "endpoint": "https://earthquake.usgs.gov/fdsnws/event/1/query",
+    "format": "csv",
+    "required_fields": [
+      "id",
+      "time",
+      "mag",
+      "magType",
+      "magSource",
+      "net"
+    ]
+  },
+  "input_artifact": {
+    "audit_id": "CHAOS-P2.2.3-DOMAIN-NULL-DECLUSTERING",
+    "accepted_catalogs": 5,
+    "accepted_catalog_hashes_must_match": true,
+    "source_artifact_is_immutable": true
+  },
+  "query": {
+    "time_start_inclusive": true,
+    "time_end_inclusive": true,
+    "analysis_window": "[start,end)",
+    "minimum_magnitude_query_threshold": 4.5,
+    "minimum_magnitude_is_not_completeness_estimate": true,
+    "query_limit": 20000,
+    "saturation_split": "recursive time split; raw saturated responses retained",
+    "split_boundary_overlap": "deduplicate by event id; conflicting duplicate metadata is a hard failure"
+  },
+  "reconciliation": {
+    "join_key": "event id",
+    "magnitude_absolute_tolerance": 0.001,
+    "magnitude_type_match_case_insensitive": true,
+    "origin_time_absolute_tolerance_seconds": 0.001,
+    "missing_mag_source": "UNRESOLVED; never infer from network code",
+    "source_mixture": "requires stratification; do not pool across sources",
+    "accepted_catalog_must_not_be_rewritten": true
+  },
+  "decision_states": [
+    "FAIL_RECONCILIATION",
+    "PARTIAL_MAG_SOURCE_MISSING_REQUIRES_REVIEW",
+    "SOURCE_MIXTURE_REQUIRES_STRATIFICATION",
+    "SOURCE_HOMOGENEOUS_CANDIDATE_PENDING_CALIBRATION"
+  ],
+  "downstream_gate": "Mc(t,region) candidate analysis may start only after every accepted event is reconciled and magSource is present; mixed sources must be analyzed in separate source strata.",
+  "research_ledger": {
+    "contract_id": "CHAOS_RESEARCH_LEDGER_V1",
+    "path": "governance/ledger/RESEARCH_LEDGER_V1.jsonl",
+    "record_types": [
+      "run",
+      "pattern_decision"
+    ],
+    "append_only": true
+  },
+  "non_goals": [
+    "No P2.2 519-series evaluation rerun",
+    "No seismic detector changes",
+    "No Mc acceptance or null-model fitting in this provenance-recovery stage",
+    "No edits to experiments/** or structural_engine/isolated_break_detector_v1/**"
+  ]
+}
