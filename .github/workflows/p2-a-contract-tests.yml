@@ -7,6 +7,8 @@ on:
       - 'scripts/audits/p2_a_usgs_magnitude_provenance.py'
       - 'tests/audits/test_p2_a_usgs_magnitude_provenance.py'
       - 'real_data_stress_pipeline/contracts/p2_a_magnitude_provenance_recovery_v1.json'
+      - 'real_data_stress_pipeline/run_pipeline.py'
+      - 'real_data_stress_pipeline/config/*.json'
       - '.github/workflows/p2-a-*.yml'
 
 permissions:
