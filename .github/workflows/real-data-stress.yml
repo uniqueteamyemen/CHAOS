@@ -25,14 +25,17 @@ permissions:
 
 concurrency:
   group: chaos-p2-2-stress-v4-${{ github.ref }}
-  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+  # A narrowly scoped main-branch marker push cancels an already-running
+  # full cohort workflow while its matching job conditions skip full P2 work.
+  cancel-in-progress: ${{ github.event_name == 'pull_request' || (github.event_name == 'push' && contains(github.event.head_commit.message, '[skip-p2-full]')) }}
 
 jobs:
   publish-phase1-archive:
     needs: prepare
     if: >-
       github.event_name != 'pull_request' &&
-      (github.event_name != 'workflow_dispatch' || github.ref == 'refs/heads/main-phase2')
+      (github.event_name != 'workflow_dispatch' || github.ref == 'refs/heads/main-phase2') &&
+      (github.event_name != 'push' || !contains(github.event.head_commit.message, '[skip-p2-full]'))
     runs-on: ubuntu-latest
     timeout-minutes: 20
     permissions:
@@ -70,7 +73,8 @@ jobs:
   prepare:
     if: >-
       github.event_name != 'pull_request' &&
-      (github.event_name != 'workflow_dispatch' || github.ref == 'refs/heads/main-phase2')
+      (github.event_name != 'workflow_dispatch' || github.ref == 'refs/heads/main-phase2') &&
+      (github.event_name != 'push' || !contains(github.event.head_commit.message, '[skip-p2-full]'))
     runs-on: ubuntu-latest
     timeout-minutes: 360
     permissions:
