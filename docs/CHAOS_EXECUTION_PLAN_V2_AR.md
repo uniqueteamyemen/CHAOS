@@ -402,12 +402,44 @@ CHAOS محرك عام لاكتشاف البنية الزمنية داخل الس
 - USGS يواصل P2 في سلامة الكتالوج، وفحص completeness، والتوصيف والتجارب المقارنة. لا تُمنح ادعاءات FPR أو اعتماد null زلزالي قبل صلاحية `Mc(t,region)` ونموذج point-process واختبارات الملاءمة اللازمة. لا يُستخدم stationary bootstrap العام للزلازل.
 - فشل null خاص بسلسلة أو cohort يمنع اعتماد إحصاء null لذلك النطاق فقط؛ لا يوقف تنفيذ الكاشف أو الأفواج الأخرى، ولا يُستبدل بنموذج غير مؤهل.
 
-### 17.3 متطلبات P1 المفتوحة
+### 17.3 حالة P1 — غلاف الفترة الزمنية
 
-يستمر P1 بالتوازي مع P2 cohort-scoped. عقد `source_record_observation_v1` الحالي يتضمن `event_time` و`available_at` و`source_revision` و`revision_status`، لكنه لا يعرّف بعد `observation_period_start` و`observation_period_end` كما تتطلب الخطة. يُستكمل هذا العقد واختباراته من دون ملء حقول النسخ التاريخية المفقودة بالتخمين.
+تم إكمال الفجوة العقدية الخاصة بالفترة الزمنية على مستوى السلسلة/المجموعة عبر PR #38، المدمج في `main-phase2` بالالتزام `c62e0f4874749316b2ce7697484f78ba4abbe4bd`.
+
+- العقد الجديد: `observation_foundation/contracts/observation_time_support_v1.schema.json`.
+- الحقول المطلوبة: `observation_period_start`, `observation_period_end`, `native_frequency`; و`boundary_semantics` اختياري.
+- بقي `source_record_observation_v1.schema.json` على مستوى السجل الفردي دون تغيير؛ حقول الفترة لا تدخل في `logical_record_id` أو `canonical_record_id`.
+- نجح Workflow `observation-foundation-contract.yml` على PR، ثم نجح مجدداً على push بعد الدمج؛ كما نجح D0 baseline validation بعد الدمج.
+- لا يعني وجود schema أن جميع adapters صارت تعلن time_support. المهمة المتبقية في P1 هي ربط الغلاف ببيانات المصدر/السلسلة الفعلية حيث توجد حدود مصدرية موثقة، مع رفض الاستدلال من أول وآخر صف.
+- تبقى `available_at` و`source_revision` التاريخية المفقودة `UNKNOWN`; ولا تمنح إضافة time support أهلية as-of للنسخ القديمة.
+
 
 ### 17.4 حدود MP0 والحوكمة
 
 MP0 يوثّق الحالة ولا يغيّر صلاحيات المستخدم أو التطبيق أو إعدادات Rulesets أو bypass أو متطلبات الموافقة. تظل حماية `experiments-immutable` كما هي، وتظل `experiments/**` خارج نطاق تعديل هذه المرحلة. تُسجل الحماية المرصودة وقت الجرد كما هي، ولا تُستنتج حالة Classic Branch Protection عندما يتعذر قراءتها.
 
 **قرار التقدم:** P0/D0 يبقى `P0_IN_PROGRESS` إلى أن تكتمل مواءمة العقود والجرد والتحقق التشغيلي المطلوب. هذا لا يمنع بدء P1 ولا تشغيل P2 المستقل بحسب cohort. ولا يتغير شرط عدم بدء Engine 2 قبل اعتماد D6 وتسليم Engine 1 المجمد.
+
+
+## 18. إثبات P2 الإنتاجي الكامل وحدود الاعتماد — 2026-11-24
+
+### 18.1 التشغيل الهندسي
+
+ثبت من GitHub Actions أن التشغيل الكامل `45244943216` عمل على `main-phase2@72edc44b183e0c7c92e1edae362426d189e0c886` في 2026-11-23 ونجحت المراحل التالية: Prepare، shards التقييم الأربعة، Aggregate، Domain Null audit، Markov real-data audit، Markov injected-break power audit، ثم مرحلة نشر الإغلاق.
+
+- 519 مرشحاً: 51 Pink Sheet، 458 GEM، و10 تمثيلات USGS.
+- `AGGREGATE_COMPLETE verified=519/519`; لا نتائج مفقودة أو مكررة، واستعيد الترتيب الأصلي.
+- زمن Prepare: 3,533.087 ثانية؛ زمن Aggregate: 1.626 ثانية.
+- أُنتج manifest وchecksums، ونُشر Release `p2-phase-close-v1.0` على commit التشغيل، مع التحقق من 11 remote assets.
+
+### 18.2 حدود null على مستوى cohort
+
+اجتازت G1 عدد 361/519. أصبح null مؤهلاً لـ359 سلسلة اقتصادية (48 Pink Sheet و311 GEM). بقي 160 بلا null: 158 فشلت G1، وتمثيلان زلزاليان اجتازا G1 لكنهما ظلا `SKIPPED_DOMAIN_NULL_REQUIRED`. لذلك اكتمال التنفيذ 519/519 لا يعني أن 519 سلسلة اجتازت null.
+
+### 18.3 قيود USGS
+
+اكتمل جلب وفحص سلامة بيانات الأحزمة الخمسة (94,730 حدثاً مقبولاً، وحالة واحدة محجورة)، لكن `catalog_completeness=NOT_ASSESSED`. كل أحداث الأحزمة تفتقد `magnitude source`، وأنواع المقدار heterogeneous، ولم يثبت `Mc(t,region)` أو point-process null. لذلك لا تعتمد seismic FPR أو ETAS/Hawkes أو Poisson استدلالياً.
+
+### 18.4 القرار
+
+P2 production engineering run مكتمل؛ إغلاق P2 علمياً غير مكتمل. تبقى المقاييس الخمسة في الخطة (false alarms/decade أو ARL0، conditional delay، miss rate، FDR/alpha-spending، coverage/abstention/intervals) بوابات اعتماد، منفصلة حسب cohort. لا يبدأ Engine 2 قبل D6.
