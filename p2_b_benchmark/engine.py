@@ -11,20 +11,15 @@ import numpy as np
 
 BASELINE_MODES = {
     "A_FAST": "fast",
-    "A_MARKOV_CUSUM": "markov_cusum",
     "A_CONSENSUS": "consensus",
 }
 
-PARALLEL_FUSION_ARMS = ("G", "H", "J", "K", "I")
 VARIANTS = {
     **{arm: {"kind": "break_detector_v1", "mode": mode}
        for arm, mode in BASELINE_MODES.items()},
-    "G": {"kind": "parallel_fusion", "h": 12.5, "transition": "reset"},
-    "H": {"kind": "parallel_fusion", "h": 12.5, "transition": "hold"},
-    "J": {"kind": "parallel_fusion", "h": 14.5, "transition": "hold"},
-    "K": {"kind": "parallel_fusion", "h": 15.5, "transition": "hold"},
-    "I": {"kind": "parallel_fusion", "h": 16.5, "transition": "hold"},
 }
+
+QUIET_POINTS = 40
 
 # Extension algorithms are registered through this adapter contract. The
 # metadata remains JSON-serializable; callables are kept out of VARIANTS.
@@ -134,36 +129,72 @@ def run_registered_detector(
     arm: str,
     *,
     causal_audit: bool = False,
+    quiet_points: int = QUIET_POINTS,
 ) -> dict[str, Any]:
-    """Run a registered extension and optionally prefix-replay every hit."""
+    """Run a causal extension; enforce the quiet gate, prefix replay and suffix invariance."""
     if arm not in _EXTENSION_RUNNERS:
         raise ValueError(f"unknown_extension_detector:{arm}")
     x = np.asarray(values, dtype=float)
-    if x.ndim != 1 or x.size < 1 or not np.all(np.isfinite(x)):
-        raise ValueError("extension_input_must_be_finite_1d")
+    if x.ndim != 1 or x.size <= quiet_points or not np.all(np.isfinite(x)):
+        raise ValueError("extension_input_must_be_finite_1d_and_longer_than_quiet_window")
+    quiet_scale = mad_sigma(x[:quiet_points])
+    if not math.isfinite(quiet_scale) or quiet_scale <= 0:
+        return {
+            "status": "ABSTAIN", "abstain_reason": "ZERO_QUIET_SCALE",
+            "hits": [], "events": [], "event_count": 0,
+            "causal_audit_violations": 0 if causal_audit else None,
+            "causal_audit_unverifiable_prefixes": 0 if causal_audit else None,
+            "transition_periods": 0,
+        }
     runner = _EXTENSION_RUNNERS[arm]
     normalized = _normalize_extension_result(runner(x.copy()), x.size, arm)
+    hits = normalized["hits"]
+    events = normalized["events"]
+    if any(int(hit["index"]) < quiet_points for hit in hits):
+        raise ValueError(f"{arm}_emitted_before_quiet_window")
+    if any(int(event["start_index"]) < quiet_points for event in events):
+        raise ValueError(f"{arm}_event_started_before_quiet_window")
+
     violations = 0
     if causal_audit:
-        for hit in normalized["hits"]:
+        # Each reported decision must be reproducible from the prefix ending at
+        # its actual emission time (not from a later full-series context).
+        for hit in hits:
             t = int(hit["index"])
-            prefix_raw = runner(x[:t + 1].copy())
-            prefix = _normalize_extension_result(prefix_raw, t + 1, arm)
-            if not any(candidate["index"] == t and candidate["sign"] == hit["sign"]
+            prefix = _normalize_extension_result(runner(x[:t + 1].copy()), t + 1, arm)
+            if not any(candidate["index"] == t
+                       and candidate["sign"] == hit["sign"]
                        and candidate["detector"] == hit["detector"]
                        for candidate in prefix["hits"]):
                 violations += 1
-        for event in normalized["events"]:
+        for event in events:
             t = int(event["start_index"])
-            prefix_raw = runner(x[:t + 1].copy())
-            prefix = _normalize_extension_result(prefix_raw, t + 1, arm)
+            prefix = _normalize_extension_result(runner(x[:t + 1].copy()), t + 1, arm)
             if not any(candidate["start_index"] == t and candidate["sign"] == event["sign"]
                        for candidate in prefix["events"]):
                 violations += 1
+
+        # Mutating only the future suffix must not alter any earlier decision.
+        cut = max(quiet_points + 1, int(x.size * 0.65))
+        if cut < x.size:
+            altered = x.copy()
+            altered[cut:] = altered[cut:][::-1] * -1.713 + 0.271
+            changed = _normalize_extension_result(runner(altered), x.size, arm)
+            token = lambda rows: [(h["index"], h["sign"], h["detector"])
+                                  for h in rows if h["index"] < cut]
+            if token(hits) != token(changed["hits"]):
+                violations += 1
+            event_token = lambda rows: [
+                (e["start_index"], e["sign"]) for e in rows if e["start_index"] < cut
+            ]
+            if event_token(events) != event_token(changed["events"]):
+                violations += 1
+
     return {
-        "hits": normalized["hits"],
-        "events": normalized["events"],
-        "event_count": len(normalized["events"]) or len(normalized["hits"]),
+        "status": "OK",
+        "hits": hits,
+        "events": events,
+        "event_count": len(events) or len(hits),
         "causal_audit_violations": violations if causal_audit else None,
         "causal_audit_unverifiable_prefixes": 0 if causal_audit else None,
         "transition_periods": 0,
@@ -503,8 +534,9 @@ def run_all(
     values: list[float] | np.ndarray,
     *,
     causal_audit: bool = False,
-    quiet_points: int = 40,
+    quiet_points: int = QUIET_POINTS,
 ) -> dict[str, Any]:
+    """Run only the frozen A baselines and the five registered independent detectors."""
     x = np.asarray(values, dtype=float)
     if x.ndim != 1 or not np.all(np.isfinite(x)) or x.size <= quiet_points:
         raise ValueError("series_must_be_finite_1d_and_longer_than_quiet_window")
@@ -514,9 +546,7 @@ def run_all(
             arm: {
                 "status": "ABSTAIN",
                 "abstain_reason": "ZERO_QUIET_SCALE",
-                "hits": [],
-                "events": [],
-                "event_count": 0,
+                "hits": [], "events": [], "event_count": 0,
                 "transition_periods": 0,
                 "causal_audit_violations": 0 if causal_audit else None,
                 "causal_audit_unverifiable_prefixes": 0 if causal_audit else None,
@@ -525,23 +555,8 @@ def run_all(
         }
 
     output = run_baseline(x, causal_audit=causal_audit)
-    for variant in PARALLEL_FUSION_ARMS:
-        result = run_parallel_fusion(x, variant=variant, quiet_points=quiet_points)
-        output[variant] = {
-            "status": result.get("status", "OK"),
-            "abstain_reason": result.get("abstain_reason"),
-            "hits": result["hits"],
-            "events": result["events"],
-            "event_count": len(result["events"]),
-            "transition_periods": result["transition_periods"],
-            "causal_audit_violations": (
-                audit_parallel_prefix_invariance(x, variant, quiet_points=quiet_points)
-                if causal_audit else None
-            ),
-            "causal_audit_unverifiable_prefixes": 0 if causal_audit else None,
-        }
     for arm in tuple(_EXTENSION_RUNNERS):
-        output[arm] = run_registered_detector(x, arm, causal_audit=causal_audit)
+        output[arm] = run_registered_detector(
+            x, arm, causal_audit=causal_audit, quiet_points=quiet_points
+        )
     return output
-
-

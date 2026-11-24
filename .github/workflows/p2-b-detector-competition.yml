@@ -72,6 +72,8 @@ jobs:
             -o /tmp/chaos-p2-prepared-45244943216.zip
           echo "c83f6e960296fbbdb687650a798959f08cb8d98db68de8ca713d7be278e824fe  /tmp/chaos-p2-prepared-45244943216.zip" | sha256sum --check
       - name: Run assigned shard
+        env:
+          P2B_DETECTOR_PLUGIN_MODULES: p2_b_benchmark.detectors
         run: |
           set -euo pipefail
           python -u -m p2_b_benchmark.run \
@@ -124,6 +126,8 @@ jobs:
       - name: Aggregate and validate all four shards locally
         id: aggregate
         if: always()
+        env:
+          P2B_DETECTOR_PLUGIN_MODULES: p2_b_benchmark.detectors
         run: |
           python -u -m p2_b_benchmark.run \
             --aggregate-shards artifacts/p2_b_shards \

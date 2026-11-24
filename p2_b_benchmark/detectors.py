@@ -1,0 +1,139 @@
+"""Independent P2-B detector candidates. Two named methods are explicitly adaptations.
+
+FOCuS and R-FPOP implementations are documented research-inspired candidates, not
+claims of exact reference-code or paper-conformance. BOCPD is a normal predictive
+online run-length model; Post-Quiet Huber and Bartlett LRV are independent
+robust-residual and HAC-standardized-residual detectors.
+"""
+from __future__ import annotations
+import math
+import numpy as np
+from .engine import mad_sigma, register_detector
+
+QUIET = 40
+EPS = 1e-12
+
+def _base(values):
+    x = np.asarray(values, dtype=float)
+    if x.ndim != 1 or x.size <= QUIET or not np.all(np.isfinite(x)):
+        raise ValueError("detector_requires_finite_1d_series_longer_than_40")
+    q = x[:QUIET]
+    scale = mad_sigma(q)
+    return x, float(np.median(q)), float(scale)
+
+def _abstain(scale):
+    return not math.isfinite(scale) or scale <= 0
+
+def focus(values):
+    """FOCuS-inspired bounded multi-window online likelihood scan."""
+    x, centre, scale = _base(values)
+    if _abstain(scale): return {"hits": [], "metadata": {"status":"ABSTAIN","reason":"ZERO_QUIET_SCALE"}}
+    windows=(4,8,12,20,32,52)
+    hits=[]; last=-10**9
+    for t in range(QUIET,len(x)):
+        best=(0.0,0)
+        for w in windows:
+            seg=x[max(QUIET,t-w+1):t+1]-centre
+            if seg.size<3: continue
+            total=float(np.sum(seg)); score=abs(total)/(scale*math.sqrt(seg.size)+EPS)
+            if score>best[0]: best=(score,1 if total>=0 else -1)
+        if best[0]>=4.25 and t-last>=8:
+            hits.append({"index":t,"sign":best[1],"detector":"focus_scan","score":best[0]}); last=t
+    return {"hits":hits,"metadata":{"status":"OK","claim":"FOCuS-inspired bounded candidate scan","windows":list(windows),"threshold":4.25}}
+
+def rfpop(values):
+    """R-FPOP-inspired robust online segmentation using a bounded candidate set."""
+    x, centre, scale = _base(values)
+    if _abstain(scale): return {"hits": [], "metadata": {"status":"ABSTAIN","reason":"ZERO_QUIET_SCALE"}}
+    y=(x-centre)/scale; hits=[]; candidates=[QUIET]; min_seg=8
+    penalty=8.0*math.log(max(len(x),2))
+    for t in range(QUIET+2*min_seg,len(x)):
+        candidates.append(t-min_seg); candidates=candidates[-80:]
+        left_all=y[QUIET:t+1]; med_all=float(np.median(left_all))
+        base=float(np.sum((left_all-med_all)**2))
+        best_gain=0.0; best_s=None
+        for s in candidates:
+            left,right=y[QUIET:s],y[s:t+1]
+            if left.size<min_seg or right.size<min_seg: continue
+            ml,mr=float(np.median(left)),float(np.median(right))
+            loss=float(np.sum((left-ml)**2)+np.sum((right-mr)**2))
+            gain=base-loss-penalty
+            if gain>best_gain: best_gain,best_s=gain,s
+        if best_s is not None and best_gain>0 and (not hits or t-hits[-1]["index"]>=12):
+            sign=1 if np.median(y[best_s:t+1])>=np.median(y[QUIET:best_s]) else -1
+            hits.append({"index":t,"sign":sign,"detector":"rfpop_robust_segment","gain":best_gain})
+            candidates=[t]
+    return {"hits":hits,"metadata":{"status":"OK","claim":"R-FPOP-inspired bounded robust segmentation","penalty":penalty,"min_segment":min_seg,"candidate_cap":80}}
+
+def bocpd(values):
+    """Bayesian online change-point detection with a Gaussian predictive model."""
+    x, centre, scale = _base(values)
+    if _abstain(scale): return {"hits": [], "metadata": {"status":"ABSTAIN","reason":"ZERO_QUIET_SCALE"}}
+    hazard=1/80.0; obs_var=scale*scale; prior_var=4*obs_var
+    probs=np.array([1.0]); means=np.array([centre]); variances=np.array([prior_var])
+    hits=[]; threshold=0.08
+    for t in range(QUIET,len(x)):
+        v=float(x[t]); pred=variances+obs_var
+        logp=-0.5*(np.log(2*math.pi*pred)+(v-means)**2/pred); logp-=float(np.max(logp))
+        like=np.exp(logp); grow=probs*like*(1-hazard); cp=float(np.sum(probs*like*hazard))
+        nxt=np.concatenate(([cp],grow)); total=float(nxt.sum())
+        if not math.isfinite(total) or total<=0:
+            probs=np.array([1.]); means=np.array([centre]); variances=np.array([prior_var]); continue
+        probs=nxt/total
+        means=np.concatenate(([centre],(variances*v+obs_var*means)/pred))[:257]
+        variances=np.concatenate(([prior_var],(variances*obs_var)/pred))[:257]
+        probs=probs[:257]; probs/=float(probs.sum())
+        cp_prob=float(probs[0])
+        if cp_prob>=threshold and (not hits or t-hits[-1]["index"]>=10):
+            hits.append({"index":t,"sign":1 if v>=centre else -1,"detector":"bocpd_change_probability","change_probability":cp_prob})
+    return {"hits":hits,"metadata":{"status":"OK","hazard":hazard,"threshold":threshold,"run_length_cap":256,"model":"Gaussian predictive"}}
+
+def post_quiet_huber(values):
+    """Robust Huber-clipped residual run detector following the quiet calibration."""
+    x, centre, scale = _base(values)
+    if _abstain(scale): return {"hits": [], "metadata": {"status":"ABSTAIN","reason":"ZERO_QUIET_SCALE"}}
+    clipped=np.clip((x-centre)/scale,-1.5,1.5); hits=[]
+    run_sign=0; run_start=None; score=0.0
+    for t in range(QUIET,len(x)):
+        r=float(clipped[t]); sign=1 if r>0 else -1 if r<0 else 0
+        if not sign or (run_sign and sign!=run_sign):
+            run_sign,run_start,score=sign,(t if sign else None),(abs(r) if sign else 0.0)
+        else:
+            run_sign=sign; score+=abs(r)
+        if run_start is not None and t-run_start+1>=5 and score>=6:
+            hits.append({"index":t,"sign":run_sign,"detector":"post_quiet_huber_run","clipped_score":score})
+            run_sign,run_start,score=0,None,0.0
+    return {"hits":hits,"metadata":{"status":"OK","clip_sigma":1.5,"min_run":5,"score_threshold":6}}
+
+def bartlett_lrv(values):
+    """Bartlett-kernel HAC long-run-variance studentized residual detector."""
+    x, centre, scale = _base(values)
+    if _abstain(scale): return {"hits": [], "metadata": {"status":"ABSTAIN","reason":"ZERO_QUIET_SCALE"}}
+    y=x-centre; window=24; min_points=16; threshold=2.25; hits=[]
+    for t in range(QUIET,len(x)):
+        prior=y[max(QUIET,t-window):t]
+        if prior.size<min_points: continue
+        demeaned=prior-float(np.mean(prior)); gamma0=float(np.dot(demeaned,demeaned)/prior.size)
+        if gamma0<=0: continue
+        lrv=gamma0; bw=max(1,int(math.sqrt(prior.size)))
+        for lag in range(1,min(bw,prior.size-1)+1):
+            cov=float(np.dot(demeaned[lag:],demeaned[:-lag])/prior.size)
+            lrv+=2*(1-lag/(bw+1))*cov
+        se=math.sqrt(max(lrv,EPS)/prior.size); score=float(y[t])/(se+EPS)
+        if abs(score)>=threshold:
+            hits.append({"index":t,"sign":1 if score>0 else -1,"detector":"bartlett_lrv_hac","studentized_residual":score})
+    return {"hits":hits,"metadata":{"status":"OK","window":window,"min_points":min_points,"threshold":threshold,"kernel":"Bartlett","bandwidth":"floor_sqrt_n"}}
+
+def register_all():
+    specs=[
+      ("FOCuS",focus,"online changepoint scan","FOCuS-inspired bounded multi-window candidate scan"),
+      ("R-FPOP",rfpop,"robust functional pruning","R-FPOP-inspired bounded robust segmentation"),
+      ("BOCPD",bocpd,"bayesian online changepoint","Gaussian predictive Bayesian online run-length model"),
+      ("Post-Quiet Huber",post_quiet_huber,"robust residual detector","Huber-clipped post-quiet signed residual run"),
+      ("Bartlett LRV",bartlett_lrv,"long-run variance detector","Bartlett-kernel HAC studentized residual"),
+    ]
+    for name,fn,family,description in specs:
+        register_detector(name,fn,family=family,version="1.0.0",description=description,
+                          parameters={"quiet_points":QUIET})
+
+REGISTERED_ARMS=register_all()
