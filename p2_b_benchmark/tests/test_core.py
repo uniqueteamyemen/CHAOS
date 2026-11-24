@@ -1,5 +1,8 @@
+import json
 import random
+import tempfile
 import unittest
+from pathlib import Path
 
 import numpy as np
 
@@ -16,7 +19,16 @@ from p2_b_benchmark.engine import (
     _EXTENSION_RUNNERS,
 )
 
-from p2_b_benchmark.run import _aggregate, _one_series, _score_all
+from p2_b_benchmark.run import (
+    _aggregate,
+    _one_series,
+    _score_all,
+    _build_protocol,
+    _series_manifest_sha256,
+    _sorted_ids_sha256,
+    aggregate_shard_files,
+    combine_shard_documents,
+)
 
 
 class ParallelFusionCausalityTests(unittest.TestCase):
@@ -166,6 +178,145 @@ class ParallelFusionCausalityTests(unittest.TestCase):
         self.assertFalse(scored["H"]["detected"], "post-onset hit cannot validate an event that started pre-onset")
         self.assertFalse(scored["J"]["pre_onset_alert"])
         self.assertTrue(scored["J"]["detected"])
+
+
+    @staticmethod
+    def synthetic_metrics_rows():
+        rows = []
+        arms = list(VARIANTS)
+        for index in range(458):
+            rows.append({
+                "id": f"gem:{index:03d}", "source": "gem", "n": 120 + (index % 17),
+                "null_eligible": index < 311,
+                "observed_status": "ABSTAIN" if index == 0 else "OK",
+                "observed": {arm: (index + arm_index) % 4 for arm_index, arm in enumerate(arms)},
+                "null": ({arm: {
+                    "alarm_replicates": 1, "event_count": 2,
+                    "valid_replicates": 2 if index == 0 else 3,
+                    "abstained_replicates": 1 if index == 0 else 0,
+                    "conditional_alarm_probability": 0.5 if index == 0 else 1.0 / 3.0,
+                    "events_per_replicate": 1.0 if index == 0 else 2.0 / 3.0,
+                    "replicates_attempted": 3, "status": "OK",
+                } for arm in arms} if index < 311 else {}),
+                "injected": {arm: {
+                    "positive_3sigma": ({"status": "ABSTAIN", "detected": None, "delay": None,
+                                          "pre_onset_alert": None, "wrong_direction": None, "missed": None}
+                                         if index == 0 else
+                                         {"status": "OK", "detected": index % 2 == 0,
+                                          "delay": 3 + (index % 9), "pre_onset_alert": index % 7 == 0,
+                                          "wrong_direction": index % 13 == 0, "missed": index % 2 != 0}),
+                    "negative_3sigma": ({"status": "ABSTAIN", "detected": None, "delay": None,
+                                          "pre_onset_alert": None, "wrong_direction": None, "missed": None}
+                                         if index == 0 else
+                                         {"status": "OK", "detected": index % 3 == 0,
+                                          "delay": 4 + (index % 11), "pre_onset_alert": index % 8 == 0,
+                                          "wrong_direction": index % 17 == 0, "missed": index % 3 != 0}),
+                } for arm in arms},
+                "causal": {arm: {"violations": 0, "unverifiable": 0} for arm in arms},
+            })
+        for index in range(51):
+            rows.append({
+                "id": f"pink:{index:03d}", "source": "pink_sheet", "n": 100 + (index % 13),
+                "null_eligible": index < 48,
+                "observed_status": "OK",
+                "observed": {arm: (index + arm_index) % 3 for arm_index, arm in enumerate(arms)},
+                "null": ({arm: {
+                    "alarm_replicates": 0, "event_count": 1,
+                    "valid_replicates": 3, "abstained_replicates": 0,
+                    "conditional_alarm_probability": 0.0,
+                    "events_per_replicate": 1.0 / 3.0,
+                    "replicates_attempted": 3, "status": "OK",
+                } for arm in arms} if index < 48 else {}),
+                "injected": {arm: {
+                    "positive_3sigma": {"status": "OK", "detected": index % 2 == 0,
+                                         "delay": 2 + index % 5, "pre_onset_alert": False,
+                                         "wrong_direction": False, "missed": index % 2 != 0},
+                    "negative_3sigma": {"status": "OK", "detected": index % 3 == 0,
+                                         "delay": 5 + index % 7, "pre_onset_alert": index % 9 == 0,
+                                         "wrong_direction": False, "missed": index % 3 != 0},
+                } for arm in arms},
+                "causal": {arm: {"violations": 0, "unverifiable": 0} for arm in arms},
+            })
+        return sorted(rows, key=lambda row: row["id"])
+
+    def test_four_shard_aggregation_matches_unsplit_rows_and_summary(self):
+        rows = self.synthetic_metrics_rows()
+        self.assertEqual(len(rows), 509)
+        source_integrity = {
+            "series": 509, "pink_sheet": 51, "gem": 458,
+            "null_eligible": 359, "null_eligible_pink_sheet": 48,
+            "null_eligible_gem": 311, "null_ineligible": 150,
+            "source_commit": "fixture-source-commit",
+            "prepared_artifact_sha256": "fixture-artifact-sha256",
+            "pink_source_sha256": "fixture-pink-sha256",
+            "pink_raw_values_persisted": False,
+            "gem_values_source": "fixture",
+        }
+        manifest_sha = _series_manifest_sha256(rows)
+        shards = []
+        for shard_index in range(4):
+            shard_rows = [row for index, row in enumerate(rows) if index % 4 == shard_index]
+            shards.append({
+                "schema": "chaos-p2-b-shard-v2",
+                "shard_index": shard_index, "shard_count": 4,
+                "run_id": "fixture-run-123", "run_attempt": 1,
+                "expected_series_count": 509, "expected_shard_rows": len(shard_rows),
+                "null_replicates": 3, "series_manifest_sha256": manifest_sha,
+                "sorted_ids_sha256": _sorted_ids_sha256([row["id"] for row in rows]),
+                "sorted_ids": [row["id"] for row in rows],
+                "protocol": _build_protocol(3), "source_integrity": source_integrity,
+                "series_results": shard_rows,
+            })
+
+        # Exercise the local --aggregate-shards path: it reads only shard JSON files.
+        with tempfile.TemporaryDirectory() as tmp:
+            shard_dir = Path(tmp) / "shards"
+            shard_dir.mkdir()
+            for shard in shards:
+                path = shard_dir / f"shard_{shard['shard_index']}_of_4.json"
+                path.write_text(json.dumps(shard), encoding="utf-8")
+            combined = aggregate_shard_files([str(shard_dir)], output_dir=Path(tmp) / "out")
+        self.assertEqual(combined["series_results"], rows)
+        self.assertEqual(combined["summary"], _aggregate(rows, null_replicates=3))
+        self.assertEqual(combined["execution"]["shard_rows"], {0: 128, 1: 127, 2: 127, 3: 127})
+        self.assertEqual(combined["source_integrity"]["null_eligible"], 359)
+        self.assertEqual(combined["series_results"][0]["observed_status"], "ABSTAIN")
+        self.assertTrue(any(row["source"] == "pink_sheet" for row in combined["series_results"]))
+        self.assertTrue(any(row["source"] == "gem" and row["null_eligible"] is False
+                            for row in combined["series_results"]))
+
+    def test_shard_aggregator_rejects_mixed_attempts_and_missing_shards(self):
+        rows = self.synthetic_metrics_rows()
+        source_integrity = {
+            "series": 509, "pink_sheet": 51, "gem": 458,
+            "null_eligible": 359, "null_eligible_pink_sheet": 48,
+            "null_eligible_gem": 311, "null_ineligible": 150,
+        }
+        manifest_sha = _series_manifest_sha256(rows)
+        shards = []
+        for shard_index in range(4):
+            shard_rows = [row for index, row in enumerate(rows) if index % 4 == shard_index]
+            shards.append({
+                "schema": "chaos-p2-b-shard-v2", "shard_index": shard_index, "shard_count": 4,
+                "run_id": "fixture-run-123", "run_attempt": 1,
+                "expected_series_count": 509, "expected_shard_rows": len(shard_rows),
+                "null_replicates": 3, "series_manifest_sha256": manifest_sha,
+                "sorted_ids_sha256": _sorted_ids_sha256([row["id"] for row in rows]),
+                "sorted_ids": [row["id"] for row in rows],
+                "protocol": _build_protocol(3), "source_integrity": source_integrity,
+                "series_results": shard_rows,
+            })
+        with self.assertRaisesRegex(ValueError, "shard_coverage_incomplete_or_invalid") as missing:
+            combine_shard_documents(shards[:3])
+        self.assertEqual(missing.exception.diagnostic["missing_shard_indices"], [3])
+        self.assertEqual(
+            len(missing.exception.diagnostic["missing_series_ids"]), 127
+        )
+        self.assertTrue(missing.exception.diagnostic["missing_ids_by_shard"]["3"])
+        mixed = [dict(doc) for doc in shards]
+        mixed[2] = {**mixed[2], "run_attempt": 2}
+        with self.assertRaisesRegex(ValueError, "mixed_run_or_attempt"):
+            combine_shard_documents(mixed)
 
     def test_frozen_break_detector_modes_replay_from_prefix(self):
         try:

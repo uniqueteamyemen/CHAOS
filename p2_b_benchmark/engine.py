@@ -524,25 +524,3 @@ def run_all(
     return output
 
 
-def score_injected(result: dict[str, Any], *, onset: int, sign: int) -> dict[str, Any]:
-    scored: dict[str, Any] = {}
-    for arm, payload in result.items():
-        hits = payload.get("hits", [])
-        correct = [int(hit["time"] if "time" in hit else hit["index"])
-                   for hit in hits
-                   if int(hit.get("time", hit.get("index", -1))) >= onset
-                   and int(hit.get("direction", hit.get("sign", 0))) == sign]
-        wrong = [hit for hit in hits
-                 if int(hit.get("time", hit.get("index", -1))) >= onset
-                 and int(hit.get("direction", hit.get("sign", 0))) == -sign]
-        pre = [hit for hit in hits
-               if 52 <= int(hit.get("time", hit.get("index", -1))) < onset]
-        first = min(correct) if correct else None
-        scored[arm] = {
-            "detected": first is not None,
-            "delay": first - onset if first is not None else None,
-            "pre_onset_alert": bool(pre),
-            "wrong_direction": bool(wrong),
-            "missed": first is None,
-        }
-    return scored
