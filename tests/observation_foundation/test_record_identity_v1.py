@@ -375,9 +375,17 @@ class SourceRecordIdentityTests(unittest.TestCase):
                 "boundary_semantics",
             },
         )
-        self.assertNotIn("observation_period_start", {
-            "source_record_field"
-        })
+        record_schema_path = (
+            Path(__file__).resolve().parents[2]
+            / "observation_foundation"
+            / "contracts"
+            / "source_record_observation_v1.schema.json"
+        )
+        record_schema = json.loads(
+            record_schema_path.read_text(encoding="utf-8")
+        )
+        self.assertNotIn("observation_period_start", record_schema["properties"])
+        self.assertNotIn("observation_period_end", record_schema["properties"])
 
     def test_time_support_accepts_native_annual_boundaries_and_default_semantics(self):
         normalized = normalize_time_support({
