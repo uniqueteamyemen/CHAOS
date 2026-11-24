@@ -59,6 +59,7 @@ def _one_series(item: dict[str, Any], null_replicates: int) -> dict[str, Any]:
         result["causal"][arm] = {
             "violations": int(payload.get("causal_audit_violations") or 0),
             "unverifiable": int(payload.get("causal_audit_unverifiable_prefixes") or 0),
+            "short_prefix_checks": list(payload.get("causal_audit_details") or []),
         }
 
     onset = max(52, int(values.size * 0.70))
@@ -81,6 +82,9 @@ def _one_series(item: dict[str, Any], null_replicates: int) -> dict[str, Any]:
                 result["injected"].setdefault(arm, {})[label] = {"status": "OK", **score}
                 result["causal"][arm]["violations"] += int(detected[arm].get("causal_audit_violations") or 0)
                 result["causal"][arm]["unverifiable"] += int(detected[arm].get("causal_audit_unverifiable_prefixes") or 0)
+                result["causal"][arm]["short_prefix_checks"].extend(
+                    detected[arm].get("causal_audit_details") or []
+                )
 
     if result["null_eligible"]:
         rng = np.random.default_rng(_seed_for(str(item["id"])))
@@ -729,6 +733,23 @@ def write_outputs(report: dict[str, Any], output_dir: str | Path) -> tuple[Path,
             f"| {arm} | {row.get('prefix_replay_or_mutation_violations', 'NA')} | "
             f"{row.get('unverifiable_short_prefix_events', 'NA')} | {row.get('status', 'NA')} |"
         )
+    short_prefix_checks = []
+    for row in report.get("series_results", []):
+        checks = row.get("causal", {}).get("A_CONSENSUS", {}).get("short_prefix_checks", [])
+        for check in checks:
+            short_prefix_checks.append((row["id"], check))
+    lines.extend(["", "## فحص Prefix القصير لـ A_CONSENSUS", ""])
+    lines.append("هذا الفحص يعيد تشغيل كل حدث كان Prefix الخاص به أقصر من 87 مشاهدة، باستخدام الحد الفعلي الذي تقبله BreakDetectorV1 وهو 52 مشاهدة.")
+    lines.extend(["", "| Series | Detection index | Direction | Prefix length | Replay |", "|---|---:|---:|---:|---|"])
+    if short_prefix_checks:
+        for series_id, check in short_prefix_checks:
+            lines.append(
+                f"| {series_id} | {check['time']} | {check['direction']} | "
+                f"{check['prefix_length']} | {check['status']} |"
+            )
+    else:
+        lines.append("| — | — | — | — | No short-prefix consensus events |")
+    lines.extend(["", f"إجمالي الأحداث المفحوصة: **{len(short_prefix_checks)}**.", ""])
     lines.extend(["", "## قيود التفسير", ""] + [f"- {item}" for item in report["limitations"]])
     md_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
     return json_path, md_path

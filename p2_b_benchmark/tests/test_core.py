@@ -1,7 +1,10 @@
 import json
 import random
+import sys
 import tempfile
+import types
 import unittest
+from unittest import mock
 from pathlib import Path
 
 import numpy as np
@@ -317,6 +320,41 @@ class ParallelFusionCausalityTests(unittest.TestCase):
         mixed[2] = {**mixed[2], "run_attempt": 2}
         with self.assertRaisesRegex(ValueError, "mixed_run_or_attempt"):
             combine_shard_documents(mixed)
+
+    def test_consensus_short_prefix_replays_from_actual_detector_minimum(self):
+        class FakeBreakDetectorV1:
+            MIN_SERIES_LENGTH = 52
+            MIN_FULL_CONSENSUS_LENGTH = 87
+
+            def __init__(self, mode="markov_cusum", markov_threshold=8.5):
+                self.mode = mode
+
+            def analyze(self, values):
+                # A full run emits at index 65; a supported 66-point prefix
+                # must reproduce the same event for all three modes.
+                rows = [{"detection_time": 65, "direction": 1}] if len(values) >= 66 else []
+                return {"structural_breaks": rows}
+
+        parent = types.ModuleType("structural_engine")
+        parent.__path__ = []
+        adapter = types.ModuleType("structural_engine.isolated_break_detector_v1")
+        adapter.BreakDetectorV1 = FakeBreakDetectorV1
+        with mock.patch.dict(sys.modules, {
+            "structural_engine": parent,
+            "structural_engine.isolated_break_detector_v1": adapter,
+        }):
+            result = run_baseline(np.linspace(0.0, 1.0, 100), causal_audit=True)
+
+        consensus = result["A_CONSENSUS"]
+        self.assertEqual(consensus["causal_audit_violations"], 0)
+        self.assertEqual(consensus["causal_audit_unverifiable_prefixes"], 0)
+        self.assertEqual(consensus["causal_audit_details"], [{
+            "time": 65,
+            "direction": 1,
+            "prefix_length": 66,
+            "minimum_supported_prefix": 52,
+            "status": "MATCH",
+        }])
 
     def test_frozen_break_detector_modes_replay_from_prefix(self):
         try:

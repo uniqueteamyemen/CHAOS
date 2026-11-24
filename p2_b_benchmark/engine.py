@@ -443,6 +443,7 @@ def run_baseline(values: list[float] | np.ndarray, *, causal_audit: bool = False
         events = []
         violations = 0
         unverifiable_prefixes = 0
+        short_prefix_checks = []
         for event in result.get("structural_breaks", []):
             detection_time = event.get("detection_time")
             if detection_time is None:
@@ -454,14 +455,30 @@ def run_baseline(values: list[float] | np.ndarray, *, causal_audit: bool = False
                 if t < 0 or t >= x.size:
                     violations += 1
                     continue
-                minimum_prefix = (
-                    BreakDetectorV1.MIN_FULL_CONSENSUS_LENGTH
-                    if mode == "consensus" else BreakDetectorV1.MIN_SERIES_LENGTH
+                # Use the detector's actual input contract. MIN_FULL_CONSENSUS_LENGTH
+                # describes availability of a full matching window, not a minimum
+                # length accepted by analyze() for prefix replay.
+                minimum_prefix = int(BreakDetectorV1.MIN_SERIES_LENGTH)
+                prefix_length = t + 1
+                is_short_consensus_prefix = (
+                    mode == "consensus"
+                    and prefix_length < int(BreakDetectorV1.MIN_FULL_CONSENSUS_LENGTH)
                 )
-                if t + 1 < minimum_prefix:
+                check = None
+                if is_short_consensus_prefix:
+                    check = {
+                        "time": t,
+                        "direction": direction,
+                        "prefix_length": prefix_length,
+                        "minimum_supported_prefix": minimum_prefix,
+                    }
+                if prefix_length < minimum_prefix:
                     unverifiable_prefixes += 1
+                    if check is not None:
+                        check["status"] = "UNVERIFIABLE_BELOW_MIN_SERIES_LENGTH"
+                        short_prefix_checks.append(check)
                     continue
-                prefix_result = BreakDetectorV1(mode=mode).analyze(x[:t + 1])
+                prefix_result = BreakDetectorV1(mode=mode).analyze(x[:prefix_length])
                 found = any(
                     int(candidate.get("detection_time", -1)) == t
                     and int(candidate.get("direction", 0)) == direction
@@ -469,11 +486,15 @@ def run_baseline(values: list[float] | np.ndarray, *, causal_audit: bool = False
                 )
                 if not found:
                     violations += 1
+                if check is not None:
+                    check["status"] = "MATCH" if found else "MISMATCH"
+                    short_prefix_checks.append(check)
         output[arm] = {
             "hits": events,
             "event_count": len(events),
             "causal_audit_violations": violations if causal_audit else None,
             "causal_audit_unverifiable_prefixes": unverifiable_prefixes if causal_audit else None,
+            "causal_audit_details": short_prefix_checks if causal_audit and mode == "consensus" else None,
         }
     return output
 
