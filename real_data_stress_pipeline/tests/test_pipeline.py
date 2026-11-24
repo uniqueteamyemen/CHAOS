@@ -7,6 +7,7 @@ from real_data_stress_pipeline.run_pipeline import (
     g0, g1, boot, parse_pink, longest_run, month, label_month, returns,
     stationary_sample, wilson, series_category, shock_eval, applicable_shock_series,
     aggregate, make_time_support, time_support_registry, TIME_SUPPORT_SCHEMA,
+    P2_SOURCE_SCOPE_DECISIONS,
 )
 
 class StressPipelineContractTests(unittest.TestCase):
@@ -45,6 +46,20 @@ class StressPipelineContractTests(unittest.TestCase):
             self.assertIn("END_EXCLUSIVE", support["boundary_semantics"])
             self.assertIn("NOT_MAGNITUDE_COMPLETENESS", support["boundary_semantics"])
             self.assertFalse(belt["magnitude_completeness_status"] == "ESTABLISHED")
+
+    def test_p2_source_scope_quarantines_deferred_sources_without_rewriting_engine1_lineage(self):
+        decisions = P2_SOURCE_SCOPE_DECISIONS
+        self.assertEqual(decisions["scope"], "P2.2")
+        self.assertEqual(
+            set(decisions["decisions"]),
+            {"COMTRADE", "OECD_PMR", "WGI"},
+        )
+        for decision in decisions["decisions"].values():
+            self.assertEqual(decision["status"], "QUARANTINED_OUT_OF_SCOPE")
+        self.assertEqual(
+            decisions["scope_effect"],
+            "P2_SCOPE_ONLY; ENGINE1_GLOBAL_SOURCE_LINEAGE_UNCHANGED",
+        )
 
     def test_time_support_rejects_empty_schema_values(self):
         with self.assertRaisesRegex(ValueError, "empty_required_value"):

@@ -59,6 +59,10 @@ class ProductionPipelineTests(unittest.TestCase):
             manifest_seed["observation_time_support"],
             p2.time_support_registry(),
         )
+        self.assertEqual(
+            manifest_seed["p2_source_scope_decisions"],
+            p2.P2_SOURCE_SCOPE_DECISIONS,
+        )
         production._verify_manifest_configuration(manifest_seed)
 
         drifted = copy.deepcopy(p2.time_support_registry())
@@ -66,6 +70,14 @@ class ProductionPipelineTests(unittest.TestCase):
         with patch.object(p2, "time_support_registry", return_value=drifted):
             with self.assertRaisesRegex(
                 production.IntegrityError, "observation_time_support_mismatch"
+            ):
+                production._verify_manifest_configuration(manifest_seed)
+
+        changed_scope = copy.deepcopy(p2.P2_SOURCE_SCOPE_DECISIONS)
+        changed_scope["decisions"]["WGI"]["status"] = "IN_SCOPE"
+        with patch.object(p2, "P2_SOURCE_SCOPE_DECISIONS", changed_scope):
+            with self.assertRaisesRegex(
+                production.IntegrityError, "p2_source_scope_decisions_mismatch"
             ):
                 production._verify_manifest_configuration(manifest_seed)
 
@@ -549,6 +561,10 @@ class ProductionPipelineTests(unittest.TestCase):
                         self.assertEqual(
                             manifest["observation_time_support"],
                             p2.time_support_registry(),
+                        )
+                        self.assertEqual(
+                            manifest["p2_source_scope_decisions"],
+                            p2.P2_SOURCE_SCOPE_DECISIONS,
                         )
                         frozen = json.loads(
                             (artifact_root / "frozen_candidates.json").read_text(encoding="utf-8")

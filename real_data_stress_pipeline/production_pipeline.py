@@ -339,6 +339,7 @@ def _manifest_seed(contract: dict[str, Any], dependencies: dict[str, Any]) -> di
         "gem_config": p2.GEM_CONFIG,
         "seismic_config": p2.SEISMIC_CONFIG,
         "observation_time_support": p2.time_support_registry(),
+        "p2_source_scope_decisions": p2.P2_SOURCE_SCOPE_DECISIONS,
         "run_timestamp_utc": p2.stamp(),
         "git_commit": os.getenv("GITHUB_SHA", "local-unresolved"),
         "branch": os.getenv("GITHUB_REF_NAME", "local"),
@@ -573,6 +574,12 @@ def _verify_manifest_configuration(manifest_seed: dict[str, Any]) -> None:
         raise IntegrityError("observation_time_support_missing")
     if json_bytes(frozen_time_support) != json_bytes(p2.time_support_registry()):
         raise IntegrityError("observation_time_support_mismatch")
+
+    frozen_source_scope = manifest_seed.get("p2_source_scope_decisions")
+    if frozen_source_scope is None:
+        raise IntegrityError("p2_source_scope_decisions_missing")
+    if json_bytes(frozen_source_scope) != json_bytes(p2.P2_SOURCE_SCOPE_DECISIONS):
+        raise IntegrityError("p2_source_scope_decisions_mismatch")
 
     contract_path = p2.HERE / "shock_event_contract.json"
     if not contract_path.is_file():

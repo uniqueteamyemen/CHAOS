@@ -217,6 +217,24 @@ def time_support_registry():
 
 
 TIME_SUPPORT_REGISTRY=time_support_registry()
+P2_SOURCE_SCOPE_DECISIONS={
+ "scope":"P2.2",
+ "decisions":{
+  "COMTRADE":{
+   "status":"QUARANTINED_OUT_OF_SCOPE",
+   "reason":"Deferred from the P2 Pink Sheet, GEM, and USGS cohorts; source recovery is not required by MP0 for this validation scope.",
+  },
+  "OECD_PMR":{
+   "status":"QUARANTINED_OUT_OF_SCOPE",
+   "reason":"Deferred from the P2 Pink Sheet, GEM, and USGS cohorts; source recovery is not required by MP0 for this validation scope.",
+  },
+  "WGI":{
+   "status":"QUARANTINED_OUT_OF_SCOPE",
+   "reason":"Deferred from the P2 Pink Sheet, GEM, and USGS cohorts; source recovery is not required by MP0 for this validation scope.",
+  },
+ },
+ "scope_effect":"P2_SCOPE_ONLY; ENGINE1_GLOBAL_SOURCE_LINEAGE_UNCHANGED",
+}
 PINK_TIME_SUPPORT=TIME_SUPPORT_REGISTRY["sources"]["pink_sheet"]["time_support"]
 GEM_TIME_SUPPORT=TIME_SUPPORT_REGISTRY["sources"]["gem"]["time_support"]
 USGS_TIME_SUPPORT_BY_BELT={
@@ -997,6 +1015,7 @@ def main():
  m={
   "version":"1.7","pipeline_config":PIPELINE_CONFIG,"gem_config":GEM_CONFIG,"seismic_config":SEISMIC_CONFIG,
   "observation_time_support":TIME_SUPPORT_REGISTRY,
+  "p2_source_scope_decisions":P2_SOURCE_SCOPE_DECISIONS,
   "run_timestamp_utc":stamp(),
   "git_commit":os.getenv("GITHUB_SHA","local-unresolved"),
   "branch":os.getenv("GITHUB_REF_NAME","local"),
