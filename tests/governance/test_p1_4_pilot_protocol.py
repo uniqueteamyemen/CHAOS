@@ -93,7 +93,7 @@ class P14PilotProtocolTests(unittest.TestCase):
         self.assertEqual(n["threshold_grids"]["FOCuS"], [15, 20, 25, 30, 35, 40, 45, 50, 60, 75, 90])
         self.assertEqual(n["threshold_grids"]["POST_QUIET_HUBER_MAD"], [4, 6, 8, 10, 12, 14, 16, 20, 24, 32])
         self.assertIn("MAD and Bartlett variants receive identical paths", n["null_seed_streams"])
-        self.assertEqual(n["paired_paths_rule"].count("same"), 1)
+        self.assertIn("identical", n["paired_paths_rule"])
 
     def test_c3_is_pending_and_never_silently_substituted(self):
         c3 = self.protocol["cohort_design"]["C3"]
