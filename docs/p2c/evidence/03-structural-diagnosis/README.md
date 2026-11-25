@@ -1,19 +1,8 @@
-# التشخيص البنيوي
+# Structural Diagnosis — Historical Reference Only
 
-## الهدف
-التشخيص البنيوي ضمن إغلاق P2-C.
+## Status
+`NOT_EXECUTED_ENGINE_SCOPE`
 
-## النطاق والمنهجية
-تشخيص حالات عدم المعايرة بعد 200 من AR والابتكارات وnull max-statistics؛ لا تغيير AR order أو null model أو P0 أو cohort.
+This document records the former Track B structural-diagnosis idea. The active P1.4 engine runner does not execute GARCH, ARCH-LM, lag-12, trend or related Track B diagnostics.
 
-## المدخلات
-Protocol v1.1.9، manifest، selection artifact، بيانات P2.2 وبصماتها، وrun_id/commit SHA من GitHub Actions.
-
-## المخرجات
-track_b_diagnostics.json مع SHA-256 وreplay command داخل artifact metadata.
-
-## معايير الحكم
-ESTIMATED / NOT_ESTIMABLE / NOT_RUN
-
-## التنفيذ
-Workflow CHAOS P1.4 Evidence-First P2-C Pipeline فقط. لا تشغيل محلي ولا نتائج مكتوبة يدوياً.
+The operational workflow is limited to Threshold-90 calibration, Rearm validation and the C1 detector-comparator Pilot. No Track B artifact is expected, and this diagnostic is not a gate for engine execution.

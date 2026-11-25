@@ -1,35 +1,29 @@
-# خريطة تكييف P2-C Evidence Pipeline على عقد P1.4
+# خطة الإغلاق الهندسي لـP1.4
 
 ## PRESERVE
-- `pilot_protocol.json` و`pilot_protocol.schema.json` كما هما عند `2ae721d`؛ لا تعاد كتابتهما لتطابق c5bda4d.
-- `selected_cohort_frame`: 40 سلسلة (20 C1 + 20 C2) و19 حالة/سلسلة؛ إطار اختيار لا نتيجة تنفيذ.
-- `cohort_manifest.json` وهويات C1/C2 وحصص 12/6/2 وبيانات C2.
-- اختبار `test_focus_contract_has_unique_40_20_windows_and_minimum_length`.
-- ملفا التدقيق `00-repository-integrity/README.md` و`01-unverified-claims-cleanup/README.md`.
-- مرجع P2-B وA_FAST وA_CONSENSUS ومحرك P2-C والأرشيف `experiments/**`.
+- `pilot_protocol.json` و`pilot_protocol.schema.json` حرفياً عند `2ae721d`.
+- `cohort_manifest.json` وهويات C1/C2 وحصص الاختيار.
+- `capability_envelope.json` واختبار `test_focus_contract_has_unique_40_20_windows_and_minimum_length`.
+- اختبار cohort-selection manifest binding.
+- ملفا التدقيق `00-repository-integrity/README.md` و`01-unverified-claims-cleanup/README.md` دون تعديل.
+- A_FAST وA_CONSENSUS كخطّي مقارنة للقراءة فقط.
 
-## ADAPT
-- ترحيل runner وWorkflow الأدلة ووثائق `docs/p2c/evidence/` مع مطابقة البروتوكول والعينة المجمدين.
-- إضافة seed phase `rearm` واختبارها؛ عدم تغيير تنفيذ `focus_reset_rearm` أو نافذة 20 observation.
-- إزالة توقع 7 حالات فشل وأي سقف 15/285؛ اشتقاق العدد من Artifacts الفعلية.
-- قصر Threshold 200 على النطاق المسجل: أعضاء C1 من Stratum 106 الذين يفشلون فعلياً عند Threshold 90 في الموضع 0.30. لا امتداد لـStratum 32 غير مسجل في baseline.
-- جعل استيراد `arch` محصوراً في Track B، وتثبيت `arch==7.2.0` في preflight وبيئة postprocess.
-- جعل Evidence workflow `workflow_dispatch` فقط، افتراضياً `contract_only`؛ تشغيل matrix لا يحدث إلا باختيار `full_20_series` صراحة.
-- إضافة اختبار manifest-selection binding إلى contract-gates، وإجراء arch import وpy_compile وCLI check في preflight خفيف.
+## ACTIVE ENGINE PATH
+1. Threshold-90 calibration للمرشحين العشرين المثبتين في C1، باستخدام بيانات التطوير لاختيار العتبات وholdout للتقييم.
+2. Rearm validation مع 40 observation أولية و20 observation بعد كل hit.
+3. Detector-comparator Pilot على كل مرشح اجتاز فعلياً معايرة Threshold-90 في المواقع الثلاثة وشرط `n>=150`.
+4. حفظ provenance وrun ID وcommit SHA وArtifact SHA-256 وreplay command.
 
-## فصل التنفيذ
-1. Contract gates: capability، protocol، injection، cohort-selection binding.
-2. Calibrate preflight: arch 7.2.0، import، py_compile، CLI.
-3. Full execution: matrix معايرة C1 لا تبدأ إلا باختيار صريح بعد نجاح البوابات؛ postprocess مشروط بنجاحها.
+## OUT OF OPERATIONAL SCOPE
+- Threshold-200: يظل مدوناً في البروتوكول المجمد، لكنه لا يستخدم كـfallback لتغيير أهلية المرشحين في Pilot الهندسي.
+- Track B: حذف من runner وworkflow؛ لا GARCH أو ARCH-LM أو lag-12 أو trend diagnostics في هذا المسار.
+- C2 وC3: خارج تنفيذ C1 Pilot الحالي.
 
-## نطاق Pilot
-- يعاير التشغيل المرشحين الـ20 المثبتين في C1.
-- ينفذ Pilot على كل مرشح اجتاز فعلياً FOCuS calibration في المواضع الثلاثة وشرط `n>=150`.
-- عدد السلاسل والحالات مشتق من Artifacts؛ لا استبدال IDs ولا سقف 15/285.
-- C2 لا ينفذ ضمن مسار C1-only، وC3 يظل PENDING_EXTERNAL_EVIDENCE.
+## WORKFLOW SAFETY
+- Evidence workflow يدوي فقط عبر `workflow_dispatch`.
+- الوضع الافتراضي `contract_only`: عقود + فحص بيئة + CLI.
+- مصفوفة C1 لا تبدأ إلا باختيار `full_20_series` صراحة بعد نجاح البوابات.
+- Postprocess يعمل فقط في وضع التشغيل الكامل وبعد نجاح contract-gates وruntime preflight؛ ويسمح بتقرير PARTIAL إذا أخفق بعض أفراد المصفوفة.
 
-## UNVERIFIED / NOT_RUN
-Threshold 90، Threshold 200، Track B، Rearm overlap وPilot تظل NOT_RUN حتى تنتج Artifacts أصلية. لا تشغيل ثقيل أثناء الترحيل أو اجتياز العقود.
-
-## الدمج
-نجاح CI وحده لا يمنح اعتماداً؛ الجودة وholdout وP0 والاتجاه والتأخير وrecall والتغطية بوابات مستقلة.
+## ACCEPTANCE
+نجاح contract gates وruntime preflight يثبت سلامة الترحيل والبيئة، ولا يثبت قدرة كشف إنتاجية. اعتماد المحرك يتطلب مراجعة نتائج Pilot الفعلية، بما فيها recall، false alerts، اتجاه الإشارة، التأخير والتغطية.

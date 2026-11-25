@@ -4,8 +4,6 @@ import argparse, hashlib, json, math, os, sys, time
 from pathlib import Path
 from typing import Any
 import numpy as np
-from statsmodels.stats.diagnostic import het_arch
-from statsmodels.tsa.stattools import acf
 
 ROOT=Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path: sys.path.insert(0,str(ROOT))
@@ -26,7 +24,6 @@ P0=.10
 FOCUS_GRID=(15,20,25,30,35,40,45,50,60,75,90)
 HUBER_GRID=(4,6,8,10,12,14,16,20,24,32)
 FPOP_GRID=(.5,.75,1,1.2,1.4,1.6,2,3,4,6,8,12,16)
-SUR="gem:CPTOTSAXN:SUR"
 
 def finite(x):
     if x is None: return None
@@ -266,116 +263,19 @@ def aggregate_calibrations(rows,ctx,out):
       "p0_target":P0,"protocol_sha256":ctx["source_sha256"]["protocol"],"series":rows}
     write_json(out/"calibration_results_all_strata.json",report)
     return report
-def threshold_for(cal,ext,sid,pos):
+def threshold_for(cal,sid,pos):
     row=cal["series"].get(sid,{}).get("positions",{}).get(f"{pos:.2f}",{})
     arm=row.get("arms",{}).get("FOCUS",{})
     if arm.get("status")=="CALIBRATED" and arm.get("frozen_threshold") is not None:
         return {"status":"CALIBRATED","threshold":arm["frozen_threshold"],"source":"THRESHOLD_90"}
-    if abs(pos-.30)<1e-9 and ext.get("results",{}).get(sid,{}).get("status")=="CALIBRATED":
-        return {"status":"CALIBRATED","threshold":200.0,"source":"THRESHOLD_200"}
     return {"status":"NOT_CALIBRATABLE","threshold":None,"source":None}
 
-def run_threshold200(cal,ctx):
-    if cal.get("status")!="COMPLETE":
-        return {"artifact_type":"P1_4_THRESHOLD_200_EXTENSION","status":"NOT_RUN",
-          "reason":"THRESHOLD_90_CALIBRATION_INCOMPLETE","target_series_count":None,
-          "target_series_ids":None,"results":{}}
-    extension=ctx["protocol"].get("execution",{}).get("pre_registered_grid_extension",{}).get("stratum_106")
-    if not isinstance(extension,dict): raise ValueError("STRATUM_106_THRESHOLD200_SCOPE_NOT_REGISTERED")
-    spec=extension.get("threshold_200_test",{})
-    if spec.get("status")!="NOT_RUN" or spec.get("planned_once") is not True:
-        raise ValueError("STRATUM_106_THRESHOLD200_PROTOCOL_STATE_MISMATCH")
-    threshold=float(spec.get("threshold",200))
-    if threshold!=200.0: raise ValueError("STRATUM_106_THRESHOLD200_VALUE_MISMATCH")
-    targets=[]
-    for sid,row in cal["series"].items():
-        status=row.get("positions",{}).get("0.30",{}).get("arms",{}).get("FOCUS",{}).get("status")
-        if ctx["classes"].get(sid)=="ADF_PASS_KPSS_FAIL" and status=="NOT_CALIBRATABLE":
-            targets.append(sid)
-    targets=sorted(targets)
-    out={"artifact_type":"P1_4_THRESHOLD_200_EXTENSION","status":"COMPLETE",
-      "registered_scope":extension.get("target"),"selection_source":extension.get("selection_source"),
-      "target_series_count":len(targets),"target_series_ids":targets,
-      "threshold":threshold,"threshold_500_tested":False,"results":{}}
-    for sid in targets:
-        arm=cal["series"][sid]["positions"]["0.30"]["arms"]["FOCUS"]
-        dev=arm["development_max_statistics"]; hold=arm["holdout_max_statistics"]
-        fit=calibrate_threshold(dev,[threshold],p0_target=P0,minimum_valid_replicates=950)
-        frozen=threshold if fit.get("status")=="CALIBRATED" else None
-        out["results"][sid]={"stratum":"STRATUM_106","threshold":threshold,"development":fit,
-          "holdout":p0_result(hold,frozen) if frozen is not None else {"status":"NOT_CALIBRATED"},
-          "same_threshold90_null_bank":True,"run_once":True,"status":fit.get("status")}
-    out["tested_series_count"]=len(out["results"])
-    out["selection_status"]="NO_ELIGIBLE_FAILURES" if not targets else "ARTIFACT_DERIVED"
-    return out
-def track_b(context,cal,ext,deadline):
-    uncal=[]
-    for sid in cal["series"]:
-        if any(threshold_for(cal,ext,sid,pos)["status"]!="CALIBRATED" for pos in POSITIONS): uncal.append(sid)
-    include_sur=SUR in cal["series"]
-    targets=sorted(set(uncal+([SUR] if include_sur else [])))
-    rows={}
-    for sid in targets:
-        if not live(deadline): break
-        x=np.asarray(context["series"][sid]["values"],dtype=float); n=len(x)
-        pre=x[:int(math.floor(.30*n))]; model=select_ar_model(pre)
-        rec={"series_id":sid,"g1_failure_class":context["classes"].get(sid),
-             "series_length":n,"ar_model_status":model.get("status"),
-             "classification":"STRUCTURAL_TARGET" if sid==SUR else "NOT_CALIBRATABLE"}
-        if model.get("status")=="OK":
-            residual=np.asarray(model["residuals"],dtype=float)
-            rec.update({"selected_ar_order":model["order"],"ar_coefficients":model["ar_coefficients"],
-                        "ar1_coefficient":model["ar_coefficients"][0],
-                        "residual_sigma":model["residual_sigma"],
-                        "residual_pool_sha256":model["residual_pool_sha256"]})
-            try:
-                from arch import arch_model
-                fit=arch_model(residual,mean="Zero",vol="GARCH",p=1,q=1,dist="normal").fit(disp="off",show_warning=False)
-                pars=fit.params
-                rec["garch_1_1"]={"status":"ESTIMATED" if int(fit.convergence_flag)==0 else "NOT_ESTIMABLE",
-                   "omega":finite(pars.get("omega")),"alpha":finite(pars.get("alpha[1]")),
-                   "beta":finite(pars.get("beta[1]")),
-                   "persistence":finite(pars.get("alpha[1]",0)+pars.get("beta[1]",0)),
-                   "convergence_flag":int(fit.convergence_flag)}
-            except Exception as exc: rec["garch_1_1"]={"status":"NOT_ESTIMABLE","reason":type(exc).__name__}
-            try:
-                lag=min(12,max(1,len(residual)//5))
-                lm,pv,fv,fp=het_arch(residual,nlags=lag)
-                rec["arch_lm"]={"status":"ESTIMATED","lm_statistic":finite(lm),"lm_pvalue":finite(pv),
-                                "f_statistic":finite(fv),"f_pvalue":finite(fp),"lags":lag}
-            except Exception as exc: rec["arch_lm"]={"status":"NOT_ESTIMABLE","reason":type(exc).__name__}
-            try:
-                rec["lag12_raw_autocorrelation"]=finite(acf(pre,nlags=12,fft=False)[12]) if len(pre)>12 else None
-                rec["lag12_residual_autocorrelation"]=finite(acf(residual,nlags=12,fft=False)[12]) if len(residual)>12 else None
-            except Exception as exc: rec["lag12_autocorrelation"]={"status":"NOT_ESTIMABLE","reason":type(exc).__name__}
-            sd=float(np.std(pre,ddof=1)); slope=float(np.polyfit(np.arange(len(pre)),pre,1)[0]) if len(pre)>2 else None
-            rec["normalized_prebreak_trend"]=slope*len(pre)/sd if slope is not None and sd>0 else None
-        for threshold in (90.,200.):
-            result=focus_reset_rearm(x,threshold=threshold) if n>=150 else {"status":"NOT_ELIGIBLE","reason":"FOCUS_MIN_N_150_REQUIRED"}
-            rec[f"original_focus_candidates_{int(threshold)}"]={"status":result.get("status"),
-                "hits":result.get("hits",[]),"count":len(result.get("hits",[])),"reason":result.get("reason")}
-        scores=cal["series"].get(sid,{}).get("positions",{}).get("0.30",{}).get("arms",{}).get("FOCUS",{}).get("development_max_statistics",[])
-        rec["focus_null_distribution"]={"count":len(scores),
-            "p50":finite(np.percentile(scores,50)) if scores else None,
-            "p90":finite(np.percentile(scores,90)) if scores else None,
-            "p95":finite(np.percentile(scores,95)) if scores else None,
-            "p99":finite(np.percentile(scores,99)) if scores else None,
-            "p99_9":finite(np.percentile(scores,99.9)) if scores else None,
-            "maximum":finite(max(scores)) if scores else None,
-            "exceedance_count_at_90":sum(v>=90 for v in scores),
-            "exceedance_count_at_200":sum(v>=200 for v in scores)}
-        rows[sid]=rec
-    return {"artifact_type":"P1_4_TRACK_B_NO_INJECTION_DIAGNOSTICS",
-            "status":"COMPLETE" if len(rows)==len(targets) else "PARTIAL",
-            "targets":targets,"series":rows,"structural_target_in_c1_pilot":include_sur,
-            "not_in_pilot_ids":[] if include_sur else [SUR],"no_injections":True,"no_parameter_changes":True}
-
-def rearm_overlap(context,cal,ext,deadline):
+def rearm_overlap(context,cal,deadline):
     rows={}
     for sid in cal["series"]:
         if not live(deadline): break
         x=np.asarray(context["series"][sid]["values"],dtype=float)
-        chosen=threshold_for(cal,ext,sid,.30)
+        chosen=threshold_for(cal,sid,.30)
         if len(x)<150 or chosen["status"]!="CALIBRATED":
             rows[sid]={"status":"NOT_ELIGIBLE","reason":"FOCUS_MIN_N_150_REQUIRED" if len(x)<150 else "NO_FROZEN_ANCHOR_THRESHOLD"}
             continue
@@ -413,10 +313,10 @@ def reference_hits(values,mode):
         hits.append({"detection_index":int(t),"estimated_change_index":int(event.get("onset_time",event.get("start_index",t))),"sign":int(sign)})
     return {"status":"OK","hits":hits,"hit_count":len(hits)}
 
-def detector_case(x,sid,case,cal,ext,ctx):
+def detector_case(x,sid,case,cal,ctx):
     pos=float(case["position_fraction"]) if case.get("position_fraction") is not None else .30
     key=f"{pos:.2f}"; block=cal["series"][sid]["positions"].get(key,{})
-    cfg=threshold_for(cal,ext,sid,pos)
+    cfg=threshold_for(cal,sid,pos)
     out={"A_FAST":reference_hits(x,"fast"),"A_CONSENSUS":reference_hits(x,"consensus")}
     focus=None
     if cfg["status"]=="CALIBRATED":
@@ -539,14 +439,14 @@ def pilot_metrics(series_results):
     else: output["FOCUS_PLUS_BOCPD_incremental_value"]={"status":"NOT_ESTIMABLE","paired_series":0}
     return output
 
-def run_pilot(ctx,cal,ext,out,deadline):
+def run_pilot(ctx,cal,out,deadline):
     cases_per_series=int(ctx["selection_frame"]["run_cases_per_series"])
     candidates=list(ctx["c1_ids"])
     chosen=[]
     for sid in candidates:
         if sid not in cal["series"]: continue
         if len(ctx["series"][sid]["values"])<150: continue
-        if all(threshold_for(cal,ext,sid,p)["status"]=="CALIBRATED" for p in POSITIONS): chosen.append(sid)
+        if all(threshold_for(cal,sid,p)["status"]=="CALIBRATED" for p in POSITIONS): chosen.append(sid)
     # All actually eligible C1 IDs are included; no replacement and no fixed cap.
     if not chosen:
         final={"artifact_type":"P1_4_PILOT_RESULTS","status":"NOT_RUN",
@@ -587,7 +487,7 @@ def run_pilot(ctx,cal,ext,out,deadline):
             if case["status"]=="NOT_ELIGIBLE":
                 case_rows.append({"case_index":i,"kind":"INJECTION","status":"NOT_ELIGIBLE","reason":case["reason"]})
                 processed+=1; continue
-            output=detector_case(np.asarray(case["values"],dtype=float),sid,case,cal,ext,ctx)
+            output=detector_case(np.asarray(case["values"],dtype=float),sid,case,cal,ctx)
             case_rows.append({"case_index":i,"kind":case["kind"],"status":"EXECUTED",
               "true_break_index":case.get("true_break_index"),"position_fraction":case.get("position_fraction"),
               "magnitude_sigma":case.get("magnitude_sigma"),"direction":case.get("direction"),
@@ -637,52 +537,59 @@ def postprocess(ctx,cal_dir,out,deadline):
     if unexpected: raise ValueError(f"UNEXPECTED_CALIBRATION_ID:{unexpected}")
     complete=sum(x.get("calibration_status")=="COMPLETE" for x in rows.values())
     missing=sorted(expected-set(rows))
-    ready=(complete==len(expected) and not missing)
-    cal={"artifact_type":"P1_4_THRESHOLD_90_CALIBRATION","status":"COMPLETE" if ready else "PARTIAL",
-      "planned_series":len(expected),"completed_series":complete,"missing_series_ids":missing,
-      "replicates_per_phase":REPS,"positions":list(POSITIONS),"p0_target":P0,
+    calibration_complete=(complete==len(expected) and not missing)
+    cal={"artifact_type":"P1_4_THRESHOLD_90_CALIBRATION",
+      "status":"COMPLETE" if calibration_complete else "PARTIAL",
+      "planned_series":len(expected),"completed_series":complete,
+      "missing_series_ids":missing,"replicates_per_phase":REPS,
+      "positions":list(POSITIONS),"p0_target":P0,
       "protocol_sha256":ctx["source_sha256"]["protocol"],"series":rows}
     write_json(out/"calibration_results_all_strata.json",cal)
-    ext=run_threshold200(cal,ctx); write_json(out/"threshold200_extension_results.json",ext)
     if cal["status"]=="COMPLETE":
-        tb=track_b(ctx,cal,ext,deadline); rearm=rearm_overlap(ctx,cal,ext,deadline)
+        rearm=rearm_overlap(ctx,cal,deadline)
     else:
-        tb={"artifact_type":"P1_4_TRACK_B_NO_INJECTION_DIAGNOSTICS","status":"NOT_RUN",
-          "reason":"THRESHOLD_90_CALIBRATION_INCOMPLETE","series":{}}
         rearm={"artifact_type":"P1_4_REARM_OVERLAP_MEASUREMENT","status":"NOT_RUN",
           "reason":"THRESHOLD_90_CALIBRATION_INCOMPLETE","series":{}}
-    write_json(out/"track_b_diagnostics.json",tb); write_json(out/"rearm_overlap_results.json",rearm)
+    write_json(out/"rearm_overlap_results.json",rearm)
     if cal["status"]=="COMPLETE" and live(deadline):
-        pilot=run_pilot(ctx,cal,ext,out,deadline)
+        pilot=run_pilot(ctx,cal,out,deadline)
     else:
         pilot={"status":"NOT_RUN","completed_series_ids":[]}
         write_json(out/"pilot_results.json",{"artifact_type":"P1_4_PILOT_RESULTS","status":"NOT_RUN",
           "candidate_series_count":len(ctx["c1_ids"]),"selected_series_ids":[],
-          "planned_series_count":None,"planned_cases_per_series":int(ctx["selection_frame"]["run_cases_per_series"]),
+          "planned_series_count":None,
+          "planned_cases_per_series":int(ctx["selection_frame"]["run_cases_per_series"]),
           "planned_cases":None,"series":{}})
         write_json(out/"pilot_run_manifest.json",{"manifest_id":"CHAOS_P1_4_PILOT_RUN_MANIFEST_V1",
           "status":"NOT_RUN","reason":"CALIBRATION_INCOMPLETE_OR_BUDGET_EXHAUSTED",
           "source_commit":os.environ.get("GITHUB_SHA"),"workflow_run_id":os.environ.get("GITHUB_RUN_ID"),
-          "protocol_version":ctx["protocol"]["protocol_version"],"protocol_sha256":ctx["source_sha256"]["protocol"],
-          "source_sha256":ctx["source_sha256"],"candidate_series_ids":ctx["c1_ids"],"selected_series_ids":[],
+          "protocol_version":ctx["protocol"]["protocol_version"],
+          "protocol_sha256":ctx["source_sha256"]["protocol"],
+          "source_sha256":ctx["source_sha256"],"candidate_series_ids":ctx["c1_ids"],
+          "selected_series_ids":[],
           "replay_command":"python p1_4_validation/run_evidence_pipeline.py --phase postprocess"})
     decision="PARTIAL_VALIDATION" if pilot.get("completed_series_ids") else "INCONCLUSIVE"
-    report={"artifact_type":"P2_C_COMPOSITE_DECISION","decision":decision,
-      "reason":"C1-only Pilot; C2 and C3 remain unvalidated. No production authorization.",
-      "calibration_status":cal["status"],"threshold200_status":ext.get("status"),
-      "track_b_status":tb.get("status"),"rearm_status":rearm.get("status"),
-      "pilot_status":pilot.get("status"),"C2_executed":False,"C3_status":"PENDING_EXTERNAL_EVIDENCE",
+    report={"artifact_type":"P1_4_ENGINE_PILOT_DECISION","decision":decision,
+      "scope":"C1_FROZEN_PILOT_ONLY",
+      "reason":"C1-only detector comparator Pilot; C2 and C3 remain unvalidated. No production authorization.",
+      "calibration_status":cal["status"],"rearm_status":rearm.get("status"),
+      "pilot_status":pilot.get("status"),
+      "threshold_200_extension":"NOT_EXECUTED_ENGINE_SCOPE",
+      "track_b_diagnostics":"NOT_EXECUTED_ENGINE_SCOPE",
+      "C2_executed":False,"C3_status":"PENDING_EXTERNAL_EVIDENCE",
       "source_commit":os.environ.get("GITHUB_SHA"),"run_id":os.environ.get("GITHUB_RUN_ID"),
       "protocol_sha256":ctx["source_sha256"]["protocol"],
       "replay_command":"python p1_4_validation/run_evidence_pipeline.py --phase postprocess"}
-    write_json(out/"p2_c_decision_report.json",report)
+    write_json(out/"p1_4_engine_pilot_decision.json",report)
     write_json(out/"execution_summary.json",{"calibration":cal["status"],
       "candidate_c1_series":len(expected),"completed_calibration_series":complete,
-      "missing_calibration_series":missing,"threshold200_target_series":ext.get("target_series_count"),
-      "threshold200_tested_series":ext.get("tested_series_count"),"track_b":tb.get("status"),
-      "rearm":rearm.get("status"),"pilot":pilot.get("status"),"decision":decision})
+      "missing_calibration_series":missing,"rearm":rearm.get("status"),
+      "pilot":pilot.get("status"),"decision":decision,
+      "threshold_200_extension":"NOT_EXECUTED_ENGINE_SCOPE",
+      "track_b_diagnostics":"NOT_EXECUTED_ENGINE_SCOPE"})
     write_inventory(out)
     return report
+
 def main():
     ap=argparse.ArgumentParser()
     ap.add_argument("--phase",choices=("calibrate","postprocess"),required=True)

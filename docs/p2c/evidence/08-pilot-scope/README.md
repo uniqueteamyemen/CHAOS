@@ -1,20 +1,15 @@
-# Pilot Scope — C1 Artifact-Eligible Subset
+# Pilot Scope — C1 Detector Comparator
 
-## الهدف
-تنفيذ Pilot جزئي على C1 فقط بعد اجتياز معايرة كل سلسلة لشروط الأهلية المجمدة.
+## Objective
+Run a bounded operational comparator Pilot on the frozen C1 candidates after the primary Threshold-90 calibration has produced real eligibility evidence.
 
-## إطار الاختيار مقابل نطاق التنفيذ
-يحفظ البروتوكول `selected_cohort_frame` إطار اختيار من 40 سلسلة: 20 من C1 و20 من C2، مع 19 حالة لكل سلسلة (حالة أصلية و18 حقناً). قيمة 40/760 تصف إطار الاختيار فقط؛ ليست تشغيل Pilot منفذاً ولا سقفاً تنفيذياً.
-يعالج Evidence Pipeline مرشحي C1 العشرين المثبتين في `cohort_manifest.json`. بعد اكتمال المعايرة، ينفذ Pilot على جميع سلاسل C1 التي اجتازت فعلياً شروط FOCuS في المواضع الثلاثة وشرط `n>=150`. يحسب عدد السلاسل والحالات من Artifact الأهلية وبروتوكول التشغيل. لا حد مسبق 15 سلسلة/285 حالة، ولا استبدال لهويات غير المؤهلة. C2 لا ينفذ في هذا المسار، وC3 خارج النطاق.
+## Selection frame vs execution
+The frozen `selected_cohort_frame` records 40 selected series (20 C1 + 20 C2) and 19 cases per series (one original plus 18 injections). The 40/760 values describe the selection frame, not executed work.
 
-## المدخلات
-Protocol v1.1.9 كما هو مجمد عند `2ae721d`، manifest، selection artifact، ملفات معايرة C1 وبصماتها، وrun_id/commit SHA من GitHub Actions.
+The active pipeline calibrates the 20 frozen C1 candidates. The Pilot executes on every C1 candidate that passes all three actual Threshold-90 FOCuS calibration gates and the `n>=150` minimum. No candidate ID is replaced and no fixed 15/285 execution ceiling is applied. Candidates that fail the primary calibration remain `NOT_CALIBRATABLE`; Threshold 200 is not used as a fallback. C2 and C3 are not executed in this C1-only path.
 
-## المخرجات
-`pilot_run_manifest.json` و`pilot_results.json` مع السلاسل المؤهلة الفعلية وعدد الحالات الفعلي وSHA-256 وreplay command.
+## Detector comparison
+The Pilot records FOCuS, Post-Quiet Huber variants, BOCPD prefix corroboration, R-FPOP retrospective segmentation, and read-only A_FAST/A_CONSENSUS references. Rearm overlap is measured separately to check the detector's 40/20 reset behavior.
 
-## معايير الحكم
-COMPLETE / PILOT_PARTIAL / NOT_RUN / INCONCLUSIVE
-
-## التنفيذ
-بعد نجاح contract-gates وcalibrate-preflight واكتمال معايرة مرشحي C1. لا تشغيل محلي ولا نتائج مكتوبة يدوياً.
+## Explicit exclusions
+Threshold-200 extension and Track B diagnostics remain documented in frozen protocol/history but are not run by this operational Pilot.

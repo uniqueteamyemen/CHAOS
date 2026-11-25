@@ -31,10 +31,10 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
-      - name: Install contract-test dependencies
+      - name: Install pinned contract-test runtime
         run: |
+          python -m pip install "numpy==1.26.4" "pandas==2.2.3"
           python -m pip install -r real_data_stress_pipeline/requirements.txt
-          python -m pip install arch==7.2.0
       - name: Run P1.4 runtime, protocol and capability contracts in Actions
         run: |
           set -euo pipefail
@@ -90,7 +90,9 @@ jobs:
           python-version: "3.11"
           cache: pip
       - name: Install pinned pipeline dependencies
-        run: python -m pip install -r real_data_stress_pipeline/requirements.txt
+        run: |
+          python -m pip install "numpy==1.26.4" "pandas==2.2.3"
+          python -m pip install -r real_data_stress_pipeline/requirements.txt
       - name: Download and SHA-verify frozen inputs
         env:
           GH_TOKEN: ${{ github.token }}
@@ -141,9 +143,8 @@ jobs:
           path: artifacts/p1_4/calibration/${{ matrix.series_key }}/
 
   postprocess:
-    if: ${{ inputs.execution_mode == 'full_20_series' && needs.calibrate.result == 'success' }}
     needs: [contract-gates, calibrate-preflight, calibrate]
-    if: ${{ always() }} && needs.contract-gates.result == 'success'
+    if: ${{ always() && inputs.execution_mode == 'full_20_series' && needs.contract-gates.result == 'success' && needs.calibrate-preflight.result == 'success' }}
     runs-on: ubuntu-latest
     timeout-minutes: 355
     env:
@@ -161,10 +162,10 @@ jobs:
         with:
           python-version: "3.11"
           cache: pip
-      - name: Install postprocessing dependencies
+      - name: Install pinned postprocessing dependencies
         run: |
+          python -m pip install "numpy==1.26.4" "pandas==2.2.3"
           python -m pip install -r real_data_stress_pipeline/requirements.txt
-          python -m pip install arch==7.2.0
       - name: Download per-series calibration artifacts
         uses: actions/download-artifact@v4
         with:
@@ -198,7 +199,7 @@ jobs:
           unzip -p /tmp/g1-1.zip shard-1.json > /tmp/p2-g1-shards/shard-1.json
           unzip -p /tmp/g1-2.zip shard-2.json > /tmp/p2-g1-shards/shard-2.json
           unzip -p /tmp/g1-3.zip shard-3.json > /tmp/p2-g1-shards/shard-3.json
-      - name: Run threshold-200, Track B, Rearm and Pilot in fixed order
+      - name: Run Rearm validation and C1 detector-comparator Pilot
         run: |
           set -euo pipefail
           python p1_4_validation/run_evidence_pipeline.py \
@@ -241,19 +242,18 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
-      - name: Install compatible pinned Track B environment
+      - name: Install pinned engine runtime environment
         run: |
           python -m pip install "numpy==1.26.4" "pandas==2.2.3"
           python -m pip install -r real_data_stress_pipeline/requirements.txt
-          python -m pip install arch==7.2.0
       - name: Verify arch import, bytecode compilation and CLI
         run: |
           set -euo pipefail
           python - <<'PY'
-          import arch
-          from arch import arch_model
-          assert arch.__version__ == "7.2.0", arch.__version__
-          print(f"arch=={arch.__version__}: import PASS")
+          import numpy, pandas, statsmodels
+          assert numpy.__version__ == "1.26.4", numpy.__version__
+          assert pandas.__version__ == "2.2.3", pandas.__version__
+          print(f"numpy=={numpy.__version__}; pandas=={pandas.__version__}: import PASS")
           PY
           python -m py_compile p1_4_validation/injection_runner.py p1_4_validation/run_evidence_pipeline.py
           python p1_4_validation/run_evidence_pipeline.py --help

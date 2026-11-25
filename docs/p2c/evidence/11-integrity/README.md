@@ -1,19 +1,15 @@
 # Integrity
 
-## الهدف
-حماية العقد وبصمات المدخلات ومصدر التنفيذ.
+## Objective
+Protect the frozen contract, selected identities, source artifacts and execution provenance.
 
-## النطاق والمنهجية
-Evidence workflow يدوي فقط عبر workflow_dispatch؛ لا يحتوي push trigger. يبدأ افتراضياً بوضع contract_only، ويجري contract gates وفحص بيئة arch/CLI فقط. لا تُطلق مصفوفة معايرة C1 إلا باختيار full_20_series صراحة وبعد نجاح البوابات. Workflow بوابة capability الخفيفة منفصل، ومقيد بالفرع النشط.
+## Scope and workflow
+The Evidence workflow is manual-only through `workflow_dispatch`. Its default mode is `contract_only`, which runs contract gates and a lightweight runtime preflight. The 20-series C1 matrix is reachable only by explicit selection of `full_20_series` after both gates pass.
 
-## المدخلات
-Protocol v1.1.9 المجمد عند 2ae721d، manifest، selection artifact وG1 shards الأربعة، وrun_id/commit SHA من GitHub Actions.
+The capability-contract workflow is also manual-only; neither workflow launches automatically on push.
 
-## المخرجات
-execution_provenance.txt وSHA256SUMS.txt مع SHA-256 وreplay command.
+## Runtime dependencies
+The active runner does not import `arch` and does not execute Track B. The runtime pins `numpy==1.26.4` and `pandas==2.2.3` consistently across contract, preflight, calibration and postprocess jobs.
 
-## معايير الحكم
-PASS / FAIL
-
-## التنفيذ
-كل التحقق والحساب في GitHub Actions فقط. لا تشغيل محلي ولا نتائج مكتوبة يدوياً.
+## Integrity outputs
+Run evidence includes source commit, workflow run ID, artifact SHA-256 inventory and replay commands. Raw series values are not written into Pilot results.
