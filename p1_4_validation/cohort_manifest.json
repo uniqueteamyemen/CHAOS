@@ -363,8 +363,8 @@
         "source",
         "source_cohort",
         "domain",
-        "observation_count_band",
-        "pre_injection_ar1_abs_band",
+        "length_band",
+        "ar1_abs_band",
         "missingness_pattern"
       ],
       "verified_count": 50,
