@@ -475,7 +475,7 @@ def _write_outputs(report: dict[str, Any], output_dir: str | Path) -> tuple[Path
         "## Conditional null diagnostics",
         "",
         "| Arm | Cohort | Combined P(≥1) | Development P(≥1) | Holdout P(≥1) | Abstained |",
-        "|---|---|---:|---:|---:|---:|
+        "|---|---|---:|---:|---:|---:|",
     ]
     for arm in P2C_VARIANTS:
         for cohort in ("all", "pink_sheet", "gem"):
