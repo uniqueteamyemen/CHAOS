@@ -155,7 +155,10 @@ def _interval_probe(left: float, right: float) -> float:
 
 
 def focus_detector(values: Any, *, quiet_points: int = QUIET_POINTS,
-                   threshold: float = FOCUS_THRESHOLD) -> dict[str, Any]:
+                   threshold: float = FOCUS_THRESHOLD,
+                   scale_override: float | None = None,
+                   scale_source: str = "MAD",
+                   include_statistic: bool = False) -> dict[str, Any]:
     """Two-sided Gaussian FOCuS statistic with exact functional pruning.
 
     Each active piece stores the upper-envelope quadratic over a disjoint
@@ -168,11 +171,43 @@ def focus_detector(values: Any, *, quiet_points: int = QUIET_POINTS,
         return _abstain_result("INSUFFICIENT_QUIET_WINDOW",
                                observations=int(x.size), required=quiet_points + 1)
     q = x[:quiet_points]
-    scale = mad_sigma(q)
+    try:
+        scale = mad_sigma(q) if scale_override is None else float(scale_override)
+    except (TypeError, ValueError):
+        scale = math.nan
     if not math.isfinite(scale) or scale <= 0:
-        return {"status": "ABSTAIN", "abstain_reason": "ZERO_QUIET_SCALE",
+        return {"status": "ABSTAIN", "abstain_reason": "ZERO_OR_INVALID_SCALE",
                 "hits": [], "events": [], "event_count": 0}
+    if math.isnan(float(threshold)):
+        raise ValueError("focus_threshold_must_not_be_nan")
     center = float(np.median(q))
+    maximum_score = -math.inf
+    maximum_score_index: int | None = None
+    maximum_delta = 0.0
+    maximum_change_index = int(quiet_points)
+    scan_complete = False
+
+    def focus_metadata() -> dict[str, Any]:
+        metadata = {
+            "version": "p2c-focus-1.0",
+            "threshold": float(threshold),
+            "delta_domain": "(-inf,+inf)",
+            "functional_pruning": True,
+            "fixed_window_bank": False,
+            "parameter_grid": False,
+            "quiet_points": int(quiet_points),
+            "scale_source": str(scale_source if scale_override is not None else "MAD"),
+            "scale_value": float(scale),
+        }
+        if include_statistic:
+            metadata.update({
+                "maximum_score": float(maximum_score),
+                "maximum_score_index": maximum_score_index,
+                "maximum_delta_hat_sigma": float(maximum_delta),
+                "maximum_estimated_change_index": int(maximum_change_index),
+                "statistic_complete": bool(scan_complete),
+            })
+        return metadata
     lo, hi = -math.inf, math.inf
     # (left, right, a, b, c, estimated_change_index), q(delta)=a*delta^2+b*delta+c
     envelope: list[tuple[float, float, float, float, float, int]] = [
@@ -187,6 +222,11 @@ def focus_detector(values: Any, *, quiet_points: int = QUIET_POINTS,
             score, delta = _quadratic_max(a, b, c, l, r)
             if score > best_score:
                 best_score, best_delta, best_cp = score, delta, cp
+        if best_score > maximum_score:
+            maximum_score = float(best_score)
+            maximum_score_index = int(t)
+            maximum_delta = float(best_delta)
+            maximum_change_index = int(best_cp)
         if best_score >= threshold and abs(best_delta) > 1e-12:
             sign = 1 if best_delta > 0 else -1
             hit = {
@@ -200,12 +240,7 @@ def focus_detector(values: Any, *, quiet_points: int = QUIET_POINTS,
                 "method": "functional_pruning_upper_envelope",
             }
             return {"status": "OK", "hits": [hit], "events": [event],
-                    "event_count": 1, "metadata": {
-                        "version": "p2c-focus-1.0", "threshold": threshold,
-                        "delta_domain": "(-inf,+inf)",
-                        "functional_pruning": True, "fixed_window_bank": False,
-                        "parameter_grid": False, "quiet_points": quiet_points,
-                    }}
+                    "event_count": 1, "metadata": focus_metadata()}
 
         # Overlay the zero candidate for the next observation. Split only at
         # exact roots of each active quadratic, preserving the continuous domain.
@@ -234,11 +269,9 @@ def focus_detector(values: Any, *, quiet_points: int = QUIET_POINTS,
             else:
                 merged.append(piece)
         envelope = merged
+    scan_complete = True
     return {"status": "OK", "hits": [], "events": [], "event_count": 0,
-            "metadata": {"version": "p2c-focus-1.0", "threshold": threshold,
-                         "delta_domain": "(-inf,+inf)",
-                         "functional_pruning": True, "fixed_window_bank": False,
-                         "parameter_grid": False, "quiet_points": quiet_points}}
+            "metadata": focus_metadata()}
 
 
 def bocpd_detector(values: Any, *, quiet_points: int = QUIET_POINTS,
@@ -246,7 +279,8 @@ def bocpd_detector(values: Any, *, quiet_points: int = QUIET_POINTS,
                    short_run_max: int = BOCPD_SHORT_RUN_MAX,
                    short_mass_threshold: float = BOCPD_SHORT_MASS_THRESHOLD,
                    persistence: int = BOCPD_PERSISTENCE,
-                   diagnostics: bool = False) -> dict[str, Any]:
+                   diagnostics: bool = False,
+                   full_posterior_history: bool = False) -> dict[str, Any]:
     """Bayesian online run-length posterior with Student-t predictive density.
 
     The initial active state is seeded from the 40-point quiet calibration with
@@ -288,6 +322,7 @@ def bocpd_detector(values: Any, *, quiet_points: int = QUIET_POINTS,
     events: list[dict[str, Any]] = []
     posterior_short_run_mass_max = 0.0
     posterior_diagnostic_tail: list[dict[str, Any]] = []
+    posterior_history: list[dict[str, Any]] = []
 
     for t in range(quiet_points, int(x.size)):
         # Use the posterior MAP among established (long-run) states. A fresh
@@ -446,6 +481,27 @@ def bocpd_detector(values: Any, *, quiet_points: int = QUIET_POINTS,
                 candidate = None
 
         long_mass = float(posterior[run_lengths > int(short_run_max)].sum())
+        if full_posterior_history:
+            run_values = run_lengths.astype(int)
+            probabilities = posterior.astype(float)
+            expected_run_length = float(np.dot(probabilities, run_values))
+            run_length_variance = float(np.dot(
+                probabilities, (run_values - expected_run_length) ** 2
+            ))
+            posterior_entropy = float(-np.sum(
+                probabilities * np.log(np.maximum(probabilities, 1e-300))
+            ))
+            change_probability = float(posterior[run_lengths == 0].sum())
+            posterior_history.append({
+                "index": int(t),
+                "run_lengths": run_values.tolist(),
+                "probabilities": probabilities.tolist(),
+                "expected_run_length": expected_run_length,
+                "run_length_variance": run_length_variance,
+                "posterior_entropy": posterior_entropy,
+                "short_run_probability": float(short_mass),
+                "change_probability": change_probability,
+            })
         if diagnostics:
             posterior_diagnostic_tail.append({
                 "index": int(t),
@@ -513,24 +569,27 @@ def bocpd_detector(values: Any, *, quiet_points: int = QUIET_POINTS,
             streak = 0
             candidate = None
 
-    return {"status": "OK", "hits": hits, "events": events,
-            "event_count": len(events) or len(hits),
-            "metadata": {"version": "p2c-bocpd-1.0", "hazard": hazard,
-                         "max_run_length": max_run, "short_run_max": short_run_max,
-                         "short_run_mass_threshold": short_mass_threshold,
-                         "short_run_mass_definition": "posterior P(1<=run_length<=short_run_max); excludes r=0",
-                         "posterior_short_run_mass_max": float(posterior_short_run_mass_max),
-                         "min_regime_shift": BOCPD_MIN_REGIME_SHIFT,
-                         "min_contrast_z": BOCPD_MIN_CONTRAST_Z,
-                         "rearm_long_mass": BOCPD_REARM_LONG_MASS,
-                         "rearm_persistence": BOCPD_REARM_PERSISTENCE,
-                         "confirmed_regime_reseed": "NIG posterior reinitialized from confirmed segment statistics",
-                         "persistence": persistence,
-                         "predictive": "Normal-Inverse-Gamma Student-t",
-                         "reset_prior_center": "active previous regime posterior mean",
-                         "direction_reference": "MAP prior-regime predictive mean",
-                          **({"posterior_diagnostic_tail": posterior_diagnostic_tail}
-                             if diagnostics else {})}}
+    result = {"status": "OK", "hits": hits, "events": events,
+              "event_count": len(events) or len(hits),
+              "metadata": {"version": "p2c-bocpd-1.0", "hazard": hazard,
+                           "max_run_length": max_run, "short_run_max": short_run_max,
+                           "short_run_mass_threshold": short_mass_threshold,
+                           "short_run_mass_definition": "posterior P(1<=run_length<=short_run_max); excludes r=0",
+                           "posterior_short_run_mass_max": float(posterior_short_run_mass_max),
+                           "min_regime_shift": BOCPD_MIN_REGIME_SHIFT,
+                           "min_contrast_z": BOCPD_MIN_CONTRAST_Z,
+                           "rearm_long_mass": BOCPD_REARM_LONG_MASS,
+                           "rearm_persistence": BOCPD_REARM_PERSISTENCE,
+                           "confirmed_regime_reseed": "NIG posterior reinitialized from confirmed segment statistics",
+                           "persistence": persistence,
+                           "predictive": "Normal-Inverse-Gamma Student-t",
+                           "reset_prior_center": "active previous regime posterior mean",
+                           "direction_reference": "MAP prior-regime predictive mean",
+                           **({"posterior_diagnostic_tail": posterior_diagnostic_tail}
+                              if diagnostics else {})}}
+    if full_posterior_history:
+        result["posterior_history"] = posterior_history
+    return result
 
 
 def post_quiet_huber_detector(values: Any, *, scale_mode: str = "mad",
