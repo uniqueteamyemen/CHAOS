@@ -1,48 +1,96 @@
 {
   "schema_version": "chaos-cohort-manifest-v1.0",
-  "phase": "P1.4_CAPABILITY_OPERATING_ENVELOPE",
-  "generated_from": {
-    "repository": "uniqueteamyemen/CHAOS",
-    "source_branch": "main-phase2",
-    "source_commit": "72edc44b183e0c7c92e1edae362426d189e0c886",
-    "workflow_run_id": 45244943216,
-    "workflow_run_url": "https://github.com/uniqueteamyemen/CHAOS/actions/runs/45244943216",
-    "full_artifact_id": 14865486886,
-    "full_artifact_sha256": "f30aa9b88be8e8e8cc6f5497fd7d90f82a05225c31249807615dff794ac4cd31",
+  "created_from": {
+    "candidate_registry_expected_total": 519,
+    "candidate_registry_sha256": "4c6643acd6ae1ccf30570c103b163340a460e2b7dfbfa9f2a11eee537d0e78f9",
+    "economic_scope": {
+      "gem": 458,
+      "pink_sheet": 51,
+      "total": 509
+    },
+    "gem_evaluation_artifacts": [
+      {
+        "artifact_id": 14861808748,
+        "sha256": "6cf04825de2a5e7f6b30f03aad97426fa0392038e84764ee68b52e2f70d5f89c"
+      },
+      {
+        "artifact_id": 14861805478,
+        "sha256": "6f617b240c3c35d68f0295a9e21ebf07e797ff72d3566b984b764491b925c886"
+      },
+      {
+        "artifact_id": 14862282819,
+        "sha256": "881c40e34838329c1b809257d9c729c56e5304ab20b015bf8b98f656075586d4"
+      },
+      {
+        "artifact_id": 14860330825,
+        "sha256": "6996d69724f01b1be7ba1660ecc1572e4432802f1aebc21d521e22b58e5a35df"
+      }
+    ],
+    "p2_2_source_commit": "72edc44b183e0c7c92e1edae362426d189e0c886",
     "prepared_artifact_id": 14857826243,
     "prepared_artifact_sha256": "c83f6e960296fbbdb687650a798959f08cb8d98db68de8ca713d7be278e824fe",
-    "real_data_stress_manifest_content_sha256": "aed50955a8e513bb62db4ee423d552801dfe76de14d85554d4d65471546ebe51",
-    "frozen_candidates_content_sha256": "4c6643acd6ae1ccf30570c103b163340a460e2b7dfbfa9f2a11eee537d0e78f9"
-  },
-  "verification_policy": {
-    "g1_rule": "G1 passes only when ADF rejects unit root (p < 0.05) AND KPSS does not reject level stationarity (p >= 0.05).",
-    "c1_membership_rule": "GEM series with recorded g1.status == SCREEN_FAIL in the production run manifest.",
-    "identity_cross_check": "Exact set equality with GEM entries having bootstrap_expected == false in the frozen candidate registry.",
-    "raw_observations_included": false
+    "production_workflow_run_id": 45244943216,
+    "repository": "uniqueteamyemen/CHAOS",
+    "verification_method": "metadata-only identity join: source candidate registry against all four persisted P2.2 GEM evaluation shards; candidate hashes exact; no detector recomputation performed here",
+    "verification_deadline_hours": 24,
+    "c1_identity_verification_status": "VERIFIED",
+    "c1_criterion_verification_status": "VERIFIED",
+    "c1_original_claimed": 147,
+    "c1_verified_count": 147,
+    "c1_interpretation_discrepancy_severity": "material",
+    "old_branch_source": "feat/p1-4-capability-envelope-pilot-v1@ad419702958f3fa7f7c79f623c59dd702c8379e5",
+    "selection_workflow_run_id": 45538866028,
+    "selection_artifact_id": 14988741300,
+    "selection_json_sha256": "b916e5d1f40f9e224a229096565e618c8bcdec659303def9041769c7834dc960",
+    "selection_zip_sha256": "c5a3720c2a5cd7754f9f9da022e70305cda90cde17bed4f74884a39026830523",
+    "selection_commit": "608c14a565f8b207804dd7523a702991536d4ec2",
+    "final_protocol_resync_required": true
   },
   "cohorts": {
     "C1": {
-      "cohort_id": "C1_GEM_G1_SCREEN_FAILURES_V1",
+      "name": "GEM_G1_SCREEN_FAIL",
       "status": "VERIFIED",
-      "C1_STATUS": "VERIFIED",
-      "source": "GEM",
       "original_count_claimed": 147,
       "verified_count": 147,
-      "identity_set_match": "EXACT",
-      "g1_criterion": "ADF+KPSS composite; not KPSS-only",
-      "failure_class_counts": {
-        "ADF_ONLY_FAIL": 9,
-        "BOTH_FAIL": 32,
-        "KPSS_ONLY_FAIL": 106
-      },
-      "discrepancy_reason": "Count and exact identities match the production G1 SCREEN_FAIL records. The cohort is composite: 106 fail KPSS while ADF passes, 9 fail ADF while KPSS passes, and 32 fail both. Describing all 147 as KPSS-only failures is materially inaccurate; the official G1-failure cohort itself is confirmed.",
+      "discrepancy_reason": "The claimed count and identities match exactly (147/147). A material interpretation discrepancy exists in describing all 147 as KPSS-only failures: 106 are KPSS-only, 32 fail both ADF and KPSS, and 9 fail ADF only.",
       "discrepancy_severity": "material",
-      "verification": {
-        "series_results_g1_fail_count": 147,
-        "frozen_candidates_bootstrap_false_count": 147,
-        "identity_sets_equal": true,
-        "duplicate_ids": false,
-        "criterion_failure_classification": "COMPLETE"
+      "identity_status": "VERIFIED",
+      "criterion_status": "VERIFIED_FROM_STORED_G1_EVALUATION",
+      "selection_rule": {
+        "adf_pass": "adf_p_value < 0.05 (reject unit-root null)",
+        "c1_membership": "GEM series with G1 SCREEN_FAIL (either component may fail)",
+        "caveat": "G1 is a preliminary eligibility screen, not a proof of stationarity or a scientific label of structural change",
+        "g1_pass": "ADF pass AND KPSS pass",
+        "kpss_pass": "kpss_p_value >= 0.05 (do not reject level-stationarity null)",
+        "screen": "G1 composite preliminary stationarity screen"
+      },
+      "criterion_breakdown": {
+        "adf_fail_kpss_fail": 32,
+        "adf_fail_kpss_pass": 9,
+        "adf_only_failure": 9,
+        "adf_pass_kpss_fail": 106,
+        "g1_fail_total": 147,
+        "g1_pass_total": 311,
+        "kpss_failed_any": 138,
+        "kpss_only_failure": 106
+      },
+      "identity_verification": {
+        "candidate_hash_mismatches": 0,
+        "extra_ids": 0,
+        "g1_screen_results_present": 458,
+        "g1_screen_status_counts": {
+          "SCREEN_FAIL": 147,
+          "SCREEN_PASS": 311
+        },
+        "gem_evaluation_count": 458,
+        "gem_registry_count": 458,
+        "identity_basis": "series_id + candidate_sha256 from the pinned source registry and matching evaluation artifact",
+        "matched_ids": 458,
+        "missing_ids": 0
+      },
+      "interpretation_audit": {
+        "decision": "Preserve C1 as the 147-series G1 composite-failure cohort. Do not relabel the entire cohort as KPSS-only.",
+        "important_distinction": "106 fail KPSS while passing ADF; 32 fail both screens; 9 fail ADF while passing KPSS."
       },
       "series_ids": [
         "gem:CPTOTSAXN:ABW",
@@ -192,30 +240,247 @@
         "gem:IPTOTSAKD:LKA",
         "gem:IPTOTSAKD:SUR",
         "gem:IPTOTSAKD:USA"
-      ]
+      ],
+      "pilot_sample_count": 20,
+      "pilot_seed": "CHAOS:P1.4:C1:PILOT:v1",
+      "pilot_series_ids": [
+        "gem:CPTOTSAXN:BEN",
+        "gem:CPTOTSAXN:BLR",
+        "gem:CPTOTSAXN:BWA",
+        "gem:CPTOTSAXN:CHL",
+        "gem:CPTOTSAXN:DEV",
+        "gem:CPTOTSAXN:EDX",
+        "gem:CPTOTSAXN:HKG",
+        "gem:CPTOTSAXN:ISR",
+        "gem:CPTOTSAXN:KNA",
+        "gem:CPTOTSAXN:KOR",
+        "gem:CPTOTSAXN:LAO",
+        "gem:CPTOTSAXN:MNG",
+        "gem:CPTOTSAXN:RWA",
+        "gem:CPTOTSAXN:SDN",
+        "gem:CPTOTSAXN:SSP",
+        "gem:CPTOTSAXN:SUR",
+        "gem:CPTOTSAXN:TJK",
+        "gem:CPTOTSAXN:TUN",
+        "gem:CPTOTSAXN:ZAF",
+        "gem:DXGSRMRCHNSKD:ECA"
+      ],
+      "pilot_failure_class_counts": {
+        "ADF_PASS_KPSS_FAIL": 14,
+        "ADF_FAIL_KPSS_FAIL": 4,
+        "ADF_FAIL_KPSS_PASS": 2
+      },
+      "discrepancy_kind": "interpretation_label_not_count_or_identity",
+      "C1_STATUS": "VERIFIED",
+      "verification_deadline_hours": 24,
+      "verification_completed_within_deadline": true
     },
     "C2": {
-      "cohort_id": "C2_STRATIFIED_50_OF_509_V1",
-      "status": "PENDING",
-      "target_count": 50,
-      "sampling_frame": "509 economic series: 51 Pink Sheet + 458 GEM.",
-      "sampling_policy": "Stratify by source, observation length, autocorrelation regime and sector/indicator family; freeze deterministic seed and selected IDs before execution.",
-      "series_ids": null
+      "discrepancy_reason": null,
+      "discrepancy_severity": null,
+      "name": "STRATIFIED_NON_C1_ECONOMIC_SAMPLE",
+      "original_count_claimed": 50,
+      "sampling_frame": "All 509 verified economic series excluding the 147-series C1; 51 Pink Sheet and 311 GEM G1-pass series.",
+      "selection_seed": "CHAOS:P1.4:C2:FRAME:v1",
+      "series_ids": [
+        "gem:CPTOTSAXN:AGO",
+        "gem:CPTOTSAXN:AUT",
+        "gem:CPTOTSAXN:DEU",
+        "gem:CPTOTSAXN:DMA",
+        "gem:CPTOTSAXN:FIN",
+        "gem:CPTOTSAXN:GMB",
+        "gem:CPTOTSAXN:IRL",
+        "gem:DXGSRMRCHNSKD:BRA",
+        "gem:DXGSRMRCHNSKD:DEV",
+        "gem:DXGSRMRCHNSKD:EAA",
+        "gem:DXGSRMRCHNSKD:GBR",
+        "gem:DXGSRMRCHNSKD:GRC",
+        "gem:DXGSRMRCHNSKD:HIY",
+        "gem:DXGSRMRCHNSKD:LAP",
+        "gem:DXGSRMRCHNSKD:MNH",
+        "gem:DXGSRMRCHNSKD:SGP",
+        "gem:DXGSRMRCHNSKD:TWN",
+        "gem:DXGSRMRCHNSKD:UMC",
+        "gem:DXGSRMRCHSAXD:AME",
+        "gem:DXGSRMRCHSAXD:ESP",
+        "gem:DXGSRMRCHSAXD:FIN",
+        "gem:DXGSRMRCHSAXD:HUN",
+        "gem:DXGSRMRCHSAXD:ISR",
+        "gem:DXGSRMRCHSAXD:LAP",
+        "gem:DXGSRMRCHSAXD:MIC",
+        "gem:IPTOTSAKD:AZE",
+        "gem:IPTOTSAKD:CIV",
+        "gem:IPTOTSAKD:COL",
+        "gem:IPTOTSAKD:EDE",
+        "gem:IPTOTSAKD:EDI",
+        "gem:IPTOTSAKD:ESP",
+        "gem:IPTOTSAKD:EST",
+        "gem:IPTOTSAKD:IRQ",
+        "gem:IPTOTSAKD:KOR",
+        "gem:IPTOTSAKD:LIC",
+        "gem:IPTOTSAKD:OMN",
+        "gem:IPTOTSAKD:ROU",
+        "gem:IPTOTSAKD:SST",
+        "gem:IPTOTSAKD:SVK",
+        "gem:IPTOTSAKD:SVN",
+        "gem:IPTOTSAKD:TUN",
+        "gem:IPTOTSAKD:UMC",
+        "gem:IPTOTSAKD:VNM",
+        "pink:Crude_oil_Brent",
+        "pink:DAP",
+        "pink:Fish_meal",
+        "pink:Groundnut_oil",
+        "pink:Soybean_oil",
+        "pink:Tea_Colombo",
+        "pink:Tea_avg_3_auctions"
+      ],
+      "status": "VERIFIED",
+      "stratification_dimensions": [
+        "source_cohort",
+        "domain",
+        "observation_count_band",
+        "pre_injection_ar1_abs_band"
+      ],
+      "verified_count": 50,
+      "identity_status": "VERIFIED",
+      "criterion_status": "VERIFIED_STRATIFIED_SAMPLE_FROM_C1_COMPLEMENT",
+      "sampling_frame_count": 362,
+      "sampling_frame_source_counts": {
+        "pink_sheet": 51,
+        "gem": 311
+      },
+      "selection_method": "Deterministic stratified Hamilton allocation, then SHA-256 rank within strata; no hand-picked series.",
+      "verified_at_selection_commit": "608c14a565f8b207804dd7523a702991536d4ec2",
+      "sample_source_counts": {
+        "pink_sheet": 7,
+        "gem": 43
+      },
+      "pilot_sample_count": 20,
+      "pilot_seed": "CHAOS:P1.4:C2:PILOT:v1",
+      "pilot_series_ids": [
+        "gem:CPTOTSAXN:DEU",
+        "gem:CPTOTSAXN:IRL",
+        "gem:DXGSRMRCHNSKD:BRA",
+        "gem:DXGSRMRCHNSKD:DEV",
+        "gem:DXGSRMRCHNSKD:GRC",
+        "gem:DXGSRMRCHNSKD:HIY",
+        "gem:DXGSRMRCHNSKD:LAP",
+        "gem:DXGSRMRCHSAXD:AME",
+        "gem:DXGSRMRCHSAXD:FIN",
+        "gem:DXGSRMRCHSAXD:LAP",
+        "gem:IPTOTSAKD:AZE",
+        "gem:IPTOTSAKD:EST",
+        "gem:IPTOTSAKD:IRQ",
+        "gem:IPTOTSAKD:OMN",
+        "gem:IPTOTSAKD:SVN",
+        "gem:IPTOTSAKD:TUN",
+        "gem:IPTOTSAKD:VNM",
+        "pink:DAP",
+        "pink:Fish_meal",
+        "pink:Soybean_oil"
+      ],
+      "pilot_source_counts": {
+        "pink_sheet": 3,
+        "gem": 17
+      }
     },
     "C3": {
-      "cohort_id": "C3_KNOWN_HISTORICAL_BREAKS_V1",
-      "status": "EXTERNAL_VALIDATION_PENDING",
-      "target_count": null,
-      "sampling_policy": "Use only independently sourced historical breaks with explicit date, direction, affected series and provenance. Never fabricate event labels.",
-      "series_ids": null
+      "candidate_anchor_events": [
+        "GFC_2008",
+        "COVID_2020",
+        "OIL_2014"
+      ],
+      "discrepancy_reason": "Known-break event and point-in-time source-vintage manifests have not yet been independently frozen.",
+      "discrepancy_severity": null,
+      "name": "KNOWN_REAL_BREAK_EXTERNAL_VALIDATION",
+      "original_count_claimed": null,
+      "requirements": [
+        "independently supported event date/window",
+        "series identity",
+        "historical source vintage available at decision time",
+        "one-to-one event/boundary matching contract"
+      ],
+      "series_ids": [],
+      "status": "PENDING_EXTERNAL_EVIDENCE",
+      "verified_count": 0
     }
   },
-  "pilot_eligibility": {
-    "C1_verified_series_available": 147,
-    "c1_unverified_series_count": 0,
-    "pilot_can_use_verified_c1_subset": true,
-    "c2_blocker": true,
-    "c3_blocker": true,
-    "full_three_cohort_pilot_authorized": false
+  "selection_artifact": {
+    "status": "VERIFIED_HISTORICAL_SELECTION_PENDING_PROTOCOL_RESYNC",
+    "workflow_run_id": 45538866028,
+    "workflow_url": "https://github.com/uniqueteamyemen/CHAOS/actions/runs/45538866028",
+    "workflow_head_commit": "608c14a565f8b207804dd7523a702991536d4ec2",
+    "selection_builder_commit": "608c14a565f8b207804dd7523a702991536d4ec2",
+    "artifact_id": 14988741300,
+    "artifact_name": "chaos-p1-4-cohort-selection-45538866028-1",
+    "artifact_zip_sha256": "c5a3720c2a5cd7754f9f9da022e70305cda90cde17bed4f74884a39026830523",
+    "selection_json_sha256": "b916e5d1f40f9e224a229096565e618c8bcdec659303def9041769c7834dc960",
+    "selection_sidecar_verified": true,
+    "protocol_sha256": "e2d1634a2bcfe60ccd3866e744fb57461cffd49f071ba49fedc90ddf7452d8dd",
+    "prepared_artifact_sha256": "c83f6e960296fbbdb687650a798959f08cb8d98db68de8ca713d7be278e824fe",
+    "candidate_registry_sha256": "4c6643acd6ae1ccf30570c103b163340a460e2b7dfbfa9f2a11eee537d0e78f9",
+    "cohort_selection_commit": "608c14a565f8b207804dd7523a702991536d4ec2",
+    "protocol_sha256_at_selection": "e2d1634a2bcfe60ccd3866e744fb57461cffd49f071ba49fedc90ddf7452d8dd",
+    "resync_required_reason": "The pilot protocol will be corrected and versioned before any Pilot execution; cohort IDs remain frozen, but a fresh selection artifact must bind the final protocol SHA-256."
+  },
+  "pilot_scope": {
+    "status": "SELECTED_NOT_EXECUTED",
+    "cohort_ids": [
+      "C1",
+      "C2"
+    ],
+    "series_count": 40,
+    "run_cases_per_series": 19,
+    "injected_cases_per_series": 18,
+    "original_baseline_cases_per_series": 1,
+    "run_cases": 760,
+    "series_ids": [
+      "gem:CPTOTSAXN:BEN",
+      "gem:CPTOTSAXN:BLR",
+      "gem:CPTOTSAXN:BWA",
+      "gem:CPTOTSAXN:CHL",
+      "gem:CPTOTSAXN:DEU",
+      "gem:CPTOTSAXN:DEV",
+      "gem:CPTOTSAXN:EDX",
+      "gem:CPTOTSAXN:HKG",
+      "gem:CPTOTSAXN:IRL",
+      "gem:CPTOTSAXN:ISR",
+      "gem:CPTOTSAXN:KNA",
+      "gem:CPTOTSAXN:KOR",
+      "gem:CPTOTSAXN:LAO",
+      "gem:CPTOTSAXN:MNG",
+      "gem:CPTOTSAXN:RWA",
+      "gem:CPTOTSAXN:SDN",
+      "gem:CPTOTSAXN:SSP",
+      "gem:CPTOTSAXN:SUR",
+      "gem:CPTOTSAXN:TJK",
+      "gem:CPTOTSAXN:TUN",
+      "gem:CPTOTSAXN:ZAF",
+      "gem:DXGSRMRCHNSKD:BRA",
+      "gem:DXGSRMRCHNSKD:DEV",
+      "gem:DXGSRMRCHNSKD:ECA",
+      "gem:DXGSRMRCHNSKD:GRC",
+      "gem:DXGSRMRCHNSKD:HIY",
+      "gem:DXGSRMRCHNSKD:LAP",
+      "gem:DXGSRMRCHSAXD:AME",
+      "gem:DXGSRMRCHSAXD:FIN",
+      "gem:DXGSRMRCHSAXD:LAP",
+      "gem:IPTOTSAKD:AZE",
+      "gem:IPTOTSAKD:EST",
+      "gem:IPTOTSAKD:IRQ",
+      "gem:IPTOTSAKD:OMN",
+      "gem:IPTOTSAKD:SVN",
+      "gem:IPTOTSAKD:TUN",
+      "gem:IPTOTSAKD:VNM",
+      "pink:DAP",
+      "pink:Fish_meal",
+      "pink:Soybean_oil"
+    ],
+    "C3_included": false,
+    "C3_status": "PENDING_EXTERNAL_EVIDENCE",
+    "raw_values_persisted": false,
+    "protocol_binding_status": "REQUIRES_RESYNC_AFTER_PROTOCOL_V1_1",
+    "selection_artifact_id": 14988741300,
+    "selection_workflow_run_id": 45538866028
   }
 }
