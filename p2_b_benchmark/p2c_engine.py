@@ -304,7 +304,27 @@ def bocpd_detector(values: Any, *, quiet_points: int = QUIET_POINTS,
             - ((df + 1.0) / 2.0) * np.log1p((residual * residual) / df)
         )
         log_joint = np.log(np.maximum(posterior, 1e-300)) + log_likelihood
-        change_log_mass = float(logsumexp(log_joint + log_h))
+
+        # The reset branch is a *new* regime. Its predictive likelihood must
+        # come from the reset Normal-Inverse-Gamma prior, not from the active
+        # old-run predictive likelihood. Reusing log_likelihood here makes the
+        # reset mass collapse to the hazard itself under constant hazard,
+        # irrespective of whether the observation contradicts the old regime.
+        reset_df = 2.0 * alpha0
+        reset_scale = math.sqrt(
+            beta0 * (kappa0 + 1.0) / (alpha0 * kappa0)
+        )
+        reset_residual = (y[t] - mu0) / reset_scale
+        reset_log_likelihood = (
+            gammaln((reset_df + 1.0) / 2.0) - gammaln(reset_df / 2.0)
+            - 0.5 * math.log(reset_df * math.pi) - math.log(reset_scale)
+            - ((reset_df + 1.0) / 2.0)
+            * math.log1p((reset_residual * reset_residual) / reset_df)
+        )
+        change_log_mass = (
+            float(logsumexp(np.log(np.maximum(posterior, 1e-300)) + log_h))
+            + float(reset_log_likelihood)
+        )
         growth_log_mass = log_joint + log_1mh
         new_log_posterior = np.concatenate(([change_log_mass], growth_log_mass))
         new_log_posterior -= float(logsumexp(new_log_posterior))
