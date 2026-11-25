@@ -26,7 +26,6 @@ from p2_b_benchmark.engine import mad_sigma
 
 QUIET_POINTS = 40
 FOCUS_THRESHOLD = 45.0
-FOCUS_DELTA_MAX = 8.0
 BOCPD_HAZARD = 1.0 / 120.0
 BOCPD_MAX_RUN = 539
 BOCPD_SHORT_RUN_MAX = 3
@@ -45,7 +44,7 @@ P2C_VARIANTS: dict[str, dict[str, Any]] = {
     "FOCUS": {
         "kind": "online_functional_pruning_cusum", "version": "p2c-focus-1.0",
         "parameters": {"quiet_points": QUIET_POINTS, "threshold": FOCUS_THRESHOLD,
-                       "delta_domain": [-FOCUS_DELTA_MAX, FOCUS_DELTA_MAX],
+                       "delta_domain": "(-inf,+inf)",
                        "functional_pruning": True, "parameter_grid": False},
     },
     "BOCPD": {
@@ -126,18 +125,33 @@ def _quadratic_roots(a: float, b: float, c: float) -> list[float]:
 
 
 def _quadratic_max(a: float, b: float, c: float, left: float, right: float) -> tuple[float, float]:
-    candidates = [left, right]
+    candidates: list[float] = []
+    if math.isfinite(left):
+        candidates.append(left)
+    if math.isfinite(right):
+        candidates.append(right)
     if a < 0:
         vertex = -b / (2.0 * a)
         if left <= vertex <= right:
             candidates.append(vertex)
+    if not candidates:
+        return -math.inf, 0.0
     arg = max(candidates, key=lambda z: a * z * z + b * z + c)
     return a * arg * arg + b * arg + c, arg
 
 
+def _interval_probe(left: float, right: float) -> float:
+    if math.isinf(left) and math.isinf(right):
+        return 0.0
+    if math.isinf(left):
+        return right - max(1.0, abs(right) * 0.5)
+    if math.isinf(right):
+        return left + max(1.0, abs(left) * 0.5)
+    return 0.5 * (left + right)
+
+
 def focus_detector(values: Any, *, quiet_points: int = QUIET_POINTS,
-                   threshold: float = FOCUS_THRESHOLD,
-                   delta_max: float = FOCUS_DELTA_MAX) -> dict[str, Any]:
+                   threshold: float = FOCUS_THRESHOLD) -> dict[str, Any]:
     """Two-sided Gaussian FOCuS statistic with exact functional pruning.
 
     Each active piece stores the upper-envelope quadratic over a disjoint
@@ -155,7 +169,7 @@ def focus_detector(values: Any, *, quiet_points: int = QUIET_POINTS,
         return {"status": "ABSTAIN", "abstain_reason": "ZERO_QUIET_SCALE",
                 "hits": [], "events": [], "event_count": 0}
     center = float(np.median(q))
-    lo, hi = -float(delta_max), float(delta_max)
+    lo, hi = -math.inf, math.inf
     # (left, right, a, b, c, estimated_change_index), q(delta)=a*delta^2+b*delta+c
     envelope: list[tuple[float, float, float, float, float, int]] = [
         (lo, hi, 0.0, 0.0, 0.0, quiet_points)
@@ -184,7 +198,7 @@ def focus_detector(values: Any, *, quiet_points: int = QUIET_POINTS,
             return {"status": "OK", "hits": [hit], "events": [event],
                     "event_count": 1, "metadata": {
                         "version": "p2c-focus-1.0", "threshold": threshold,
-                        "delta_domain": [-delta_max, delta_max],
+                        "delta_domain": "(-inf,+inf)",
                         "functional_pruning": True, "fixed_window_bank": False,
                         "parameter_grid": False, "quiet_points": quiet_points,
                     }}
@@ -201,7 +215,7 @@ def focus_detector(values: Any, *, quiet_points: int = QUIET_POINTS,
             cuts.append(r)
             cuts = sorted(set(cuts))
             for left, right in zip(cuts[:-1], cuts[1:]):
-                mid = 0.5 * (left + right)
+                mid = _interval_probe(left, right)
                 if a * mid * mid + b * mid + c > 0.0:
                     next_envelope.append((left, right, a, b, c, cp))
                 else:
@@ -218,7 +232,7 @@ def focus_detector(values: Any, *, quiet_points: int = QUIET_POINTS,
         envelope = merged
     return {"status": "OK", "hits": [], "events": [], "event_count": 0,
             "metadata": {"version": "p2c-focus-1.0", "threshold": threshold,
-                         "delta_domain": [-delta_max, delta_max],
+                         "delta_domain": "(-inf,+inf)",
                          "functional_pruning": True, "fixed_window_bank": False,
                          "parameter_grid": False, "quiet_points": quiet_points}}
 
