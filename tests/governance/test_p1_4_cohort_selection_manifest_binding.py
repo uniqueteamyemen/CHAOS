@@ -48,8 +48,8 @@ class CohortSelectionManifestBindingTests(unittest.TestCase):
         manifest = {
             "cohorts": {
                 "C1": {"series_ids": c1, "pilot_series_ids": c1_pilot,
-                       "pilot_failure_class_counts":{"ADF_PASS_KPSS_FAIL":14,
-                         "ADF_FAIL_KPSS_FAIL":4,"ADF_FAIL_KPSS_PASS":2}},
+                       "pilot_failure_class_counts":{"ADF_PASS_KPSS_FAIL":12,
+                         "ADF_FAIL_KPSS_FAIL":6,"ADF_FAIL_KPSS_PASS":2}},
                 "C2": {"series_ids": c2, "pilot_series_ids": c2_pilot,
                        "sample_source_counts":{"pink_sheet":7,"gem":43},
                        "pilot_source_counts":{"pink_sheet":3,"gem":17}},
