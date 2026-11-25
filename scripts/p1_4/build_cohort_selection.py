@@ -346,6 +346,8 @@ def _assert_manifest_selection(selection: dict[str, Any], manifest: dict[str, An
         raise ValueError("pilot_series_must_be_40_unique_ids")
     if set(actual_c1_pilot).intersection(actual_c2_pilot):
         raise ValueError("C1_C2_pilot_identity_overlap")
+    if selection.get("C1_STRATIFICATION_REPORT", {}).get("minimum_quotas_satisfied") is not True:
+        raise ValueError("C1_pilot_stratification_minimums_not_satisfied")
     if selection["c1"]["failure_class_pilot"] != c1["pilot_failure_class_counts"]:
         raise ValueError("C1_pilot_failure_class_counts_differ_from_manifest")
     minimums = c1.get("pilot_minimum_failure_class_quotas", {
