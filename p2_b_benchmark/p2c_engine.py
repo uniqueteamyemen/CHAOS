@@ -29,7 +29,7 @@ FOCUS_THRESHOLD = 45.0
 BOCPD_HAZARD = 1.0 / 120.0
 BOCPD_MAX_RUN = 539
 BOCPD_SHORT_RUN_MAX = 3
-BOCPD_SHORT_MASS_THRESHOLD = 0.50
+BOCPD_SHORT_MASS_THRESHOLD = 0.05
 BOCPD_PERSISTENCE = 2
 HUBER_C = 1.345
 HUBER_K = 0.50
@@ -363,7 +363,12 @@ def bocpd_detector(values: Any, *, quiet_points: int = QUIET_POINTS,
                     "hits": [], "events": [], "event_count": 0}
         posterior /= total
 
-        short_mask = run_lengths <= int(short_run_max)
+        # Do not count r=0 by itself: an isolated outlier can produce a
+        # one-observation reset branch. Confirmation requires posterior mass
+        # on short *grown* runs (at least one observation after the reset).
+        short_mask = (
+            (run_lengths >= 1) & (run_lengths <= int(short_run_max))
+        )
         short_mass = float(posterior[short_mask].sum())
         if short_mass >= float(short_mass_threshold):
             if streak == 0:
@@ -404,6 +409,7 @@ def bocpd_detector(values: Any, *, quiet_points: int = QUIET_POINTS,
             "metadata": {"version": "p2c-bocpd-1.0", "hazard": hazard,
                          "max_run_length": max_run, "short_run_max": short_run_max,
                          "short_run_mass_threshold": short_mass_threshold,
+                         "short_run_mass_definition": "posterior P(1<=run_length<=short_run_max); excludes r=0",
                          "persistence": persistence,
                          "predictive": "Normal-Inverse-Gamma Student-t",
                          "direction_reference": "MAP prior-regime predictive mean"}}
