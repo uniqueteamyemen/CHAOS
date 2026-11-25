@@ -465,6 +465,17 @@ def build_selection(
             ))
         return result
 
+    def focus_eligibility(rows: list[dict[str, Any]]) -> dict[str, Any]:
+        minimum = 150
+        ineligible = sorted(row["series_id"] for row in rows if int(row["observations"]) < minimum)
+        return {
+            "minimum_n_for_focus": minimum,
+            "eligible_count": len(rows) - len(ineligible),
+            "not_eligible_count": len(ineligible),
+            "not_eligible_ids": ineligible,
+            "status_rule": "NOT_ELIGIBLE below n=150; never report as weak recall",
+        }
+
     c2_stratification_report = {
         "report_id": "C2_STRATIFICATION_REPORT_V1",
         "status": "GENERATED_FROM_PINNED_SERIES_VALUES",
@@ -495,6 +506,8 @@ def build_selection(
         "pilot_is_subset_of_sample": set(row["series_id"] for row in c2_pilot).issubset(
             set(row["series_id"] for row in c2_sample)
         ),
+        "sample_focus_eligibility": focus_eligibility(c2_sample),
+        "pilot_focus_eligibility": focus_eligibility(c2_pilot),
         "selection_method": "Deterministic stratified Hamilton allocation and SHA-256 rank within source/domain/length/AR1/missingness strata.",
     }
     c1_stratification_report = {
@@ -522,6 +535,7 @@ def build_selection(
         "pilot_ar1_distribution": dict(sorted(collections.Counter(
             row["ar1_abs_band"] for row in c1_pilot
         ).items())),
+        "pilot_focus_eligibility": focus_eligibility(c1_pilot),
     }
 
     selection = {
