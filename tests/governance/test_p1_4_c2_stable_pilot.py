@@ -130,6 +130,7 @@ class C2StablePilotTests(unittest.TestCase):
                     "status": "COMPLETE",
                     "artifact_sha256": runner.base.sha_file(series_paths[sid]),
                     "protocol_sha256": ctx["source_sha256"]["protocol"],
+                    "runner_sha256": runner.base.sha_file(Path(runner.__file__)),
                 })
             loaded = runner.load_calibrations(folder, ctx)
             self.assertEqual(len(loaded), 20)

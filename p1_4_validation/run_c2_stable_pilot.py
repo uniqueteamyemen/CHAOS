@@ -252,6 +252,14 @@ def load_calibrations(folder: Path, ctx: dict[str, Any]) -> dict[str, dict[str, 
             raise ValueError(f"C2_CALIBRATION_JOB_MANIFEST_SCOPE_MISMATCH:{sid}")
         if manifest.get("protocol_sha256") != ctx["source_sha256"]["protocol"]:
             raise ValueError(f"C2_CALIBRATION_JOB_PROTOCOL_MISMATCH:{sid}")
+        expected_commit = os.environ.get("GITHUB_SHA")
+        if expected_commit and manifest.get("source_commit") != expected_commit:
+            raise ValueError(f"C2_CALIBRATION_JOB_COMMIT_MISMATCH:{sid}")
+        expected_run = os.environ.get("GITHUB_RUN_ID")
+        if expected_run and str(manifest.get("workflow_run_id")) != expected_run:
+            raise ValueError(f"C2_CALIBRATION_JOB_RUN_MISMATCH:{sid}")
+        if manifest.get("runner_sha256") != base.sha_file(Path(__file__)):
+            raise ValueError(f"C2_CALIBRATION_JOB_RUNNER_SHA_MISMATCH:{sid}")
         if manifest.get("candidate_sha256") != ctx["candidate_hashes"][sid]:
             raise ValueError(f"C2_CALIBRATION_JOB_CANDIDATE_MISMATCH:{sid}")
         if manifest.get("status") != "COMPLETE":
