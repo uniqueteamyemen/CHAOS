@@ -332,16 +332,20 @@ def calibration_and_holdout(rows: dict[str, dict[str, Any]]) -> tuple[dict[str, 
                         raise ValueError(f"C2_HOLDOUT_VALID_COUNT_MISMATCH:{sid}:{tool}:{key}")
                     for field in ("p0", "wilson_upper_95_one_sided"):
                         left, right = recomputed.get(field), stored.get(field)
-                        if left is None or right is None or not math.isclose(float(left), float(right), rel_tol=0, abs_tol=1e-12):
+                        if left is None or right is None:
+                            if left is not None or right is not None:
+                                raise ValueError(f"C2_HOLDOUT_SUMMARY_MISMATCH:{sid}:{tool}:{key}:{field}")
+                        elif not math.isclose(float(left), float(right), rel_tol=0, abs_tol=1e-12):
                             raise ValueError(f"C2_HOLDOUT_SUMMARY_MISMATCH:{sid}:{tool}:{key}:{field}")
                     valid = int(recomputed["valid_replicates"])
                     upper = recomputed["wilson_upper_95_one_sided"]
+                    p0 = recomputed["p0"]
                     gate = "INCONCLUSIVE" if valid < 950 or upper is None else ("PASS" if upper <= 0.10 else "FAIL")
                     cells.append({
                         "tool": tool, "series_id": sid, "position": key,
                         "threshold": float(threshold), "valid_replicates": valid,
                         "alarm_traces": int(recomputed["alarm_traces"]),
-                        "p0": float(recomputed["p0"]),
+                        "p0": float(p0) if p0 is not None else None,
                         "wilson_upper_95_one_sided": float(upper) if upper is not None else None,
                         "gate": gate,
                     })

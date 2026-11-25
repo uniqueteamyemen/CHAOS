@@ -88,6 +88,18 @@ class C2StablePilotTests(unittest.TestCase):
         self.assertEqual(len(failed), 1)
         self.assertGreater(failed[0]["wilson_upper_95_one_sided"], 0.10)
 
+    def test_zero_valid_holdout_replicates_are_inconclusive_not_fatal(self):
+        row = _calibration_row(sorted(EXPECTED_C2)[0])
+        arm = row["positions"]["0.30"]["arms"]["POST_QUIET_HUBER_MAD"]
+        arm["holdout_max_statistics"] = []
+        arm["holdout"] = runner.base.p0_result([], arm["frozen_threshold"])
+        summary, cells = runner.calibration_and_holdout({row["series_id"]: row})
+        cell = next(x for x in cells if x["tool"] == "POST_QUIET_HUBER_MAD")
+        self.assertEqual(cell["valid_replicates"], 0)
+        self.assertIsNone(cell["p0"])
+        self.assertIsNone(cell["wilson_upper_95_one_sided"])
+        self.assertEqual(cell["gate"], "INCONCLUSIVE")
+
     def test_holdout_raw_statistics_mismatch_fails_closed(self):
         row = _calibration_row(sorted(EXPECTED_C2)[0])
         arm = row["positions"]["0.30"]["arms"]["POST_QUIET_HUBER_MAD"]
