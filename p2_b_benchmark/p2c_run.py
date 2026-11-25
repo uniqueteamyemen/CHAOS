@@ -130,34 +130,38 @@ def _one_series(item: dict[str, Any], null_replicates: int) -> dict[str, Any]:
                 )
 
     if row["null_eligible"]:
-        rng = np.random.default_rng(_seed_for(row["id"]))
-        counts = {
-            arm: {"alarm_replicates": 0, "event_count": 0,
-                  "valid_replicates": 0, "abstained_replicates": 0}
-            for arm in P2C_VARIANTS
-        }
-        for _ in range(null_replicates):
-            sample = stationary_sample(values, rng, NULL_BLOCK_LENGTH)
-            null_results = run_p2c_all(sample, causal_audit=False)
-            for arm, payload in null_results.items():
-                if payload.get("status") == "ABSTAIN":
-                    counts[arm]["abstained_replicates"] += 1
-                    continue
-                counts[arm]["valid_replicates"] += 1
-                events = int(payload.get("event_count", len(payload.get("hits", []))))
-                counts[arm]["alarm_replicates"] += int(events > 0)
-                counts[arm]["event_count"] += events
-        for arm, values_count in counts.items():
-            valid = values_count["valid_replicates"]
+        if null_replicates < 2:
+            raise ValueError("p2c_null_replicates_must_support_dev_and_holdout")
+        development_replicates = null_replicates // 2
+        holdout_replicates = null_replicates - development_replicates
+        phase_specs = (("development", development_replicates), ("holdout", holdout_replicates))
+        phase_counts: dict[str, dict[str, dict[str, int]]] = {}
+        for phase, phase_replicates in phase_specs:
+            rng = np.random.default_rng(_p2c_seed_for(row["id"], phase))
+            counts = _empty_null_counts()
+            for _ in range(phase_replicates):
+                sample = stationary_sample(values, rng, NULL_BLOCK_LENGTH)
+                null_results = run_p2c_all(sample, causal_audit=False)
+                for arm, payload in null_results.items():
+                    if payload.get("status") == "ABSTAIN":
+                        counts[arm]["abstained_replicates"] += 1
+                        continue
+                    counts[arm]["valid_replicates"] += 1
+                    events = int(payload.get("event_count", len(payload.get("hits", []))))
+                    counts[arm]["alarm_replicates"] += int(events > 0)
+                    counts[arm]["event_count"] += events
+            phase_counts[phase] = counts
+        for arm in P2C_VARIANTS:
+            combined = {
+                key: phase_counts["development"][arm][key] + phase_counts["holdout"][arm][key]
+                for key in ("alarm_replicates", "event_count", "valid_replicates", "abstained_replicates")
+            }
             row["null"][arm] = {
-                **values_count, "replicates_attempted": null_replicates,
-                "conditional_alarm_probability": (
-                    values_count["alarm_replicates"] / valid if valid else None
-                ),
-                "events_per_replicate": (
-                    values_count["event_count"] / valid if valid else None
-                ),
-                "status": "OK" if valid else "ABSTAIN_ALL_ZERO_QUIET_SCALE",
+                **_null_phase_summary(combined, null_replicates),
+                "phases": {
+                    phase: _null_phase_summary(phase_counts[phase][arm], reps)
+                    for phase, reps in phase_specs
+                },
             }
     return row
 
