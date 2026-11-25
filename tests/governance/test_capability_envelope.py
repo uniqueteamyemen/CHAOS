@@ -91,7 +91,7 @@ class CapabilityEnvelopeTests(unittest.TestCase):
         self.assertEqual(result["status"], "NOT_ELIGIBLE")
         self.assertIn("OPERATION_OUTSIDE_ENVELOPE", result["reason_codes"])
         self.assertTrue(result["not_binary"])
-        self.assertIn("posterior_run_length_distribution", result["validation_history"][0]["note"] if False else CAPABILITIES["BOCPD"].output_contract)
+        self.assertIn("posterior_run_length_distribution", CAPABILITIES["BOCPD"].output_contract)
 
     def test_bocpd_feature_use_waits_for_full_run_length_distribution_export(self):
         result = assess_capability(
