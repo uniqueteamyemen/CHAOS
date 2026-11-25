@@ -75,7 +75,22 @@ class CapabilityEnvelopeTests(unittest.TestCase):
                     observations=120, prebreak_observations=40, online=True)
         d = assess_capability("BOCPD", **args)
         self.assertIn("FULL_RUN_LENGTH_POSTERIOR_REQUIRED", d["reason_codes"])
-        self.assertIn("IMPLEMENTATION_NOT_READY", " ".join(d["reason_codes"]))
+        self.assertNotIn("IMPLEMENTATION_NOT_READY", " ".join(d["reason_codes"]))
+        args["context"] = {"full_run_length_pmf_exported": True}
+        ready = assess_capability("BOCPD", **args)
+        self.assertEqual(ready["status"], "PILOT_ELIGIBLE")
+        self.assertFalse(ready["authorizes_production"])
+
+    def test_focus_reset_rearm_adapter_requires_per_series_p0(self):
+        args = dict(operation="online_detect", intended_role="online_detector",
+                    observations=160, prebreak_observations=40, online=True,
+                    context={"reset_rearm_implemented": True,
+                             "per_series_null_calibrated": True,
+                             "development_p0_wilson_upper": 0.08,
+                             "valid_null_replicates": 1000})
+        decision = assess_capability("FOCUS_RESET_ARL_PILOT", **args)
+        self.assertEqual(decision["status"], "PILOT_ELIGIBLE")
+        self.assertFalse(decision["authorizes_production"])
 
     def test_rfpop_is_retrospective_and_requires_frozen_penalty(self):
         args = dict(operation="retrospective_segment", intended_role="offline_segmenter",
