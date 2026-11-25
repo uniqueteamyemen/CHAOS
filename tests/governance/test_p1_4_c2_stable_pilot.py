@@ -64,6 +64,10 @@ class C2StablePilotTests(unittest.TestCase):
                          "2ad0db0654bd1d9dd42c87c5cdb531f9b2aa3a2d")
         self.assertEqual(runner.EXPECTED_COHORT_MANIFEST_GIT_BLOB,
                          "2a9ca14b501567f06840d047597d3a24398c31f2")
+        self.assertEqual(runner.EXPECTED_BASE_PIPELINE_GIT_BLOB,
+                         "9036a939a41ee4d4b43aa5ad4ae22461f8504aa2")
+        self.assertEqual(runner.EXPECTED_INJECTION_RUNNER_GIT_BLOB,
+                         "84144451b8fc26556a614dbc3e986987fd4ca236")
         self.assertEqual(runner.EXPECTED_P2C_ENGINE_GIT_BLOB,
                          "5efcf408822551e00cb87c24e39502dcf0ed595a")
         self.assertEqual(runner.EXPECTED_PROTOCOL_SHA256,

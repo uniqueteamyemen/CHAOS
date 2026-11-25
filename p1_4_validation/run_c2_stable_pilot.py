@@ -24,6 +24,8 @@ EXPECTED_C2_COUNT = 20
 EXPECTED_PROTOCOL_VERSION = "1.1.9"
 EXPECTED_PROTOCOL_GIT_BLOB = "2ad0db0654bd1d9dd42c87c5cdb531f9b2aa3a2d"
 EXPECTED_COHORT_MANIFEST_GIT_BLOB = "2a9ca14b501567f06840d047597d3a24398c31f2"
+EXPECTED_BASE_PIPELINE_GIT_BLOB = "9036a939a41ee4d4b43aa5ad4ae22461f8504aa2"
+EXPECTED_INJECTION_RUNNER_GIT_BLOB = "84144451b8fc26556a614dbc3e986987fd4ca236"
 EXPECTED_P2C_ENGINE_GIT_BLOB = "5efcf408822551e00cb87c24e39502dcf0ed595a"
 EXPECTED_PROTOCOL_SHA256 = "d4ce2b84ade5d8662e22b4cdc020f0f39a88566aced3eff1bfefd478b75645e4"
 TOOLS = {
@@ -44,6 +46,8 @@ def assert_frozen_sources() -> None:
     expected = {
         ROOT / "p1_4_validation" / "pilot_protocol.json": EXPECTED_PROTOCOL_GIT_BLOB,
         ROOT / "p1_4_validation" / "cohort_manifest.json": EXPECTED_COHORT_MANIFEST_GIT_BLOB,
+        ROOT / "p1_4_validation" / "run_evidence_pipeline.py": EXPECTED_BASE_PIPELINE_GIT_BLOB,
+        ROOT / "p1_4_validation" / "injection_runner.py": EXPECTED_INJECTION_RUNNER_GIT_BLOB,
         ROOT / "p2_b_benchmark" / "p2c_engine.py": EXPECTED_P2C_ENGINE_GIT_BLOB,
     }
     for path, digest in expected.items():
@@ -706,6 +710,8 @@ def postprocess(ctx: dict[str, Any], cal_dir: Path, out: Path) -> dict[str, Any]
         "c2_series_ids": ctx["c2_ids"],
         "candidate_sha256": ctx["candidate_hashes"],
         "runner_sha256": base.sha_file(Path(__file__)),
+        "base_pipeline_git_blob_sha": git_blob(ROOT / "p1_4_validation" / "run_evidence_pipeline.py"),
+        "injection_runner_git_blob_sha": git_blob(ROOT / "p1_4_validation" / "injection_runner.py"),
         "p2c_engine_git_blob_sha": git_blob(ROOT / "p2_b_benchmark" / "p2c_engine.py"),
         "recalibration_used_development_only": True,
         "holdout_used_for_threshold_selection": False,
