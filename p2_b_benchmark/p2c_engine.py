@@ -402,26 +402,48 @@ def bocpd_detector(values: Any, *, quiet_points: int = QUIET_POINTS,
             max(short_mean_variance + prior_mean_variance, 1e-12)
         )
 
-        # Confirmation requires posterior mass, material mean separation, and
-        # separation relative to uncertainty in both regime means. A spike
-        # produces a high-variance short-run posterior and fails this gate.
-        if (short_mass >= float(short_mass_threshold)
-                and abs(regime_contrast) >= float(BOCPD_MIN_REGIME_SHIFT)
-                and contrast_z >= float(BOCPD_MIN_CONTRAST_Z)):
-            if streak == 0:
+        # Freeze the previous-regime reference when a candidate first appears.
+        # The MAP old-regime mean naturally drifts as posterior mass transfers
+        # to the new run; recomputing the baseline each step can erase a valid
+        # persistent reversal before it reaches the confirmation horizon.
+        if candidate is None:
+            if (short_mass >= float(short_mass_threshold)
+                    and abs(regime_contrast) >= float(BOCPD_MIN_REGIME_SHIFT)
+                    and contrast_z >= float(BOCPD_MIN_CONTRAST_Z)):
                 short_indices = np.flatnonzero(short_mask)
                 short_map = int(short_indices[int(np.argmax(posterior[short_mask]))])
                 estimate = max(quiet_points, t - int(run_lengths[short_map]))
                 sign = 1 if regime_contrast > 0 else -1
-                candidate = {"estimated_change_index": estimate, "sign": sign,
-                             "prior_regime_mean": prior_regime_mean,
-                             "posterior_new_regime_mean": short_mean,
-                             "regime_contrast": regime_contrast,
-                             "posterior_contrast_z": contrast_z}
-            streak += 1
+                candidate = {
+                    "estimated_change_index": estimate, "sign": sign,
+                    "prior_regime_mean": prior_regime_mean,
+                    "prior_mean_variance": prior_mean_variance,
+                    "posterior_new_regime_mean": short_mean,
+                    "regime_contrast": regime_contrast,
+                    "posterior_contrast_z": contrast_z,
+                }
+                streak = 1
+            else:
+                streak = 0
         else:
-            streak = 0
-            candidate = None
+            frozen_prior_mean = float(candidate["prior_regime_mean"])
+            frozen_prior_variance = float(candidate["prior_mean_variance"])
+            frozen_contrast = short_mean - frozen_prior_mean
+            frozen_contrast_z = abs(frozen_contrast) / math.sqrt(
+                max(short_mean_variance + frozen_prior_variance, 1e-12)
+            )
+            same_direction = (1 if frozen_contrast > 0 else -1) == int(candidate["sign"])
+            if (short_mass >= float(short_mass_threshold)
+                    and same_direction
+                    and abs(frozen_contrast) >= float(BOCPD_MIN_REGIME_SHIFT)
+                    and frozen_contrast_z >= float(BOCPD_MIN_CONTRAST_Z)):
+                streak += 1
+                candidate["posterior_new_regime_mean"] = short_mean
+                candidate["regime_contrast"] = frozen_contrast
+                candidate["posterior_contrast_z"] = frozen_contrast_z
+            else:
+                streak = 0
+                candidate = None
 
         long_mass = float(posterior[run_lengths > int(short_run_max)].sum())
         if diagnostics:
