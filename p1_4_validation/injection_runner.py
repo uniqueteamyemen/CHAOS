@@ -13,6 +13,9 @@ from typing import Any, Iterable, Mapping, Sequence
 import numpy as np
 
 MIN_QUIET = 40
+FOCUS_INITIAL_QUIET_POINTS = 40
+FOCUS_REARM_QUIET_POINTS = 15
+FOCUS_MIN_N = 150
 AR_ORDERS = (1, 2, 3)
 WILSON_Z_95_ONE_SIDED = 1.6448536269514722
 
@@ -206,9 +209,9 @@ def calibrate_threshold(
 
 
 def focus_reset_rearm(
-    values: Sequence[float], *, threshold: float, quiet_points: int = MIN_QUIET,
-    rearm_quiet_points: int = 15, max_events: int = 12,
-    min_series_length: int = 150,
+    values: Sequence[float], *, threshold: float, quiet_points: int = FOCUS_INITIAL_QUIET_POINTS,
+    rearm_quiet_points: int = FOCUS_REARM_QUIET_POINTS, max_events: int = 12,
+    min_series_length: int = FOCUS_MIN_N,
 ) -> dict[str, Any]:
     """Re-arm FOCuS with 40 initial calibration points and 15 after each hit."""
     x = _values(values)
