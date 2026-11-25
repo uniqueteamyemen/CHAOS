@@ -4,6 +4,7 @@ import argparse
 import hashlib
 import json
 import math
+import collections
 from collections import defaultdict
 from pathlib import Path
 from typing import Any
