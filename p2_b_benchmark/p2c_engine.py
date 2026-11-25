@@ -245,7 +245,8 @@ def bocpd_detector(values: Any, *, quiet_points: int = QUIET_POINTS,
                    hazard: float = BOCPD_HAZARD, max_run: int = BOCPD_MAX_RUN,
                    short_run_max: int = BOCPD_SHORT_RUN_MAX,
                    short_mass_threshold: float = BOCPD_SHORT_MASS_THRESHOLD,
-                   persistence: int = BOCPD_PERSISTENCE) -> dict[str, Any]:
+                   persistence: int = BOCPD_PERSISTENCE,
+                   diagnostics: bool = False) -> dict[str, Any]:
     """Bayesian online run-length posterior with Student-t predictive density.
 
     The initial active state is seeded from the 40-point quiet calibration with
@@ -286,6 +287,7 @@ def bocpd_detector(values: Any, *, quiet_points: int = QUIET_POINTS,
     hits: list[dict[str, Any]] = []
     events: list[dict[str, Any]] = []
     posterior_short_run_mass_max = 0.0
+    posterior_diagnostic_tail: list[dict[str, Any]] = []
 
     for t in range(quiet_points, int(x.size)):
         # Use the posterior MAP among established (long-run) states. A fresh
@@ -422,6 +424,21 @@ def bocpd_detector(values: Any, *, quiet_points: int = QUIET_POINTS,
             candidate = None
 
         long_mass = float(posterior[run_lengths > int(short_run_max)].sum())
+        if diagnostics:
+            posterior_diagnostic_tail.append({
+                "index": int(t),
+                "short_run_mass": float(short_mass),
+                "long_run_mass": float(long_mass),
+                "prior_regime_mean": float(prior_regime_mean),
+                "posterior_new_regime_mean": float(short_mean),
+                "regime_contrast": float(regime_contrast),
+                "posterior_contrast_z": float(contrast_z),
+                "streak": int(streak),
+                "armed": bool(armed),
+                "map_run_length": int(run_lengths[int(np.argmax(posterior))]),
+            })
+            if len(posterior_diagnostic_tail) > 128:
+                posterior_diagnostic_tail.pop(0)
         if not armed:
             stable_long_streak = (
                 stable_long_streak + 1
