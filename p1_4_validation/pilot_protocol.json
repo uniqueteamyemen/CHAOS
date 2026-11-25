@@ -1,6 +1,6 @@
 {
   "protocol_id": "CHAOS_P1_4_CAPABILITY_PILOT_V1",
-  "protocol_version": "1.1.1",
+  "protocol_version": "1.1.2",
   "status": "FROZEN_BEFORE_EXECUTION",
   "must_not_be_changed_after_pilot_start": true,
   "purpose": "Evaluate declared detector and estimator roles on verified economic-series cohorts with controlled permanent mean-shift injections and independent synthetic null traces. This is not a forecast-accuracy test and does not authorize production use.",
@@ -128,7 +128,21 @@
         0.3,
         0.5,
         0.7
-      ]
+      ],
+      "tool_scope": {
+        "calibrated_online_detector_arms": [
+          "FOCuS_RESET_ARL_PILOT",
+          "POST_QUIET_HUBER_MAD",
+          "POST_QUIET_HUBER_BARTLETT"
+        ],
+        "retrospective_segmenter_arms": [
+          "R-FPOP"
+        ],
+        "feature_generator_excluded_from_independent_P0": [
+          "BOCPD"
+        ],
+        "rationale": "BOCPD is evaluated as a posterior feature generator, not an independent binary detector. Running 2000 AR null traces at every position for every series would create a large quadratic posterior workload without a valid BOCPD alarm threshold."
+      }
     },
     "deterministic_seeds": "SHA-256-derived independent streams over protocol version, series ID, position, selected AR order, tool/scale variant, phase and replicate index. Development and holdout seeds must not overlap.",
     "synthetic_null_fpr": {
@@ -317,6 +331,7 @@
       "role": "feature_generator",
       "required_output": "Full posterior P(run_length_t | observations through t) for every evaluated prefix; preserve run-length support and normalized posterior mass.",
       "required_features": [
+        "posterior_run_length_distribution",
         "expected_run_length",
         "run_length_variance",
         "posterior_entropy",
@@ -331,17 +346,18 @@
       ],
       "posterior_only_decision_rule": "For diagnostic comparison only, short_run_probability >= 0.35 for at least 3 of 5 consecutive prefixes; this is not a production BOCPD binary-detector authorization.",
       "incremental_value_test": {
-        "method": "Paired series-level sign-flip permutation test, 1000 replicates.",
+        "method": "Paired, series-level permutation test over the 40 independent series clusters; injection cases are kept nested within their series.",
+        "replicates": 1000,
+        "effect_size": "Cohen's dz on paired per-series differences in direction-correct injection recall and separately in filtered false-alarm P0.",
+        "fusion": "A FOCuS candidate is retained only when BOCPD short-run posterior mass is >=0.35 on at least 3 of 5 evaluated prefixes within +/-3 observations of the FOCuS detection index. Otherwise the candidate is not corroborated.",
         "comparisons": [
-          "FOCUS_PLUS_BOCPD_FEATURES versus FOCUS_ONLY",
-          "BOCPD_POSTERIOR_ONLY_DIAGNOSTIC versus FOCUS_ONLY"
+          "FOCUS_ONLY",
+          "FOCUS_PLUS_BOCPD_CORROBORATION",
+          "BOCPD_POSTERIOR_ONLY_DIAGNOSTIC"
         ],
-        "statistic": "Per-series difference in direction-correct recall and, separately, false-alarm P0.",
-        "effect_size": "Cohen's dz on paired per-series difference in mean expected run length between post-break and pre-break; compute across independent series, not time points.",
-        "p_value_threshold": 0.05,
-        "minimum_gain": "At least +0.05 absolute recall with no P0 worsening, or at least -0.05 absolute P0 with recall loss <=0.10, and series-level p<0.05.",
-        "restrictions": "Do not run Mann-Whitney U/KS over dependent time points. Forecast value is not tested here; that belongs to Engine 2 rolling-origin evaluation.",
-        "replicates": 1000
+        "success": "Corroboration reduces holdout P0 by >=0.05 absolute on the identical FOCuS null bank while limiting recall loss to <=0.10 absolute, with paired series-level p<0.05. BOCPD-only diagnostic is assessed for feature association with injected changes versus shuffled controls, not FPR.",
+        "feature_diagnostic": "Report posterior-feature separation by per-series injection condition and shuffled control. No online warning, P0, ARL0, or production-detector claim is allowed from BOCPD-only.",
+        "forecast_value": "Not tested in P1.4; predictive value is deferred to Engine 2 rolling-origin validation."
       },
       "fixed_parameters": {
         "hazard": 0.016666666666666666,
@@ -353,6 +369,14 @@
         "min_contrast_z": 2,
         "rearm_long_mass": 0.8,
         "rearm_persistence": 3
+      },
+      "execution_scope": {
+        "run_on_cases": "All original and 18 injected conditions for each of the 40 selected series (760 traces total).",
+        "shuffle_diagnostic": "250 within-series shuffled controls per selected series; feature diagnostics only, no operational FPR claim.",
+        "p0_calibration": "No independent BOCPD threshold calibration and no standalone P0/ARL0 claim.",
+        "fusion_null_check": "For each calibrated FOCuS development/holdout AR null trace, first run the FOCuS reset/rearm path. Only when FOCuS emits an alarm is BOCPD replayed to the candidate detection prefix to assess the predeclared corroboration rule. The fused false-alarm count is measured on the same complete FOCuS null bank; traces with no FOCuS candidate remain non-alarms.",
+        "feature_pmf_export": "Persist a deterministic hash of the complete per-prefix posterior PMF trace. The artifact stores summary metrics and replay metadata; the PMF is recomputed from the frozen trace during replay, avoiding raw-observation or unbounded per-trace artifact growth.",
+        "no_independent_detector_role": true
       }
     },
     "R-FPOP": {
@@ -437,7 +461,8 @@
       "BOCPD exports full posterior PMF for every prefix",
       "capability envelope schema/runtime tests pass",
       "pilot protocol schema/tests pass and final protocol SHA is bound to cohort selection",
-      "injection, null calibration, prefix replay and no-future-suffix mutation tests pass"
+      "injection, null calibration, prefix replay and no-future-suffix mutation tests pass",
+      "BOCPD posterior feature evaluation is restricted to the declared case and shuffle/fusion-candidate scope; no 1000x2 independent AR bank is run for BOCPD-only."
     ],
     "required_artifact_fields": [
       "series_id",

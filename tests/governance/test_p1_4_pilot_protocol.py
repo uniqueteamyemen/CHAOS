@@ -95,6 +95,15 @@ class P14PilotProtocolTests(unittest.TestCase):
         self.assertIn("MAD and Bartlett variants receive identical paths", n["null_seed_streams"])
         self.assertIn("identical", n["paired_paths_rule"])
 
+    def test_bocpd_is_feature_generator_not_independent_p0_detector(self):
+        scope = self.protocol["ar_null_and_calibration"]["traces_per_series_per_position"]["tool_scope"]
+        self.assertIn("BOCPD", scope["feature_generator_excluded_from_independent_P0"])
+        b = self.protocol["tool_protocols"]["BOCPD"]
+        self.assertTrue(b["execution_scope"]["no_independent_detector_role"])
+        self.assertIn("250 within-series shuffled controls", b["execution_scope"]["shuffle_diagnostic"])
+        self.assertIn("same complete FOCuS null bank", b["execution_scope"]["fusion_null_check"])
+        self.assertEqual(b["incremental_value_test"]["replicates"], 1000)
+
     def test_c3_is_pending_and_never_silently_substituted(self):
         c3 = self.protocol["cohort_design"]["C3"]
         self.assertFalse(c3["included"])
