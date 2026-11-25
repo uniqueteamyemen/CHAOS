@@ -1,0 +1,174 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "CHAOS_P1_4_PILOT_PROTOCOL_V1_1",
+  "title": "CHAOS P1.4 Frozen Pilot Protocol",
+  "type": "object",
+  "required": [
+    "protocol_id",
+    "protocol_version",
+    "status",
+    "must_not_be_changed_after_pilot_start",
+    "source_and_scope",
+    "cohort_design",
+    "injection_design",
+    "ar_null_and_calibration",
+    "measurements",
+    "tool_protocols",
+    "decision_rules",
+    "execution"
+  ],
+  "additionalProperties": true,
+  "properties": {
+    "protocol_id": {
+      "const": "CHAOS_P1_4_CAPABILITY_PILOT_V1"
+    },
+    "protocol_version": {
+      "const": "1.1.0"
+    },
+    "status": {
+      "enum": [
+        "FROZEN_BEFORE_EXECUTION"
+      ]
+    },
+    "must_not_be_changed_after_pilot_start": {
+      "const": true
+    },
+    "source_and_scope": {
+      "type": "object",
+      "required": [
+        "repository",
+        "p2_2_source_commit",
+        "prepared_artifact_sha256",
+        "cohort_manifest_path",
+        "capability_envelope_path",
+        "economic_universe"
+      ],
+      "properties": {
+        "repository": {
+          "type": "string"
+        },
+        "p2_2_source_commit": {
+          "type": "string"
+        },
+        "prepared_artifact_sha256": {
+          "type": "string"
+        },
+        "cohort_manifest_path": {
+          "type": "string"
+        },
+        "capability_envelope_path": {
+          "type": "string"
+        },
+        "economic_universe": {
+          "type": "object",
+          "required": [
+            "total",
+            "pink_sheet",
+            "gem"
+          ],
+          "properties": {
+            "total": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "pink_sheet": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "gem": {
+              "type": "integer",
+              "minimum": 1
+            }
+          }
+        }
+      }
+    },
+    "cohort_design": {
+      "type": "object",
+      "required": [
+        "C1",
+        "C2",
+        "C3",
+        "pilot_scope"
+      ]
+    },
+    "injection_design": {
+      "type": "object",
+      "required": [
+        "baseline",
+        "magnitudes_sigma",
+        "positions_fraction",
+        "directions",
+        "injected_case_count_per_series",
+        "total_run_count_per_series_including_original",
+        "minimum_prebreak_observations"
+      ]
+    },
+    "ar_null_and_calibration": {
+      "type": "object",
+      "required": [
+        "null_model",
+        "candidate_orders",
+        "order_selection",
+        "fit_scope",
+        "residual_scale",
+        "traces_per_series_per_position",
+        "synthetic_null_fpr",
+        "arl0",
+        "shuffle_null"
+      ]
+    },
+    "measurements": {
+      "type": "object",
+      "required": [
+        "original_alarm_burden",
+        "synthetic_null_fpr",
+        "injection_recall",
+        "detection_delay",
+        "coverage",
+        "series_variability",
+        "minimum_detectable_effect",
+        "cost_weighted_diagnostic",
+        "confidence_intervals"
+      ]
+    },
+    "tool_protocols": {
+      "type": "object",
+      "required": [
+        "FOCuS",
+        "POST_QUIET_HUBER_MAD",
+        "POST_QUIET_HUBER_BARTLETT",
+        "Bartlett_LRV",
+        "BOCPD",
+        "R-FPOP",
+        "references"
+      ]
+    },
+    "decision_rules": {
+      "type": "object",
+      "required": [
+        "pass",
+        "fail",
+        "inconclusive",
+        "per_tool_statuses",
+        "cohort_decisions",
+        "after_holdout",
+        "negative_result_policy"
+      ]
+    },
+    "execution": {
+      "type": "object",
+      "required": [
+        "heavy_execution_environment",
+        "matrix",
+        "cases_per_series",
+        "raw_values_in_artifacts",
+        "required_preflight_gates",
+        "required_artifact_fields",
+        "artifact_integrity",
+        "replay",
+        "pilot_start_gate"
+      ]
+    }
+  }
+}

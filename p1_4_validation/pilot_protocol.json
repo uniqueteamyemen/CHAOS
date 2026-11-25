@@ -1,0 +1,413 @@
+{
+  "protocol_id": "CHAOS_P1_4_CAPABILITY_PILOT_V1",
+  "protocol_version": "1.1.0",
+  "status": "FROZEN_BEFORE_EXECUTION",
+  "frozen_at_commit": null,
+  "must_not_be_changed_after_pilot_start": true,
+  "purpose": "Evaluate declared detector and estimator roles on verified economic-series cohorts with controlled permanent mean-shift injections and independent synthetic null traces. This is not a forecast-accuracy test and does not authorize production use.",
+  "source_and_scope": {
+    "repository": "uniqueteamyemen/CHAOS",
+    "baseline_commit": "86cb8e576dc0bd21044743dd2749f5bf1d8899ff",
+    "p2_2_source_commit": "72edc44b183e0c7c92e1edae362426d189e0c886",
+    "p2_2_workflow_run_id": 45244943216,
+    "prepared_artifact_id": 14857826243,
+    "prepared_artifact_sha256": "c83f6e960296fbbdb687650a798959f08cb8d98db68de8ca713d7be278e824fe",
+    "candidate_registry_sha256": "4c6643acd6ae1ccf30570c103b163340a460e2b7dfbfa9f2a11eee537d0e78f9",
+    "cohort_manifest_path": "p1_4_validation/cohort_manifest.json",
+    "capability_envelope_path": "p1_4_validation/capability_envelope.json",
+    "economic_universe": {
+      "total": 509,
+      "pink_sheet": 51,
+      "gem": 458
+    },
+    "no_raw_values_in_persisted_manifests": true
+  },
+  "cohort_design": {
+    "C1": {
+      "status": "VERIFIED",
+      "definition": "147 GEM series whose stored production G1 composite screen status is SCREEN_FAIL",
+      "original_count_claimed": 147,
+      "verified_count": 147,
+      "criterion": "ADF p<0.05 AND KPSS p>=0.05 are both required to pass G1",
+      "criterion_breakdown": {
+        "adf_pass_kpss_fail": 106,
+        "adf_fail_kpss_fail": 32,
+        "adf_fail_kpss_pass": 9
+      },
+      "pilot_sample_count": 20,
+      "pilot_selection": "Deterministic stratified selection by G1 failure class, observation length band and pre-break AR dependence band; fixed identity list in cohort_manifest.json"
+    },
+    "C2": {
+      "status": "VERIFIED",
+      "sampling_frame_count": 362,
+      "sampling_frame_source_counts": {
+        "pink_sheet": 51,
+        "gem": 311
+      },
+      "verified_sample_count": 50,
+      "sample_source_counts": {
+        "pink_sheet": 7,
+        "gem": 43
+      },
+      "pilot_sample_count": 20,
+      "pilot_source_counts": {
+        "pink_sheet": 3,
+        "gem": 17
+      },
+      "sampling": "Deterministic stratified sample by source cohort, domain, length band and pre-break AR dependence band; fixed IDs and seed ledger in cohort_manifest.json"
+    },
+    "C3": {
+      "status": "PENDING_EXTERNAL_EVIDENCE",
+      "included": false,
+      "required_evidence": "Independent known-break event/series mapping plus point-in-time source vintages proving each historical observation was available at decision time",
+      "no_substitute_cohort": true
+    },
+    "pilot_scope": {
+      "verified_series_count": 40,
+      "run_cases_per_series": 19,
+      "original_cases_per_series": 1,
+      "injected_cases_per_series": 18,
+      "total_run_cases": 760,
+      "composition": {
+        "C1": 20,
+        "C2": 20,
+        "C3": 0
+      },
+      "status": "SELECTED_NOT_EXECUTED"
+    },
+    "rule": "Run only the 40 exact series IDs frozen in the cohort manifest. No silent replacements. If a selected series becomes ineligible, record the reason and maintain the planned coverage denominator."
+  },
+  "injection_design": {
+    "baseline": {
+      "calibration_observations": 40,
+      "rule": "The first 40 observations are reserved for initial location/scale calibration and must not generate detection events.",
+      "calibration_slice": "indices 0..39 inclusive"
+    },
+    "permanent_mean_shifts": true,
+    "magnitudes_sigma": [
+      0.5,
+      1,
+      2
+    ],
+    "positions_fraction": [
+      0.3,
+      0.5,
+      0.7
+    ],
+    "directions": [
+      -1,
+      1
+    ],
+    "injected_case_count_per_series": 18,
+    "total_run_count_per_series_including_original": 19,
+    "break_index_rule": "floor(position_fraction * n), zero-based; the shift is applied from break_index through the final observation.",
+    "sigma_reference": "1.4826 * MAD of residuals from the selected AR(p) model fitted only on the complete pre-break prefix.",
+    "injected_delta": "direction * magnitude_sigma * residual_sigma",
+    "minimum_prebreak_observations": 40,
+    "short_prebreak_rule": "NOT_ELIGIBLE with a machine-readable reason for that position; preserve it in the planned-case and coverage denominators. Do not silently drop it or count it as a detector miss.",
+    "direction_correct_detection": "A true positive must have the correct sign and detection_index >= true_break_index. A pre-onset or wrong-direction event cannot be a true positive.",
+    "rearm_exposure_rule": "Any FOCuS reset/re-arm interval must be recorded. An injected event falling inside an unmonitored re-arm interval is recorded as an uncovered miss, not removed from the denominator."
+  },
+  "ar_null_and_calibration": {
+    "null_model": "AR(p) with intercept",
+    "candidate_orders": [
+      1,
+      2,
+      3
+    ],
+    "order_selection": "Minimum AIC among p=1,2,3, fitted on the complete pre-break prefix for the relevant injection position; selection is development-only and frozen before holdout.",
+    "fit_scope": "Use all available observations strictly before the injected break. Do not use the post-break suffix to estimate AR coefficients, intercept or residual scale.",
+    "innovation_model": "Parametric AR recursion with centered, independently resampled fitted residual innovations; record residual pool hash and deterministic seed. No injected break or regime transition is included in null traces.",
+    "residual_scale": "1.4826 * MAD of fitted AR residuals",
+    "minimum_prebreak_observations": 40,
+    "stability_gate": "Reject non-finite or singular fits, insufficient residual degrees of freedom, and any fitted AR polynomial with a root not strictly outside the unit circle.",
+    "failed_fit_status": "NOT_ELIGIBLE with reason; no silent AR(1) fallback or model-order substitution.",
+    "traces_per_series_per_position": {
+      "development": 1000,
+      "holdout": 1000,
+      "positions": [
+        0.3,
+        0.5,
+        0.7
+      ]
+    },
+    "deterministic_seeds": "SHA-256-derived independent streams over protocol version, series ID, position, selected AR order, tool/scale variant, phase and replicate index. Development and holdout seeds must not overlap.",
+    "synthetic_null_fpr": {
+      "definition": "P0 = P(at least one false alarm within the exact original series horizon) estimated from independent parametric AR(p) null traces.",
+      "target": 0.1,
+      "calculation": "alarm traces / valid null traces; report per-series and by cohort with Wilson intervals.",
+      "threshold_selection": "For each series, position and online tool, choose the least sensitive threshold whose one-sided 95% Wilson upper bound on development P0 is <= 0.10. Freeze before holdout or injections.",
+      "holdout": "Evaluate the frozen threshold on 1000 independent holdout traces; no recalibration or threshold selection on holdout.",
+      "minimum_valid_replicates": 950,
+      "invalid_replicates": "Report separately; below 950 valid traces makes that condition INCONCLUSIVE."
+    },
+    "arl0": {
+      "status": "SECONDARY_DIAGNOSTIC_ONLY",
+      "reference_grid": [
+        500,
+        1000,
+        2000
+      ],
+      "method": "Empirical time-to-first-false-alarm with right-censoring at the actual series horizon; report restricted mean run length and censoring fraction.",
+      "rule": "A target beyond the available horizon is NOT_ESTIMABLE. Never infer P0 from 1/ARL0 and never use ARL0 as a substitute for series-horizon P0."
+    },
+    "shuffle_null": {
+      "method": "Within-series permutation of observed values",
+      "replicates_per_series": 250,
+      "purpose": "Negative-control diagnostic; preserves marginal values while destroying temporal order.",
+      "acceptance_role": "Diagnostic only; not a substitute for the fitted AR(p) null."
+    }
+  },
+  "measurements": {
+    "original_alarm_burden": {
+      "definition": "Count and timing of alarms on the unmodified original series under the frozen detector configuration.",
+      "interpretation": "Descriptive burden only; original real-data events are not independently adjudicated, so these alarms are not labelled false positives."
+    },
+    "original_r_fpop_burden": {
+      "definition": "Number and positions of retrospective breakpoints on the unmodified original series.",
+      "interpretation": "Descriptive segmentation burden only; never an online alarm or false-positive rate."
+    },
+    "alarm_burden_ratio": {
+      "definition": "Original online alarm count divided by the expected alarm count on matched synthetic AR(p) null traces for the same series and horizon.",
+      "zero_denominator": "UNDEFINED",
+      "flag_threshold": 3,
+      "interpretation": "Model-misspecification diagnostic only; not an automatic pass/fail rule."
+    },
+    "synthetic_null_fpr": "Keep separate from original alarm burden; report P0 per series and cohort with Wilson confidence intervals.",
+    "injection_recall": {
+      "definition": "Direction-correct detections at or after the injected break divided by eligible injected cases.",
+      "false_negatives": "Every eligible injected case with no direction-correct detection by series end remains a false negative in the denominator.",
+      "pre_onset": "Record separately; cannot count as a true positive.",
+      "wrong_direction": "Record wrong-sign detections after the injected break separately; do not credit them as recall."
+    },
+    "detection_delay": {
+      "definition": "detection_index - true_break_index for direction-correct detected injections only.",
+      "report": [
+        "median",
+        "p90",
+        "miss_count",
+        "uncovered_rearm_count"
+      ],
+      "missed_cases": "Report separately; do not hide misses by assigning them a zero delay."
+    },
+    "coverage": {
+      "definition": "Report planned, eligible, NOT_ELIGIBLE, abstained and executed counts by cohort, series, position, magnitude, direction and tool.",
+      "denominator_rule": "Always publish numerator and denominator; do not silently remove short or failed cases."
+    },
+    "series_variability": {
+      "required": [
+        "per_series_recall",
+        "median_recall",
+        "iqr_recall",
+        "recall_coefficient_of_variation",
+        "source_strata",
+        "domain_strata",
+        "length_strata",
+        "autocorrelation_strata",
+        "C1_failure_class_strata"
+      ],
+      "cv_rule": "SD(per-series recall) / mean(per-series recall); report UNDEFINED when the mean is zero."
+    },
+    "minimum_detectable_effect": {
+      "definition": "Operational MDE is the smallest tested shift magnitude whose series-clustered 95% lower confidence bound for direction-correct detection probability reaches 0.80 (80% empirical detection power).",
+      "grid_sigma": [
+        0.5,
+        1,
+        2
+      ],
+      "if_unreached": "Report >2.0 sigma; do not extrapolate beyond the tested grid.",
+      "not_classical_claim": "This is empirical detector power on the declared cohorts, not a claim about power for an external scientific hypothesis test."
+    },
+    "cost_weighted_diagnostic": {
+      "formula": "1.0 * synthetic_null_fpr + 1.0 * (1 - recall) + 0.1 * normalized_mean_delay",
+      "weights": {
+        "false_alarm": 1,
+        "miss": 1,
+        "delay": 0.1
+      },
+      "normalized_mean_delay": "Mean correct-detection delay divided by the exact series horizon n; values are within [0,1]. Report UNDEFINED when no injected case was detected.",
+      "role": "Secondary comparison only; cannot override a mandatory safety, coverage, P0 or holdout gate."
+    },
+    "confidence_intervals": {
+      "series_metrics": "Cluster bootstrap by series ID, resampling each series together with all its 19 conditions; 2000 replicates; 95% intervals.",
+      "null_probability": "Wilson score interval, 95%, over valid independent null replicates, then report the distribution across series.",
+      "permutation": "Paired sign-flip permutation at the series level, never at the observation/time-point level."
+    }
+  },
+  "tool_protocols": {
+    "FOCuS": {
+      "role": "online_detector",
+      "variant": "FOCUS_RESET_ARL_PILOT",
+      "first_hit_engine_limitation": "Current P2-C FOCuS function returns after its first hit. A reset/re-arm adapter must be implemented and tested before the Pilot gate.",
+      "reset_policy": "After a confirmed hit, reset the functional-pruning state; reserve the next 40 observations as the new calibration/re-arm interval. Record its start/end and exposure. An injected break during this interval is an uncovered miss, not an excluded condition.",
+      "per_series_threshold": "Use the threshold selected only from development AR(p) null traces for the same series and position.",
+      "primary_success": {
+        "recall_at_1sigma": "Series-clustered 95% lower bound >= 0.60",
+        "synthetic_null_fpr": "Holdout one-sided 95% Wilson upper bound <= 0.10",
+        "wrong_direction_rate": "Series-clustered 95% upper bound <= 0.05"
+      }
+    },
+    "POST_QUIET_HUBER_MAD": {
+      "role": "online_detector",
+      "variant": "Post-Quiet Huber with MAD scale",
+      "calibration": "First 40 observations only; per-series/per-position threshold chosen on development AR(p) null traces.",
+      "primary_success": {
+        "recall_at_1sigma": "Series-clustered 95% lower bound >= 0.60",
+        "synthetic_null_fpr": "Holdout one-sided 95% Wilson upper bound <= 0.10",
+        "wrong_direction_rate": "Series-clustered 95% upper bound <= 0.05"
+      }
+    },
+    "POST_QUIET_HUBER_BARTLETT": {
+      "role": "online_detector_variant",
+      "parent_detector": "Post-Quiet Huber",
+      "comparison": "Same Huber detector, same AR(p) traces, same P0 target, same data positions; MAD and Bartlett scale variants independently calibrate thresholds on development data only.",
+      "primary_success": {
+        "calibration_error_improvement": "Reduce absolute holdout |P0_actual - 0.10| by at least 30% relative to MAD.",
+        "recall_noninferiority": "Recall at 1 sigma may not fall by more than 0.10 absolute versus MAD.",
+        "restriction": "Do not claim a 20% FPR reduction when both variants are calibrated to the same target P0."
+      }
+    },
+    "Bartlett_LRV": {
+      "role": "calibrator_only",
+      "comparison_scope": "Only a scale estimator inside the Huber Bartlett variant (and a separately identified A_FAST_BARTLETT_PILOT if implemented).",
+      "forbidden": "Standalone detector, standalone hit generator, or direct pass/fail role."
+    },
+    "BOCPD": {
+      "role": "feature_generator",
+      "required_output": "Full posterior P(run_length_t | observations through t) for every evaluated prefix; preserve run-length support and normalized posterior mass.",
+      "required_features": [
+        "expected_run_length",
+        "run_length_variance",
+        "posterior_entropy",
+        "short_run_probability",
+        "change_probability"
+      ],
+      "current_engine_blocker": "Current P2-C runner exposes only posterior summaries/diagnostic tail, not the complete posterior distribution for every prefix. Full PMF export is a pre-Pilot implementation gate.",
+      "comparison_arms": [
+        "FOCUS_ONLY",
+        "FOCUS_PLUS_BOCPD_FEATURES",
+        "BOCPD_POSTERIOR_ONLY_DIAGNOSTIC"
+      ],
+      "posterior_only_decision_rule": "For diagnostic comparison only, short_run_probability >= 0.35 for at least 3 of 5 consecutive prefixes; this is not a production BOCPD binary-detector authorization.",
+      "incremental_value_test": {
+        "method": "Paired series-level sign-flip permutation test, 1000 replicates.",
+        "comparisons": [
+          "FOCUS_PLUS_BOCPD_FEATURES versus FOCUS_ONLY",
+          "BOCPD_POSTERIOR_ONLY_DIAGNOSTIC versus FOCUS_ONLY"
+        ],
+        "statistic": "Per-series difference in direction-correct recall and, separately, false-alarm P0.",
+        "effect_size": "Cohen's dz on the paired per-series difference in mean expected run length (post-break minus pre-break); no time-point independence assumption.",
+        "p_value_threshold": 0.05,
+        "minimum_gain": "At least +0.05 absolute recall with no P0 worsening, or at least -0.05 absolute P0 with recall loss <=0.10, and series-level p<0.05.",
+        "restrictions": "Do not run Mann-Whitney U/KS over dependent time points. Forecast value is not tested here; that belongs to Engine 2 rolling-origin evaluation."
+      }
+    },
+    "R-FPOP": {
+      "role": "offline_segmenter",
+      "matching": {
+        "rule": "One-to-one assignment between the single injected break and at most one estimated breakpoint; choose the closest candidate inside the tolerance, with deterministic tie-break by lower index.",
+        "tolerance": "Absolute distance <= 0.03 * n.",
+        "extra_boundaries": "Every non-matched breakpoint is a false breakpoint.",
+        "boundary_precision": "Matched injected boundaries / all estimated boundaries; zero if no estimated boundaries.",
+        "boundary_recall": "Matched injected boundaries / one injected boundary."
+      },
+      "penalty_calibration": {
+        "candidates": [
+          0.5,
+          0.75,
+          1,
+          1.25,
+          1.5,
+          2,
+          3,
+          4,
+          6,
+          8,
+          12,
+          16
+        ],
+        "rule": "On development AR(p) null traces only, choose the smallest penalty multiplier whose one-sided 95% Wilson upper bound for P(any breakpoint) is <=0.10.",
+        "freeze": "Freeze penalty per series before holdout; never adjust after holdout or injected outcomes are inspected."
+      },
+      "null_control": {
+        "source": "Same independent development and holdout AR(p) parametric null traces used by the detector calibration framework.",
+        "report": [
+          "P(any breakpoint)",
+          "false breakpoints per series",
+          "false breakpoints per 100 observations"
+        ],
+        "rule": "No uncalibrated random number of segmentation boundaries may be used as the null baseline."
+      },
+      "primary_success": {
+        "boundary_precision": ">= 0.50",
+        "median_boundary_distance": "< 0.03 * n among one-to-one matched boundaries",
+        "recall_at_1sigma_and_2sigma": ">= 0.70",
+        "false_breakpoint_burden": "Holdout null upper 95% Wilson bound on P(any breakpoint) <= 0.10",
+        "interpretation": "Retrospective segmentation only; never treat estimated boundary as an online warning."
+      }
+    },
+    "references": {
+      "A_FAST": "Frozen reference control; no code or threshold changes and no tuning on Pilot/holdout.",
+      "A_CONSENSUS": "Frozen reference control; no code or threshold changes and no tuning on Pilot/holdout."
+    }
+  },
+  "decision_rules": {
+    "confidence_intervals": "Use series-cluster bootstrap (2000 replicates) for recall, delay, MDE and variability. Use Wilson intervals for independent null replicates. Use paired series-level permutation for BOCPD feature value.",
+    "pass": "A tool passes only when all mandatory limits for its assigned role are met using the predeclared confidence bound on both C1 and C2 separately.",
+    "fail": "A tool fails only when the corresponding interval lies wholly on the failing side of a predeclared threshold with at least 80% planned series/conditions eligible and >=950 valid null replicates.",
+    "inconclusive": "INCONCLUSIVE when confidence intervals cross a threshold, fewer than 80% of planned conditions are eligible, fewer than 950 valid null traces exist, or a required implementation/trace is missing.",
+    "per_tool_statuses": [
+      "PASS",
+      "FAIL",
+      "INCONCLUSIVE",
+      "NOT_ELIGIBLE"
+    ],
+    "cohort_decisions": {
+      "VALIDATED": "At least one candidate passes its declared role on both C1 and C2, all mandatory integrity/causal gates pass, and the resulting operating envelope is restricted to the tested cohorts and conditions. C3 remains visibly pending.",
+      "LOCKED_REJECTED": "All candidate tools fail their assigned roles on both C1 and C2 with adequate eligible coverage and confidence intervals wholly on the failing side. Preserve negative evidence; do not retune and rerun the same hypothesis.",
+      "INCONCLUSIVE": "Coverage, implementation, null calibration or statistical precision is insufficient for either validation or rejection."
+    },
+    "after_holdout": "No recalibration, threshold changes, penalty changes, model-order reselection or cohort replacement after holdout inspection.",
+    "negative_result_policy": "A valid FAIL or INCONCLUSIVE result is accepted. Never modify criteria to obtain a pass."
+  },
+  "execution": {
+    "heavy_execution_environment": "GitHub Actions only",
+    "matrix": "One matrix job per selected series. Each job executes the original baseline and all 18 injected cases for that series; calibration/null traces are generated once per series-position-model-tool phase and reused only where the protocol permits.",
+    "cases_per_series": 19,
+    "raw_values_in_artifacts": false,
+    "required_preflight_gates": [
+      "C1 identity and composite G1 criterion are verified",
+      "C2 50-series sample and exact 20-series pilot subset are verified",
+      "C3 remains explicitly excluded until source vintages are proven",
+      "FOCuS reset/rearm runner passes contract tests",
+      "BOCPD exports full posterior PMF for every prefix",
+      "capability envelope schema/runtime tests pass",
+      "pilot protocol schema/tests pass and final protocol SHA is bound to cohort selection",
+      "injection, null calibration, prefix replay and no-future-suffix mutation tests pass"
+    ],
+    "required_artifact_fields": [
+      "series_id",
+      "cohort_id",
+      "series_candidate_sha256",
+      "injection_magnitude_sigma",
+      "injection_position_fraction",
+      "injection_direction",
+      "true_break_index",
+      "tool_outputs",
+      "original_alarm_burden",
+      "synthetic_null_fpr",
+      "ar_model_order",
+      "ar_coefficients",
+      "residual_sigma",
+      "thresholds",
+      "penalty",
+      "seed_ledger",
+      "coverage_denominator",
+      "replay_command",
+      "artifact_sha256"
+    ],
+    "artifact_integrity": "SHA-256 each per-series artifact and posterior PMF artifact before upload. Aggregate only the exact frozen series IDs and verify all files/hashes.",
+    "replay": "Every per-series output includes deterministic replay command and exact source, model, tool version, protocol SHA and seed identities.",
+    "pilot_start_gate": "Do not dispatch until every preflight item passes on the exact Pilot commit. The dispatch itself is a separate [skip-p2-full] commit/action. C3 may remain pending only with the declared scope limitation."
+  }
+}

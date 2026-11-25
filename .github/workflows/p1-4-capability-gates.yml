@@ -9,6 +9,9 @@ on:
       - "p1_4_validation/capability_envelope.json"
       - "p1_4_validation/capability_envelope.schema.json"
       - "p1_4_validation/cohort_manifest.json"
+      - "p1_4_validation/pilot_protocol.json"
+      - "p1_4_validation/pilot_protocol.schema.json"
+      - "tests/governance/test_p1_4_pilot_protocol.py"
       - "tests/governance/test_p1_4_capability_envelope.py"
       - ".github/workflows/p1-4-capability-gates.yml"
   pull_request:
@@ -16,6 +19,7 @@ on:
     paths:
       - "chaos_governance_kernel/capability_envelope.py"
       - "p1_4_validation/**"
+      - "tests/governance/test_p1_4_pilot_protocol.py"
       - "tests/governance/test_p1_4_capability_envelope.py"
       - ".github/workflows/p1-4-capability-gates.yml"
 
@@ -37,5 +41,7 @@ jobs:
           python-version: "3.11"
       - name: Compile capability runtime
         run: python -m py_compile chaos_governance_kernel/capability_envelope.py
-      - name: Run P1.4 envelope and cohort contract tests
-        run: python -m unittest tests.governance.test_p1_4_capability_envelope -v
+      - name: Run P1.4 capability and Pilot protocol tests
+        run: |
+          python -m unittest discover -s tests/governance -p 'test_p1_4_capability_envelope.py' -v
+          python -m unittest discover -s tests/governance -p 'test_p1_4_pilot_protocol.py' -v
