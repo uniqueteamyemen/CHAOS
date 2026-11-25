@@ -92,6 +92,20 @@ class CapabilityEnvelopeTests(unittest.TestCase):
         self.assertEqual(decision["status"], "PILOT_ELIGIBLE")
         self.assertFalse(decision["authorizes_production"])
 
+    def test_focus_reset_rearm_requires_minimum_150_observations(self):
+        args = dict(operation="online_detect", intended_role="online_detector",
+                    observations=149, prebreak_observations=40, online=True,
+                    context={"reset_rearm_implemented": True,
+                             "per_series_null_calibrated": True,
+                             "development_p0_wilson_upper": 0.08,
+                             "valid_null_replicates": 1000})
+        decision = assess_capability("FOCUS_RESET_ARL_PILOT", **args)
+        self.assertEqual(decision["status"], "NOT_ELIGIBLE")
+        self.assertIn("MINIMUM_OBSERVATIONS_NOT_MET", decision["reason_codes"])
+        args["observations"] = 150
+        eligible = assess_capability("FOCUS_RESET_ARL_PILOT", **args)
+        self.assertEqual(eligible["status"], "PILOT_ELIGIBLE")
+
     def test_rfpop_is_retrospective_and_requires_frozen_penalty(self):
         args = dict(operation="retrospective_segment", intended_role="offline_segmenter",
                     observations=120, online=False)
