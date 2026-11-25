@@ -101,7 +101,7 @@ class P14InjectionRunnerTests(unittest.TestCase):
         self.assertEqual(row["false_breakpoint_count"], 2)
         self.assertAlmostEqual(row["boundary_precision"], 1/3)
 
-    def test_focus_reset_rearm_restarts_on_a_fresh_40_observation_window(self):
+    def test_focus_reset_rearm_uses_40_point_start_and_20_point_rearm(self):
         values = np.arange(150, dtype=float)
         calls = []
 
@@ -127,20 +127,20 @@ class P14InjectionRunnerTests(unittest.TestCase):
             result = focus_reset_rearm(values, threshold=7.0, quiet_points=40,
                                        rearm_quiet_points=20)
 
-        self.assertEqual([row["detection_index"] for row in result["hits"]], [50, 86])
-        self.assertEqual([row["estimated_change_index"] for row in result["hits"]], [47, 83])
+        self.assertEqual([row["detection_index"] for row in result["hits"]], [50, 81])
+        self.assertEqual([row["estimated_change_index"] for row in result["hits"]], [47, 78])
         self.assertEqual(result["rearm_intervals"], [
             {"start_inclusive": 51, "end_exclusive": 71},
-            {"start_inclusive": 87, "end_exclusive": 107},
+            {"start_inclusive": 82, "end_exclusive": 102},
         ])
         self.assertEqual(result["initial_calibration_observations"], 40)
         self.assertEqual(result["rearm_calibration_observations"], 20)
         self.assertEqual(len(calls), 3)
-        # Startup uses 40 points; every subsequent reset reserves 15 points.
+        # Startup uses 40 points; every subsequent reset reserves 20 points.
         self.assertTrue(np.array_equal(calls[1][0], values[51:]))
         self.assertTrue(np.array_equal(calls[1][0][:20], values[51:71]))
-        self.assertTrue(np.array_equal(calls[2][0], values[87:]))
-        self.assertTrue(np.array_equal(calls[2][0][:20], values[87:107]))
+        self.assertTrue(np.array_equal(calls[2][0], values[82:]))
+        self.assertTrue(np.array_equal(calls[2][0][:20], values[82:102]))
 
     def test_rearm_window_is_a_missed_exposure_not_a_removed_case(self):
         intervals = [{"start_inclusive": 101, "end_exclusive": 141}]
