@@ -432,6 +432,16 @@ def _write_outputs(report: dict[str, Any], output_dir: str | Path) -> tuple[Path
     return json_path, md_path
 
 
+def _preflight_robseg_compile() -> None:
+    """Compile the pinned C++ library in the parent before worker processes fork."""
+    rng = np.random.default_rng(20261125)
+    synthetic = rng.normal(0.0, 1.0, 120)
+    synthetic[60:] += 3.0
+    result = r_fpop_segment(synthetic)
+    if result.get("status") != "OK":
+        raise RuntimeError(f"R_FPOP_PREFLIGHT_FAILED:{result.get('abstain_reason')}")
+
+
 def run_benchmark(prepared_zip: str, *, null_replicates: int = NULL_REPLICATES,
                   workers: int = 4, shard_index: int = 0,
                   run_id: str | None = None, run_attempt: int | None = None) -> dict[str, Any]:
@@ -442,6 +452,9 @@ def run_benchmark(prepared_zip: str, *, null_replicates: int = NULL_REPLICATES,
     if not run_id or not isinstance(run_attempt, int) or run_attempt < 1:
         raise ValueError("p2c_shard_execution_requires_run_identity")
 
+    # Prepare the shared .so before starting the four worker processes. This
+    # avoids concurrent compiler writes to the same temporary library path.
+    _preflight_robseg_compile()
     series, source_counts = load_p2_economic_series(prepared_zip)
     series = sorted(series, key=lambda item: str(item["id"]))
     ids = [str(item["id"]) for item in series]
