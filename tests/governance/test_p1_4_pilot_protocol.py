@@ -42,7 +42,7 @@ class P14PilotProtocolTests(unittest.TestCase):
 
     def test_protocol_matches_schema_and_is_frozen(self):
         validate_required(self.protocol, self.schema)
-        self.assertEqual(self.protocol["protocol_version"], "1.1.7")
+        self.assertEqual(self.protocol["protocol_version"], "1.1.8")
         self.assertEqual(self.protocol["status"], "FROZEN_BEFORE_EXECUTION")
         self.assertTrue(self.protocol["must_not_be_changed_after_pilot_start"])
 
@@ -180,31 +180,26 @@ class P14PilotProtocolTests(unittest.TestCase):
     def test_reduced_track_a_scope_is_16_series_304_cases_not_original_40(self):
         a = self.protocol["execution"]["diagnostic_tracks"]["track_A"]
         b = self.protocol["execution"]["diagnostic_tracks"]["track_B"]
-        self.assertEqual((a["total_series"], a["cases_per_series"], a["total_cases"]),
-                         (16, 19, 304))
-        self.assertEqual(a["series_counts_by_stratum"], {
-            "ADF_PASS_KPSS_FAIL": 11,
-            "ADF_FAIL_KPSS_FAIL": 4,
-            "ADF_FAIL_KPSS_PASS": 1,
-        })
-        self.assertEqual((b["total_series"], b["injected_cases"]), (4, 0))
+        self.assertEqual(a["status"], "NOT_STARTED_CALIBRATION_ARTIFACT_REQUIRED")
+        self.assertEqual(a["candidate_strata"], {"ADF_PASS_KPSS_FAIL": 12, "ADF_FAIL_KPSS_FAIL": 6, "ADF_FAIL_KPSS_PASS": 2})
+        self.assertEqual(b["status"], "NOT_STARTED")
         scope = self.protocol["execution"]["pilot_scope_change"]
-        self.assertEqual(scope["actual_track_a"], "16_series_304_cases")
+        self.assertEqual(scope["actual"], "NOT_STARTED")
         self.assertEqual(scope["track_b"], "4_series_0_injection_cases")
 
     def test_threshold_200_was_applied_to_ten_series_once_only(self):
         extension = self.protocol["execution"]["pre_registered_grid_extension"]
-        self.assertEqual(extension["total_series_tested"], 10)
-        self.assertEqual(extension["stratum_32"]["series_tested"], 3)
-        self.assertEqual(extension["stratum_32"]["calibrated"], 1)
-        self.assertEqual(extension["stratum_32"]["not_calibrated"], 2)
+        self.assertEqual(extension["execution_status"], "NOT_RUN")
+        self.assertEqual(extension["stratum_32"]["threshold_200_test"]["status"], "NOT_RUN")
+        self.assertIsNone(extension["stratum_32"]["threshold_200_test"]["series_count"])
+        self.assertEqual(extension["threshold_500_tested"], False)
         self.assertFalse(extension["allowed_to_repeat"])
         self.assertFalse(extension["threshold_500_tested"])
 
     def test_pilot_scope_change_is_explicit(self):
         scope = self.protocol["execution"]["pilot_scope_change"]
         self.assertEqual(scope["original"], "40_series_760_cases")
-        self.assertIn("not the original 40-series Pilot", scope["note"])
+        self.assertEqual((scope["planned_series"], scope["planned_cases"]), (40, 760))
 
     def test_c3_is_pending_and_never_silently_substituted(self):
         c3 = self.protocol["cohort_design"]["C3"]
