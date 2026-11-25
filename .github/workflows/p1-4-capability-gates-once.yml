@@ -6,6 +6,7 @@ on:
       - feat/p1-4-capability-envelope-pilot-v1-20261125
     paths:
       - ".github/workflows/p1-4-capability-gates-once.yml"
+      - "tests/governance/test_p1_4_cohort_selection_manifest_binding.py"
 
 permissions:
   contents: read

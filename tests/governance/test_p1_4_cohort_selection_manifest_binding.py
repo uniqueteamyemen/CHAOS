@@ -54,7 +54,7 @@ class CohortSelectionManifestBindingTests(unittest.TestCase):
                        "sample_source_counts":{"pink_sheet":7,"gem":43},
                        "pilot_source_counts":{"pink_sheet":3,"gem":17}},
             },
-            "pilot_scope":{"series_ids":pilot,"run_cases":760},
+            "pilot_scope":{"series_ids":list(pilot),"run_cases":760},
         }
         selection = {
             "c1":{"pilot_series":[{"series_id":x} for x in c1_pilot],
@@ -68,7 +68,7 @@ class CohortSelectionManifestBindingTests(unittest.TestCase):
                 "dimensions":["source","domain","length_band","ar1_abs_band","missingness_pattern"],
                 "pilot_is_subset_of_sample":True,
             },
-            "pilot_scope":{"series_ids":pilot,"run_cases":760},
+            "pilot_scope":{"series_ids":list(pilot),"run_cases":760},
         }
         _assert_manifest_selection(selection,manifest)
         selection["pilot_scope"]["series_ids"][-1]="c2-substitute"
