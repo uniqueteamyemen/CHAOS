@@ -55,6 +55,7 @@ class ArmIsolatedPilotTests(unittest.TestCase):
                     "holdout": {"status": "ESTIMABLE", "alarm_traces": alarms,
                                 "valid_replicates": 1000, "p0": alarms / 1000,
                                 "wilson_upper_95_one_sided": upper},
+                    "holdout_max_statistics": [9.0] * alarms + [7.0] * (1000 - alarms),
                 }
             }}
         result = runner.holdout_p0_table(rows, ["series-a"], "POST_QUIET_HUBER_BARTLETT")
@@ -62,6 +63,20 @@ class ArmIsolatedPilotTests(unittest.TestCase):
         self.assertEqual(result["total_valid_replicates"], 3000)
         self.assertEqual(result["cells_upper_bound_fail"], 1)
         self.assertEqual(result["status"], "PARTIAL_HOLDOUT_GATE")
+
+    def test_holdout_p0_rejects_mismatch_with_raw_statistics(self):
+        alarms = 42
+        rows = {"series-a": {"positions": {"0.30": {"arms": {
+            "POST_QUIET_HUBER_BARTLETT": {
+                "status": "CALIBRATED", "frozen_threshold": 8.0,
+                "holdout": {"status": "ESTIMABLE", "alarm_traces": alarms + 1,
+                            "valid_replicates": 1000, "p0": (alarms + 1) / 1000,
+                            "wilson_upper_95_one_sided": runner.base.wilson_upper(alarms + 1, 1000)},
+                "holdout_max_statistics": [9.0] * alarms + [7.0] * (1000 - alarms),
+            }
+        }}}}}
+        with self.assertRaisesRegex(ValueError, "HOLDOUT_P0_RAW_SCORE_COUNT_MISMATCH"):
+            runner.holdout_p0_table(rows, ["series-a"], "POST_QUIET_HUBER_BARTLETT")
 
     def test_bartlett_is_scale_variant_not_separate_detector(self):
         self.assertEqual(runner.SCALE_CONFIG["MAD"]["calibration_arm"], "POST_QUIET_HUBER_MAD")

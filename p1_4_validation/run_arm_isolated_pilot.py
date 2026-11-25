@@ -291,9 +291,23 @@ def holdout_p0_table(calibrations: dict[str, Any], eligible_ids: list[str],
             threshold = float(arm["frozen_threshold"])
             valid = int(holdout.get("valid_replicates", 0))
             alarms = int(holdout.get("alarm_traces", -1))
-            if holdout.get("status") != "ESTIMABLE" or valid != 1000 or not 0 <= alarms <= valid:
+            raw_statistics = arm.get("holdout_max_statistics")
+            if not isinstance(raw_statistics, list):
+                raise ValueError(f"HOLDOUT_RAW_STATISTICS_MISSING:{sid}:{key}")
+            scores = []
+            for value in raw_statistics:
+                try:
+                    score = float(value)
+                except (TypeError, ValueError):
+                    continue
+                if math.isfinite(score):
+                    scores.append(score)
+            if holdout.get("status") != "ESTIMABLE" or valid != 1000 or len(scores) != valid or not 0 <= alarms <= valid:
                 raise ValueError(f"HOLDOUT_P0_INVALID_OR_INCOMPLETE:{sid}:{key}")
-            point = alarms / valid
+            recomputed_alarms = sum(score >= threshold for score in scores)
+            if recomputed_alarms != alarms:
+                raise ValueError(f"HOLDOUT_P0_RAW_SCORE_COUNT_MISMATCH:{sid}:{key}")
+            point = recomputed_alarms / len(scores)
             upper = base.wilson_upper(alarms, valid)
             if abs(float(holdout.get("p0", -1)) - point) > 1e-12:
                 raise ValueError(f"HOLDOUT_P0_POINT_ESTIMATE_MISMATCH:{sid}:{key}")
