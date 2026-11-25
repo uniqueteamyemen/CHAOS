@@ -155,7 +155,8 @@ def _interval_probe(left: float, right: float) -> float:
 
 
 def focus_detector(values: Any, *, quiet_points: int = QUIET_POINTS,
-                   threshold: float = FOCUS_THRESHOLD) -> dict[str, Any]:
+                   threshold: float = FOCUS_THRESHOLD,
+                   return_score_trace: bool = False) -> dict[str, Any]:
     """Two-sided Gaussian FOCuS statistic with exact functional pruning.
 
     Each active piece stores the upper-envelope quadratic over a disjoint
@@ -178,6 +179,9 @@ def focus_detector(values: Any, *, quiet_points: int = QUIET_POINTS,
     envelope: list[tuple[float, float, float, float, float, int]] = [
         (lo, hi, 0.0, 0.0, 0.0, quiet_points)
     ]
+    score_trace: list[dict[str, Any]] = []
+    trace_hits: list[dict[str, Any]] = []
+    trace_events: list[dict[str, Any]] = []
     for t in range(quiet_points, int(x.size)):
         z = float((x[t] - center) / scale)
         updated = [(l, r, a - 0.5, b + z, c, cp)
@@ -187,6 +191,13 @@ def focus_detector(values: Any, *, quiet_points: int = QUIET_POINTS,
             score, delta = _quadratic_max(a, b, c, l, r)
             if score > best_score:
                 best_score, best_delta, best_cp = score, delta, cp
+        if return_score_trace:
+            score_trace.append({
+                "index": int(t), "score": float(best_score),
+                "delta_hat_sigma": float(best_delta),
+                "estimated_change_index": int(best_cp),
+                "sign": (1 if best_delta > 0 else -1) if abs(best_delta) > 1e-12 else 0,
+            })
         if best_score >= threshold and abs(best_delta) > 1e-12:
             sign = 1 if best_delta > 0 else -1
             hit = {
@@ -199,13 +210,17 @@ def focus_detector(values: Any, *, quiet_points: int = QUIET_POINTS,
                 "estimated_change_index": int(best_cp), "detection_index": t,
                 "method": "functional_pruning_upper_envelope",
             }
-            return {"status": "OK", "hits": [hit], "events": [event],
-                    "event_count": 1, "metadata": {
-                        "version": "p2c-focus-1.0", "threshold": threshold,
-                        "delta_domain": "(-inf,+inf)",
-                        "functional_pruning": True, "fixed_window_bank": False,
-                        "parameter_grid": False, "quiet_points": quiet_points,
-                    }}
+            if not return_score_trace:
+                return {"status": "OK", "hits": [hit], "events": [event],
+                        "event_count": 1, "metadata": {
+                            "version": "p2c-focus-1.0", "threshold": threshold,
+                            "delta_domain": "(-inf,+inf)",
+                            "functional_pruning": True, "fixed_window_bank": False,
+                            "parameter_grid": False, "quiet_points": quiet_points,
+                        }}
+            if not trace_hits:
+                trace_hits.append(hit)
+                trace_events.append(event)
 
         # Overlay the zero candidate for the next observation. Split only at
         # exact roots of each active quadratic, preserving the continuous domain.
@@ -234,11 +249,17 @@ def focus_detector(values: Any, *, quiet_points: int = QUIET_POINTS,
             else:
                 merged.append(piece)
         envelope = merged
-    return {"status": "OK", "hits": [], "events": [], "event_count": 0,
-            "metadata": {"version": "p2c-focus-1.0", "threshold": threshold,
-                         "delta_domain": "(-inf,+inf)",
-                         "functional_pruning": True, "fixed_window_bank": False,
-                         "parameter_grid": False, "quiet_points": quiet_points}}
+    result = {"status": "OK", "hits": trace_hits if return_score_trace else [],
+              "events": trace_events if return_score_trace else [],
+              "event_count": len(trace_events) if return_score_trace else 0,
+              "metadata": {"version": "p2c-focus-1.0", "threshold": threshold,
+                           "delta_domain": "(-inf,+inf)",
+                           "functional_pruning": True, "fixed_window_bank": False,
+                           "parameter_grid": False, "quiet_points": quiet_points}}
+    if return_score_trace:
+        result["statistic_trace"] = score_trace
+        result["max_statistic"] = max((row["score"] for row in score_trace), default=None)
+    return result
 
 
 def bocpd_detector(values: Any, *, quiet_points: int = QUIET_POINTS,
@@ -246,7 +267,8 @@ def bocpd_detector(values: Any, *, quiet_points: int = QUIET_POINTS,
                    short_run_max: int = BOCPD_SHORT_RUN_MAX,
                    short_mass_threshold: float = BOCPD_SHORT_MASS_THRESHOLD,
                    persistence: int = BOCPD_PERSISTENCE,
-                   diagnostics: bool = False) -> dict[str, Any]:
+                   diagnostics: bool = False,
+                   export_posterior: bool = False) -> dict[str, Any]:
     """Bayesian online run-length posterior with Student-t predictive density.
 
     The initial active state is seeded from the 40-point quiet calibration with
@@ -288,6 +310,9 @@ def bocpd_detector(values: Any, *, quiet_points: int = QUIET_POINTS,
     events: list[dict[str, Any]] = []
     posterior_short_run_mass_max = 0.0
     posterior_diagnostic_tail: list[dict[str, Any]] = []
+    posterior_pmf_trace: list[dict[str, Any]] = []
+    posterior_feature_trace: list[dict[str, Any]] = []
+    posterior_trace_hash = hashlib.sha256()
 
     for t in range(quiet_points, int(x.size)):
         # Use the posterior MAP among established (long-run) states. A fresh
@@ -375,6 +400,19 @@ def bocpd_detector(values: Any, *, quiet_points: int = QUIET_POINTS,
                     "hits": [], "events": [], "event_count": 0}
         posterior /= total
 
+        if export_posterior:
+            run_length_bytes = np.asarray(run_lengths, dtype="<i4").tobytes()
+            probability_bytes = np.asarray(posterior, dtype="<f8").tobytes()
+            posterior_trace_hash.update(np.asarray([int(t)], dtype="<i8").tobytes())
+            posterior_trace_hash.update(np.asarray([len(run_lengths)], dtype="<i4").tobytes())
+            posterior_trace_hash.update(run_length_bytes)
+            posterior_trace_hash.update(probability_bytes)
+            posterior_pmf_trace.append({
+                "index": int(t),
+                "run_lengths": run_lengths.astype(int).tolist(),
+                "probabilities": posterior.astype(float).tolist(),
+            })
+
         # Do not count r=0 by itself: an isolated outlier can produce a
         # one-observation reset branch. Confirmation requires posterior mass
         # on short *grown* runs (at least one observation after the reset).
@@ -446,6 +484,27 @@ def bocpd_detector(values: Any, *, quiet_points: int = QUIET_POINTS,
                 candidate = None
 
         long_mass = float(posterior[run_lengths > int(short_run_max)].sum())
+        if export_posterior:
+            expected_run_length = float(np.dot(posterior, run_lengths))
+            run_length_variance = float(np.dot(
+                posterior, (run_lengths.astype(float) - expected_run_length) ** 2
+            ))
+            positive_probabilities = posterior[posterior > 0.0]
+            posterior_entropy = float(-np.dot(
+                positive_probabilities, np.log(positive_probabilities)
+            ))
+            change_probability = float(posterior[run_lengths == 0].sum())
+            posterior_feature_trace.append({
+                "index": int(t),
+                "expected_run_length": expected_run_length,
+                "run_length_variance": run_length_variance,
+                "posterior_entropy": posterior_entropy,
+                "short_run_probability": float(short_mass),
+                "change_probability": change_probability,
+                "prior_regime_mean": float(prior_regime_mean),
+                "regime_contrast": float(regime_contrast),
+                "posterior_contrast_z": float(contrast_z),
+            })
         if diagnostics:
             posterior_diagnostic_tail.append({
                 "index": int(t),
@@ -529,15 +588,22 @@ def bocpd_detector(values: Any, *, quiet_points: int = QUIET_POINTS,
                          "predictive": "Normal-Inverse-Gamma Student-t",
                          "reset_prior_center": "active previous regime posterior mean",
                          "direction_reference": "MAP prior-regime predictive mean",
-                          **({"posterior_diagnostic_tail": posterior_diagnostic_tail}
-                             if diagnostics else {})}}
+                         **({"posterior_diagnostic_tail": posterior_diagnostic_tail}
+                            if diagnostics else {}),
+                         **({"posterior_pmf_trace_sha256": posterior_trace_hash.hexdigest(),
+                             "posterior_prefix_count": len(posterior_pmf_trace)}
+                            if export_posterior else {})},
+            **({"posterior_pmf_trace": posterior_pmf_trace,
+                "posterior_feature_trace": posterior_feature_trace}
+               if export_posterior else {})}
 
 
 def post_quiet_huber_detector(values: Any, *, scale_mode: str = "mad",
                               quiet_points: int = QUIET_POINTS,
                               threshold: float = HUBER_THRESHOLD,
                               k: float = HUBER_K, huber_c: float = HUBER_C,
-                              max_events: int = HUBER_MAX_EVENTS) -> dict[str, Any]:
+                              max_events: int = HUBER_MAX_EVENTS,
+                              return_score_trace: bool = False) -> dict[str, Any]:
     """Two-sided sequential Huber score with MAD or Bartlett-LRV scale."""
     x = _validate_series(values, quiet_points)
     if x.size <= quiet_points:
@@ -572,6 +638,7 @@ def post_quiet_huber_detector(values: Any, *, scale_mode: str = "mad",
     negative_start: int | None = None
     hits: list[dict[str, Any]] = []
     events: list[dict[str, Any]] = []
+    statistic_trace: list[dict[str, Any]] = []
     for t in range(quiet_points, int(x.size)):
         residual = float((x[t] - reference) / scale)
         psi = float(np.clip(residual, -huber_c, huber_c))
@@ -589,6 +656,11 @@ def post_quiet_huber_detector(values: Any, *, scale_mode: str = "mad",
 
         sign = 0
         event_start: int | None = None
+        if return_score_trace:
+            if positive >= negative:
+                statistic_trace.append({"index": int(t), "score": float(positive), "sign": 1 if positive > 0 else 0})
+            else:
+                statistic_trace.append({"index": int(t), "score": float(negative), "sign": -1})
         if positive >= threshold:
             sign, event_start = 1, positive_start
         elif negative >= threshold:
@@ -602,12 +674,22 @@ def post_quiet_huber_detector(values: Any, *, scale_mode: str = "mad",
                 "huber_score": float(positive if sign > 0 else negative),
                 "reference_mean_before_detection": float(reference),
             }
-            hits.append(hit)
-            events.append({
-                "start_index": start, "end_index": t, "sign": sign,
-                "estimated_change_index": start, "detection_index": t,
-                "method": "two_sided_huber_cusum",
-            })
+            if not return_score_trace:
+                hits.append(hit)
+                events.append({
+                    "start_index": start, "end_index": t, "sign": sign,
+                    "estimated_change_index": start, "detection_index": t,
+                    "method": "two_sided_huber_cusum",
+                })
+            elif not hits:
+                hits.append(hit)
+                events.append({
+                    "start_index": start, "end_index": t, "sign": sign,
+                    "estimated_change_index": start, "detection_index": t,
+                    "method": "two_sided_huber_cusum",
+                })
+            if return_score_trace:
+                continue
             # Rebase only after the detection is emitted. This allows later
             # reversals/changes to be detected without re-alerting on one regime.
             reference = float(np.median(x[max(quiet_points, t - 7):t + 1]))
@@ -616,12 +698,16 @@ def post_quiet_huber_detector(values: Any, *, scale_mode: str = "mad",
             if len(hits) >= int(max_events):
                 break
 
-    return {"status": "OK", "hits": hits, "events": events,
-            "event_count": len(events),
-            "metadata": {"version": "p2c-huber-1.0", "scale_mode": scale_mode,
-                         "scale_metadata": scale_metadata, "huber_c": huber_c,
-                         "k": k, "threshold": threshold, "quiet_points": quiet_points,
-                         "directional_tracks": "positive_and_negative"}}
+    result = {"status": "OK", "hits": hits, "events": events,
+              "event_count": len(events),
+              "metadata": {"version": "p2c-huber-1.0", "scale_mode": scale_mode,
+                           "scale_metadata": scale_metadata, "huber_c": huber_c,
+                           "k": k, "threshold": threshold, "quiet_points": quiet_points,
+                           "directional_tracks": "positive_and_negative"}}
+    if return_score_trace:
+        result["statistic_trace"] = statistic_trace
+        result["max_statistic"] = max((row["score"] for row in statistic_trace), default=None)
+    return result
 
 
 def _normalize_online_result(raw: dict[str, Any], size: int, arm: str) -> dict[str, Any]:
