@@ -40,5 +40,7 @@ jobs:
         run: python -m unittest p2_b_benchmark.tests.test_core -v
       - name: Run eight P2-C synthetic stress gates
         run: python -m unittest p2_b_benchmark.tests.test_p2c_stress -v
+      - name: Run P2-C aggregation and classification tests
+        run: python -m unittest p2_b_benchmark.tests.test_p2c_aggregation -v
       - name: Confirm no P2-B checksum files were silently changed
         run: git diff --exit-code -- p2_b_benchmark/SHA256SUMS.txt
