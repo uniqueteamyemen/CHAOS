@@ -75,6 +75,21 @@ class P2CStressSuite(unittest.TestCase):
         self.assertTrue(step["hits"])
         self.assertEqual(step["hits"][0]["sign"], 1)
 
+    def test_03a_bocpd_direction_uses_active_prior_regime_not_quiet_centre(self):
+        x = fixture(360, 3033)
+        quiet_scale = 1.4826 * np.median(np.abs(x[:40] - np.median(x[:40])))
+        x[120:240] += 5.0 * quiet_scale
+        x[240:] += 2.0 * quiet_scale
+        result = bocpd_detector(x)
+        assert_online_contract(self, result, x.size)
+        negative = [hit for hit in result["hits"] if int(hit["index"]) >= 240]
+        self.assertTrue(negative, "BOCPD missed the downward transition from +5σ to +2σ")
+        self.assertEqual(int(negative[0]["sign"]), -1)
+        self.assertGreater(
+            float(negative[0]["prior_regime_mean"]),
+            float(np.median(x[:40]) / quiet_scale) - 1.0,
+        )
+
     def test_03_student_t_heavy_tails_and_variance_jump(self):
         rng = np.random.default_rng(3003)
         x = rng.standard_t(df=3, size=320)
@@ -88,6 +103,8 @@ class P2CStressSuite(unittest.TestCase):
         ):
             result = runner(x)
             assert_online_contract(self, result, x.size)
+        self.assertEqual(post_quiet_huber_detector(x, scale_mode="mad")["hits"], [])
+        self.assertEqual(post_quiet_huber_detector(x, scale_mode="bartlett")["hits"], [])
         lrv = bartlett_lrv_scale(x[:40])
         self.assertEqual(lrv["status"], "OK")
         self.assertTrue(math.isfinite(lrv["scale"]))
