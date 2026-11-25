@@ -42,7 +42,7 @@ class P14PilotProtocolTests(unittest.TestCase):
 
     def test_protocol_matches_schema_and_is_frozen(self):
         validate_required(self.protocol, self.schema)
-        self.assertEqual(self.protocol["protocol_version"], "1.1.4")
+        self.assertEqual(self.protocol["protocol_version"], "1.1.5")
         self.assertEqual(self.protocol["status"], "FROZEN_BEFORE_EXECUTION")
         self.assertTrue(self.protocol["must_not_be_changed_after_pilot_start"])
 
@@ -109,14 +109,14 @@ class P14PilotProtocolTests(unittest.TestCase):
         d = self.protocol["injection_design"]
         guard = d["rearm_overlap_guard"]
         self.assertEqual(guard["initial_calibration_observations"], 40)
-        self.assertEqual(guard["rearm_calibration_observations"], 15)
+        self.assertEqual(guard["rearm_calibration_observations"], 20)
         self.assertEqual(guard["overlap_outcome"], "INVALID_INJECTION")
         self.assertIn("exclude from recall", guard["recall_accounting"])
         policy = d["guard_window_policy"]
-        self.assertEqual(policy["min_observations_between_last_rearm_and_injection"], 15)
-        self.assertEqual(policy["expected_rate_on_147"]["window_40"]["rate"], 0.1712328767)
-        self.assertEqual(policy["expected_rate_on_147"]["window_15"]["rate"], 0.0890410959)
-        self.assertEqual(policy["expected_rate_on_147"]["selected_20_c1_pilot_at_window_15"]["total"]["rate"], 0.2)
+        self.assertEqual(policy["min_observations_between_last_rearm_and_injection"], 20)
+        self.assertEqual(self.protocol["injection_design"]["rearm_overlap_guard"]["measured_calibrated_pilot_overlap"]["original_five_stratum_106"]["rate"], 0)
+        self.assertEqual(self.protocol["injection_design"]["rearm_overlap_guard"]["measured_calibrated_pilot_overlap"]["extended_eleven_stratum_106"]["rate"], 0)
+        self.assertEqual(self.protocol["injection_design"]["rearm_overlap_guard"]["measured_calibrated_pilot_overlap"]["all_fifteen_calibrated_c1"]["rate"], 0)
 
     def test_focus_minimum_n150_is_explicit(self):
         eligibility = self.protocol["injection_design"]["eligibility"]
