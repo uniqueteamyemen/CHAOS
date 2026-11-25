@@ -1,0 +1,234 @@
+{
+  "protocol_id": "CHAOS_P1_4_CAPABILITY_PILOT_V1",
+  "protocol_version": "1.0.0",
+  "status": "FROZEN_BEFORE_EXECUTION",
+  "must_not_be_changed_after_pilot_start": true,
+  "purpose": "Evaluate tool-role operating envelopes on real economic series backgrounds with controlled permanent mean-shift injections and independent synthetic null traces. This is not a forecast-accuracy test.",
+  "cohort_source": {
+    "repository": "uniqueteamyemen/CHAOS",
+    "p2_2_source_commit": "72edc44b183e0c7c92e1edae362426d189e0c886",
+    "prepared_artifact_id": 14857826243,
+    "prepared_artifact_sha256": "c83f6e960296fbbdb687650a798959f08cb8d98db68de8ca713d7be278e824fe",
+    "cohort_manifest_path": "cohorts/p1_4/cohort_manifest.json",
+    "economic_universe": {
+      "total": 509,
+      "pink_sheet": 51,
+      "gem": 458
+    }
+  },
+  "pilot_cohorts": {
+    "series_per_verified_cohort": 20,
+    "C1": {
+      "manifest_cohort": "C1",
+      "sampling_frame": 147,
+      "pilot_sample_count": 20,
+      "selection": "deterministic stratified sample from the 147 verified G1 composite-failure GEM identities; strata include G1 failure class, observation-count band, and pre-break AR dependence band.",
+      "required_status": "VERIFIED"
+    },
+    "C2": {
+      "manifest_cohort": "C2",
+      "sampling_frame": 362,
+      "pilot_sample_count": 20,
+      "selection": "deterministic stratified sample of 20 from the frozen 50-series C2 sample; source/cohort, observation-count band, domain, and pre-break AR dependence band are represented.",
+      "required_status": "VERIFIED"
+    },
+    "C3": {
+      "manifest_cohort": "C3",
+      "pilot_sample_count": 20,
+      "selection": "known-break external validation using only verified event/series matches and point-in-time source vintages.",
+      "required_status": "VERIFIED_WITH_SOURCE_VINTAGE",
+      "current_status": "PENDING_EXTERNAL_EVIDENCE",
+      "known_anchor_contract": {
+        "version": "1.1",
+        "events": [
+          {"id": "GFC_2008", "anchor_date": "2008-09-15"},
+          {"id": "OIL_2014", "anchor_date": "2014-06-01"},
+          {"id": "COVID_2020", "anchor_date": "2020-03-11"},
+          {"id": "UKRAINE_2022", "anchor_date": "2022-02-24"}
+        ]
+      },
+      "not_executed_reason": "Current P2.2 snapshots do not prove that each historical observation vintage was available at its historical decision time. Retrospective matches alone are not online ground truth."
+    },
+    "execution_rule": "Run 20 series for each verified cohort. C3 is omitted until its source-vintage requirement is met; no substitute cohort may be silently added.",
+    "expected_series_count": {
+      "C1_C2_only": 40,
+      "C1_C2_run_cases": 760,
+      "C1_C2_C3_if_verified": 60,
+      "all_three_run_cases": 1140
+    }
+  },
+  "injection_design": {
+    "original_series_runs_per_series": 1,
+    "magnitudes_sigma": [0.5, 1.0, 2.0],
+    "positions_fraction": [0.3, 0.5, 0.7],
+    "directions": [-1, 1],
+    "permanent_shift": true,
+    "injected_case_count_per_series": 18,
+    "total_run_count_per_series_including_original": 19,
+    "break_index_rule": "floor(position_fraction * observation_count), zero-based; shift applies from break_index through the end.",
+    "sigma_reference": "1.4826 * MAD of residuals from the selected AR(p) model fitted on the complete pre-break prefix.",
+    "magnitude_definition": "injected_delta = direction * magnitude_sigma * sigma_reference",
+    "minimum_prebreak_observations": 40,
+    "short_prebreak_rule": "NOT_ELIGIBLE for that injection position; record reason and preserve the case in coverage accounting. Do not treat ineligibility as a detector miss.",
+    "positive_and_negative_cases_required": true
+  },
+  "ar_null_and_calibration": {
+    "model_family": "AR(p) with intercept",
+    "candidate_orders": [1, 2, 3],
+    "order_selection": "minimum AIC on the complete pre-break prefix",
+    "fit_scope": "complete pre-break prefix only; never use observations after the injected break to fit the null model",
+    "residual_scale": "1.4826 * MAD of fitted residuals",
+    "stability_gate": "Reject a fitted model with non-finite parameters, insufficient residual degrees of freedom, singular fit, or any autoregressive root not strictly outside the unit circle.",
+    "unstable_or_short_fit": "NOT_ELIGIBLE with a machine-readable reason; no fallback to AR(1) without recording a new protocol version.",
+    "null_traces_per_series_per_position": {
+      "development": 1000,
+      "holdout": 1000
+    },
+    "null_seed_streams": "SHA-256-derived independent streams by protocol version, series_id, position, model order, phase, and replicate index; development and holdout seeds must not overlap.",
+    "synthetic_null_fpr_definition": "P0(>=1 false alarm within the exact original series horizon) over independent parametric AR(p) null traces.",
+    "threshold_selection": "Select a per-series/per-position threshold on development traces only. Choose the smallest threshold whose one-sided 95% Wilson upper bound for development P0 is <= 0.10. Freeze it before holdout and injection evaluation.",
+    "holdout_rule": "Evaluate the frozen threshold on the independent 1000-trace holdout set. Do not retune on holdout.",
+    "p0_target": 0.10,
+    "confidence_interval": "Wilson score interval, 95%, computed from valid independent null replicates.",
+    "minimum_valid_replicates": 950,
+    "arl0_reporting": {
+      "secondary_only": true,
+      "reference_grid": [500, 1000, 2000],
+      "rule": "Report empirical ARL0 or a right-censored restricted mean run length only when the simulation horizon supports the target. Mark larger-than-horizon targets NOT_ESTIMABLE; never infer P0 from 1/ARL0."
+    },
+    "additional_null": {
+      "method": "within-series value shuffle",
+      "replicates_per_series": 250,
+      "purpose": "negative-control diagnostic: preserves the marginal distribution while destroying temporal order",
+      "acceptance_role": "diagnostic only; not a substitute for the parametric AR(p) null"
+    }
+  },
+  "measurements": {
+    "original_alarm_burden": {
+      "definition": "number and timing of alarms on the unmodified original series under the frozen per-series threshold",
+      "interpretation": "descriptive diagnostic only; never label as false-positive rate without independently adjudicated event truth"
+    },
+    "alarm_burden_ratio": {
+      "definition": "original_series_alarm_count divided by the expected alarm count under matched synthetic null traces; denominator zero is reported as UNDEFINED, not infinity",
+      "flag_threshold": 3.0,
+      "interpretation": "diagnostic misspecification flag only; not an automatic detector failure"
+    },
+    "recall": "A case is detected only by a direction-correct alarm at or after the injected break. A pre-onset alarm is recorded separately and cannot count as a true positive.",
+    "false_negative": "No direction-correct detection by the end of the series is a false negative; it remains in the recall denominator.",
+    "delay": "detection_index - true_break_index for matched detections only; report median and P90, with missed cases reported separately.",
+    "wrong_direction_rate": "wrong-sign alarms after the true break divided by eligible injected cases.",
+    "coverage": "Report eligible and NOT_ELIGIBLE counts by cohort, position, magnitude, direction, and tool. Never remove ineligible cases from the denominator without publishing the coverage denominator.",
+    "series_variability": "Report per-series recall distribution, coefficient of variation, and source/domain/length/autocorrelation strata; aggregate mean alone is insufficient.",
+    "minimum_detectable_effect": "Smallest tested magnitude whose series-clustered 95% lower confidence bound for recall reaches 0.80. If no tested magnitude reaches it, report >2 sigma.",
+    "cost_weighted_diagnostic": {
+      "formula": "1.0 * synthetic_null_fpr + 1.0 * (1 - recall) + 0.1 * normalized_mean_delay",
+      "weights": {"false_alarm": 1.0, "miss": 1.0, "delay": 0.1},
+      "role": "secondary comparison only; cannot override any mandatory gate"
+    }
+  },
+  "tool_specific_protocols": {
+    "FOCuS": {
+      "role": "online_detector",
+      "variant": "FOCUS_RESET_ARL_PILOT",
+      "reset_policy": "After a confirmed hit, reset the functional-pruning state and re-arm only after a new 40-observation regime calibration window. Record the re-arm interval explicitly; changes occurring inside it are not silently discarded.",
+      "threshold": "per-series/per-position threshold selected by the development AR(p) null procedure",
+      "primary_success": {
+        "recall_at_1sigma": "series-clustered 95% lower confidence bound >= 0.60",
+        "synthetic_null_fpr": "holdout 95% Wilson upper bound <= 0.10",
+        "wrong_direction_rate": "series-clustered 95% upper confidence bound <= 0.05"
+      }
+    },
+    "Bartlett_LRV": {
+      "role": "calibrator",
+      "comparison": "FOCuS_RESET_ARL_PILOT with MAD scale versus the same detector with Bartlett-LRV scale; same AR(p) null traces, same P0 target, and independently calibrated thresholds.",
+      "primary_success": {
+        "calibration_error_improvement": "absolute holdout P0 calibration error is reduced by >= 30% relative to MAD",
+        "recall_noninferiority": "recall loss at 1sigma is no more than 0.10",
+        "clarification": "Do not claim a 20% FPR reduction after forcing both variants to the same calibrated P0 target."
+      },
+      "standalone_detector": false
+    },
+    "BOCPD": {
+      "role": "feature_generator",
+      "required_output": "full posterior P(run_length_t | observations_through_t) for every evaluated prefix",
+      "required_features": [
+        "expected_run_length",
+        "run_length_variance",
+        "posterior_entropy",
+        "short_run_probability",
+        "change_probability"
+      ],
+      "series_level_test": {
+        "method": "paired series-level permutation test",
+        "replicates": 1000,
+        "effect_size": "standardized paired difference in per-series variance of log(run_length + 1)",
+        "p_value_threshold": 0.05,
+        "note": "Do not apply Mann-Whitney U or KS to dependent time points as if they were independent."
+      },
+      "incremental_value_rule": {
+        "fusion": "A FOCuS candidate is confirmed only if BOCPD short-run posterior mass >= 0.35 within +/-3 observations of the FOCuS detection time; this is a predeclared measurement rule, not a standalone BOCPD binary role.",
+        "minimum_gain": 0.05,
+        "success": "Either recall improves by >= 5 percentage points with no synthetic-null FPR worsening, or synthetic-null FPR improves by >= 5 percentage points with recall loss <= 0.10.",
+        "p_value": "< 0.05 at the series level"
+      },
+      "forecast_value": "Not tested in this Pilot; requires separate Rolling-Origin out-of-sample forecast evaluation in Engine 2."
+    },
+    "R-FPOP": {
+      "role": "offline_segmenter",
+      "matching": "One-to-one matching between the single injected break and at most one estimated breakpoint; every extra breakpoint is a false breakpoint.",
+      "null_control": "Compare false breakpoints with a randomized segmentation null on the same series; freeze the robust segmentation penalty before holdout.",
+      "primary_success": {
+        "boundary_precision": ">= 0.50",
+        "median_boundary_distance": "< 3% of series length",
+        "recall_at_1sigma_and_2sigma": ">= 0.70",
+        "interpretation": "Retrospective segmentation only; no online-warning claim."
+      }
+    }
+  },
+  "statistical_decision_rules": {
+    "confidence_intervals": "Cluster bootstrap by series, 2000 resamples, for recall, delay, and per-series variability. Null FPR uses Wilson intervals over independent AR(p) replicates, then series-level aggregation.",
+    "pass": "The lower 95% confidence bound is at or above a minimum-performance threshold, or the upper 95% bound is at or below a maximum-risk threshold, as specified for that tool.",
+    "fail": "The corresponding confidence interval lies wholly on the failing side of its threshold.",
+    "inconclusive": "A confidence interval crosses the acceptance threshold, fewer than 80% of planned series/conditions are eligible, or fewer than 950 of 1000 null replicates are valid.",
+    "per_tool_decisions": ["PASS", "FAIL", "INCONCLUSIVE", "NOT_ELIGIBLE"],
+    "phase_decision": {
+      "VALIDATED": "At least one tool passes its assigned role on both C1 and C2, all mandatory causal and data-integrity gates pass, and the declared operating envelope is restricted to tested cohorts/conditions. C3 status must remain explicitly visible.",
+      "LOCKED_REJECTED": "All candidate tools fail their assigned roles on C1 and C2 with adequate eligible coverage and confidence intervals entirely on the failing side.",
+      "INCONCLUSIVE": "Evidence is underpowered, coverage is insufficient, or any required confidence interval crosses the decision boundary."
+    },
+    "no_recalibration_after_holdout": true,
+    "no_post_hoc_threshold_changes": true,
+    "no_silent_series_replacement": true
+  },
+  "execution": {
+    "heavy_execution_environment": "GitHub Actions only",
+    "matrix": "one job per series; each job owns the original baseline and all 18 injected conditions for that series",
+    "per_series_cases": 19,
+    "raw_values_in_artifacts": false,
+    "required_artifact_fields": [
+      "series_id",
+      "cohort_id",
+      "series_candidate_sha256",
+      "injection_magnitude_sigma",
+      "injection_position_fraction",
+      "injection_direction",
+      "true_break_index",
+      "FOCuS",
+      "FOCuS_Bartlett",
+      "BOCPD",
+      "R_FPOP",
+      "original_alarm_burden",
+      "synthetic_null_fpr",
+      "ar_model_order",
+      "ar_coefficients",
+      "residual_sigma",
+      "threshold",
+      "seed_ledger",
+      "replay_command",
+      "artifact_sha256"
+    ],
+    "artifact_integrity": "SHA-256 each per-series JSON before upload; aggregate only exact expected series IDs and verify all file hashes.",
+    "replay": "Every series result must include one deterministic replay command plus source, model, threshold, and seed identities.",
+    "pilot_start_gate": "Do not dispatch until C1 IDs, C2 50-series frame and 20-series pilot sample, protocol SHA, schema tests, and injection-code gates are committed and green. C3 may remain pending only with explicit scope limitation."
+  }
+}
