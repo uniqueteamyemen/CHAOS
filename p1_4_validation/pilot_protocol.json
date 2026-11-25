@@ -1,6 +1,6 @@
 {
   "protocol_id": "CHAOS_P1_4_CAPABILITY_PILOT_V1",
-  "protocol_version": "1.1.5",
+  "protocol_version": "1.1.6",
   "status": "FROZEN_BEFORE_EXECUTION",
   "must_not_be_changed_after_pilot_start": true,
   "purpose": "Evaluate declared detector and estimator roles on verified economic-series cohorts with controlled permanent mean-shift injections and independent synthetic null traces. This is not a forecast-accuracy test and does not authorize production use.",
@@ -53,7 +53,32 @@
           "n_series": 2,
           "findings": "anecdotal_must_not_drive_decision"
         },
-        "interpretation_guard": "The independent unit is the series, not the 18 nested injections. Findings from stratum_9 (2 independent series) are anecdotal and must not independently drive detector rejection, acceptance, or role restrictions."
+        "interpretation_guard": "Series is the independent unit; 18 nested injections are not 18 independent observations. Stratum 9 cannot independently decide acceptance or rejection."
+      },
+      "grid_extension_stratum_32": {
+        "purpose": "distinguish_grid_limitation_vs_structural_failure",
+        "pre_registered": true,
+        "test_threshold": 200,
+        "series": [
+          "gem:CPTOTSAXN:DJI",
+          "gem:CPTOTSAXN:ECU",
+          "gem:CPTOTSAXN:HKG"
+        ],
+        "eligibility": "Exactly the three original ADF_FAIL_KPSS_FAIL series marked NOT_CALIBRATABLE_AT_90 in the frozen C1 20-series pilot selection.",
+        "method": "Use the same fitted AR(p), same deterministic seed identities and same 1000 development null max-statistic values generated under protocol 1.1.3 at position 0.30. Evaluate threshold 200 exactly once; do not generate a different null model or select a new model order.",
+        "decision_rule": {
+          "if_calibrates": "GRID_LIMITED_CALIBRATED_AT_200; include in Track A with threshold 200",
+          "if_not": "STRUCTURAL_NOT_CALIBRATABLE_AT_200; include in Track B diagnostic only"
+        },
+        "allowed_to_repeat": false,
+        "forbidden": [
+          "threshold 500",
+          "testing intermediate thresholds",
+          "switching AR order after seeing results",
+          "changing residual bootstrap",
+          "changing P0 target",
+          "dropping a failed series"
+        ]
       }
     },
     "C2": {
@@ -109,7 +134,8 @@
           "gem:IPTOTSAKD:AZE"
         ],
         "rule": "NOT_ELIGIBLE for FOCuS only; not a weak-recall outcome. Other detectors follow their own minimum-observation contract."
-      }
+      },
+      "scope_note": "C2 is the stratified complement of C1 (362 = 311 GEM G1-pass + 51 Pink Sheet), not a representative sample of the full 509-series universe. It is retained as a generalization cohort reference, but the reduced FOCuS calibration-focused Track A is restricted to calibrated C1 series. No C2 performance conclusion is claimed by this reduced Pilot."
     },
     "C3": {
       "status": "PENDING_EXTERNAL_EVIDENCE",
@@ -166,39 +192,20 @@
       "initial_calibration_observations": 40,
       "rearm_calibration_observations": 20,
       "case_field": "calibration_overlap_with_injection",
-      "overlap_rule": "true_break_index is within [start_inclusive,end_exclusive) of any FOCuS rearm interval",
+      "overlap_rule": "true_break_index is within [start_inclusive,end_exclusive) of any post-hit 20-observation rearm interval",
       "overlap_outcome": "INVALID_INJECTION",
       "recall_accounting": "exclude from recall numerator and denominator; retain in planned and invalid coverage counts",
       "non_overlap_outcome": "evaluate normally as DETECTED or MISSED",
-      "measured_calibrated_pilot_overlap": {
-        "original_five_stratum_106": {
-          "series": 5,
-          "overlap_series": 0,
-          "rate": 0,
-          "planned_cases": 30,
-          "invalid_cases": 0,
-          "thresholds": {
-            "gem:CPTOTSAXN:BLR": 15,
-            "gem:CPTOTSAXN:KNA": 90,
-            "gem:CPTOTSAXN:KOR": 75,
-            "gem:CPTOTSAXN:ZAF": 75,
-            "gem:DXGSRMRCHNSKD:ECA": 20
-          }
-        },
-        "extended_eleven_stratum_106": {
-          "series": 11,
-          "overlap_series": 0,
-          "rate": 0,
-          "planned_cases": 66,
-          "invalid_cases": 0
-        },
-        "all_fifteen_calibrated_c1": {
+      "measured_pre_pilot_scope": {
+        "all_15_currently_calibrated_c1": {
           "series": 15,
+          "position": 0.3,
           "overlap_series": 0,
-          "rate": 0,
-          "planned_cases": 90,
-          "invalid_cases": 0
-        }
+          "planned_injection_cases": 90,
+          "invalid_cases": 0,
+          "threshold_basis": "actual per-series calibrated thresholds"
+        },
+        "warning": "These are calibration/overlap diagnostics at the 30% injection position, not Pilot recall or multi-position results."
       }
     },
     "eligibility": {
@@ -594,11 +601,11 @@
     "matrix": "One matrix job per selected series. Each job executes the original baseline and all 18 injected cases for that series. Each series-position null bank is generated once per development/holdout phase and reused across candidate arms; paired variants never receive different null paths.",
     "cases_per_series": 19,
     "raw_values_in_artifacts": false,
-    "required_preflight_gates": "C1 identity and composite G1 criterion are verified; C2 50-series sample and exact 20-series Pilot subset are verified; C3 remains explicitly excluded until source vintages are proven; FOCuS reset/rearm runner tests pass with 40 initial and 15 post-hit observations; BOCPD exports full posterior PMF for every prefix; capability envelope schema/runtime tests pass; pilot protocol schema/tests pass and final protocol SHA is bound to cohort selection; injection, null calibration, prefix replay and no-future-suffix mutation tests pass; BOCPD posterior feature evaluation is restricted to declared diagnostic/fusion scope; C1 pilot failure-class counts satisfy minimum 6/6/2 and exact IDs match cohort manifest; C2_STRATIFICATION_REPORT_V1 includes sample and pilot distributions for source, domain, length, AR1 and missingness; FOCuS pilot cases with n < 150 return NOT_ELIGIBLE; FOCuS calibration overlap with injection is INVALID_INJECTION and excluded from Recall, never FN; C1 pre-registered power analysis is present and stratum_9 findings are anecdotal; C2 sampling frame is explicitly the 362-series C1 complement, not the full 509-series universe.; all-strata calibration results artifact exists and every C1 pilot series has explicit calibration status; threshold 200 was applied once only to the original seven stratum-106 failures; Track B is no-injection and does not modify thresholds; Track A contains only FOCuS-calibratable C1 pilot series with class labels preserved; C2 FOCuS length eligibility is explicit: 19/20 eligible at n>=150 and gem:IPTOTSAKD:AZE is NOT_ELIGIBLE for FOCuS only; no replacement",
-    "required_artifact_fields": "series_id,cohort_id,series_candidate_sha256,injection_magnitude_sigma,injection_position_fraction,injection_direction,true_break_index,tool_outputs,original_alarm_burden,synthetic_null_fpr,ar_model_order,ar_coefficients,residual_sigma,thresholds,penalty,seed_ledger,coverage_denominator,calibration_overlap_with_injection,injection_case_status,invalid_injection_reason,c1_failure_class,length_band,pre_injection_ar1_abs_band,missingness_pattern,pilot_run_manifest.json,replay_command,artifact_sha256,calibration_status,calibration_threshold,calibration_p0,calibration_p0_wilson_upper,track_id,track_b_diagnostic_features,focus_eligibility_status,focus_eligibility_reason",
+    "required_preflight_gates": "C1 identity and composite G1 criterion are verified; C2 50-series sample and exact 20-series Pilot subset are verified; C3 remains explicitly excluded until source vintages are proven; FOCuS reset/rearm runner tests pass with 40 initial and 15 post-hit observations; BOCPD exports full posterior PMF for every prefix; capability envelope schema/runtime tests pass; pilot protocol schema/tests pass and final protocol SHA is bound to cohort selection; injection, null calibration, prefix replay and no-future-suffix mutation tests pass; BOCPD posterior feature evaluation is restricted to declared diagnostic/fusion scope; C1 pilot failure-class counts satisfy minimum 6/6/2 and exact IDs match cohort manifest; C2_STRATIFICATION_REPORT_V1 includes sample and pilot distributions for source, domain, length, AR1 and missingness; FOCuS pilot cases with n < 150 return NOT_ELIGIBLE; FOCuS calibration overlap with injection is INVALID_INJECTION and excluded from Recall, never FN; C1 pre-registered power analysis is present and stratum_9 findings are anecdotal; C2 sampling frame is explicitly the 362-series C1 complement, not the full 509-series universe.; all-strata calibration results artifact exists and every C1 pilot series has explicit calibration status; threshold 200 was applied once only to the original seven stratum-106 failures; Track B is no-injection and does not modify thresholds; Track A contains only FOCuS-calibratable C1 pilot series with class labels preserved; C2 FOCuS length eligibility is explicit: 19/20 eligible at n>=150 and gem:IPTOTSAKD:AZE is NOT_ELIGIBLE for FOCuS only; no replacement; apply threshold 200 exactly once to DJI/ECU/HKG under the frozen rule; persist per-series calibration P0 and Wilson bounds; Track B pre-registered metrics are computed without injections or threshold changes; update Track A membership and 19-case count from verified calibration outputs; no full-Pilot PASS without pilot_run_manifest.json, replay_command, and SHA-256 artifact manifest",
+    "required_artifact_fields": "series_id,cohort_id,series_candidate_sha256,injection_magnitude_sigma,injection_position_fraction,injection_direction,true_break_index,tool_outputs,original_alarm_burden,synthetic_null_fpr,ar_model_order,ar_coefficients,residual_sigma,thresholds,penalty,seed_ledger,coverage_denominator,calibration_overlap_with_injection,injection_case_status,invalid_injection_reason,c1_failure_class,length_band,pre_injection_ar1_abs_band,missingness_pattern,pilot_run_manifest.json,replay_command,artifact_sha256,calibration_status,calibration_threshold,calibration_p0,calibration_p0_wilson_upper,track_id,track_b_diagnostic_features,focus_eligibility_status,focus_eligibility_reason,calibration_status,calibration_threshold,calibration_p0,calibration_p0_wilson_upper,track_id,track_b_diagnostic_features,garch_omega,garch_alpha,garch_beta,garch_persistence,focus_null_p50,focus_null_p90,focus_null_p95,focus_null_p99,focus_null_p999,focus_null_max",
     "artifact_integrity": "SHA-256 each per-series artifact and posterior PMF artifact before upload. Aggregate only the exact frozen series IDs and verify all files/hashes.",
     "replay": "Every per-series output includes deterministic replay command and exact source, model, tool version, protocol SHA and seed identities.",
-    "pilot_start_gate": "Pilot is not authorized by calibration success alone. Require the all-strata calibration results artifact, the one-time threshold-200 decision record, Track A/Track B separation, exact 40-series cohort-selection binding, and per-case invalid-injection guards before dispatch.",
+    "pilot_start_gate": "No run_pilot.py dispatch until: the one-time threshold-200 results for the three stratum-32 series are generated from pinned deterministic null statistics; all 20 C1 series have explicit status; Track B metrics and scope are frozen; Track A IDs/count/cases are recalculated; P1.4 runtime tests pass; exact cohort selection/protocol hashes are bound; and pilot_run_manifest.json/replay/SHA generation are implemented. No threshold 500 or post-hoc parameter changes.",
     "seed_rule": "Seed identity excludes tool/scale variant so paired arms receive identical stochastic inputs; separate streams are keyed by protocol, series, position, AR order, phase and replicate.",
     "implementation_time_budget": {
       "maximum_hours": 24,
@@ -677,6 +684,77 @@
         "no_threshold_500_tested": true,
         "results_artifact": "p1_4_validation/calibration_results_all_strata.json"
       }
+    },
+    "pre_registered_grid_extension_stratum_32": {
+      "purpose": "distinguish_grid_limitation_vs_structural_failure",
+      "pre_registered": true,
+      "test_threshold": 200,
+      "series": [
+        "gem:CPTOTSAXN:DJI",
+        "gem:CPTOTSAXN:ECU",
+        "gem:CPTOTSAXN:HKG"
+      ],
+      "eligibility": "Exactly the three original ADF_FAIL_KPSS_FAIL series marked NOT_CALIBRATABLE_AT_90 in the frozen C1 20-series pilot selection.",
+      "method": "Use the same fitted AR(p), same deterministic seed identities and same 1000 development null max-statistic values generated under protocol 1.1.3 at position 0.30. Evaluate threshold 200 exactly once; do not generate a different null model or select a new model order.",
+      "decision_rule": {
+        "if_calibrates": "GRID_LIMITED_CALIBRATED_AT_200; include in Track A with threshold 200",
+        "if_not": "STRUCTURAL_NOT_CALIBRATABLE_AT_200; include in Track B diagnostic only"
+      },
+      "allowed_to_repeat": false,
+      "forbidden": [
+        "threshold 500",
+        "testing intermediate thresholds",
+        "switching AR order after seeing results",
+        "changing residual bootstrap",
+        "changing P0 target",
+        "dropping a failed series"
+      ]
+    },
+    "track_b_protocol": {
+      "status": "PRE_REGISTERED_DIAGNOSTIC_ONLY",
+      "no_injections": true,
+      "targets": "Every selected C1 series still NOT_CALIBRATABLE after the permitted threshold-200 tests; always include gem:CPTOTSAXN:SUR as the specific structural target. Also retain a separate comparison set of the seven original stratum-106 series that failed the threshold grid <=90.",
+      "measurements": [
+        {
+          "name": "AR persistence",
+          "definition": "Selected AR(p) order and AR(1) coefficient from the same pre-break prefix used for calibration."
+        },
+        {
+          "name": "GARCH(1,1)",
+          "definition": "Fit a Gaussian GARCH(1,1) to the pre-break AR residuals only; record omega, alpha, beta, alpha+beta, convergence and standard errors. If the estimator is unavailable or fails convergence, report NOT_ESTIMABLE; no proxy is relabeled GARCH."
+        },
+        {
+          "name": "Seasonality",
+          "definition": "Raw-series and pre-break AR-residual autocorrelation at lag 12."
+        },
+        {
+          "name": "Trend",
+          "definition": "OLS linear slope over the pre-break prefix, normalized as slope*n/std(series)."
+        },
+        {
+          "name": "Historical-break candidates",
+          "definition": "Count FOCuS first-hit/rearm candidate events on the original unmodified pre-break prefix at thresholds 90 and 200. These are unlabelled candidates, not verified historical break truth; C3 external labels remain pending."
+        },
+        {
+          "name": "FOCuS null-statistic distribution",
+          "definition": "For the same 1000 deterministic AR(p) development null traces, persist P50, P90, P95, P99, P99.9, maximum, and exceedance counts at thresholds 90 and 200. Do not select any new threshold from Track B."
+        },
+        {
+          "name": "Calibrated comparison",
+          "definition": "Compare the above measures against the 11 calibrated stratum-106 series and all other calibrated C1 Pilot series using descriptive medians, ranges and individual rows; no causal conclusion from group summaries."
+        }
+      ],
+      "no_post_hoc_changes": true,
+      "required_artifact": "p1_4_validation/track_b_diagnostics.json",
+      "conclusion_rule": "Track B can describe associations and model-limit indicators only. It cannot change the null model, AR order, P0 target, threshold ceiling or cohort membership."
+    },
+    "pilot_scope_change": {
+      "original": "40_series_760_cases",
+      "revised_track_a": "all and only C1 selected series whose frozen per-series FOCuS calibration passes after the single authorized threshold-200 extension",
+      "cases_per_series": 19,
+      "reason": "calibration_failures_reduced_eligible_set; C1 calibration status is a necessary precondition for a valid FOCuS injection evaluation",
+      "impact": "reduced statistical power for cross-stratum comparison",
+      "note": "Track A size and per-stratum counts are computed from the verified calibration_results_all_strata.json after the one-time stratum-32 extension. Track B contains no injections and is not included in Track A case counts. Never describe this as the original 40-series Pilot."
     }
   }
 }
