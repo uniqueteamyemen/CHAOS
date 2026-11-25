@@ -3,7 +3,7 @@
   "protocol_version": "1.1.9",
   "status": "FROZEN_BEFORE_EXECUTION",
   "must_not_be_changed_after_pilot_start": true,
-  "purpose": "Evaluate declared detector and estimator roles on verified economic-series cohorts with controlled permanent mean-shift injections and independent synthetic null traces. This is not a forecast-accuracy test and does not authorize production use.",
+  "purpose": "P1.4 evaluates the declared detector and estimator roles implemented in the frozen P2-C engine baseline. It uses verified economic-series cohorts, controlled permanent mean-shift injections and independent synthetic null traces. This is not a forecast-accuracy test and does not authorize production use.",
   "source_and_scope": {
     "repository": "uniqueteamyemen/CHAOS",
     "baseline_commit": "86cb8e576dc0bd21044743dd2749f5bf1d8899ff",
@@ -30,6 +30,13 @@
       "protocol_version_at_selection": "1.1.5",
       "protocol_sha256_at_selection": "644f8e778f5e4fed39273582986170bc510a2ee63d7047724669590bf4fe7807",
       "interpretation": "This artifact proves deterministic selection and identity binding only. It does not prove calibration, rearm measurement, detector performance, or Pilot execution. Its historical protocol binding is preserved and is not rewritten to match this revised execution protocol."
+    },
+    "project_lineage": {
+      "validation_workstream": "P1.4",
+      "engine_under_test": "P2-C",
+      "engine_reference_commit": "86cb8e576dc0bd21044743dd2749f5bf1d8899ff",
+      "engine_reference_label": "P2-C@86cb8e5",
+      "interpretation": "P1.4 is the validation workstream. P2-C@86cb8e5 is the immutable engine reference being evaluated; the two labels are not interchangeable."
     }
   },
   "cohort_design": {
@@ -590,13 +597,13 @@
       "VALIDATED": "At least one candidate passes its declared role on both C1 and C2, all mandatory integrity/causal gates pass, and the resulting operating envelope is restricted to the tested cohorts and conditions. C3 remains visibly pending.",
       "LOCKED_REJECTED": "All candidate tools fail their assigned roles on both C1 and C2 with adequate eligible coverage and confidence intervals wholly on the failing side. Preserve negative evidence; do not retune and rerun the same hypothesis.",
       "INCONCLUSIVE": "Coverage, implementation, null calibration or statistical precision is insufficient for either validation or rejection.",
-      "C1_ONLY_PARTIAL": {
-        "description": "A C1-only partial Pilot may report implementation, calibration, coverage, and per-series evidence for the artifact-backed eligible subset only.",
+      "C1_SELECTED_SAMPLE_EVIDENCE": {
+        "description": "A C1-scoped execution may report implementation, calibration, coverage and per-series outcomes for the exact artifact-backed eligible subset of the frozen C1 selected sample only.",
         "restrictions": [
-          "Must not be labeled VALIDATED or LOCKED_REJECTED.",
+          "Must not be labeled VALIDATED or LOCKED_REJECTED for the full cohort.",
           "Must not claim C2 validation or generalization.",
           "Must not promote a detector to production.",
-          "Must report the exact eligible and executed series IDs, counts, invalid injections, misses, and exclusions from source artifacts."
+          "Must publish exact eligible and executed IDs, denominators, invalid injections, misses and exclusions from original artifacts."
         ]
       }
     },
@@ -608,30 +615,30 @@
     "matrix": "One matrix job per selected series. Each job executes the original baseline and all 18 injected cases for that series. Each series-position null bank is generated once per development/holdout phase and reused across candidate arms; paired variants never receive different null paths.",
     "cases_per_series": 19,
     "raw_values_in_artifacts": false,
-    "required_preflight_gates": "C1 identities and composite G1 breakdown must be bound to the verified cohort-selection artifact.;C2 complement frame and stratification report must be bound to the verified cohort-selection artifact.;Run real threshold-90 calibration on all 20 C1 pilot series and publish P0, Wilson upper bound, actual threshold, seed ledger and source artifact hashes.;Run the one-time threshold-200 extension only on the stratum-106 and stratum-32 series identified as not calibrated by the real threshold-90 artifact; publish separate artifact-backed results.;Track B no-injection diagnostics must be generated from original pinned series and include the pre-registered metrics; no post-hoc parameter changes.;FOCuS runtime enforces min_n_for_focus=150; n<150 returns NOT_ELIGIBLE.;FOCuS rearm contract uses 40 initial and 20 post-hit observations; empirical overlap must be measured and INVALID_INJECTION excluded from Recall, never FN.;Capability/protocol/runtime contract tests pass on the exact source commit.;No Pilot PASS without pilot_run_manifest.json, per-series seed ledger, replay_command, and SHA-256 for every original artifact.;C3 remains pending until independent known-break mappings and point-in-time source-vintage evidence exist.",
+    "required_preflight_gates": "Bind the exact C1 candidate identities and G1 failure-class breakdown to the preserved cohort-selection artifact.; Bind the C2 complement frame and stratification report to the same preserved cohort-selection artifact; C2 remains a generalization reference and is not part of the C1-scoped execution.; Run threshold-90 calibration on all frozen C1 candidate series and publish per-series P0, one-sided Wilson upper bound, selected threshold, seed ledger, source hashes and replay command.; Apply threshold 200 once, at position 0.30, only to C1 Stratum-106 candidates whose genuine threshold-90 artifact reports NOT_CALIBRATABLE; reuse the exact corresponding development null max-statistics. Derive exact IDs and count from that artifact.; Generate Track B no-injection diagnostics only for C1 series that remain NOT_CALIBRATABLE after their applicable permitted calibration steps. Do not use presumed outcomes, fixed comparison groups or post-hoc parameter changes.; Enforce FOCuS min_n_for_focus=150; shorter series are NOT_ELIGIBLE, not detector misses.; Enforce the FOCuS reset/rearm contract: 40 initial observations and 20 post-hit observations. Measure rearm exposure with independent holdout null traces; injected breaks inside a rearm interval are INVALID_INJECTION and excluded from recall, never false negatives.; Run capability, protocol, injection-runner and manifest-binding contract tests on the exact source commit through GitHub Actions.; Do not declare scientific PASS/FAIL without original run IDs, original artifacts and SHA-256 digests, per-series seed ledgers and deterministic replay commands.; C3 remains pending until independent known-break mappings and point-in-time source-vintage evidence exist.",
     "required_artifact_fields": "series_id,cohort_id,series_candidate_sha256,injection_magnitude_sigma,injection_position_fraction,injection_direction,true_break_index,tool_outputs,original_alarm_burden,synthetic_null_fpr,ar_model_order,ar_coefficients,residual_sigma,thresholds,penalty,seed_ledger,coverage_denominator,calibration_overlap_with_injection,injection_case_status,invalid_injection_reason,c1_failure_class,length_band,pre_injection_ar1_abs_band,missingness_pattern,pilot_run_manifest.json,replay_command,artifact_sha256,calibration_status,calibration_threshold,calibration_p0,calibration_p0_wilson_upper,track_id,track_b_diagnostic_features,focus_eligibility_status,focus_eligibility_reason,calibration_status,calibration_threshold,calibration_p0,calibration_p0_wilson_upper,track_id,track_b_diagnostic_features,garch_omega,garch_alpha,garch_beta,garch_persistence,focus_null_p50,focus_null_p90,focus_null_p95,focus_null_p99,focus_null_p999,focus_null_max,calibration_status,calibration_threshold,calibration_p0,calibration_p0_wilson_upper,track_id,garch_omega,garch_alpha,garch_beta,garch_persistence,focus_null_p50,focus_null_p90,focus_null_p95,focus_null_p99,focus_null_p999,focus_null_max,calibration_overlap_with_injection",
     "artifact_integrity": "SHA-256 each per-series artifact and posterior PMF artifact before upload. Aggregate only the exact frozen series IDs and verify all files/hashes.",
     "replay": "Every per-series output includes deterministic replay command and exact source, model, tool version, protocol SHA and seed identities.",
-    "pilot_start_gate": "PILOT NOT STARTED. Dispatch only after the implementation, contract tests, and artifact lineage gates are ready. Threshold-90 calibration covers the 20 frozen C1 candidates. Threshold 200 is applied once, only at position 0.30, to artifact-derived Stratum-106 failures, reusing the same threshold-90 development null max-statistics. Track B is limited to artifact-derived non-calibratable C1 series. Pilot execution is C1-only, at most 15 eligible series / 285 cases. C2 remains a frozen generalization reference and is not part of this partial Pilot.",
+    "pilot_start_gate": "PILOT NOT STARTED. Threshold-90 calibration must cover every frozen C1 candidate. Threshold 200 is applied once, only at position 0.30, to C1 Stratum-106 candidates whose threshold-90 artifact reports NOT_CALIBRATABLE; reuse the same development null max-statistics. Track B is restricted to artifact-derived non-calibratable C1 candidates. The injection track includes all and only artifact-eligible C1 candidates, with no fixed numeric cap. C2 remains a preserved generalization reference and is not part of this C1-scoped execution.",
     "seed_rule": "Seed identity excludes tool/scale variant so paired arms receive identical stochastic inputs; separate streams are keyed by protocol, series, position, AR order, phase and replicate.",
     "implementation_time_budget": {
       "maximum_hours": 24,
-      "deadline_action": "If the full runner/matrix is not ready within 24 hours, use the predeclared partial Pilot; do not expand the runner indefinitely.",
+      "deadline_action": "At the declared implementation budget limit, freeze the implementation state and record remaining gates. Do not relax thresholds, change cohort membership, create a numeric pilot cap, or alter criteria to meet the deadline.",
       "partial_fallback": {
         "status": "NOT_RUN",
-        "mode": "C1_ONLY_PARTIAL_PILOT",
-        "maximum_series_count": 15,
+        "mode": "C1_SELECTED_SAMPLE_ARTIFACT_ELIGIBLE_ONLY",
+        "candidate_series_count": 20,
         "cases_per_series": 19,
-        "maximum_total_cases": 285,
-        "actual_series_count": null,
-        "actual_case_count": null,
-        "selection": "Artifact-calibrated C1 series only, selected from the exact frozen C1 IDs. No C2 series, substitutions, or uncalibrated series. If fewer than 15 qualify, report the smaller actual count.",
-        "interpretation": "Partial engineering and coverage evidence on C1 only; cannot establish full-cohort VALIDATED or LOCKED_REJECTED status and cannot support a C2 or production claim."
+        "eligible_series_count": null,
+        "executed_series_count": null,
+        "executed_case_count": null,
+        "selection": "All and only eligible series from the exact frozen C1 selected IDs, determined by original calibration artifacts. No C2 execution, substitutions or uncalibrated series.",
+        "interpretation": "This provides evidence for the tested C1 selected sample only. It cannot establish full-cohort VALIDATED or LOCKED_REJECTED status, C2 generalization, or production readiness."
       }
     },
     "diagnostic_tracks": {
       "track_A": {
-        "name": "C1_ONLY_ARTIFACT_CALIBRATED_INJECTION_TRACK",
+        "name": "C1_SELECTED_SAMPLE_ARTIFACT_CALIBRATED_INJECTION_TRACK",
         "status": "NOT_STARTED_CALIBRATION_ARTIFACT_REQUIRED",
         "candidate_series_count": 20,
         "candidate_strata": {
@@ -640,14 +647,14 @@
           "ADF_FAIL_KPSS_PASS": 2
         },
         "cases_per_series": 19,
-        "planned_cases_if_all_eligible": 380,
-        "series_ids": "The exact 20 C1 IDs in the frozen cohort manifest; include only artifact-calibrated series, with a hard maximum of 15. Derive eligibility from the real calibration artifacts. No substitutions.",
+        "series_ids": "Use the exact frozen C1 candidate IDs in cohort_manifest.json. Include every candidate that satisfies the artifact-backed threshold-calibration and runtime eligibility rules. Never replace or manually select IDs.",
         "no_substitutions": true,
-        "rule": "Pilot is C1-only. Select at most 15 eligible C1 series from the frozen selected IDs after threshold-90 calibration and the permitted Stratum-106 threshold-200 extension. If fewer than 15 are eligible, execute only that smaller set. Each executed series has one original case and 18 planned injections.",
-        "maximum_series_count": 15,
-        "maximum_cases": 285,
+        "rule": "P1.4 execution is limited to the frozen C1 selected sample. All and only series with valid artifact-backed calibration eligibility enter the injection track. No additional numerical cap is imposed; the executed series and case counts are derived from the source artifacts. Each eligible series has one original case and the pre-registered 18 injected cases.",
         "eligible_series_count": null,
-        "eligible_case_count": null
+        "eligible_case_count": null,
+        "executed_series_ids": null,
+        "executed_case_count": null,
+        "series_count_policy": "No fixed eligible-series count is asserted before calibration. Derive the exact eligible and executed counts from original GitHub Actions artifacts."
       },
       "track_B": {
         "name": "NON_CALIBRATABLE_NO_INJECTION_DIAGNOSTIC",
@@ -672,7 +679,7 @@
       "overlap_between_tracks": "A series may have a no-injection diagnostic record and a distinct injected Track A record; do not treat those records as independent series."
     },
     "pre_registered_grid_extension": {
-      "purpose": "One-time extension test for the pre-registered C1 Stratum-106 subset that fails genuine threshold-90 calibration.",
+      "purpose": "One-time extension test for C1 Stratum-106 candidates that fail the genuine threshold-90 calibration.",
       "execution_status": "NOT_RUN",
       "threshold": 200,
       "position_fraction": 0.3,
@@ -681,41 +688,41 @@
       "threshold_500_tested": false,
       "threshold_90_baseline": {
         "status": "NOT_RUN",
-        "planned_series_count": 20,
-        "actual_series_count": null,
+        "planned_candidate_count": 20,
+        "actual_calibrated_count": null,
         "artifact_sha256": null,
         "run_id": null,
         "replay_command": null
       },
       "stratum_106": {
-        "target": "Only C1 ADF_PASS_KPSS_FAIL / Stratum-106 series whose own artifact-backed threshold-90 calibration fails at position 0.30.",
-        "expected_series_count": 7,
-        "actual_series_count": null,
-        "actual_series_ids_source": "Derive exact IDs from the threshold-90 calibration artifact; never hardcode, replace, or force the expected count.",
+        "target": "Every C1 ADF_PASS_KPSS_FAIL / Stratum-106 candidate whose own artifact-backed threshold-90 calibration fails at position 0.30.",
+        "selected_series_ids": null,
+        "selected_series_count": null,
+        "selection_source": "The exact threshold-90 calibration artifact. No fixed expected count and no manually supplied IDs.",
         "threshold_200_test": {
           "status": "NOT_RUN",
           "planned_once": true,
           "position_fraction": 0.3,
           "threshold": 200,
-          "expected_series_count": 7,
-          "actual_series_count": null,
+          "tested_series_ids": null,
+          "tested_series_count": null,
           "artifact_sha256": null,
           "run_id": null,
           "replay_command": null
         },
-        "max_statistics_reuse": "Reuse the exact position-0.30 development Null max-statistics generated and stored by the threshold-90 run for each eligible series. Do not regenerate null traces, change AR order, or alter seed identities."
+        "max_statistics_reuse": "Reuse the exact position-0.30 development null max-statistics generated and persisted for each selected series by the threshold-90 calibration. Do not regenerate null traces, change AR order, or alter seed identities."
       },
       "decision_rule": {
         "if_calibrates": "GRID_LIMITED_CALIBRATED_AT_200",
         "if_not": "STRUCTURAL_NOT_CALIBRATABLE_AT_200",
-        "count_mismatch": "Preserve and report the actual artifact-derived count even when it differs from the pre-registered expected count of seven; never force seven.",
+        "selection": "The tested set and its count are derived only from the threshold-90 source artifact; report the observed set without forcing a predeclared count.",
         "stop": "No threshold 500, intermediate thresholds, AR-order replacement, residual-bootstrap change, P0 relaxation, or cohort replacement."
       }
     },
     "track_b_protocol": {
       "status": "PRE_REGISTERED_DIAGNOSTIC_ONLY_NOT_RUN",
       "no_injections": true,
-      "targets": "Only C1 series that remain NOT_CALIBRATABLE after the applicable permitted calibration steps. For Stratum-106, this includes its one-time threshold-200 result. For other strata, do not apply threshold 200. Exact IDs and counts must be derived from the original threshold-calibration artifacts.",
+      "targets": "Only C1 candidates that remain NOT_CALIBRATABLE after the applicable permitted calibration steps. For Stratum-106 this includes the single permitted threshold-200 attempt. Exact IDs and counts come from the original threshold-calibration artifacts; no fixed target count or hand-authored comparison set is permitted.",
       "measurements": [
         {
           "name": "AR persistence",
@@ -747,18 +754,23 @@
       "conclusion_rule": "Track B can describe associations and model-limit indicators only. It cannot change the null model, AR order, P0 target, threshold ceiling or cohort membership.",
       "no_parameter_changes": true,
       "no_causal_claim_from_descriptive_comparison": true,
-      "selection_source": "Artifact-derived calibration status only; no fixed IDs, presumed calibrated counts, or hand-authored comparison groups."
+      "selection_source": "Artifact-derived calibration status only. No fixed IDs, presumed calibrated counts, or hand-authored comparison groups."
     },
     "pilot_scope_change": {
       "original_selection_frame": "40_series_760_selection_cases_C1_C2",
+      "pilot_scope": "C1_SELECTED_SAMPLE",
+      "candidate_series_count": 20,
+      "candidate_series_ids_source": "The exact C1 pilot IDs in the preserved cohort manifest and verified selection artifact.",
+      "series_count_policy": "Do not predeclare or cap the number of eligible/executed series. Derive it from artifact-backed calibration and runtime eligibility. No substitutions.",
+      "cases_per_executed_series": 19,
+      "injected_cases_per_executed_series": 18,
+      "eligible_series_count": null,
+      "executed_series_ids": null,
+      "executed_series_count": null,
+      "executed_case_count": null,
       "actual": "NOT_STARTED",
-      "planned_series": 15,
-      "planned_cases_per_series": 19,
-      "planned_cases": 285,
-      "maximum_series": 15,
-      "reason": "The Pilot is limited to up to 15 artifact-calibrated C1 series. The actual execution count is determined only by genuine threshold calibration artifacts.",
-      "track_b": "All and only C1 series actually NOT_CALIBRATABLE after their applicable permitted calibration steps; count and IDs NOT_RUN.",
-      "impact": "No Pilot eligible-series count, injection recall, calibration status, or empirical overlap rate is established before the original GitHub Actions artifacts exist."
+      "track_b": "Only C1 series classified NOT_CALIBRATABLE by artifact-backed results after their applicable permitted calibration steps; exact IDs and count NOT_RUN.",
+      "impact": "No eligible-series count, injection recall, calibration status, or empirical overlap rate is established before original GitHub Actions artifacts exist."
     }
   }
 }

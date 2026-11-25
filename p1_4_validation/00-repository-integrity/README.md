@@ -30,8 +30,8 @@
 | `p1_4_validation/pilot_protocol.json` | `REPAIR` | البروتوكول عند 1.1.8 احتوى بقايا متعارضة: بيانات تداخل صفرية مثبتة يدوياً، إحالات إلى 11 سلسلة معايرة، ومقاطع Scope قديمة. يجب أن تكون هذه القياسات `NOT_RUN` وأن يفصل الإطار الأصلي عن Pilot الجزئي. |
 | `p1_4_validation/pilot_protocol.schema.json` | `REPAIR` | مواءمة إصدار Schema مع البروتوكول وإزالة أي تعارض بين الحقول المطلوبة وحالة التنفيذ. |
 | `p1_4_validation/capability_envelope.json` | `REPAIR` | تكرار عنصر `40_initial_calibration_observations` في عقد FOCuS؛ يجب إزالة التكرار مع إبقاء بوابات الأهلية. |
-| `p1_4_validation/injection_runner.py` | `PRESERVE + REPAIR` | منطق 40 مشاهدة أولية و20 مشاهدة Rearm وحد FOCuS عند 150 موجود. تعليق داخل الدالة كان يشير إلى 15 بدلاً من 20؛ يصحح التعليق دون تغيير السلوك المجمد. |
-| `tests/governance/test_p1_4_pilot_protocol.py` | `REPAIR` | احتوى Assertions لنتائج تداخل تساوي صفراً ولنطاق Track A قديم 16/304. لا يجوز أن تختبر القيم التجريبية غير المنفذة كحقائق. |
+| `p1_4_validation/injection_runner.py` | `PRESERVE + REPAIR` | منطق 40 مشاهدة أولية و20 مشاهدة Rearm وحد FOCuS عند 150 موجود. تعليق داخل الدالة كان متعارضاً مع قيمة Rearm الفعلية؛ يصحح التعليق دون تغيير السلوك المجمد. |
+| `tests/governance/test_p1_4_pilot_protocol.py` | `REPAIR` | احتوى Assertions لنتائج تداخل غير مقاسة ولنطاق Track A تاريخي غير معتمد. لا يجوز أن تختبر القيم التجريبية غير المنفذة كحقائق. |
 | `tests/governance/test_p1_4_capability_envelope.py` | `PRESERVE` | الإبقاء على اختبارات fail-closed وmin_n=150 والعقود؛ تشغيلها داخل GitHub Actions فقط. |
 | `tests/governance/test_p1_4_injection_runner.py` | `PRESERVE` | الإبقاء على اختبارات Adapter والعقود 40/20 وINVALID_INJECTION. نجاح هذه الاختبارات لا يثبت المعايرة الإحصائية. |
 | `STATUS.md` | `REPAIR` | الحالة القديمة تتضمن آلية تشغيل `[skip-p2-full]` لم تعد كافية كضمان. يجب أن يطابق سجل الحالة مراحل التنفيذ وقيود التشغيل اليدوي. |
@@ -66,7 +66,7 @@
 
 1. توحيد البروتوكول وSchema وإزالة كل Assertion يستند إلى أرقام غير منفذة.
 2. إصلاح عقد Capability Envelope وتعليق 20-point Rearm.
-3. فصل إطار اختيار 40/760 عن Pilot C1 الجزئي بحد أقصى 15/285؛ العدد الفعلي يتحدد من Artifacts أهلية المعايرة، وقد يقل عن 15.
+3. فصل إطار اختيار 40/760 عن تنفيذ P1.4 المقصور على عينة C1 المختارة؛ لا يُثبت عدد التنفيذ قبل Artifacts أهلية المعايرة.
 4. إضافة Entry points وWorkflow صريح لكل مرحلة.
 5. جعل Workflows الخاصة بـP1.4 يدوية فقط.
 6. إضافة README مستقل لكل نقطة من النقاط الاثنتي عشرة.

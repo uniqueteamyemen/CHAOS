@@ -25,6 +25,14 @@ class CapabilityEnvelopeTests(unittest.TestCase):
         for spec in doc["capabilities"].values():
             self.assertTrue(required.issubset(spec))
 
+    def test_focus_contract_has_unique_40_20_windows_and_minimum_length(self):
+        envelope = load_envelope()
+        focus = envelope["capabilities"]["FOCUS_RESET_ARL_PILOT"]
+        contract = focus["input_contract"]
+        self.assertEqual(contract.count("40_initial_calibration_observations"), 1)
+        self.assertEqual(contract.count("20_post_hit_rearm_calibration_observations"), 1)
+        self.assertEqual(focus["minimum_observations"], 150)
+
     def test_c1_manifest_and_cohort_counts_are_pinned(self):
         m = json.loads((ROOT / "p1_4_validation" / "cohort_manifest.json").read_text(encoding="utf-8"))
         c1, c2 = m["cohorts"]["C1"], m["cohorts"]["C2"]
