@@ -884,7 +884,10 @@ def r_fpop_segment(values: Any, *, quiet_points: int = QUIET_POINTS,
         start = int(origin[cursor])
         if start <= 0:
             break
-        if start >= cursor:
+        # FPOP may place the final segment origin at the current prefix end.
+        # That is a valid one-observation segment, so retain it and continue
+        # backtracking; only an origin beyond the current endpoint is invalid.
+        if start > cursor:
             raise RuntimeError(f"R_FPOP_PATH_ORIGIN_INVALID:{start}:{cursor}")
         starts.append(start)
         cursor = start - 1
