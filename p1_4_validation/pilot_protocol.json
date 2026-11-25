@@ -1,6 +1,6 @@
 {
   "protocol_id": "CHAOS_P1_4_CAPABILITY_PILOT_V1",
-  "protocol_version": "1.1.2",
+  "protocol_version": "1.1.3",
   "status": "FROZEN_BEFORE_EXECUTION",
   "must_not_be_changed_after_pilot_start": true,
   "purpose": "Evaluate declared detector and estimator roles on verified economic-series cohorts with controlled permanent mean-shift injections and independent synthetic null traces. This is not a forecast-accuracy test and does not authorize production use.",
@@ -34,7 +34,12 @@
         "adf_fail_kpss_pass": 9
       },
       "pilot_sample_count": 20,
-      "pilot_selection": "Deterministic stratified selection by G1 failure class, observation length band and pre-break AR dependence band; fixed identity list in cohort_manifest.json"
+      "pilot_selection": "Deterministic stratified selection by G1 failure class, then observation length and pre-break AR1 dependence; minimum sample representation is 6 ADF-pass/KPSS-fail, 6 both-fail, and 2 ADF-fail/KPSS-pass. Exact IDs remain frozen in cohort_manifest.json.",
+      "pilot_failure_class_minimums": {
+        "ADF_PASS_KPSS_FAIL": 6,
+        "ADF_FAIL_KPSS_FAIL": 6,
+        "ADF_FAIL_KPSS_PASS": 2
+      }
     },
     "C2": {
       "status": "VERIFIED",
@@ -53,7 +58,15 @@
         "pink_sheet": 3,
         "gem": 17
       },
-      "sampling": "Deterministic stratified sample by source cohort, domain, length band and pre-break AR dependence band; fixed IDs and seed ledger in cohort_manifest.json"
+      "sampling": "Deterministic stratified sample by source cohort, domain, length band and pre-break AR dependence band; fixed IDs and seed ledger in cohort_manifest.json",
+      "stratification_dimensions": [
+        "source (Pink Sheet vs GEM)",
+        "domain/sector",
+        "observation length band",
+        "pre-injection AR(1) absolute band",
+        "monthly missingness pattern"
+      ],
+      "stratification_report": "C2_STRATIFICATION_REPORT_V1 must publish distributions for all five dimensions separately for the 50-series sample and its exact 20-series Pilot subset, plus source-by-length, source-by-AR1 and source-by-missingness cross-tabs."
     },
     "C3": {
       "status": "PENDING_EXTERNAL_EVIDENCE",
@@ -105,7 +118,21 @@
     "minimum_prebreak_observations": 40,
     "short_prebreak_rule": "NOT_ELIGIBLE with a machine-readable reason for that position; preserve it in the planned-case and coverage denominators. Do not silently drop it or count it as a detector miss.",
     "direction_correct_detection": "A true positive must have the correct sign and detection_index >= true_break_index. A pre-onset or wrong-direction event cannot be a true positive.",
-    "rearm_exposure_rule": "Any FOCuS reset/re-arm interval must be recorded. An injected event falling inside an unmonitored re-arm interval is recorded as an uncovered miss, not removed from the denominator."
+    "rearm_exposure_rule": "Any FOCuS reset/re-arm interval is recorded. If the true injection index falls inside a 40-observation re-calibration interval, set calibration_overlap_with_injection=true and outcome INVALID_INJECTION. It is not a detector false negative and is excluded from Injection Recall numerator and denominator; report the invalid count separately. Never silently remove it.",
+    "rearm_overlap_guard": {
+      "calibration_observations": 40,
+      "case_field": "calibration_overlap_with_injection",
+      "overlap_rule": "true_break_index is within [start_inclusive,end_exclusive) of any FOCuS rearm interval",
+      "overlap_outcome": "INVALID_INJECTION",
+      "recall_accounting": "exclude from recall numerator and denominator; retain in planned and invalid coverage counts",
+      "non_overlap_outcome": "evaluate normally as DETECTED or MISSED"
+    },
+    "eligibility": {
+      "min_n_for_focus": 150,
+      "reason": "40 initial calibration observations plus at least 110 observations available for detection evaluation",
+      "below_minimum": "FOCUS status NOT_ELIGIBLE with reason FOCUS_MIN_N_150_REQUIRED; do not record a low-recall result",
+      "scope": "FOCuS_RESET_ARL_PILOT only; other tools retain their own declared minimums"
+    }
   },
   "ar_null_and_calibration": {
     "null_model": "AR(p) with intercept",
@@ -233,7 +260,13 @@
       "definition": "Direction-correct detections at or after the injected break divided by eligible injected cases.",
       "false_negatives": "Every eligible injected case with no direction-correct detection by series end remains a false negative in the denominator.",
       "pre_onset": "Record separately; cannot count as a true positive.",
-      "wrong_direction": "Record wrong-sign detections after the injected break separately; do not credit them as recall."
+      "wrong_direction": "Record wrong-sign detections after the injected break separately; do not credit them as recall.",
+      "invalid_injection": {
+        "definition": "Planned injected case whose true break falls inside a FOCuS reset/re-arm calibration interval",
+        "status": "INVALID_INJECTION",
+        "recall_accounting": "Exclude from detector recall numerator and denominator; report separately in coverage and never count as a false negative",
+        "required_case_field": "calibration_overlap_with_injection"
+      }
     },
     "detection_delay": {
       "definition": "detection_index - true_break_index for direction-correct detected injections only.",
@@ -247,7 +280,17 @@
     },
     "coverage": {
       "definition": "Report planned, eligible, NOT_ELIGIBLE, abstained and executed counts by cohort, series, position, magnitude, direction and tool.",
-      "denominator_rule": "Always publish numerator and denominator; do not silently remove short or failed cases."
+      "denominator_rule": "Always publish numerator and denominator; do not silently remove short or failed cases.",
+      "required_statuses": [
+        "PLANNED",
+        "EXECUTED",
+        "NOT_ELIGIBLE",
+        "ABSTAIN",
+        "INVALID_INJECTION",
+        "DETECTED",
+        "MISSED"
+      ],
+      "invalid_injection_rule": "Retain invalid injection cases in the planned denominator, report their count separately, and exclude them only from the Injection Recall denominator; never recode as detector misses."
     },
     "series_variability": {
       "required": [
@@ -300,6 +343,11 @@
         "recall_at_1sigma": "Series-clustered 95% lower bound >= 0.60",
         "synthetic_null_fpr": "Holdout one-sided 95% Wilson upper bound <= 0.10",
         "wrong_direction_rate": "Series-clustered 95% upper bound <= 0.05"
+      },
+      "minimum_series_length": {
+        "min_n_for_focus": 150,
+        "components": "40 initial calibration observations + at least 110 detection observations",
+        "below_minimum": "NOT_ELIGIBLE, not a weak detection result"
       }
     },
     "POST_QUIET_HUBER_MAD": {
@@ -453,41 +501,23 @@
     "matrix": "One matrix job per selected series. Each job executes the original baseline and all 18 injected cases for that series. Each series-position null bank is generated once per development/holdout phase and reused across candidate arms; paired variants never receive different null paths.",
     "cases_per_series": 19,
     "raw_values_in_artifacts": false,
-    "required_preflight_gates": [
-      "C1 identity and composite G1 criterion are verified",
-      "C2 50-series sample and exact 20-series pilot subset are verified",
-      "C3 remains explicitly excluded until source vintages are proven",
-      "FOCuS reset/rearm runner passes contract tests",
-      "BOCPD exports full posterior PMF for every prefix",
-      "capability envelope schema/runtime tests pass",
-      "pilot protocol schema/tests pass and final protocol SHA is bound to cohort selection",
-      "injection, null calibration, prefix replay and no-future-suffix mutation tests pass",
-      "BOCPD posterior feature evaluation is restricted to the declared case and shuffle/fusion-candidate scope; no 1000x2 independent AR bank is run for BOCPD-only."
-    ],
-    "required_artifact_fields": [
-      "series_id",
-      "cohort_id",
-      "series_candidate_sha256",
-      "injection_magnitude_sigma",
-      "injection_position_fraction",
-      "injection_direction",
-      "true_break_index",
-      "tool_outputs",
-      "original_alarm_burden",
-      "synthetic_null_fpr",
-      "ar_model_order",
-      "ar_coefficients",
-      "residual_sigma",
-      "thresholds",
-      "penalty",
-      "seed_ledger",
-      "coverage_denominator",
-      "replay_command",
-      "artifact_sha256"
-    ],
+    "required_preflight_gates": "C1 identity and composite G1 criterion are verified,C2 50-series sample and exact 20-series pilot subset are verified,C3 remains explicitly excluded until source vintages are proven,FOCuS reset/rearm runner passes contract tests,BOCPD exports full posterior PMF for every prefix,capability envelope schema/runtime tests pass,pilot protocol schema/tests pass and final protocol SHA is bound to cohort selection,injection, null calibration, prefix replay and no-future-suffix mutation tests pass,BOCPD posterior feature evaluation is restricted to the declared case and shuffle/fusion-candidate scope; no 1000x2 independent AR bank is run for BOCPD-only.C1 pilot failure-class counts satisfy minimum 6/6/2 and exact IDs match cohort manifest,C2_STRATIFICATION_REPORT_V1 includes 50-sample and 20-pilot distributions for source, domain, length, AR1 and missingness,FOCuS pilot cases with n < 150 are returned NOT_ELIGIBLE,FOCuS calibration overlap with injection is labeled INVALID_INJECTION and excluded from recall, never counted as FN",
+    "required_artifact_fields": "series_id,cohort_id,series_candidate_sha256,injection_magnitude_sigma,injection_position_fraction,injection_direction,true_break_index,tool_outputs,original_alarm_burden,synthetic_null_fpr,ar_model_order,ar_coefficients,residual_sigma,thresholds,penalty,seed_ledger,coverage_denominator,replay_command,artifact_sha256calibration_overlap_with_injection,injection_case_status,invalid_injection_reason,c1_failure_class,length_band,pre_injection_ar1_abs_band,missingness_pattern",
     "artifact_integrity": "SHA-256 each per-series artifact and posterior PMF artifact before upload. Aggregate only the exact frozen series IDs and verify all files/hashes.",
     "replay": "Every per-series output includes deterministic replay command and exact source, model, tool version, protocol SHA and seed identities.",
-    "pilot_start_gate": "Do not dispatch until every preflight item passes on the exact Pilot commit. The dispatch itself is a separate [skip-p2-full] commit/action. C3 may remain pending only with the declared scope limitation.",
-    "seed_rule": "Seed identity excludes tool/scale variant so paired arms receive identical stochastic inputs; separate streams are keyed by protocol, series, position, AR order, phase and replicate."
+    "pilot_start_gate": "Do not dispatch until every preflight item passes on the exact Pilot commit and the protocol SHA is bound to the cohort selection. Dispatch is a separate [skip-p2-full] action. C3 may remain pending only with the declared scope limitation. If the 24-hour implementation budget expires, use the 10-series/190-case PILOT_PARTIAL fallback.",
+    "seed_rule": "Seed identity excludes tool/scale variant so paired arms receive identical stochastic inputs; separate streams are keyed by protocol, series, position, AR order, phase and replicate.",
+    "implementation_time_budget": {
+      "maximum_hours": 24,
+      "deadline_action": "If the full run_pilot.py plus matrix entrypoint is not ready within this budget, stop expanding the entrypoint and execute the deterministic partial Pilot fallback.",
+      "partial_fallback": {
+        "status": "PILOT_PARTIAL",
+        "series_count": 10,
+        "cases_per_series": 19,
+        "total_cases": 190,
+        "selection": "Deterministic balanced subset from verified C1 and C2; preserve cohort labels and the 6/6/2 C1 mechanism guarantees where applicable",
+        "interpretation": "Engineering and coverage evidence only; no full-cohort PASS/FAIL or production promotion"
+      }
+    }
   }
 }
