@@ -42,7 +42,7 @@ class P14PilotProtocolTests(unittest.TestCase):
 
     def test_protocol_matches_schema_and_is_frozen(self):
         validate_required(self.protocol, self.schema)
-        self.assertEqual(self.protocol["protocol_version"], "1.1.6")
+        self.assertEqual(self.protocol["protocol_version"], "1.1.7")
         self.assertEqual(self.protocol["status"], "FROZEN_BEFORE_EXECUTION")
         self.assertTrue(self.protocol["must_not_be_changed_after_pilot_start"])
 
@@ -176,6 +176,30 @@ class P14PilotProtocolTests(unittest.TestCase):
         self.assertIn("FOCuS null-statistic distribution", names)
         self.assertIn("Historical-break candidates", names)
         self.assertTrue(track["no_post_hoc_changes"])
+
+    def test_reduced_track_a_scope_is_16_series_304_cases_not_original_40(self):
+        a = self.protocol["execution"]["diagnostic_tracks"]["track_A"]
+        b = self.protocol["execution"]["diagnostic_tracks"]["track_B"]
+        self.assertEqual((a["total_series"], a["cases_per_series"], a["total_cases"]),
+                         (16, 19, 304))
+        self.assertEqual(a["series_counts_by_stratum"], {
+            "ADF_PASS_KPSS_FAIL": 11,
+            "ADF_FAIL_KPSS_FAIL": 4,
+            "ADF_FAIL_KPSS_PASS": 1,
+        })
+        self.assertEqual((b["total_series"], b["injected_cases"]), (4, 0))
+        scope = self.protocol["execution"]["pilot_scope_change"]
+        self.assertEqual(scope["actual_track_a"], "16_series_304_cases")
+        self.assertEqual(scope["track_b"], "4_series_0_injection_cases")
+
+    def test_threshold_200_was_applied_to_ten_series_once_only(self):
+        extension = self.protocol["execution"]["pre_registered_grid_extension"]
+        self.assertEqual(extension["total_series_tested"], 10)
+        self.assertEqual(extension["stratum_32"]["series_tested"], 3)
+        self.assertEqual(extension["stratum_32"]["calibrated"], 1)
+        self.assertEqual(extension["stratum_32"]["not_calibrated"], 2)
+        self.assertFalse(extension["allowed_to_repeat"])
+        self.assertFalse(extension["threshold_500_tested"])
 
     def test_pilot_scope_change_is_explicit(self):
         scope = self.protocol["execution"]["pilot_scope_change"]
