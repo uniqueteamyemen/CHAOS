@@ -76,7 +76,8 @@ jobs:
             --g1-shards-dir /tmp/p2-g1-shards \
             --cohort-manifest cohorts/p1_4/cohort_manifest.json \
             --pilot-protocol cohorts/p1_4/pilot_protocol.json \
-            --output artifacts/p1_4/cohort_selection.json
+            --output artifacts/p1_4/cohort_selection.json \
+            --selection-commit "$GITHUB_SHA"
           sha256sum artifacts/p1_4/cohort_selection.json > artifacts/p1_4/cohort_selection.json.sha256
       - name: Upload cohort selection artifact
         uses: actions/upload-artifact@v4

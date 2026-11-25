@@ -413,6 +413,7 @@ def main() -> int:
     parser.add_argument("--cohort-manifest", required=True, type=Path)
     parser.add_argument("--pilot-protocol", required=True, type=Path)
     parser.add_argument("--output", required=True, type=Path)
+    parser.add_argument("--selection-commit", default=None)
     args = parser.parse_args()
 
     selection = build_selection(
@@ -420,7 +421,7 @@ def main() -> int:
         args.g1_shards_dir,
         args.cohort_manifest,
         args.pilot_protocol,
-        selection_commit=None,
+        selection_commit=args.selection_commit,
     )
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_bytes(canonical_json_bytes(selection))
