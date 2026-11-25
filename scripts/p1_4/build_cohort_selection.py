@@ -25,8 +25,11 @@ C1_SEED = "CHAOS:P1.4:C1:PILOT:v1"
 C2_FRAME_SEED = "CHAOS:P1.4:C2:FRAME:v1"
 C2_PILOT_SEED = "CHAOS:P1.4:C2:PILOT:v1"
 C1_FAILURE_QUOTAS = {
-    "ADF_PASS_KPSS_FAIL": 14,
-    "ADF_FAIL_KPSS_FAIL": 4,
+    # Minimum representation requested for the three G1 failure mechanisms.
+    # The 12/6/2 split oversamples the two smaller diagnostic classes relative
+    # to their population share; it is not a prevalence estimator.
+    "ADF_PASS_KPSS_FAIL": 12,
+    "ADF_FAIL_KPSS_FAIL": 6,
     "ADF_FAIL_KPSS_PASS": 2,
 }
 SOURCE_QUOTAS_C2 = {"pink_sheet": 7, "gem": 43}
@@ -60,6 +63,66 @@ def _length_band(n: int) -> str:
     if n < 360:
         return "240_359"
     return "gte_360"
+
+
+def _monthly_index(label: str) -> int:
+    match = __import__("re").fullmatch(r"(\\d{4})-(\\d{2})", str(label))
+    if not match:
+        raise ValueError(f"unsupported_monthly_axis_label:{label}")
+    year, month = int(match.group(1)), int(match.group(2))
+    if not 1 <= month <= 12:
+        raise ValueError(f"invalid_monthly_axis_label:{label}")
+    return year * 12 + month
+
+
+def _missingness_features(item: dict[str, Any]) -> dict[str, Any]:
+    """Classify absent calendar months and non-finite aligned values."""
+    axis = [str(value) for value in item.get("axis", [])]
+    values = item.get("values", [])
+    if not axis:
+        return {
+            "missing_month_count": None,
+            "missing_month_rate": None,
+            "max_missing_run": None,
+            "missing_value_count": None,
+            "missingness_pattern": "NOT_ESTIMABLE_NO_AXIS",
+        }
+    if str(item.get("frequency", "")).lower() != "monthly":
+        return {
+            "missing_month_count": None,
+            "missing_month_rate": None,
+            "max_missing_run": None,
+            "missing_value_count": None,
+            "missingness_pattern": "NOT_ESTIMABLE_NON_MONTHLY",
+        }
+    indices = [_monthly_index(label) for label in axis]
+    if any(right <= left for left, right in zip(indices, indices[1:])):
+        raise ValueError(f"monthly_axis_not_strictly_increasing:{item.get('id')}")
+    gaps = [right - left - 1 for left, right in zip(indices, indices[1:])]
+    missing_months = int(sum(gaps))
+    expected_months = int(indices[-1] - indices[0] + 1)
+    missing_values = sum(
+        1 for value in values
+        if value is None or not math.isfinite(float(value))
+    )
+    total_missing = missing_months + int(missing_values)
+    rate = total_missing / max(expected_months, 1)
+    max_gap = max(gaps, default=0)
+    if total_missing == 0:
+        pattern = "NO_GAPS"
+    elif rate < 0.05 and max_gap <= 2:
+        pattern = "SPARSE_GAPS"
+    elif rate < 0.15 and max_gap <= 6:
+        pattern = "MODERATE_GAPS"
+    else:
+        pattern = "CLUSTERED_OR_HIGH_MISSINGNESS"
+    return {
+        "missing_month_count": missing_months,
+        "missing_month_rate": float(rate),
+        "max_missing_run": int(max_gap),
+        "missing_value_count": int(missing_values),
+        "missingness_pattern": pattern,
+    }
 
 
 def _ar1_feature(values: list[float], prebreak_n: int) -> dict[str, Any]:
@@ -122,6 +185,7 @@ def _features(item: dict[str, Any]) -> dict[str, Any]:
         "first_observation": str(item["axis"][0]) if item.get("axis") else None,
         "last_observation": str(item["axis"][-1]) if item.get("axis") else None,
         "length_band": _length_band(n),
+        **_missingness_features(item),
         **ar,
     }
 
@@ -357,7 +421,10 @@ def build_selection(
     if len(c2_frame) != 362 or source_counts != {"pink_sheet": 51, "gem": 311}:
         raise ValueError(f"c2_sampling_frame_mismatch:{len(c2_frame)}:{source_counts}")
 
-    strata_fields = ("source_cohort", "domain", "length_band", "ar1_abs_band")
+    strata_fields = (
+        "source", "source_cohort", "domain", "length_band",
+        "ar1_abs_band", "missingness_pattern",
+    )
     c2_sample = _select_by_source(c2_frame, SOURCE_QUOTAS_C2, C2_FRAME_SEED, strata_fields)
     c2_pilot = _select_by_source(c2_sample, SOURCE_QUOTAS_C2_PILOT, C2_PILOT_SEED, strata_fields)
 
@@ -377,8 +444,89 @@ def build_selection(
     if prepared_sha != counts["prepared_artifact_sha256"]:
         raise ValueError("prepared_artifact_sha_drift")
 
+    def distribution(rows: list[dict[str, Any]], fields: tuple[str, ...]) -> dict[str, dict[str, int]]:
+        result: dict[str, dict[str, int]] = {}
+        for field in fields:
+            result[field] = dict(sorted(
+                collections.Counter(str(row.get(field, "NOT_RECORDED")) for row in rows).items()
+            ))
+        for left, right in (
+            ("source", "length_band"),
+            ("source", "ar1_abs_band"),
+            ("source", "missingness_pattern"),
+        ):
+            key = f"{left}__x__{right}"
+            result[key] = dict(sorted(
+                collections.Counter(
+                    f"{row.get(left, 'NOT_RECORDED')}|{row.get(right, 'NOT_RECORDED')}"
+                    for row in rows
+                ).items()
+            ))
+        return result
+
+    c2_stratification_report = {
+        "report_id": "C2_STRATIFICATION_REPORT_V1",
+        "status": "GENERATED_FROM_PINNED_SERIES_VALUES",
+        "sample_count": len(c2_sample),
+        "pilot_count": len(c2_pilot),
+        "dimensions": [
+            "source",
+            "domain",
+            "length_band",
+            "ar1_abs_band",
+            "missingness_pattern",
+        ],
+        "missingness_note": (
+            "Monthly calendar gaps and non-finite aligned values are assessed separately. "
+            "A constant NO_GAPS stratum is reported as observed; it is not presented as "
+            "evidence of variation in missingness."
+        ),
+        "sample_distributions": distribution(
+            c2_sample,
+            ("source", "domain", "length_band", "ar1_abs_band", "missingness_pattern"),
+        ),
+        "pilot_distributions": distribution(
+            c2_pilot,
+            ("source", "domain", "length_band", "ar1_abs_band", "missingness_pattern"),
+        ),
+        "sample_ids": [row["series_id"] for row in c2_sample],
+        "pilot_ids": [row["series_id"] for row in c2_pilot],
+        "pilot_is_subset_of_sample": set(row["series_id"] for row in c2_pilot).issubset(
+            set(row["series_id"] for row in c2_sample)
+        ),
+        "selection_method": "Deterministic stratified Hamilton allocation and SHA-256 rank within source/domain/length/AR1/missingness strata.",
+    }
+    c1_stratification_report = {
+        "report_id": "C1_FAILURE_CLASS_STRATIFICATION_V1",
+        "population_counts": counts_by_class,
+        "pilot_minimum_quotas": {"ADF_PASS_KPSS_FAIL": 6, "ADF_FAIL_KPSS_FAIL": 6, "ADF_FAIL_KPSS_PASS": 2},
+        "pilot_counts": {
+            failure_class: sum(
+                failure_classes[row["series_id"]] == failure_class for row in c1_pilot
+            )
+            for failure_class in C1_FAILURE_QUOTAS
+        },
+        "minimum_quotas_satisfied": all(
+            sum(failure_classes[row["series_id"]] == failure_class for row in c1_pilot)
+            >= minimum
+            for failure_class, minimum in {
+                "ADF_PASS_KPSS_FAIL": 6,
+                "ADF_FAIL_KPSS_FAIL": 6,
+                "ADF_FAIL_KPSS_PASS": 2,
+            }.items()
+        ),
+        "pilot_length_distribution": dict(sorted(collections.Counter(
+            row["length_band"] for row in c1_pilot
+        ).items())),
+        "pilot_ar1_distribution": dict(sorted(collections.Counter(
+            row["ar1_abs_band"] for row in c1_pilot
+        ).items())),
+    }
+
     selection = {
-        "schema_version": "chaos-p1-4-cohort-selection-v1.1",
+        "schema_version": "chaos-p1-4-cohort-selection-v1.2",
+        "C1_STRATIFICATION_REPORT": c1_stratification_report,
+        "C2_STRATIFICATION_REPORT": c2_stratification_report,
         "selection_commit": selection_commit,
         "protocol_id": protocol["protocol_id"],
         "protocol_sha256": protocol_sha,
@@ -457,6 +605,11 @@ def main() -> int:
     parser.add_argument("--pilot-protocol", required=True, type=Path)
     parser.add_argument("--output", required=True, type=Path)
     parser.add_argument("--selection-commit", default=None)
+    parser.add_argument(
+        "--stratification-report",
+        type=Path,
+        default=Path("artifacts/p1_4/cohort_stratification_report.json"),
+    )
     args = parser.parse_args()
 
     selection = build_selection(
@@ -468,6 +621,15 @@ def main() -> int:
     )
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_bytes(canonical_json_bytes(selection))
+    report = {
+        "schema_version": "chaos-p1-4-stratification-report-v1",
+        "C1": selection["C1_STRATIFICATION_REPORT"],
+        "C2": selection["C2_STRATIFICATION_REPORT"],
+        "source_identity": selection["source_identity"],
+        "protocol_sha256": selection["protocol_sha256"],
+    }
+    args.stratification_report.parent.mkdir(parents=True, exist_ok=True)
+    args.stratification_report.write_bytes(canonical_json_bytes(report))
     print(json.dumps({
         "status": "PASS",
         "c1_pilot_count": selection["c1"]["pilot_sample_count"],
@@ -477,6 +639,8 @@ def main() -> int:
         "pilot_run_cases": selection["pilot_scope"]["run_cases"],
         "output": str(args.output),
         "sha256": sha256_file(args.output),
+        "stratification_report": str(args.stratification_report),
+        "stratification_report_sha256": sha256_file(args.stratification_report),
     }, ensure_ascii=False, sort_keys=True))
     return 0
 
