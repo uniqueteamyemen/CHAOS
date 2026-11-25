@@ -146,9 +146,37 @@ class P14InjectionRunnerTests(unittest.TestCase):
         self.assertFalse(break_is_unmonitored(141, intervals))
         out = evaluate_online_hits([], true_break_index=120, true_direction=1,
                                    rearm_intervals=intervals)
-        self.assertEqual(out["status"], "UNMONITORED_REARM")
-        self.assertTrue(out["missed"])
+        self.assertEqual(out["status"], "INVALID_INJECTION")
+        self.assertFalse(out["missed"])
+        self.assertFalse(out["false_negative"])
         self.assertTrue(out["uncovered_by_rearm"])
+        self.assertTrue(out["calibration_overlap_with_injection"])
+        self.assertTrue(out["excluded_from_recall"])
+
+    def test_focus_short_series_is_not_eligible_below_150(self):
+        result = focus_reset_rearm(ar_fixture(149), threshold=45.0)
+        self.assertEqual(result["status"], "NOT_ELIGIBLE")
+        self.assertEqual(result["reason"], "FOCUS_MIN_N_150_REQUIRED")
+        self.assertEqual(result["minimum_observations"], 150)
+        self.assertEqual(result["hits"], [])
+
+    def test_injection_inside_rearm_window_is_invalid_not_false_negative(self):
+        intervals = [{"start_inclusive": 101, "end_exclusive": 141}]
+        out = evaluate_online_hits([], true_break_index=122, true_direction=1,
+                                   rearm_intervals=intervals)
+        self.assertEqual(out["status"], "INVALID_INJECTION")
+        self.assertTrue(out["calibration_overlap_with_injection"])
+        self.assertTrue(out["excluded_from_recall"])
+        self.assertFalse(out["false_negative"])
+        self.assertFalse(out["missed"])
+
+    def test_injection_after_rearm_window_remains_evaluable(self):
+        intervals = [{"start_inclusive": 101, "end_exclusive": 141}]
+        out = evaluate_online_hits([], true_break_index=141, true_direction=1,
+                                   rearm_intervals=intervals)
+        self.assertEqual(out["status"], "MISSED")
+        self.assertFalse(out["calibration_overlap_with_injection"])
+        self.assertTrue(out["false_negative"])
 
     def test_short_prebreak_is_not_eligible(self):
         self.assertEqual(select_ar_model(np.arange(30.0))["status"], "NOT_ELIGIBLE")
