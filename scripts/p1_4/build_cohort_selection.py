@@ -348,6 +348,22 @@ def _assert_manifest_selection(selection: dict[str, Any], manifest: dict[str, An
         raise ValueError("C1_C2_pilot_identity_overlap")
     if selection["c1"]["failure_class_pilot"] != c1["pilot_failure_class_counts"]:
         raise ValueError("C1_pilot_failure_class_counts_differ_from_manifest")
+    minimums = c1.get("pilot_minimum_failure_class_quotas", {
+        "ADF_PASS_KPSS_FAIL": 6,
+        "ADF_FAIL_KPSS_FAIL": 6,
+        "ADF_FAIL_KPSS_PASS": 2,
+    })
+    if any(int(selection["c1"]["failure_class_pilot"].get(key, 0)) < int(value)
+           for key, value in minimums.items()):
+        raise ValueError("C1_pilot_failure_class_minimum_not_met")
+    c2_report = selection.get("C2_STRATIFICATION_REPORT", {})
+    required_c2_strata = {
+        "source", "domain", "length_band", "ar1_abs_band", "missingness_pattern",
+    }
+    if not required_c2_strata.issubset(set(c2_report.get("dimensions", []))):
+        raise ValueError("C2_stratification_report_missing_required_dimension")
+    if c2_report.get("pilot_is_subset_of_sample") is not True:
+        raise ValueError("C2_pilot_not_verified_as_subset_of_sample")
     if selection["c2"]["sample_source_counts"] != c2["sample_source_counts"]:
         raise ValueError("C2_source_counts_differ_from_manifest")
     if selection["c2"]["pilot_source_counts"] != c2["pilot_source_counts"]:
