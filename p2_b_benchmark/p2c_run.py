@@ -166,6 +166,30 @@ def _one_series(item: dict[str, Any], null_replicates: int) -> dict[str, Any]:
     return row
 
 
+def _aggregate_null_phase(rows: list[dict[str, Any]], arm: str, phase: str) -> dict[str, Any] | None:
+    phase_rows = [row for row in rows if row["null_eligible"] and row["null"].get(arm, {}).get("phases", {}).get(phase)]
+    if not phase_rows:
+        return None
+    records = [row["null"][arm]["phases"][phase] for row in phase_rows]
+    valid = sum(int(record["valid_replicates"]) for record in records)
+    abstained = sum(int(record["abstained_replicates"]) for record in records)
+    alarms = sum(int(record["alarm_replicates"]) for record in records)
+    events = sum(int(record["event_count"]) for record in records)
+    probabilities = [record["conditional_alarm_probability"] for record in records if record["conditional_alarm_probability"] is not None]
+    valid_observations = sum(int(row["n"]) * int(row["null"][arm]["phases"][phase]["valid_replicates"]) for row in phase_rows)
+    attempted = sum(int(record["replicates_attempted"]) for record in records)
+    return {
+        "series": len(phase_rows), "replicates_attempted": attempted,
+        "replicates_valid": valid, "replicates_abstained": abstained,
+        "conditional_alarm_probability_pooled": alarms / valid if valid else None,
+        "events_per_replicate_pooled": events / valid if valid else None,
+        "events_per_1000_observations": events / valid_observations * 1000.0 if valid_observations else None,
+        "mean_series_alarm_probability": statistics.mean(probabilities) if probabilities else None,
+        "status": "OK" if valid else "ABSTAIN_ALL_ZERO_QUIET_SCALE",
+        "threshold_tuning_allowed": phase == "development",
+        "interpretation": "holdout diagnostic; thresholds frozen before reveal" if phase == "holdout" else "development diagnostic",
+    }
+
 def _aggregate(rows: list[dict[str, Any]], null_replicates: int) -> dict[str, Any]:
     output: dict[str, Any] = {
         "null": {}, "injected": {}, "observed": {}, "causal": {},
@@ -206,6 +230,10 @@ def _aggregate(rows: list[dict[str, Any]], null_replicates: int) -> dict[str, An
                     ),
                     "status": "OK" if valid else "ABSTAIN_ALL_ZERO_QUIET_SCALE",
                     "interpretation": "conditional stationary-bootstrap diagnostic, not operational FPR",
+                    "phases": {
+                        "development": _aggregate_null_phase(selected, arm, "development"),
+                        "holdout": _aggregate_null_phase(selected, arm, "holdout"),
+                    },
                 }
             for scenario in ("positive_3sigma", "negative_3sigma"):
                 outcomes = [
@@ -301,6 +329,16 @@ def _protocol(null_replicates: int) -> dict[str, Any]:
         "injected_break": f"persistent +/-{SHIFT_SIGMA} x quiet MAD at 70% of series",
         "null_method": f"stationary bootstrap mean block length {NULL_BLOCK_LENGTH}; conditional diagnostic only",
         "null_replicates_per_eligible_series": null_replicates,
+        "seed_ledger": {
+            "derivation": "SHA-256(CHAOS:P2-C:{phase}:{phase_base_seed}:{series_id}) first 64 bits",
+            "development_base_seed": P2C_DEV_BASE_SEED,
+            "development_replicates": null_replicates // 2,
+            "holdout_base_seed": P2C_HOLDOUT_BASE_SEED,
+            "holdout_replicates": null_replicates - (null_replicates // 2),
+            "streams_independent_per_series": True,
+            "holdout_threshold_tuning_allowed": False,
+            "thresholds_frozen_before_holdout": True,
+        },
         "online_arms": list(P2C_VARIANTS),
         "algorithm_versions": P2C_VARIANTS,
         "bartlett_role": "scale estimator within Post-Quiet Huber only; not detector",
