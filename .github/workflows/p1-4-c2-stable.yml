@@ -30,6 +30,13 @@ jobs:
       MKL_NUM_THREADS: "1"
       NUMEXPR_NUM_THREADS: "1"
     steps:
+      - name: Require the dedicated C2 implementation branch
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REF" = "refs/heads/feat/p1-4-c2-stable-generalization-v1" || {
+            echo "C2 dispatch must select feat/p1-4-c2-stable-generalization-v1; got $GITHUB_REF" >&2
+            exit 2
+          }
       - uses: actions/checkout@v4
         with:
           fetch-depth: 1
