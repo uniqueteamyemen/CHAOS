@@ -299,7 +299,8 @@
         "effect_size": "Cohen's dz on the paired per-series difference in mean expected run length (post-break minus pre-break); no time-point independence assumption.",
         "p_value_threshold": 0.05,
         "minimum_gain": "At least +0.05 absolute recall with no P0 worsening, or at least -0.05 absolute P0 with recall loss <=0.10, and series-level p<0.05.",
-        "restrictions": "Do not run Mann-Whitney U/KS over dependent time points. Forecast value is not tested here; that belongs to Engine 2 rolling-origin evaluation."
+        "restrictions": "Do not run Mann-Whitney U/KS over dependent time points. Forecast value is not tested here; that belongs to Engine 2 rolling-origin evaluation.",
+        "replicates": 1000
       }
     },
     "R-FPOP": {
