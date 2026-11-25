@@ -42,6 +42,7 @@ class P14PilotProtocolTests(unittest.TestCase):
 
     def test_protocol_matches_schema_and_is_frozen(self):
         validate_required(self.protocol, self.schema)
+        self.assertEqual(self.protocol["protocol_version"], "1.1.3")
         self.assertEqual(self.protocol["status"], "FROZEN_BEFORE_EXECUTION")
         self.assertTrue(self.protocol["must_not_be_changed_after_pilot_start"])
 
@@ -103,6 +104,42 @@ class P14PilotProtocolTests(unittest.TestCase):
         self.assertIn("250 within-series shuffled controls", b["execution_scope"]["shuffle_diagnostic"])
         self.assertIn("same complete FOCuS null bank", b["execution_scope"]["fusion_null_check"])
         self.assertEqual(b["incremental_value_test"]["replicates"], 1000)
+
+    def test_focus_rearm_overlap_is_invalid_not_false_negative(self):
+        d = self.protocol["injection_design"]
+        guard = d["rearm_overlap_guard"]
+        self.assertEqual(guard["calibration_observations"], 40)
+        self.assertEqual(guard["overlap_outcome"], "INVALID_INJECTION")
+        self.assertIn("exclude from recall", guard["recall_accounting"])
+
+    def test_focus_minimum_n150_is_explicit(self):
+        eligibility = self.protocol["injection_design"]["eligibility"]
+        self.assertEqual(eligibility["min_n_for_focus"], 150)
+        self.assertIn("NOT_ELIGIBLE", eligibility["below_minimum"])
+
+    def test_c1_pilot_guarantees_all_three_failure_mechanisms(self):
+        minimums = self.protocol["cohort_design"]["C1"]["pilot_failure_class_minimums"]
+        self.assertEqual(minimums, {
+            "ADF_PASS_KPSS_FAIL": 6,
+            "ADF_FAIL_KPSS_FAIL": 6,
+            "ADF_FAIL_KPSS_PASS": 2,
+        })
+
+    def test_c2_report_requires_all_stratification_dimensions(self):
+        c2 = self.protocol["cohort_design"]["C2"]
+        required = {"source (Pink Sheet vs GEM)", "domain/sector",
+                    "observation length band", "pre-injection AR(1) absolute band",
+                    "monthly missingness pattern"}
+        self.assertTrue(required.issubset(set(c2["stratification_dimensions"])))
+        self.assertIn("20-series Pilot subset", c2["stratification_report"])
+
+    def test_24_hour_budget_has_partial_pilot_fallback(self):
+        budget = self.protocol["execution"]["implementation_time_budget"]
+        self.assertEqual(budget["maximum_hours"], 24)
+        fallback = budget["partial_fallback"]
+        self.assertEqual((fallback["status"], fallback["series_count"],
+                          fallback["cases_per_series"], fallback["total_cases"]),
+                         ("PILOT_PARTIAL", 10, 19, 190))
 
     def test_c3_is_pending_and_never_silently_substituted(self):
         c3 = self.protocol["cohort_design"]["C3"]
