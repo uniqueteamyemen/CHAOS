@@ -147,7 +147,7 @@
           "evidence_id": "P1.4-INJECTION-RUNNER",
           "status": "RESET_REARM_ADAPTER_CONTRACT_TESTED",
           "validated_role": false,
-          "note": "Reset/rearm adapter uses 40 observations for initial calibration and 20 after each confirmed hit. An injected break in [rearm_start,rearm_end) is marked INVALID_INJECTION and excluded from recall; it is not a detector false negative. Contract tests pass; scientific role remains unvalidated."
+          "note": "Runtime adapter uses 40 initial calibration observations and 20 post-hit rearm observations. Any injected break in a rearm interval is INVALID_INJECTION, excluded from recall and never counted as FN. Contract tests pass; the scientific detector role remains unvalidated pending Track A."
         },
         {
           "evidence_id": "github-actions:45553264606",
@@ -163,9 +163,15 @@
         },
         {
           "evidence_id": "P1.4-REARM-OVERLAP-DIAGNOSTIC",
-          "status": "20_POINT_REARM_VERIFIED_ON_CALIBRATED_PILOT_SERIES",
+          "status": "20_POINT_REARM_VERIFIED_ON_16_CALIBRATED_C1_SERIES",
           "validated_role": false,
-          "note": "At actual calibrated thresholds, window-20 overlap was 0/5 on the original calibratable stratum-106 series (0/30 nested 30%-position injection cases). After the one-time threshold-200 extension, all 11 calibratable stratum-106 series had 0/11 overlap at window 20; the 15 calibratable C1 series across all three strata had 0/15 overlap (0/90 cases). Retain 20; 15 is not required by the measured pilot subset."
+          "note": "At actual frozen per-series thresholds, the 20-point rearm interval overlapped zero of 16 calibrated C1 series at the 30% diagnostic injection point (0/96 nested cases). This is a pre-Pilot coverage diagnostic, not recall or a multi-position result."
+        },
+        {
+          "evidence_id": "P1.4-STRATUM32-ONE-TIME-200-EXTENSION",
+          "status": "ONE_CALIBRATED_TWO_NOT_CALIBRATED_AT_200",
+          "validated_role": false,
+          "note": "Pre-registered threshold 200 applied once to DJI, ECU and HKG using the same deterministic AR(p) development-null streams. ECU calibrated (P0=0.027; one-sided Wilson upper=0.0368); DJI and HKG did not. No threshold 500 or repeat. Results are calibration eligibility only, not detector validation."
         }
       ]
     },
