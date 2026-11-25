@@ -31,6 +31,9 @@ BOCPD_MAX_RUN = 539
 BOCPD_SHORT_RUN_MAX = 3
 BOCPD_SHORT_MASS_THRESHOLD = 0.35
 BOCPD_PERSISTENCE = 3
+BOCPD_MIN_REGIME_SHIFT = 0.75
+BOCPD_REARM_LONG_MASS = 0.80
+BOCPD_REARM_PERSISTENCE = 3
 HUBER_C = 1.345
 HUBER_K = 0.50
 HUBER_THRESHOLD = 12.0
@@ -278,6 +281,7 @@ def bocpd_detector(values: Any, *, quiet_points: int = QUIET_POINTS,
     streak = 0
     candidate: dict[str, Any] | None = None
     armed = True
+    stable_long_streak = 0
     hits: list[dict[str, Any]] = []
     events: list[dict[str, Any]] = []
     posterior_short_run_mass_max = 0.0
@@ -372,18 +376,40 @@ def bocpd_detector(values: Any, *, quiet_points: int = QUIET_POINTS,
         )
         short_mass = float(posterior[short_mask].sum())
         posterior_short_run_mass_max = max(posterior_short_run_mass_max, short_mass)
-        if short_mass >= float(short_mass_threshold):
+        short_mean = (
+            float(np.dot(posterior[short_mask], means[short_mask]) / short_mass)
+            if short_mass > 0 else float(prior_regime_mean)
+        )
+        regime_contrast = short_mean - prior_regime_mean
+
+        # Confirmation requires both short-run posterior mass and a material
+        # posterior regime-mean contrast against the active prior regime. A lone
+        # spike followed by reversion does not satisfy this contrast condition.
+        if (short_mass >= float(short_mass_threshold)
+                and abs(regime_contrast) >= float(BOCPD_MIN_REGIME_SHIFT)):
             if streak == 0:
                 short_indices = np.flatnonzero(short_mask)
                 short_map = int(short_indices[int(np.argmax(posterior[short_mask]))])
                 estimate = max(quiet_points, t - int(run_lengths[short_map]))
-                sign = 1 if y[t] - prior_regime_mean >= 0 else -1
+                sign = 1 if regime_contrast > 0 else -1
                 candidate = {"estimated_change_index": estimate, "sign": sign,
-                             "prior_regime_mean": prior_regime_mean}
+                             "prior_regime_mean": prior_regime_mean,
+                             "posterior_new_regime_mean": short_mean,
+                             "regime_contrast": regime_contrast}
             streak += 1
         else:
             streak = 0
             candidate = None
+
+        long_mass = float(posterior[run_lengths > int(short_run_max)].sum())
+        if not armed:
+            stable_long_streak = (
+                stable_long_streak + 1
+                if long_mass >= float(BOCPD_REARM_LONG_MASS) else 0
+            )
+            if stable_long_streak >= int(BOCPD_REARM_PERSISTENCE):
+                armed = True
+                stable_long_streak = 0
 
         if streak >= int(persistence) and armed and candidate is not None:
             estimate = int(candidate["estimated_change_index"])
@@ -393,6 +419,8 @@ def bocpd_detector(values: Any, *, quiet_points: int = QUIET_POINTS,
                 "estimated_change_index": estimate, "detection_index": t,
                 "posterior_short_run_mass": short_mass,
                 "prior_regime_mean": float(candidate["prior_regime_mean"]),
+                "posterior_new_regime_mean": float(candidate["posterior_new_regime_mean"]),
+                "regime_contrast": float(candidate["regime_contrast"]),
                 "posterior_map_run_length": int(run_lengths[int(np.argmax(posterior))]),
             })
             events.append({
@@ -401,10 +429,9 @@ def bocpd_detector(values: Any, *, quiet_points: int = QUIET_POINTS,
                 "method": "posterior_short_run_length_mass",
             })
             armed = False
+            stable_long_streak = 0
             streak = 0
             candidate = None
-        if short_mass < float(short_mass_threshold) * 0.25:
-            armed = True
 
     return {"status": "OK", "hits": hits, "events": events,
             "event_count": len(events) or len(hits),
@@ -413,6 +440,9 @@ def bocpd_detector(values: Any, *, quiet_points: int = QUIET_POINTS,
                          "short_run_mass_threshold": short_mass_threshold,
                          "short_run_mass_definition": "posterior P(1<=run_length<=short_run_max); excludes r=0",
                          "posterior_short_run_mass_max": float(posterior_short_run_mass_max),
+                         "min_regime_shift": BOCPD_MIN_REGIME_SHIFT,
+                         "rearm_long_mass": BOCPD_REARM_LONG_MASS,
+                         "rearm_persistence": BOCPD_REARM_PERSISTENCE,
                          "persistence": persistence,
                          "predictive": "Normal-Inverse-Gamma Student-t",
                          "direction_reference": "MAP prior-regime predictive mean"}}
