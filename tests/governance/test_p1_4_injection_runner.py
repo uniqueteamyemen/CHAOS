@@ -107,7 +107,7 @@ class P14InjectionRunnerTests(unittest.TestCase):
 
         def fake_focus_detector(segment, *, quiet_points, threshold):
             calls.append((np.asarray(segment, dtype=float).copy(), quiet_points))
-            self.assertEqual(quiet_points, 40 if len(calls) == 1 else 15)
+            self.assertEqual(quiet_points, 40 if len(calls) == 1 else 20)
             self.assertEqual(threshold, 7.0)
             if len(calls) == 1:
                 return {"status": "OK", "hits": [{
@@ -125,22 +125,22 @@ class P14InjectionRunnerTests(unittest.TestCase):
 
         with patch("p2_b_benchmark.p2c_engine.focus_detector", side_effect=fake_focus_detector):
             result = focus_reset_rearm(values, threshold=7.0, quiet_points=40,
-                                       rearm_quiet_points=15)
+                                       rearm_quiet_points=20)
 
-        self.assertEqual([row["detection_index"] for row in result["hits"]], [50, 81])
-        self.assertEqual([row["estimated_change_index"] for row in result["hits"]], [47, 78])
+        self.assertEqual([row["detection_index"] for row in result["hits"]], [50, 86])
+        self.assertEqual([row["estimated_change_index"] for row in result["hits"]], [47, 83])
         self.assertEqual(result["rearm_intervals"], [
-            {"start_inclusive": 51, "end_exclusive": 66},
-            {"start_inclusive": 82, "end_exclusive": 97},
+            {"start_inclusive": 51, "end_exclusive": 71},
+            {"start_inclusive": 87, "end_exclusive": 107},
         ])
         self.assertEqual(result["initial_calibration_observations"], 40)
-        self.assertEqual(result["rearm_calibration_observations"], 15)
+        self.assertEqual(result["rearm_calibration_observations"], 20)
         self.assertEqual(len(calls), 3)
         # Startup uses 40 points; every subsequent reset reserves 15 points.
         self.assertTrue(np.array_equal(calls[1][0], values[51:]))
-        self.assertTrue(np.array_equal(calls[1][0][:15], values[51:66]))
-        self.assertTrue(np.array_equal(calls[2][0], values[82:]))
-        self.assertTrue(np.array_equal(calls[2][0][:15], values[82:97]))
+        self.assertTrue(np.array_equal(calls[1][0][:20], values[51:71]))
+        self.assertTrue(np.array_equal(calls[2][0], values[87:]))
+        self.assertTrue(np.array_equal(calls[2][0][:20], values[87:107]))
 
     def test_rearm_window_is_a_missed_exposure_not_a_removed_case(self):
         intervals = [{"start_inclusive": 101, "end_exclusive": 141}]
