@@ -119,22 +119,26 @@ class P14InjectionRunnerTests(unittest.TestCase):
                     "detection_index": 45, "estimated_change_index": 42,
                     "sign": -1, "score": 9.0,
                 }]}
-            self.fail("unexpected third detector invocation")
+            if len(calls) == 3:
+                return {"status": "OK", "hits": []}
+            self.fail("unexpected fourth detector invocation")
 
         with patch("p2_b_benchmark.p2c_engine.focus_detector", side_effect=fake_focus_detector):
             result = focus_reset_rearm(values, threshold=7.0, quiet_points=40)
 
-        self.assertEqual([row["detection_index"] for row in result["hits"]], [50, 136])
-        self.assertEqual([row["estimated_change_index"] for row in result["hits"]], [47, 133])
+        self.assertEqual([row["detection_index"] for row in result["hits"]], [50, 96])
+        self.assertEqual([row["estimated_change_index"] for row in result["hits"]], [47, 93])
         self.assertEqual(result["rearm_intervals"], [
             {"start_inclusive": 51, "end_exclusive": 91},
-            {"start_inclusive": 137, "end_exclusive": 150},
+            {"start_inclusive": 97, "end_exclusive": 137},
         ])
-        self.assertEqual(len(calls), 2)
-        # The next detector invocation receives only the suffix after the
-        # first hit; its first 40 observations are the new calibration window.
-        self.assertTrue(np.array_equal(calls[1], values[91:]))
-        self.assertTrue(np.array_equal(calls[1][:40], values[91:131]))
+        self.assertEqual(len(calls), 3)
+        # Each new invocation starts immediately after the prior hit. The
+        # detector itself consumes the next 40 observations for recalibration.
+        self.assertTrue(np.array_equal(calls[1], values[51:]))
+        self.assertTrue(np.array_equal(calls[1][:40], values[51:91]))
+        self.assertTrue(np.array_equal(calls[2], values[97:]))
+        self.assertTrue(np.array_equal(calls[2][:40], values[97:137]))
 
     def test_rearm_window_is_a_missed_exposure_not_a_removed_case(self):
         intervals = [{"start_inclusive": 101, "end_exclusive": 141}]
