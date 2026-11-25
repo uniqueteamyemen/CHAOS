@@ -1,0 +1,41 @@
+name: CHAOS P1.4 Capability Contract Gates
+
+on:
+  push:
+    branches:
+      - feat/p1-4-capability-envelope-pilot-v1-20261125
+    paths:
+      - "chaos_governance_kernel/capability_envelope.py"
+      - "p1_4_validation/capability_envelope.json"
+      - "p1_4_validation/capability_envelope.schema.json"
+      - "p1_4_validation/cohort_manifest.json"
+      - "tests/governance/test_p1_4_capability_envelope.py"
+      - ".github/workflows/p1-4-capability-gates.yml"
+  pull_request:
+    branches: [main-phase2]
+    paths:
+      - "chaos_governance_kernel/capability_envelope.py"
+      - "p1_4_validation/**"
+      - "tests/governance/test_p1_4_capability_envelope.py"
+      - ".github/workflows/p1-4-capability-gates.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: chaos-p1-4-capability-gates-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  contract-gates:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Compile capability runtime
+        run: python -m py_compile chaos_governance_kernel/capability_envelope.py
+      - name: Run P1.4 envelope and cohort contract tests
+        run: python -m unittest tests.governance.test_p1_4_capability_envelope -v
