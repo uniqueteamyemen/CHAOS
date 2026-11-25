@@ -29,7 +29,7 @@ def deterministic_seed(
     ar_order: int, phase: str, replicate: int,
 ) -> int:
     """Common seed identity for paired tools; deliberately excludes tool/variant."""
-    if phase not in {"development", "holdout", "shuffle"}:
+    if phase not in {"development", "holdout", "shuffle", "rearm"}:
         raise ValueError("invalid_seed_phase")
     if int(ar_order) not in AR_ORDERS or int(replicate) < 0:
         raise ValueError("invalid_seed_identity")

@@ -1,0 +1,258 @@
+name: CHAOS P1.4 Evidence-First P2-C Pipeline
+
+on:
+  workflow_dispatch:
+    inputs:
+      execution_mode:
+        description: "contract_only runs contract and environment gates only; full_20_series explicitly authorizes the C1 matrix"
+        required: true
+        type: choice
+        default: contract_only
+        options:
+          - contract_only
+          - full_20_series
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: chaos-p1-4-evidence-first-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  contract-gates:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install contract-test dependencies
+        run: |
+          python -m pip install -r real_data_stress_pipeline/requirements.txt
+          python -m pip install arch==7.2.0
+      - name: Run P1.4 runtime, protocol and capability contracts in Actions
+        run: |
+          set -euo pipefail
+          python -m py_compile chaos_governance_kernel/capability_envelope.py p1_4_validation/injection_runner.py p1_4_validation/run_evidence_pipeline.py
+          python -m unittest discover -s tests/governance -p 'test_p1_4_capability_envelope.py' -v
+          python -m unittest discover -s tests/governance -p 'test_p1_4_pilot_protocol.py' -v
+          python -m unittest discover -s tests/governance -p 'test_p1_4_injection_runner.py' -v
+          python -m unittest discover -s tests/governance -p 'test_p1_4_cohort_selection_manifest_binding.py' -v
+
+  calibrate:
+    if: ${{ inputs.execution_mode == 'full_20_series' }}
+    needs: [contract-gates, calibrate-preflight]
+    runs-on: ubuntu-latest
+    timeout-minutes: 355
+    strategy:
+      fail-fast: false
+      max-parallel: 20
+      matrix:
+        include:
+          - {series_id: "gem:CPTOTSAXN:BEN", series_key: "BEN"}
+          - {series_id: "gem:CPTOTSAXN:BLR", series_key: "BLR"}
+          - {series_id: "gem:CPTOTSAXN:BWA", series_key: "BWA"}
+          - {series_id: "gem:CPTOTSAXN:CHL", series_key: "CHL"}
+          - {series_id: "gem:CPTOTSAXN:DEV", series_key: "DEV"}
+          - {series_id: "gem:CPTOTSAXN:DJI", series_key: "DJI"}
+          - {series_id: "gem:CPTOTSAXN:ECU", series_key: "ECU"}
+          - {series_id: "gem:CPTOTSAXN:EDX", series_key: "EDX"}
+          - {series_id: "gem:CPTOTSAXN:HKG", series_key: "HKG"}
+          - {series_id: "gem:CPTOTSAXN:KNA", series_key: "KNA"}
+          - {series_id: "gem:CPTOTSAXN:KOR", series_key: "KOR"}
+          - {series_id: "gem:CPTOTSAXN:LAO", series_key: "LAO"}
+          - {series_id: "gem:CPTOTSAXN:MNG", series_key: "MNG"}
+          - {series_id: "gem:CPTOTSAXN:RWA", series_key: "RWA"}
+          - {series_id: "gem:CPTOTSAXN:SDN", series_key: "SDN"}
+          - {series_id: "gem:CPTOTSAXN:SSP", series_key: "SSP"}
+          - {series_id: "gem:CPTOTSAXN:SUR", series_key: "SUR"}
+          - {series_id: "gem:CPTOTSAXN:TJK", series_key: "TJK"}
+          - {series_id: "gem:CPTOTSAXN:ZAF", series_key: "ZAF"}
+          - {series_id: "gem:DXGSRMRCHNSKD:ECA", series_key: "ECA"}
+    env:
+      PYTHONUNBUFFERED: "1"
+      PYTHONHASHSEED: "0"
+      OMP_NUM_THREADS: "1"
+      OPENBLAS_NUM_THREADS: "1"
+      MKL_NUM_THREADS: "1"
+      NUMEXPR_NUM_THREADS: "1"
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - name: Install pinned pipeline dependencies
+        run: python -m pip install -r real_data_stress_pipeline/requirements.txt
+      - name: Download and SHA-verify frozen inputs
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/p2-g1-shards /tmp/p1-4-inputs
+          fetch_artifact() {
+            local artifact_id="$1" digest="$2" output="$3"
+            curl --fail --location --retry 3 \
+              -H "Authorization: Bearer $GH_TOKEN" \
+              -H "Accept: application/vnd.github+json" \
+              "https://api.github.com/repos/$GITHUB_REPOSITORY/actions/artifacts/$artifact_id/zip" \
+              -o "$output"
+            echo "$digest  $output" | sha256sum --check
+          }
+          fetch_artifact 14857826243 c83f6e960296fbbdb687650a798959f08cb8d98db68de8ca713d7be278e824fe /tmp/p2-prepared.zip
+          fetch_artifact 14995009654 fa67b9c79e5867a0d799c981903e3a44b9b7b680bb2a844a25dfd2a91bf31e0b /tmp/cohort-selection.zip
+          unzip -p /tmp/cohort-selection.zip cohort_selection.json > /tmp/cohort_selection.json
+          echo "9ad27e0c78e3d851ec9f2c02828eadc15567f84fc1ed8f467588bb7d4f42288b  /tmp/cohort_selection.json" | sha256sum --check
+          fetch_artifact 14861808748 6cf04825de2a5e7f6b30f03aad97426fa0392038e84764ee68b52e2f70d5f89c /tmp/g1-0.zip
+          fetch_artifact 14861805478 6f617b240c3c35d68f0295a9e21ebf07e797ff72d3566b984b764491b925c886 /tmp/g1-1.zip
+          fetch_artifact 14862282819 881c40e34838329c1b809257d9c729c56e5304ab20b015bf8b98f656075586d4 /tmp/g1-2.zip
+          fetch_artifact 14860330825 6996d69724f01b1be7ba1660ecc1572e4432802f1aebc21d521e22b58e5a35df /tmp/g1-3.zip
+          unzip -p /tmp/g1-0.zip shard-0.json > /tmp/p2-g1-shards/shard-0.json
+          unzip -p /tmp/g1-1.zip shard-1.json > /tmp/p2-g1-shards/shard-1.json
+          unzip -p /tmp/g1-2.zip shard-2.json > /tmp/p2-g1-shards/shard-2.json
+          unzip -p /tmp/g1-3.zip shard-3.json > /tmp/p2-g1-shards/shard-3.json
+      - name: Calibrate this exact frozen C1 series (1000 development + 1000 holdout)
+        run: |
+          set -euo pipefail
+          python p1_4_validation/run_evidence_pipeline.py \
+            --phase calibrate \
+            --series-id "${{ matrix.series_id }}" \
+            --prepared-zip /tmp/p2-prepared.zip \
+            --manifest p1_4_validation/cohort_manifest.json \
+            --protocol p1_4_validation/pilot_protocol.json \
+            --selection-json /tmp/cohort_selection.json \
+            --g1-shards-dir /tmp/p2-g1-shards \
+            --output "artifacts/p1_4/calibration/${{ matrix.series_key }}" \
+            --budget-hours 5.5
+      - name: Upload this series calibration artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: p1-4-calibration-${{ matrix.series_key }}
+          retention-days: 90
+          if-no-files-found: warn
+          path: artifacts/p1_4/calibration/${{ matrix.series_key }}/
+
+  postprocess:
+    if: ${{ inputs.execution_mode == 'full_20_series' && needs.calibrate.result == 'success' }}
+    needs: [contract-gates, calibrate-preflight, calibrate]
+    if: ${{ always() }} && needs.contract-gates.result == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 355
+    env:
+      PYTHONUNBUFFERED: "1"
+      PYTHONHASHSEED: "0"
+      OMP_NUM_THREADS: "1"
+      OPENBLAS_NUM_THREADS: "1"
+      MKL_NUM_THREADS: "1"
+      NUMEXPR_NUM_THREADS: "1"
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - name: Install postprocessing dependencies
+        run: |
+          python -m pip install -r real_data_stress_pipeline/requirements.txt
+          python -m pip install arch==7.2.0
+      - name: Download per-series calibration artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: p1-4-calibration-*
+          path: artifacts/p1_4/calibration
+          merge-multiple: false
+      - name: Download and SHA-verify frozen postprocessing inputs
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/p2-g1-shards /tmp/p1-4-inputs artifacts/p1_4/evidence
+          fetch_artifact() {
+            local artifact_id="$1" digest="$2" output="$3"
+            curl --fail --location --retry 3 \
+              -H "Authorization: Bearer $GH_TOKEN" \
+              -H "Accept: application/vnd.github+json" \
+              "https://api.github.com/repos/$GITHUB_REPOSITORY/actions/artifacts/$artifact_id/zip" \
+              -o "$output"
+            echo "$digest  $output" | sha256sum --check
+          }
+          fetch_artifact 14857826243 c83f6e960296fbbdb687650a798959f08cb8d98db68de8ca713d7be278e824fe /tmp/p2-prepared.zip
+          fetch_artifact 14995009654 fa67b9c79e5867a0d799c981903e3a44b9b7b680bb2a844a25dfd2a91bf31e0b /tmp/cohort-selection.zip
+          unzip -p /tmp/cohort-selection.zip cohort_selection.json > /tmp/cohort_selection.json
+          echo "9ad27e0c78e3d851ec9f2c02828eadc15567f84fc1ed8f467588bb7d4f42288b  /tmp/cohort_selection.json" | sha256sum --check
+          fetch_artifact 14861808748 6cf04825de2a5e7f6b30f03aad97426fa0392038e84764ee68b52e2f70d5f89c /tmp/g1-0.zip
+          fetch_artifact 14861805478 6f617b240c3c35d68f0295a9e21ebf07e797ff72d3566b984b764491b925c886 /tmp/g1-1.zip
+          fetch_artifact 14862282819 881c40e34838329c1b809257d9c729c56e5304ab20b015bf8b98f656075586d4 /tmp/g1-2.zip
+          fetch_artifact 14860330825 6996d69724f01b1be7ba1660ecc1572e4432802f1aebc21d521e22b58e5a35df /tmp/g1-3.zip
+          unzip -p /tmp/g1-0.zip shard-0.json > /tmp/p2-g1-shards/shard-0.json
+          unzip -p /tmp/g1-1.zip shard-1.json > /tmp/p2-g1-shards/shard-1.json
+          unzip -p /tmp/g1-2.zip shard-2.json > /tmp/p2-g1-shards/shard-2.json
+          unzip -p /tmp/g1-3.zip shard-3.json > /tmp/p2-g1-shards/shard-3.json
+      - name: Run threshold-200, Track B, Rearm and Pilot in fixed order
+        run: |
+          set -euo pipefail
+          python p1_4_validation/run_evidence_pipeline.py \
+            --phase postprocess \
+            --prepared-zip /tmp/p2-prepared.zip \
+            --manifest p1_4_validation/cohort_manifest.json \
+            --protocol p1_4_validation/pilot_protocol.json \
+            --selection-json /tmp/cohort_selection.json \
+            --g1-shards-dir /tmp/p2-g1-shards \
+            --calibration-dir artifacts/p1_4/calibration \
+            --output artifacts/p1_4/evidence \
+            --budget-hours 5.5
+      - name: Write provenance and SHA-256 inventory
+        if: always()
+        run: |
+          set -euo pipefail
+          mkdir -p artifacts/p1_4/evidence
+          {
+            echo "source_commit=$GITHUB_SHA"
+            echo "workflow_run_id=$GITHUB_RUN_ID"
+            echo "workflow_attempt=$GITHUB_RUN_ATTEMPT"
+            echo "protocol_file_sha256=$(sha256sum p1_4_validation/pilot_protocol.json | cut -d' ' -f1)"
+          } > artifacts/p1_4/evidence/execution_provenance.txt
+          find artifacts/p1_4/evidence -type f ! -name SHA256SUMS.txt -print0 \
+            | sort -z | xargs -0 -r sha256sum > artifacts/p1_4/evidence/SHA256SUMS.txt
+      - name: Upload original P2-C evidence bundle
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: chaos-p1-4-evidence-${{ github.run_id }}-${{ github.run_attempt }}
+          retention-days: 90
+          if-no-files-found: warn
+          path: artifacts/p1_4/evidence/
+  calibrate-preflight:
+    needs: contract-gates
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install pinned Track B dependency
+        run: |
+          python -m pip install -r real_data_stress_pipeline/requirements.txt
+          python -m pip install arch==7.2.0
+      - name: Verify arch import, bytecode compilation and CLI
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import arch
+          from arch import arch_model
+          assert arch.__version__ == "7.2.0", arch.__version__
+          print(f"arch=={arch.__version__}: import PASS")
+          PY
+          python -m py_compile p1_4_validation/injection_runner.py p1_4_validation/run_evidence_pipeline.py
+          python p1_4_validation/run_evidence_pipeline.py --help
