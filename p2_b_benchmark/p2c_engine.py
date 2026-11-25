@@ -473,16 +473,13 @@ def bocpd_detector(values: Any, *, quiet_points: int = QUIET_POINTS,
             segment = y[estimate:t + 1]
             segment_n = int(segment.size)
             segment_mean = float(np.mean(segment))
-            segment_sum = float(np.sum(segment))
             segment_ss = float(np.sum((segment - segment_mean) ** 2))
             new_kappa = kappa0 + segment_n
-            new_mean = (kappa0 * mu0 + segment_sum) / new_kappa
+            # Reseed around the confirmed segment's local level. The distance
+            # from the historical quiet centre is a regime shift, not variance.
+            new_mean = segment_mean
             new_alpha = alpha0 + segment_n / 2.0
-            new_beta = (
-                beta0 + 0.5 * segment_ss
-                + (kappa0 * segment_n * (segment_mean - mu0) ** 2)
-                  / (2.0 * new_kappa)
-            )
+            new_beta = beta0 + 0.5 * segment_ss
             posterior = np.array([1.0], dtype=float)
             means = np.array([new_mean], dtype=float)
             kappas = np.array([new_kappa], dtype=float)
@@ -509,7 +506,9 @@ def bocpd_detector(values: Any, *, quiet_points: int = QUIET_POINTS,
                          "persistence": persistence,
                          "predictive": "Normal-Inverse-Gamma Student-t",
                          "reset_prior_center": "active previous regime posterior mean",
-                         "direction_reference": "MAP prior-regime predictive mean"}}
+                         "direction_reference": "MAP prior-regime predictive mean",
+                          **({"posterior_diagnostic_tail": posterior_diagnostic_tail}
+                             if diagnostics else {})}}
 
 
 def post_quiet_huber_detector(values: Any, *, scale_mode: str = "mad",
