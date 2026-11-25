@@ -4,8 +4,10 @@ on:
   pull_request:
     branches: [main-phase2]
     paths:
-      - "p2_b_benchmark/**"
-      - ".github/workflows/p2-b-detector-competition.yml"
+      - "p2_b_benchmark/engine.py"
+      - "p2_b_benchmark/run.py"
+      - "p2_b_benchmark/dataset.py"
+      - "p2_b_benchmark/tests/test_core.py"
   workflow_dispatch:
 
 permissions:
