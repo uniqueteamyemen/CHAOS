@@ -7,6 +7,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 PROTOCOL = ROOT / "p1_4_validation" / "pilot_protocol.json"
 SCHEMA = ROOT / "p1_4_validation" / "pilot_protocol.schema.json"
+MANIFEST = ROOT / "p1_4_validation" / "cohort_manifest.json"
 
 
 def validate_required(value, schema, path="$"):
@@ -34,177 +35,137 @@ def validate_required(value, schema, path="$"):
         raise ValueError(f"{path}:string")
 
 
+def all_strings(value):
+    if isinstance(value, dict):
+        for key, child in value.items():
+            yield from all_strings(key)
+            yield from all_strings(child)
+    elif isinstance(value, list):
+        for child in value:
+            yield from all_strings(child)
+    elif isinstance(value, str):
+        yield value
+
+
 class P14PilotProtocolTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.protocol = json.loads(PROTOCOL.read_text(encoding="utf-8"))
         cls.schema = json.loads(SCHEMA.read_text(encoding="utf-8"))
+        cls.manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
 
-    def test_protocol_matches_schema_and_is_frozen(self):
+    def test_protocol_matches_schema_and_is_unstarted(self):
         validate_required(self.protocol, self.schema)
-        self.assertEqual(self.protocol["protocol_version"], "1.1.8")
+        self.assertEqual(self.protocol["protocol_version"], "1.1.9")
         self.assertEqual(self.protocol["status"], "FROZEN_BEFORE_EXECUTION")
         self.assertTrue(self.protocol["must_not_be_changed_after_pilot_start"])
+        self.assertEqual(self.protocol["execution"]["pilot_scope_change"]["actual"], "NOT_STARTED")
 
-    def test_exact_40_series_and_760_cases_are_bound_to_manifest(self):
-        m = json.loads((ROOT / "p1_4_validation" / "cohort_manifest.json").read_text(encoding="utf-8"))
-        pilot = m["pilot_scope"]
-        self.assertEqual((pilot["series_count"], pilot["run_cases"]), (40, 760))
-        self.assertEqual(self.protocol["cohort_design"]["pilot_scope"]["verified_series_count"], 40)
-        self.assertEqual(self.protocol["cohort_design"]["pilot_scope"]["total_run_cases"], 760)
+    def test_40_series_760_cases_are_selection_only_not_pilot_execution(self):
+        manifest_scope = self.manifest["pilot_scope"]
+        selected_frame = self.protocol["cohort_design"]["selected_cohort_frame"]
+        self.assertEqual((manifest_scope["series_count"], manifest_scope["run_cases"]), (40, 760))
+        self.assertEqual(selected_frame["selection_series_count"], 40)
+        self.assertEqual(selected_frame["source_selection_case_count"], 760)
+        self.assertEqual(selected_frame["status"], "VERIFIED_SELECTION_ARTIFACT_NOT_EXECUTED")
+        track_a = self.protocol["execution"]["diagnostic_tracks"]["track_A"]
+        self.assertEqual(track_a["maximum_series_count"], 15)
+        self.assertEqual(track_a["maximum_cases"], 285)
+        self.assertEqual(track_a["eligible_series_count"], None)
 
-    def test_null_p0_and_arl0_are_separate(self):
-        n = self.protocol["ar_null_and_calibration"]
-        self.assertEqual(n["synthetic_null_fpr"]["target"], 0.10)
-        self.assertEqual(n["traces_per_series_per_position"]["development"], 1000)
-        self.assertEqual(n["traces_per_series_per_position"]["holdout"], 1000)
-        self.assertEqual(n["arl0"]["reference_grid"], [500, 1000, 2000])
-        self.assertIn("Never infer P0 from 1/ARL0", n["arl0"]["rule"])
-
-    def test_all_injection_directions_positions_and_magnitudes_are_frozen(self):
-        d = self.protocol["injection_design"]
-        self.assertEqual(d["magnitudes_sigma"], [0.5, 1.0, 2.0])
-        self.assertEqual(d["positions_fraction"], [0.3, 0.5, 0.7])
-        self.assertEqual(d["directions"], [-1, 1])
-        self.assertEqual(d["injected_case_count_per_series"], 18)
-        self.assertEqual(d["total_run_count_per_series_including_original"], 19)
-
-    def test_original_burden_and_null_fpr_are_independent_measures(self):
-        m = self.protocol["measurements"]
-        self.assertIn("Descriptive burden only", m["original_alarm_burden"]["interpretation"])
-        self.assertIn("P0 per series", m["synthetic_null_fpr"])
-
-    def test_cost_delay_is_explicitly_normalized(self):
-        c = self.protocol["measurements"]["cost_weighted_diagnostic"]
-        self.assertIn("divided by the exact series horizon n", c["normalized_mean_delay"])
-
-    def test_r_fpop_one_to_one_and_penalty_freeze_are_explicit(self):
-        r = self.protocol["tool_protocols"]["R-FPOP"]
-        self.assertIn("One-to-one assignment", r["matching"]["rule"])
-        self.assertIn("Freeze penalty per series before holdout", r["penalty_calibration"]["freeze"])
-
-    def test_bocpd_three_comparison_arms_and_series_level_permutation(self):
-        b = self.protocol["tool_protocols"]["BOCPD"]
-        self.assertEqual(len(b["comparison_arms"]), 3)
-        self.assertEqual(b["incremental_value_test"]["replicates"], 1000)
-        self.assertIn("Cohen's dz", b["incremental_value_test"]["effect_size"])
-
-    def test_calibration_grids_are_frozen_and_null_paths_are_paired(self):
-        n = self.protocol["ar_null_and_calibration"]
-        self.assertEqual(n["threshold_grids"]["FOCuS"], [15, 20, 25, 30, 35, 40, 45, 50, 60, 75, 90])
-        self.assertEqual(n["threshold_grids"]["POST_QUIET_HUBER_MAD"], [4, 6, 8, 10, 12, 14, 16, 20, 24, 32])
-        self.assertIn("MAD and Bartlett variants receive identical paths", n["null_seed_streams"])
-        self.assertIn("identical", n["paired_paths_rule"])
-
-    def test_bocpd_is_feature_generator_not_independent_p0_detector(self):
-        scope = self.protocol["ar_null_and_calibration"]["traces_per_series_per_position"]["tool_scope"]
-        self.assertIn("BOCPD", scope["feature_generator_excluded_from_independent_P0"])
-        b = self.protocol["tool_protocols"]["BOCPD"]
-        self.assertTrue(b["execution_scope"]["no_independent_detector_role"])
-        self.assertIn("250 within-series shuffled controls", b["execution_scope"]["shuffle_diagnostic"])
-        self.assertIn("same complete FOCuS null bank", b["execution_scope"]["fusion_null_check"])
-        self.assertEqual(b["incremental_value_test"]["replicates"], 1000)
-
-    def test_focus_rearm_overlap_is_invalid_not_false_negative(self):
-        d = self.protocol["injection_design"]
-        guard = d["rearm_overlap_guard"]
-        self.assertEqual(guard["initial_calibration_observations"], 40)
-        self.assertEqual(guard["rearm_calibration_observations"], 20)
-        self.assertEqual(guard["overlap_outcome"], "INVALID_INJECTION")
-        self.assertIn("exclude from recall", guard["recall_accounting"])
-        policy = d["guard_window_policy"]
-        self.assertEqual(policy["min_observations_between_last_rearm_and_injection"], 20)
-        self.assertEqual(self.protocol["injection_design"]["rearm_overlap_guard"]["measured_calibrated_pilot_overlap"]["original_five_stratum_106"]["rate"], 0)
-        self.assertEqual(self.protocol["injection_design"]["rearm_overlap_guard"]["measured_calibrated_pilot_overlap"]["extended_eleven_stratum_106"]["rate"], 0)
-        self.assertEqual(self.protocol["injection_design"]["rearm_overlap_guard"]["measured_calibrated_pilot_overlap"]["all_fifteen_calibrated_c1"]["rate"], 0)
-
-    def test_focus_minimum_n150_is_explicit(self):
-        eligibility = self.protocol["injection_design"]["eligibility"]
-        self.assertEqual(eligibility["min_n_for_focus"], 150)
-        self.assertIn("NOT_ELIGIBLE", eligibility["below_minimum"])
-
-    def test_c1_pilot_guarantees_all_three_failure_mechanisms(self):
-        power = self.protocol["cohort_design"]["C1"]["pre_registered_power_analysis"]
-        self.assertEqual(power["stratum_106"]["n_series"], 12)
-        self.assertEqual(power["stratum_32"]["n_series"], 6)
-        self.assertEqual(power["stratum_9"]["n_series"], 2)
-        self.assertIn("anecdotal_must_not_drive_decision", power["stratum_9"]["findings"])
-        minimums = self.protocol["cohort_design"]["C1"]["pilot_failure_class_minimums"]
-        self.assertEqual(minimums, {
-            "ADF_PASS_KPSS_FAIL": 6,
+    def test_pilot_is_c1_only_and_never_exceeds_15_series(self):
+        execution = self.protocol["execution"]
+        track_a = execution["diagnostic_tracks"]["track_A"]
+        self.assertEqual(track_a["candidate_series_count"], 20)
+        self.assertEqual(track_a["candidate_strata"], {
+            "ADF_PASS_KPSS_FAIL": 12,
             "ADF_FAIL_KPSS_FAIL": 6,
             "ADF_FAIL_KPSS_PASS": 2,
         })
+        self.assertIn("C1-only", track_a["rule"])
+        self.assertIn("No C2", execution["pilot_start_gate"])
+        self.assertEqual(execution["implementation_time_budget"]["partial_fallback"]["status"], "NOT_RUN")
 
-    def test_c2_report_requires_all_stratification_dimensions(self):
-        c2 = self.protocol["cohort_design"]["C2"]
-        required = {"source (Pink Sheet vs GEM)", "domain/sector",
-                    "observation length band", "pre-injection AR(1) absolute band",
-                    "monthly missingness pattern"}
-        self.assertTrue(required.issubset(set(c2["stratification_dimensions"])))
-        self.assertIn("20-series Pilot subset", c2["stratification_report"])
-        frame = c2["sampling_frame_explanation"]
-        self.assertEqual(frame["frame_count"], 362)
-        self.assertEqual(frame["composition"], {"gem_g1_pass": 311, "pink_sheet": 51})
-        self.assertIn("not the full 509-series universe", frame["frame"])
-
-    def test_24_hour_budget_has_partial_pilot_fallback(self):
-        budget = self.protocol["execution"]["implementation_time_budget"]
-        self.assertEqual(budget["maximum_hours"], 24)
-        fallback = budget["partial_fallback"]
-        self.assertEqual((fallback["status"], fallback["series_count"],
-                          fallback["cases_per_series"], fallback["total_cases"]),
-                         ("PILOT_PARTIAL", 15, 19, 285))
-
-    def test_stratum_32_threshold_200_extension_is_once_only_and_pre_registered(self):
-        extension = self.protocol["cohort_design"]["C1"]["grid_extension_stratum_32"]
-        self.assertTrue(extension["pre_registered"])
-        self.assertEqual(extension["test_threshold"], 200)
+    def test_threshold_90_is_not_run_and_threshold_200_is_one_time_stratum_106_only(self):
+        extension = self.protocol["execution"]["pre_registered_grid_extension"]
+        self.assertEqual(extension["execution_status"], "NOT_RUN")
+        self.assertEqual(extension["threshold"], 200)
+        self.assertEqual(extension["position_fraction"], 0.30)
+        self.assertEqual(extension["threshold_90_baseline"]["status"], "NOT_RUN")
+        self.assertEqual(extension["threshold_90_baseline"]["planned_series_count"], 20)
+        self.assertEqual(extension["stratum_106"]["expected_series_count"], 7)
+        threshold_200 = extension["stratum_106"]["threshold_200_test"]
+        self.assertEqual(threshold_200["status"], "NOT_RUN")
+        self.assertIsNone(threshold_200["actual_series_count"])
+        self.assertTrue(threshold_200["planned_once"])
+        self.assertIn("Reuse the exact", extension["stratum_106"]["max_statistics_reuse"])
         self.assertFalse(extension["allowed_to_repeat"])
-        self.assertEqual(extension["series"], [
-            "gem:CPTOTSAXN:DJI",
-            "gem:CPTOTSAXN:ECU",
-            "gem:CPTOTSAXN:HKG",
-        ])
-        self.assertIn("threshold 500", " ".join(extension["forbidden"]))
+        self.assertFalse(extension["threshold_500_tested"])
+        self.assertNotIn("stratum_32", extension)
 
-    def test_track_b_is_pre_registered_no_injection_diagnostic(self):
+    def test_rearm_measurement_has_no_unverified_rate(self):
+        measurement = self.protocol["injection_design"]["rearm_overlap_guard"]["empirical_overlap_measurement"]
+        self.assertEqual(measurement["status"], "NOT_RUN")
+        self.assertEqual(measurement["traces_per_series_per_position"], 1000)
+        self.assertEqual(measurement["phase"], "holdout")
+        self.assertEqual(measurement["positions"], [0.3, 0.5, 0.7])
+        self.assertIsNone(measurement["trace_count"])
+        self.assertIsNone(measurement["overlap_trace_count"])
+        self.assertIsNone(measurement["overlap_rate"])
+        self.assertIsNone(measurement["run_id"])
+        self.assertIsNone(measurement["artifact_sha256"])
+        self.assertIn("not injected-break recall", measurement["interpretation"])
+
+    def test_injection_and_rearm_contract_remain_40_20_and_min_n_150(self):
+        injection = self.protocol["injection_design"]
+        self.assertEqual(injection["baseline"]["calibration_observations"], 40)
+        self.assertEqual(injection["rearm_quiet_points"], 20)
+        self.assertEqual(injection["eligibility"]["min_n_for_focus"], 150)
+        guard = injection["rearm_overlap_guard"]
+        self.assertEqual(guard["rearm_calibration_observations"], 20)
+        self.assertEqual(guard["overlap_outcome"], "INVALID_INJECTION")
+        self.assertIn("exclude from recall", guard["recall_accounting"])
+
+    def test_track_b_contains_only_artifact_derived_noncalibratable_c1_series(self):
         track = self.protocol["execution"]["track_b_protocol"]
         self.assertTrue(track["no_injections"])
+        self.assertTrue(track["no_parameter_changes"])
+        self.assertEqual(track["status"], "PRE_REGISTERED_DIAGNOSTIC_ONLY_NOT_RUN")
+        self.assertIn("Exact IDs and counts must be derived", track["targets"])
+        self.assertIn("Artifact-derived calibration status only", track["selection_source"])
         names = {row["name"] for row in track["measurements"]}
         self.assertIn("GARCH(1,1)", names)
         self.assertIn("FOCuS null-statistic distribution", names)
         self.assertIn("Historical-break candidates", names)
-        self.assertTrue(track["no_post_hoc_changes"])
+        self.assertNotIn("Calibrated comparison", names)
 
-    def test_reduced_track_a_scope_is_16_series_304_cases_not_original_40(self):
-        a = self.protocol["execution"]["diagnostic_tracks"]["track_A"]
-        b = self.protocol["execution"]["diagnostic_tracks"]["track_B"]
-        self.assertEqual(a["status"], "NOT_STARTED_CALIBRATION_ARTIFACT_REQUIRED")
-        self.assertEqual(a["candidate_strata"], {"ADF_PASS_KPSS_FAIL": 12, "ADF_FAIL_KPSS_FAIL": 6, "ADF_FAIL_KPSS_PASS": 2})
-        self.assertEqual(b["status"], "NOT_STARTED")
-        scope = self.protocol["execution"]["pilot_scope_change"]
-        self.assertEqual(scope["actual"], "NOT_STARTED")
-        self.assertEqual(scope["track_b"], "4_series_0_injection_cases")
+    def test_c2_is_preserved_as_reference_not_used_in_partial_pilot(self):
+        c2 = self.protocol["cohort_design"]["C2"]
+        self.assertEqual(c2["sampling_frame_count"], 362)
+        self.assertIn("No C2 performance conclusion", c2["scope_note"])
+        track_a = self.protocol["execution"]["diagnostic_tracks"]["track_A"]
+        self.assertIn("C1-only", track_a["rule"])
 
-    def test_threshold_200_was_applied_to_ten_series_once_only(self):
-        extension = self.protocol["execution"]["pre_registered_grid_extension"]
-        self.assertEqual(extension["execution_status"], "NOT_RUN")
-        self.assertEqual(extension["stratum_32"]["threshold_200_test"]["status"], "NOT_RUN")
-        self.assertIsNone(extension["stratum_32"]["threshold_200_test"]["series_count"])
-        self.assertEqual(extension["threshold_500_tested"], False)
-        self.assertFalse(extension["allowed_to_repeat"])
-        self.assertFalse(extension["threshold_500_tested"])
+    def test_unverifiable_historical_numeric_claims_are_absent(self):
+        text = " ".join(all_strings(self.protocol)).lower()
+        forbidden = (
+            "11 calibrated",
+            "seven original stratum-106",
+            "16_series_304_cases",
+            "measured_calibrated_pilot_overlap",
+            "gem:cptotsaxn:sur",
+            "protocol 1.1.3",
+            "stratum_32",
+        )
+        for phrase in forbidden:
+            self.assertNotIn(phrase, text)
 
-    def test_pilot_scope_change_is_explicit(self):
-        scope = self.protocol["execution"]["pilot_scope_change"]
-        self.assertEqual(scope["original"], "40_series_760_cases")
-        self.assertEqual((scope["planned_series"], scope["planned_cases"]), (40, 760))
-
-    def test_c3_is_pending_and_never_silently_substituted(self):
-        c3 = self.protocol["cohort_design"]["C3"]
-        self.assertFalse(c3["included"])
-        self.assertTrue(c3["no_substitute_cohort"])
+    def test_partial_c1_evidence_cannot_be_full_validation_or_rejection(self):
+        decision = self.protocol["decision_rules"]["cohort_decisions"]["C1_ONLY_PARTIAL"]
+        text = " ".join(all_strings(decision)).lower()
+        self.assertIn("must not be labeled validated", text)
+        self.assertIn("must not be labeled locked_rejected", text)
+        self.assertIn("must not claim c2 validation", text)
 
 
 if __name__ == "__main__":

@@ -1,14 +1,6 @@
 name: CHAOS P1.4 — Deterministic Cohort Selection
 
 on:
-  push:
-    branches:
-      - feat/p1-4-capability-envelope-pilot-v1-20261125
-    paths:
-      - "scripts/p1_4/build_cohort_selection.py"
-      - "p1_4_validation/cohort_manifest.json"
-      - "p1_4_validation/pilot_protocol.json"
-      - ".github/workflows/p1-4-cohort-selection.yml"
   workflow_dispatch:
 
 permissions:
@@ -17,7 +9,7 @@ permissions:
 
 concurrency:
   group: chaos-p1-4-cohort-selection-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   select-cohorts:

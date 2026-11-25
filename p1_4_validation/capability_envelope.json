@@ -100,7 +100,6 @@
         "point_in_time_prefix_only",
         "minimum_150_observations_for_focus_pilot",
         "40_initial_calibration_observations",
-        "40_initial_calibration_observations",
         "20_post_hit_rearm_calibration_observations",
         "min_n_for_focus_150_runtime_rejection"
       ],
@@ -140,9 +139,9 @@
       "validation_history": [
         {
           "evidence_id": "P1.4-DESIGN",
-          "status": "CONTRACT_ONLY",
+          "status": "DESIGN_CONSTRAINTS_DECLARED",
           "validated_role": false,
-          "note": "Reset/rearm and per-series P0 calibration are mandatory but the execution adapter is not implemented yet."
+          "note": "Design-stage constraints only; superseded by the separate reset/rearm adapter contract evidence below. This entry is not scientific validation."
         },
         {
           "evidence_id": "P1.4-INJECTION-RUNNER",
@@ -164,9 +163,9 @@
         },
         {
           "evidence_id": "P1.4-CORRECTION-2026-11-25",
-          "status": "CALIBRATION_AND_OVERLAP_EMPIRICAL_RESULTS_NOT_ESTABLISHED",
+          "status": "UNSUPPORTED_EMPIRICAL_CLAIMS_REVOKED",
           "validated_role": false,
-          "note": "The 11/12, threshold-200 outcomes and empirical overlap rates were sourced from deleted hand-authored JSON without a GitHub run, original artifact SHA-256 or replay command. They are revoked and are not evidence. Runtime contract tests do not establish empirical calibration or overlap."
+          "note": "Previously circulated calibration and rearm-overlap outcomes came from hand-authored JSON without an originating GitHub Actions run, original artifact SHA-256, or replay command. Those claims are revoked. No empirical calibration outcome or overlap rate is established."
         }
       ]
     },
