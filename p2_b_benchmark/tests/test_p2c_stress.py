@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import math
+import resource
 import time
 import unittest
 
@@ -202,6 +203,9 @@ class P2CStressSuite(unittest.TestCase):
         ))
         self.assertNotIn("origin_trace", segmentation["metadata"])
         self.assertLessEqual(r_fpop_runtime_probe(539)["elapsed_seconds"], 10.0)
+        # Linux ru_maxrss is reported in KiB; keep the 539-point/99-replicate
+        # stress process below a bounded 512 MiB high-water mark.
+        self.assertLess(resource.getrusage(resource.RUSAGE_SELF).ru_maxrss, 512 * 1024)
 
 
 class AlgorithmReferenceTests(unittest.TestCase):
