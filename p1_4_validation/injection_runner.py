@@ -276,7 +276,7 @@ def evaluate_online_hits(
             "uncovered_by_rearm": True,
             "calibration_overlap_with_injection": True,
             "excluded_from_recall": True,
-            "invalid_reason": "INJECTION_FELL_INSIDE_FOCU S_REARM_CALIBRATION_WINDOW".replace(" ", ""),
+            "invalid_reason": "INJECTION_FELL_INSIDE_FOCUS_REARM_CALIBRATION_WINDOW",
         }
     selected = None if not correct else min(correct, key=lambda row: int(row["detection_index"]))
     status = "DETECTED" if selected else "MISSED"
