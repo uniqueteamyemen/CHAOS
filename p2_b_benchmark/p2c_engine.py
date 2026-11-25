@@ -78,9 +78,12 @@ def _validate_series(values: Any, quiet_points: int = QUIET_POINTS) -> np.ndarra
     x = np.asarray(values, dtype=float)
     if x.ndim != 1 or not np.all(np.isfinite(x)):
         raise ValueError("p2c_series_must_be_finite_1d")
-    if x.size <= quiet_points:
-        raise ValueError("p2c_series_too_short_for_quiet_calibration")
     return x
+
+
+def _abstain_result(reason: str, **metadata: Any) -> dict[str, Any]:
+    return {"status": "ABSTAIN", "abstain_reason": reason,
+            "hits": [], "events": [], "event_count": 0, "metadata": metadata}
 
 
 def bartlett_lrv_scale(values: Any, bandwidth: int | None = None) -> dict[str, Any]:
@@ -143,6 +146,9 @@ def focus_detector(values: Any, *, quiet_points: int = QUIET_POINTS,
     by exact root splitting. This is functional pruning, not a fixed window scan.
     """
     x = _validate_series(values, quiet_points)
+    if x.size <= quiet_points:
+        return _abstain_result("INSUFFICIENT_QUIET_WINDOW",
+                               observations=int(x.size), required=quiet_points + 1)
     q = x[:quiet_points]
     scale = mad_sigma(q)
     if not math.isfinite(scale) or scale <= 0:
@@ -229,6 +235,9 @@ def bocpd_detector(values: Any, *, quiet_points: int = QUIET_POINTS,
     regime mean, not the original quiet centre.
     """
     x = _validate_series(values, quiet_points)
+    if x.size <= quiet_points:
+        return _abstain_result("INSUFFICIENT_QUIET_WINDOW",
+                               observations=int(x.size), required=quiet_points + 1)
     q = x[:quiet_points]
     scale = mad_sigma(q)
     if not math.isfinite(scale) or scale <= 0:
@@ -363,6 +372,9 @@ def post_quiet_huber_detector(values: Any, *, scale_mode: str = "mad",
                               max_events: int = HUBER_MAX_EVENTS) -> dict[str, Any]:
     """Two-sided sequential Huber score with MAD or Bartlett-LRV scale."""
     x = _validate_series(values, quiet_points)
+    if x.size <= quiet_points:
+        return _abstain_result("INSUFFICIENT_QUIET_WINDOW",
+                               observations=int(x.size), required=quiet_points + 1)
     quiet = x[:quiet_points]
     center = float(np.median(quiet))
     mad = mad_sigma(quiet)
@@ -530,6 +542,12 @@ def run_p2c_all(values: Any, *, causal_audit: bool = False,
                 quiet_points: int = QUIET_POINTS) -> dict[str, Any]:
     """Run the two frozen A baselines plus only the online P2-C entrants."""
     x = _validate_series(values, quiet_points)
+    if x.size <= quiet_points:
+        return {
+            arm: _abstain_result("INSUFFICIENT_QUIET_WINDOW",
+                                 observations=int(x.size), required=quiet_points + 1)
+            for arm in P2C_VARIANTS
+        }
     quiet_scale = mad_sigma(x[:quiet_points])
     if not math.isfinite(quiet_scale) or quiet_scale <= 0:
         return {
@@ -662,6 +680,9 @@ def r_fpop_segment(values: Any, *, quiet_points: int = QUIET_POINTS,
     index: the earliest prefix whose optimal last-segment origin equals it.
     """
     x = _validate_series(values, quiet_points)
+    if x.size <= quiet_points:
+        return {"status": "ABSTAIN", "abstain_reason": "INSUFFICIENT_QUIET_WINDOW",
+                "breakpoints": [], "metadata": {"loss": "Huber", "observations": int(x.size)}}
     scale = mad_sigma(x[:quiet_points])
     if not math.isfinite(scale) or scale <= 0:
         return {"status": "ABSTAIN", "abstain_reason": "ZERO_QUIET_SCALE",
