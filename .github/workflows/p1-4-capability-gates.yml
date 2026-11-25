@@ -1,0 +1,61 @@
+name: CHAOS P1.4 Capability Contract Gates
+
+on:
+  push:
+    branches:
+      - feat/p1-4-capability-envelope-pilot-v1
+    paths:
+      - "chaos_governance_kernel/capability_envelope.py"
+      - "cohorts/p1_4/cohort_manifest.json"
+      - "tests/governance/test_capability_envelope.py"
+      - ".github/workflows/p1-4-capability-gates.yml"
+  pull_request:
+    branches:
+      - main-phase2
+    paths:
+      - "chaos_governance_kernel/capability_envelope.py"
+      - "cohorts/p1_4/cohort_manifest.json"
+      - "tests/governance/test_capability_envelope.py"
+      - ".github/workflows/p1-4-capability-gates.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: chaos-p1-4-capability-gates-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  contract-gates:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Verify frozen C1 cohort manifest
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          path = Path("cohorts/p1_4/cohort_manifest.json")
+          doc = json.loads(path.read_text(encoding="utf-8"))
+          c1 = doc["cohorts"]["C1"]
+          ids = c1["series_ids"]
+          assert c1["status"] == "VERIFIED"
+          assert c1["original_count_claimed"] == 147
+          assert c1["verified_count"] == 147
+          assert len(ids) == 147 and len(set(ids)) == 147
+          assert c1["criterion_breakdown"]["g1_fail_total"] == 147
+          assert c1["criterion_breakdown"]["adf_pass_kpss_fail"] == 106
+          assert c1["criterion_breakdown"]["adf_fail_kpss_fail"] == 32
+          assert c1["criterion_breakdown"]["adf_fail_kpss_pass"] == 9
+          assert doc["cohorts"]["C2"]["status"] == "PENDING"
+          assert doc["cohorts"]["C3"]["status"] == "PENDING_EXTERNAL_EVIDENCE"
+          print("C1 identity and G1 criterion verified: 147 unique IDs")
+          PY
+      - name: Compile executable capability envelope
+        run: python -m py_compile chaos_governance_kernel/capability_envelope.py
+      - name: Run capability contract tests
+        run: python -m unittest discover -s tests/governance -p 'test_capability_envelope.py' -v
