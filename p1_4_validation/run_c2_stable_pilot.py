@@ -239,11 +239,38 @@ def calibrate_one(sid: str, ctx: dict[str, Any], out: Path, deadline: float) -> 
 
 def load_calibrations(folder: Path, ctx: dict[str, Any]) -> dict[str, dict[str, Any]]:
     rows: dict[str, dict[str, Any]] = {}
+    job_manifests: dict[str, dict[str, Any]] = {}
+    manifest_paths = sorted(Path(folder).rglob("calibration_job_manifest.json"))
+    for manifest_path in manifest_paths:
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        sid = str(manifest.get("series_id"))
+        if sid in job_manifests:
+            raise ValueError(f"C2_DUPLICATE_CALIBRATION_JOB_MANIFEST:{sid}")
+        if manifest.get("artifact_type") != "P1_4_C2_CALIBRATION_JOB":
+            raise ValueError(f"C2_CALIBRATION_JOB_MANIFEST_TYPE_MISMATCH:{sid}")
+        if manifest.get("cohort") != "C2" or sid not in ctx["c2_ids"]:
+            raise ValueError(f"C2_CALIBRATION_JOB_MANIFEST_SCOPE_MISMATCH:{sid}")
+        if manifest.get("protocol_sha256") != ctx["source_sha256"]["protocol"]:
+            raise ValueError(f"C2_CALIBRATION_JOB_PROTOCOL_MISMATCH:{sid}")
+        if manifest.get("candidate_sha256") != ctx["candidate_hashes"][sid]:
+            raise ValueError(f"C2_CALIBRATION_JOB_CANDIDATE_MISMATCH:{sid}")
+        if manifest.get("status") != "COMPLETE":
+            raise ValueError(f"C2_CALIBRATION_JOB_NOT_COMPLETE:{sid}")
+        series_path = manifest_path.parent / f"series-{base.safe_id(sid)}.json"
+        if not series_path.is_file():
+            raise ValueError(f"C2_CALIBRATION_SERIES_FILE_MISSING:{sid}")
+        actual_sha = base.sha_file(series_path)
+        if actual_sha != manifest.get("artifact_sha256"):
+            raise ValueError(f"C2_CALIBRATION_SERIES_SHA_MISMATCH:{sid}")
+        job_manifests[sid] = manifest
+
     for path in sorted(Path(folder).rglob("series-*.json")):
         row = json.loads(path.read_text(encoding="utf-8"))
         sid = str(row.get("series_id"))
         if sid in rows:
             raise ValueError(f"C2_DUPLICATE_CALIBRATION:{sid}")
+        if sid not in job_manifests:
+            raise ValueError(f"C2_CALIBRATION_JOB_MANIFEST_MISSING:{sid}")
         if row.get("cohort") != "C2":
             raise ValueError(f"C2_CALIBRATION_WRONG_COHORT:{sid}")
         if sid not in ctx["c2_ids"]:
@@ -254,14 +281,15 @@ def load_calibrations(folder: Path, ctx: dict[str, Any]) -> dict[str, dict[str, 
             raise ValueError(f"C2_CALIBRATION_PROTOCOL_MISMATCH:{sid}")
         if row.get("source_sha256", {}).get("prepared_zip") != ctx["source_sha256"]["prepared_zip"]:
             raise ValueError(f"C2_CALIBRATION_SOURCE_MISMATCH:{sid}")
+        if row.get("calibration_status") != "COMPLETE":
+            raise ValueError(f"C2_CALIBRATION_ROW_INCOMPLETE:{sid}")
         rows[sid] = row
     missing = sorted(set(ctx["c2_ids"]) - set(rows))
-    if missing or len(rows) != EXPECTED_C2_COUNT:
-        raise ValueError(f"C2_CALIBRATION_SET_INCOMPLETE:{missing}")
-    incomplete = sorted(sid for sid, row in rows.items() if row.get("calibration_status") != "COMPLETE")
-    if incomplete:
-        raise ValueError(f"C2_CALIBRATION_JOBS_INCOMPLETE:{incomplete}")
+    missing_manifests = sorted(set(ctx["c2_ids"]) - set(job_manifests))
+    if missing or missing_manifests or len(rows) != EXPECTED_C2_COUNT or len(job_manifests) != EXPECTED_C2_COUNT:
+        raise ValueError(f"C2_CALIBRATION_SET_INCOMPLETE:rows={missing}:manifests={missing_manifests}")
     return rows
+
 
 
 def calibration_and_holdout(rows: dict[str, dict[str, Any]]) -> tuple[dict[str, Any], list[dict[str, Any]]]:
