@@ -207,9 +207,10 @@ def calibrate_threshold(
 
 def focus_reset_rearm(
     values: Sequence[float], *, threshold: float, quiet_points: int = MIN_QUIET,
-    max_events: int = 12, min_series_length: int = 150,
+    rearm_quiet_points: int = 15, max_events: int = 12,
+    min_series_length: int = 150,
 ) -> dict[str, Any]:
-    """Re-arm FOCuS; each post-hit prefix starts a fresh 40-point calibration window."""
+    """Re-arm FOCuS with 40 initial calibration points and 15 after each hit."""
     x = _values(values)
     if x.size < int(min_series_length):
         return {
@@ -221,31 +222,36 @@ def focus_reset_rearm(
             "event_count": 0,
             "rearm_intervals": [],
         }
+    if int(quiet_points) < 1 or int(rearm_quiet_points) < 1:
+        raise ValueError("FOCUS_CALIBRATION_WINDOWS_MUST_BE_POSITIVE")
     from p2_b_benchmark.p2c_engine import focus_detector
     hits, intervals, cursor = [], [], 0
-    while x.size - cursor > quiet_points and len(hits) < max_events:
-        result = focus_detector(x[cursor:], quiet_points=quiet_points, threshold=float(threshold))
+    while x.size - cursor > (quiet_points if not hits else rearm_quiet_points) and len(hits) < max_events:
+        active_quiet = quiet_points if not hits else rearm_quiet_points
+        result = focus_detector(x[cursor:], quiet_points=active_quiet, threshold=float(threshold))
         if result.get("status") == "ABSTAIN" or not result.get("hits"):
             break
         local = dict(result["hits"][0])
         local_index = int(local["detection_index"])
-        if local_index < quiet_points or local_index >= x.size - cursor:
+        if local_index < active_quiet or local_index >= x.size - cursor:
             raise RuntimeError("FOCUS_REARM_INDEX_INVALID")
         global_index = cursor + local_index
         estimated = cursor + int(local.get("estimated_change_index", local_index))
         hits.append({**local, "index": global_index, "detection_index": global_index,
                      "estimated_change_index": estimated})
         next_start = global_index + 1
-        next_end = min(int(x.size), next_start + quiet_points)
+        next_end = min(int(x.size), next_start + int(rearm_quiet_points))
         if next_start < next_end:
             intervals.append({"start_inclusive": next_start, "end_exclusive": next_end})
         if next_end >= x.size:
             break
-        # The next invocation consumes its first 40 observations as the new
-        # calibration window; monitoring resumes after that window internally.
+        # The initial 40-point calibration is retained; after a hit the next
+        # 15 observations are reserved for re-calibration before monitoring.
         cursor = next_start
     return {"status": "OK", "hits": hits, "event_count": len(hits),
-            "rearm_intervals": intervals}
+            "rearm_intervals": intervals,
+            "initial_calibration_observations": int(quiet_points),
+            "rearm_calibration_observations": int(rearm_quiet_points)}
 
 
 def break_is_unmonitored(break_index: int, intervals: Sequence[Mapping[str, int]]) -> bool:
