@@ -302,7 +302,6 @@
         "gem:IPTOTSAKD:KOR",
         "gem:IPTOTSAKD:LIC",
         "gem:IPTOTSAKD:OMN",
-        "gem:IPTOTSAKD:PER",
         "gem:IPTOTSAKD:ROU",
         "gem:IPTOTSAKD:SST",
         "gem:IPTOTSAKD:SVK",
@@ -315,7 +314,8 @@
         "pink:Fish_meal",
         "pink:Groundnut_oil",
         "pink:Soybean_oil",
-        "pink:Tea_Colombo"
+        "pink:Tea_Colombo",
+        "pink:Tea_avg_3_auctions"
       ],
       "status": "VERIFIED",
       "stratification_dimensions": [
