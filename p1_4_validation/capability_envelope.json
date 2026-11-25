@@ -100,8 +100,9 @@
         "point_in_time_prefix_only",
         "minimum_150_observations_for_focus_pilot",
         "40_initial_calibration_observations",
-        "injection_during_rearm_is_invalid_not_false_negative",
-        "20_post_hit_rearm_calibration_observations"
+        "40_initial_calibration_observations",
+        "20_post_hit_rearm_calibration_observations",
+        "min_n_for_focus_150_runtime_rejection"
       ],
       "output_contract": [
         "change_event",
@@ -162,16 +163,10 @@
           "note": "The FOCuS pilot is NOT_ELIGIBLE below n=150 (40 calibration + at least 110 detection observations). This is an eligibility gate, not a detector-performance result."
         },
         {
-          "evidence_id": "P1.4-REARM-OVERLAP-DIAGNOSTIC",
-          "status": "20_POINT_REARM_VERIFIED_ON_16_CALIBRATED_C1_SERIES",
+          "evidence_id": "P1.4-CORRECTION-2026-11-25",
+          "status": "CALIBRATION_AND_OVERLAP_EMPIRICAL_RESULTS_NOT_ESTABLISHED",
           "validated_role": false,
-          "note": "At actual frozen per-series thresholds, the 20-point rearm interval overlapped zero of 16 calibrated C1 series at the 30% diagnostic injection point (0/96 nested cases). This is a pre-Pilot coverage diagnostic, not recall or a multi-position result."
-        },
-        {
-          "evidence_id": "P1.4-STRATUM32-ONE-TIME-200-EXTENSION",
-          "status": "ONE_CALIBRATED_TWO_NOT_CALIBRATED_AT_200",
-          "validated_role": false,
-          "note": "Pre-registered threshold 200 applied once to DJI, ECU and HKG using the same deterministic AR(p) development-null streams. ECU calibrated (P0=0.027; one-sided Wilson upper=0.0368); DJI and HKG did not. No threshold 500 or repeat. Results are calibration eligibility only, not detector validation."
+          "note": "The 11/12, threshold-200 outcomes and empirical overlap rates were sourced from deleted hand-authored JSON without a GitHub run, original artifact SHA-256 or replay command. They are revoked and are not evidence. Runtime contract tests do not establish empirical calibration or overlap."
         }
       ]
     },
