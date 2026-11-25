@@ -1,0 +1,437 @@
+{
+  "schema_version": "chaos-p1-4-calibration-results-v1",
+  "diagnostic_id": "P1.4-CALIBRATION-ALL-C1-STRATA-V1",
+  "status": "CALIBRATION_COMPLETE_PILOT_NOT_STARTED",
+  "source_protocol_version": "1.1.3",
+  "selection_workflow_run_id": 45555067080,
+  "selection_workflow_url": "https://github.com/uniqueteamyemen/CHAOS/actions/runs/45555067080",
+  "cohort_selection_sha256": "b0b6450996e93fa8af7421f0746c193194660b5271288cba151a159be0c62584",
+  "source_prepared_artifact_id": 14857826243,
+  "source_prepared_artifact_sha256": "c83f6e960296fbbdb687650a798959f08cb8d98db68de8ca713d7be278e824fe",
+  "g1_evaluation_artifact_sha256s": [
+    "6cf04825de2a5e7f6b30f03aad97426fa0392038e84764ee68b52e2f70d5f89c",
+    "6f617b240c3c35d68f0295a9e21ebf07e797ff72d3566b984b764491b925c886",
+    "881c40e34838329c1b809257d9c729c56e5304ab20b015bf8b98f656075586d4",
+    "6996d69724f01b1be7ba1660ecc1572e4432802f1aebc21d521e22b58e5a35df"
+  ],
+  "calibration_design": {
+    "position_fraction": 0.3,
+    "development_replicates_per_series": 1000,
+    "minimum_valid_replicates": 950,
+    "p0_target": 0.1,
+    "wilson_bound": "one-sided 95%",
+    "original_threshold_grid": [
+      15,
+      20,
+      25,
+      30,
+      35,
+      40,
+      45,
+      50,
+      60,
+      75,
+      90
+    ],
+    "ar_candidate_orders": [
+      1,
+      2,
+      3
+    ],
+    "ar_selection": "minimum AIC among stable AR(p) models fitted on the pre-break prefix only",
+    "seed_stream_protocol_version": "1.1.3",
+    "null_model": "AR(p)+intercept with centered residual bootstrap innovations"
+  },
+  "strata_summary": {
+    "ADF_PASS_KPSS_FAIL": {
+      "n": 12,
+      "calibrated_at_90_or_below": 5,
+      "calibrated_at_200_extension": 6,
+      "not_calibratable_after_200": 1
+    },
+    "ADF_FAIL_KPSS_FAIL": {
+      "n": 6,
+      "calibrated_at_90_or_below": 3,
+      "not_calibratable_at_90": 3,
+      "threshold_200_extension_not_authorized": true
+    },
+    "ADF_FAIL_KPSS_PASS": {
+      "n": 2,
+      "calibrated_at_90_or_below": 1,
+      "not_calibratable_at_90": 1,
+      "threshold_200_extension_not_authorized": true
+    },
+    "total": {
+      "n": 20,
+      "calibrated_after_allowed_extension": 15,
+      "not_calibratable_under_allowed_grid": 5
+    }
+  },
+  "one_time_grid_extension": {
+    "purpose": "distinguish_grid_limitation_vs_structural_failure",
+    "pre_registered": true,
+    "pre_registration_source": "User instruction explicitly specified threshold 200, the seven stratum-106 series, the decision rule and no repeats before execution.",
+    "threshold_tested": 200,
+    "original_seven": [
+      "gem:CPTOTSAXN:BEN",
+      "gem:CPTOTSAXN:CHL",
+      "gem:CPTOTSAXN:LAO",
+      "gem:CPTOTSAXN:MNG",
+      "gem:CPTOTSAXN:RWA",
+      "gem:CPTOTSAXN:SUR",
+      "gem:CPTOTSAXN:TJK"
+    ],
+    "calibrated_at_200": [
+      "gem:CPTOTSAXN:BEN",
+      "gem:CPTOTSAXN:CHL",
+      "gem:CPTOTSAXN:LAO",
+      "gem:CPTOTSAXN:MNG",
+      "gem:CPTOTSAXN:RWA",
+      "gem:CPTOTSAXN:TJK"
+    ],
+    "structural_not_calibratable_at_200": [
+      "gem:CPTOTSAXN:SUR"
+    ],
+    "same_1000_development_null_statistics_reused": true,
+    "repeated": false,
+    "threshold_500_tested": false,
+    "rule": "Six grid-limited series become calibrated at 200; SUR remains above the P0 limit at 200 and is locked STRUCTURAL_NOT_CALIBRATABLE_AT_200. No threshold 500 or other extension."
+  },
+  "actual_threshold_rearm_overlap": {
+    "rearm_observations": 20,
+    "initial_calibration_observations": 40,
+    "measurement_position": 0.3,
+    "original_five_stratum_106": {
+      "series": 5,
+      "overlap_series": 0,
+      "rate": 0,
+      "planned_injection_cases": 30,
+      "invalid_injection_cases": 0,
+      "actual_thresholds": {
+        "gem:CPTOTSAXN:BLR": 15,
+        "gem:CPTOTSAXN:KNA": 90,
+        "gem:CPTOTSAXN:KOR": 75,
+        "gem:CPTOTSAXN:ZAF": 75,
+        "gem:DXGSRMRCHNSKD:ECA": 20
+      }
+    },
+    "extended_eleven_stratum_106": {
+      "series": 11,
+      "overlap_series": 0,
+      "rate": 0,
+      "planned_injection_cases": 66,
+      "invalid_injection_cases": 0
+    },
+    "all_fifteen_calibrated_c1": {
+      "series": 15,
+      "overlap_series": 0,
+      "rate": 0,
+      "planned_injection_cases": 90,
+      "invalid_injection_cases": 0
+    },
+    "conclusion": "20 observations satisfy the <5% overlap criterion on the calibrated pilot subset at the actual per-series thresholds."
+  },
+  "track_A": {
+    "status": "DESIGN_FROZEN_NOT_EXECUTED",
+    "series_count": 15,
+    "cases_per_series": 19,
+    "planned_cases": 285,
+    "stratum_counts": {
+      "ADF_PASS_KPSS_FAIL": 11,
+      "ADF_FAIL_KPSS_FAIL": 3,
+      "ADF_FAIL_KPSS_PASS": 1
+    },
+    "calibrated_series": [
+      "gem:CPTOTSAXN:BEN",
+      "gem:CPTOTSAXN:BLR",
+      "gem:CPTOTSAXN:BWA",
+      "gem:CPTOTSAXN:CHL",
+      "gem:CPTOTSAXN:EDX",
+      "gem:CPTOTSAXN:KNA",
+      "gem:CPTOTSAXN:KOR",
+      "gem:CPTOTSAXN:LAO",
+      "gem:CPTOTSAXN:MNG",
+      "gem:CPTOTSAXN:RWA",
+      "gem:CPTOTSAXN:SDN",
+      "gem:CPTOTSAXN:SSP",
+      "gem:CPTOTSAXN:TJK",
+      "gem:CPTOTSAXN:ZAF",
+      "gem:DXGSRMRCHNSKD:ECA"
+    ],
+    "interpretation": {
+      "ADF_PASS_KPSS_FAIL": "confirmatory",
+      "ADF_FAIL_KPSS_FAIL": "exploratory_moderate",
+      "ADF_FAIL_KPSS_PASS": "anecdotal_must_not_drive_decision"
+    }
+  },
+  "track_B": {
+    "status": "DIAGNOSTIC_ONLY_NO_INJECTION_NOT_PILOT_EXECUTION",
+    "series_count": 7,
+    "injected_cases": 0,
+    "series_ids": [
+      "gem:CPTOTSAXN:BEN",
+      "gem:CPTOTSAXN:CHL",
+      "gem:CPTOTSAXN:LAO",
+      "gem:CPTOTSAXN:MNG",
+      "gem:CPTOTSAXN:RWA",
+      "gem:CPTOTSAXN:SUR",
+      "gem:CPTOTSAXN:TJK"
+    ],
+    "diagnostic_path": "p1_4_validation/track_b_diagnostics.json"
+  },
+  "limitation": "All calibration and overlap measurements in this artifact are for the 30% injection position only. The multi-position Pilot is not started. Max-statistic arrays were not persisted; this is a summary artifact tied to deterministic seed rules and source artifact hashes.",
+  "series_results": [
+    {
+      "series_id": "gem:CPTOTSAXN:BEN",
+      "stratum": "ADF_PASS_KPSS_FAIL",
+      "n": 349,
+      "break_30": 104,
+      "ar_order": 1,
+      "status": "CALIBRATED_AT_200_GRID_EXTENSION",
+      "threshold": 200,
+      "development_p0": 0.003,
+      "wilson_upper": 0.0074824913,
+      "grid90_p0": 0.091,
+      "grid90_wilson_upper": 0.1070840312,
+      "extension_p0": 0.003,
+      "extension_wilson_upper": 0.0074824913
+    },
+    {
+      "series_id": "gem:CPTOTSAXN:BLR",
+      "stratum": "ADF_PASS_KPSS_FAIL",
+      "n": 382,
+      "break_30": 114,
+      "ar_order": 3,
+      "status": "CALIBRATED",
+      "threshold": 15,
+      "development_p0": 0.022,
+      "wilson_upper": 0.0310175596
+    },
+    {
+      "series_id": "gem:CPTOTSAXN:BWA",
+      "stratum": "ADF_FAIL_KPSS_FAIL",
+      "n": 407,
+      "break_30": 122,
+      "ar_order": 1,
+      "status": "CALIBRATED",
+      "threshold": 30,
+      "development_p0": 0.07,
+      "wilson_upper": 0.084464447
+    },
+    {
+      "series_id": "gem:CPTOTSAXN:CHL",
+      "stratum": "ADF_PASS_KPSS_FAIL",
+      "n": 407,
+      "break_30": 122,
+      "ar_order": 1,
+      "status": "CALIBRATED_AT_200_GRID_EXTENSION",
+      "threshold": 200,
+      "development_p0": 0.025,
+      "wilson_upper": 0.0344921677,
+      "grid90_p0": 0.161,
+      "grid90_wilson_upper": 0.1810278592,
+      "extension_p0": 0.025,
+      "extension_wilson_upper": 0.0344921677
+    },
+    {
+      "series_id": "gem:CPTOTSAXN:DEV",
+      "stratum": "ADF_FAIL_KPSS_PASS",
+      "n": 407,
+      "break_30": 122,
+      "ar_order": 2,
+      "status": "NOT_CALIBRATABLE_AT_90",
+      "threshold": null,
+      "grid90_p0": 0.421,
+      "grid90_wilson_upper": 0.4468601203,
+      "extension_tested": false
+    },
+    {
+      "series_id": "gem:CPTOTSAXN:DJI",
+      "stratum": "ADF_FAIL_KPSS_FAIL",
+      "n": 366,
+      "break_30": 109,
+      "ar_order": 1,
+      "status": "NOT_CALIBRATABLE_AT_90",
+      "threshold": null,
+      "grid90_p0": 0.462,
+      "grid90_wilson_upper": 0.4879999281,
+      "extension_tested": false
+    },
+    {
+      "series_id": "gem:CPTOTSAXN:ECU",
+      "stratum": "ADF_FAIL_KPSS_FAIL",
+      "n": 407,
+      "break_30": 122,
+      "ar_order": 1,
+      "status": "NOT_CALIBRATABLE_AT_90",
+      "threshold": null,
+      "grid90_p0": 0.197,
+      "grid90_wilson_upper": 0.2184937911,
+      "extension_tested": false
+    },
+    {
+      "series_id": "gem:CPTOTSAXN:EDX",
+      "stratum": "ADF_FAIL_KPSS_PASS",
+      "n": 407,
+      "break_30": 122,
+      "ar_order": 1,
+      "status": "CALIBRATED",
+      "threshold": 90,
+      "development_p0": 0.058,
+      "wilson_upper": 0.0713927698
+    },
+    {
+      "series_id": "gem:CPTOTSAXN:HKG",
+      "stratum": "ADF_FAIL_KPSS_FAIL",
+      "n": 407,
+      "break_30": 122,
+      "ar_order": 2,
+      "status": "NOT_CALIBRATABLE_AT_90",
+      "threshold": null,
+      "grid90_p0": 0.332,
+      "grid90_wilson_upper": 0.3569198346,
+      "extension_tested": false
+    },
+    {
+      "series_id": "gem:CPTOTSAXN:KNA",
+      "stratum": "ADF_PASS_KPSS_FAIL",
+      "n": 365,
+      "break_30": 109,
+      "ar_order": 1,
+      "status": "CALIBRATED",
+      "threshold": 90,
+      "development_p0": 0.056,
+      "wilson_upper": 0.0692011522
+    },
+    {
+      "series_id": "gem:CPTOTSAXN:KOR",
+      "stratum": "ADF_PASS_KPSS_FAIL",
+      "n": 407,
+      "break_30": 122,
+      "ar_order": 1,
+      "status": "CALIBRATED",
+      "threshold": 75,
+      "development_p0": 0.041,
+      "wilson_upper": 0.0526127933
+    },
+    {
+      "series_id": "gem:CPTOTSAXN:LAO",
+      "stratum": "ADF_PASS_KPSS_FAIL",
+      "n": 407,
+      "break_30": 122,
+      "ar_order": 2,
+      "status": "CALIBRATED_AT_200_GRID_EXTENSION",
+      "threshold": 200,
+      "development_p0": 0.082,
+      "wilson_upper": 0.0974241952,
+      "grid90_p0": 0.3,
+      "grid90_wilson_upper": 0.3243497789,
+      "extension_p0": 0.082,
+      "extension_wilson_upper": 0.0974241952
+    },
+    {
+      "series_id": "gem:CPTOTSAXN:MNG",
+      "stratum": "ADF_PASS_KPSS_FAIL",
+      "n": 395,
+      "break_30": 118,
+      "ar_order": 1,
+      "status": "CALIBRATED_AT_200_GRID_EXTENSION",
+      "threshold": 200,
+      "development_p0": 0.046,
+      "wilson_upper": 0.0581753603,
+      "grid90_p0": 0.463,
+      "grid90_wilson_upper": 0.4890011261,
+      "extension_p0": 0.046,
+      "extension_wilson_upper": 0.0581753603
+    },
+    {
+      "series_id": "gem:CPTOTSAXN:RWA",
+      "stratum": "ADF_PASS_KPSS_FAIL",
+      "n": 372,
+      "break_30": 111,
+      "ar_order": 1,
+      "status": "CALIBRATED_AT_200_GRID_EXTENSION",
+      "threshold": 200,
+      "development_p0": 0.021,
+      "wilson_upper": 0.0298517992,
+      "grid90_p0": 0.148,
+      "grid90_wilson_upper": 0.1674197509,
+      "extension_p0": 0.021,
+      "extension_wilson_upper": 0.0298517992
+    },
+    {
+      "series_id": "gem:CPTOTSAXN:SDN",
+      "stratum": "ADF_FAIL_KPSS_FAIL",
+      "n": 299,
+      "break_30": 89,
+      "ar_order": 1,
+      "status": "CALIBRATED",
+      "threshold": 40,
+      "development_p0": 0.065,
+      "wilson_upper": 0.0790331055
+    },
+    {
+      "series_id": "gem:CPTOTSAXN:SSP",
+      "stratum": "ADF_FAIL_KPSS_FAIL",
+      "n": 407,
+      "break_30": 122,
+      "ar_order": 1,
+      "status": "CALIBRATED",
+      "threshold": 90,
+      "development_p0": 0.065,
+      "wilson_upper": 0.0790331055
+    },
+    {
+      "series_id": "gem:CPTOTSAXN:SUR",
+      "stratum": "ADF_PASS_KPSS_FAIL",
+      "n": 371,
+      "break_30": 111,
+      "ar_order": 1,
+      "status": "STRUCTURAL_NOT_CALIBRATABLE_AT_200",
+      "threshold": null,
+      "grid90_p0": 0.409,
+      "grid90_wilson_upper": 0.4347852533,
+      "extension_tested": true,
+      "extension_p0": 0.124,
+      "extension_wilson_upper": 0.1421645617,
+      "extension_alarms": 124
+    },
+    {
+      "series_id": "gem:CPTOTSAXN:TJK",
+      "stratum": "ADF_PASS_KPSS_FAIL",
+      "n": 287,
+      "break_30": 86,
+      "ar_order": 1,
+      "status": "CALIBRATED_AT_200_GRID_EXTENSION",
+      "threshold": 200,
+      "development_p0": 0.032,
+      "wilson_upper": 0.0424918293,
+      "grid90_p0": 0.212,
+      "grid90_wilson_upper": 0.2340223664,
+      "extension_p0": 0.032,
+      "extension_wilson_upper": 0.0424918293
+    },
+    {
+      "series_id": "gem:CPTOTSAXN:ZAF",
+      "stratum": "ADF_PASS_KPSS_FAIL",
+      "n": 407,
+      "break_30": 122,
+      "ar_order": 1,
+      "status": "CALIBRATED",
+      "threshold": 75,
+      "development_p0": 0.076,
+      "wilson_upper": 0.0909567412
+    },
+    {
+      "series_id": "gem:DXGSRMRCHNSKD:ECA",
+      "stratum": "ADF_PASS_KPSS_FAIL",
+      "n": 395,
+      "break_30": 118,
+      "ar_order": 2,
+      "status": "CALIBRATED",
+      "threshold": 20,
+      "development_p0": 0.039,
+      "wilson_upper": 0.0503767437
+    }
+  ]
+}
