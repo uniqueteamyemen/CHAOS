@@ -1,0 +1,161 @@
+{
+  "manifest_id": "CHAOS_P1_4_C1_FROZEN_CALIBRATION_ARTIFACT_SET_V1",
+  "source_workflow_run_id": 45707752707,
+  "source_branch": "feat/p1-4-capability-envelope-pilot-v1-20261125",
+  "source_commit": "952fa3f2dc724dbeeaaeabfa6d5df620595e9178",
+  "source_workflow": "CHAOS P1.4 Evidence-First P2-C Pipeline",
+  "protocol_version": "1.1.9",
+  "protocol_sha256": "d4ce2b84ade5d8662e22b4cdc020f0f39a88566aced3eff1bfefd478b75645e4",
+  "recalibration_permitted": false,
+  "new_null_trace_generation_permitted": false,
+  "expected_c1_series_count": 20,
+  "expected_arm_eligibility": {
+    "MAD": [
+      "gem:CPTOTSAXN:BEN",
+      "gem:CPTOTSAXN:BLR",
+      "gem:CPTOTSAXN:BWA",
+      "gem:CPTOTSAXN:KNA",
+      "gem:CPTOTSAXN:KOR",
+      "gem:CPTOTSAXN:SSP",
+      "gem:CPTOTSAXN:TJK",
+      "gem:DXGSRMRCHNSKD:ECA"
+    ],
+    "BARTLETT_LRV": [
+      "gem:CPTOTSAXN:BEN",
+      "gem:CPTOTSAXN:BLR",
+      "gem:CPTOTSAXN:BWA",
+      "gem:CPTOTSAXN:KNA",
+      "gem:CPTOTSAXN:KOR",
+      "gem:CPTOTSAXN:LAO",
+      "gem:CPTOTSAXN:MNG",
+      "gem:CPTOTSAXN:RWA",
+      "gem:CPTOTSAXN:SDN",
+      "gem:CPTOTSAXN:SSP",
+      "gem:CPTOTSAXN:SUR",
+      "gem:CPTOTSAXN:TJK",
+      "gem:DXGSRMRCHNSKD:ECA"
+    ]
+  },
+  "calibration_artifacts": [
+    {
+      "artifact_id": 15065129089,
+      "artifact_name": "p1-4-calibration-BEN",
+      "series_id": "gem:CPTOTSAXN:BEN",
+      "sha256": "6b0fdefa3093e1cd06744e1cc9d4ac325560ba2c30e966c7e82afc1742b1d071"
+    },
+    {
+      "artifact_id": 15065164338,
+      "artifact_name": "p1-4-calibration-BLR",
+      "series_id": "gem:CPTOTSAXN:BLR",
+      "sha256": "2e172beb6b6223edc628cb750e227744926bab837a8dc129c4303ecd109a6e7c"
+    },
+    {
+      "artifact_id": 15065733063,
+      "artifact_name": "p1-4-calibration-BWA",
+      "series_id": "gem:CPTOTSAXN:BWA",
+      "sha256": "f0dbc245918a05843888a7856193a5a046f7697849aa4b572fbfe470ee2213f0"
+    },
+    {
+      "artifact_id": 15066501883,
+      "artifact_name": "p1-4-calibration-CHL",
+      "series_id": "gem:CPTOTSAXN:CHL",
+      "sha256": "16f643a62378d246ae3b77b6fb2a26150f02a8c0a707f4a3a45b912146885df8"
+    },
+    {
+      "artifact_id": 15067025861,
+      "artifact_name": "p1-4-calibration-DEV",
+      "series_id": "gem:CPTOTSAXN:DEV",
+      "sha256": "661e0cde5f40f4667a260a7be101bdc3b438982313eefdf409f17f037945a811"
+    },
+    {
+      "artifact_id": 15066471224,
+      "artifact_name": "p1-4-calibration-DJI",
+      "series_id": "gem:CPTOTSAXN:DJI",
+      "sha256": "16a148b6ae3915758c549edd23b388d62bcb8a9e1252bcf743efc87330a54306"
+    },
+    {
+      "artifact_id": 15066820866,
+      "artifact_name": "p1-4-calibration-ECU",
+      "series_id": "gem:CPTOTSAXN:ECU",
+      "sha256": "cdc12f426526f4a9125ec25e7abdcf8e8a124d381ccac33bf7e187d3256ec5c0"
+    },
+    {
+      "artifact_id": 15067140552,
+      "artifact_name": "p1-4-calibration-EDX",
+      "series_id": "gem:CPTOTSAXN:EDX",
+      "sha256": "26c86255a6476d14379692722690cc56a19fc9804334c97689ea5e3abc518cbe"
+    },
+    {
+      "artifact_id": 15065657529,
+      "artifact_name": "p1-4-calibration-HKG",
+      "series_id": "gem:CPTOTSAXN:HKG",
+      "sha256": "e74b6ea392e9f8e78a00649bc9d16c794d0ee6df210ebcbb67876bcb049d8b24"
+    },
+    {
+      "artifact_id": 15067040852,
+      "artifact_name": "p1-4-calibration-KNA",
+      "series_id": "gem:CPTOTSAXN:KNA",
+      "sha256": "720607cffe1a04b145d2f8a6b196278c98b602b0c068ea6124c80cbb2ed224d3"
+    },
+    {
+      "artifact_id": 15066511302,
+      "artifact_name": "p1-4-calibration-KOR",
+      "series_id": "gem:CPTOTSAXN:KOR",
+      "sha256": "4bd0db8e3af2544ace0f4713ffd3bb1678d118581984d10a78a7bb9fd7297d02"
+    },
+    {
+      "artifact_id": 15067105442,
+      "artifact_name": "p1-4-calibration-LAO",
+      "series_id": "gem:CPTOTSAXN:LAO",
+      "sha256": "12265d227ee144ef6e81cd80e4a066b4b7f26923962f48bf25649d9255b991b6"
+    },
+    {
+      "artifact_id": 15066466301,
+      "artifact_name": "p1-4-calibration-MNG",
+      "series_id": "gem:CPTOTSAXN:MNG",
+      "sha256": "5170b585651b935a074194e1e7a110ad5c9ede2975f15ab2a5b038cbf9fba06c"
+    },
+    {
+      "artifact_id": 15066001923,
+      "artifact_name": "p1-4-calibration-RWA",
+      "series_id": "gem:CPTOTSAXN:RWA",
+      "sha256": "d923965a75bd10fbedd13ce2b452aa53305811eb838e69fc8575359d5e6a83bc"
+    },
+    {
+      "artifact_id": 15065184138,
+      "artifact_name": "p1-4-calibration-SDN",
+      "series_id": "gem:CPTOTSAXN:SDN",
+      "sha256": "3dfac54efaa63099aaf77deeca8a465551f986374df8e250876f9a20e1cd39ac"
+    },
+    {
+      "artifact_id": 15065788218,
+      "artifact_name": "p1-4-calibration-SSP",
+      "series_id": "gem:CPTOTSAXN:SSP",
+      "sha256": "a9ac090af198bc3bfd5ba9725c339b1694d788dcdf9617b9cbef9227d1546db8"
+    },
+    {
+      "artifact_id": 15065782216,
+      "artifact_name": "p1-4-calibration-SUR",
+      "series_id": "gem:CPTOTSAXN:SUR",
+      "sha256": "2cc07f203f72d871abb33c06553566b3c3bd83d4cee9364923e69b6eac26ae40"
+    },
+    {
+      "artifact_id": 15066945523,
+      "artifact_name": "p1-4-calibration-TJK",
+      "series_id": "gem:CPTOTSAXN:TJK",
+      "sha256": "43a3a87da0657dfcd1c6830b6d00e772e554ffbe94f708e4040e154d5d08f654"
+    },
+    {
+      "artifact_id": 15066047770,
+      "artifact_name": "p1-4-calibration-ZAF",
+      "series_id": "gem:CPTOTSAXN:ZAF",
+      "sha256": "91488d9591facbbf890bdb9eef08d5a24abf639e32e4366271ff22a46af65397"
+    },
+    {
+      "artifact_id": 15065797227,
+      "artifact_name": "p1-4-calibration-ECA",
+      "series_id": "gem:DXGSRMRCHNSKD:ECA",
+      "sha256": "f3d8bb08db3b2951775db22f2c42a96e834af6d7b25b0286ad66eaba4dc97f7c"
+    }
+  ]
+}
