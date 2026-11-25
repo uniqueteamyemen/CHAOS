@@ -32,6 +32,7 @@ BOCPD_SHORT_RUN_MAX = 3
 BOCPD_SHORT_MASS_THRESHOLD = 0.35
 BOCPD_PERSISTENCE = 3
 BOCPD_MIN_REGIME_SHIFT = 1.50
+BOCPD_MIN_CONTRAST_Z = 2.0
 BOCPD_REARM_LONG_MASS = 0.80
 BOCPD_REARM_PERSISTENCE = 3
 HUBER_C = 1.345
@@ -262,7 +263,7 @@ def bocpd_detector(values: Any, *, quiet_points: int = QUIET_POINTS,
                 "hits": [], "events": [], "event_count": 0}
     center = float(np.median(q))
     y = (x - center) / scale
-    mu0, kappa0, alpha0, beta0 = 0.0, 0.05, 2.0, 1.0
+    mu0, kappa0, alpha0, beta0 = 0.0, 0.25, 3.0, 0.5
     quiet_normalized = (q - center) / scale
     active_mean = float(np.mean(quiet_normalized))
     active_var = float(np.var(quiet_normalized, ddof=1))
@@ -381,12 +382,26 @@ def bocpd_detector(values: Any, *, quiet_points: int = QUIET_POINTS,
             if short_mass > 0 else float(prior_regime_mean)
         )
         regime_contrast = short_mean - prior_regime_mean
+        short_mean_variance = (
+            float(np.dot(
+                posterior[short_mask],
+                betas[short_mask] / (alphas[short_mask] * kappas[short_mask])
+            ) / short_mass)
+            if short_mass > 0 else math.inf
+        )
+        prior_mean_variance = float(
+            betas[prior_map] / (alphas[prior_map] * kappas[prior_map])
+        )
+        contrast_z = abs(regime_contrast) / math.sqrt(
+            max(short_mean_variance + prior_mean_variance, 1e-12)
+        )
 
-        # Confirmation requires both short-run posterior mass and a material
-        # posterior regime-mean contrast against the active prior regime. A lone
-        # spike followed by reversion does not satisfy this contrast condition.
+        # Confirmation requires posterior mass, material mean separation, and
+        # separation relative to uncertainty in both regime means. A spike
+        # produces a high-variance short-run posterior and fails this gate.
         if (short_mass >= float(short_mass_threshold)
-                and abs(regime_contrast) >= float(BOCPD_MIN_REGIME_SHIFT)):
+                and abs(regime_contrast) >= float(BOCPD_MIN_REGIME_SHIFT)
+                and contrast_z >= float(BOCPD_MIN_CONTRAST_Z)):
             if streak == 0:
                 short_indices = np.flatnonzero(short_mask)
                 short_map = int(short_indices[int(np.argmax(posterior[short_mask]))])
@@ -395,7 +410,8 @@ def bocpd_detector(values: Any, *, quiet_points: int = QUIET_POINTS,
                 candidate = {"estimated_change_index": estimate, "sign": sign,
                              "prior_regime_mean": prior_regime_mean,
                              "posterior_new_regime_mean": short_mean,
-                             "regime_contrast": regime_contrast}
+                             "regime_contrast": regime_contrast,
+                             "posterior_contrast_z": contrast_z}
             streak += 1
         else:
             streak = 0
@@ -421,6 +437,7 @@ def bocpd_detector(values: Any, *, quiet_points: int = QUIET_POINTS,
                 "prior_regime_mean": float(candidate["prior_regime_mean"]),
                 "posterior_new_regime_mean": float(candidate["posterior_new_regime_mean"]),
                 "regime_contrast": float(candidate["regime_contrast"]),
+                "posterior_contrast_z": float(candidate["posterior_contrast_z"]),
                 "posterior_map_run_length": int(run_lengths[int(np.argmax(posterior))]),
             })
             events.append({
@@ -464,6 +481,7 @@ def bocpd_detector(values: Any, *, quiet_points: int = QUIET_POINTS,
                          "short_run_mass_definition": "posterior P(1<=run_length<=short_run_max); excludes r=0",
                          "posterior_short_run_mass_max": float(posterior_short_run_mass_max),
                          "min_regime_shift": BOCPD_MIN_REGIME_SHIFT,
+                         "min_contrast_z": BOCPD_MIN_CONTRAST_Z,
                          "rearm_long_mass": BOCPD_REARM_LONG_MASS,
                          "rearm_persistence": BOCPD_REARM_PERSISTENCE,
                          "confirmed_regime_reseed": "NIG posterior reinitialized from confirmed segment statistics",
