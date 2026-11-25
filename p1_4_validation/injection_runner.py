@@ -213,7 +213,7 @@ def focus_reset_rearm(
     rearm_quiet_points: int = FOCUS_REARM_QUIET_POINTS, max_events: int = 12,
     min_series_length: int = FOCUS_MIN_N,
 ) -> dict[str, Any]:
-    """Re-arm FOCuS with 40 initial calibration points and 15 after each hit."""
+    """Re-arm FOCuS with 40 initial calibration points and 20 after each hit."""
     x = _values(values)
     if x.size < int(min_series_length):
         return {
