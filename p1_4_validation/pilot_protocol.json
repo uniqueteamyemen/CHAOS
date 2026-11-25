@@ -1,8 +1,7 @@
 {
   "protocol_id": "CHAOS_P1_4_CAPABILITY_PILOT_V1",
-  "protocol_version": "1.1.0",
+  "protocol_version": "1.1.1",
   "status": "FROZEN_BEFORE_EXECUTION",
-  "frozen_at_commit": null,
   "must_not_be_changed_after_pilot_start": true,
   "purpose": "Evaluate declared detector and estimator roles on verified economic-series cohorts with controlled permanent mean-shift injections and independent synthetic null traces. This is not a forecast-accuracy test and does not authorize production use.",
   "source_and_scope": {
@@ -156,7 +155,49 @@
       "replicates_per_series": 250,
       "purpose": "Negative-control diagnostic; preserves marginal values while destroying temporal order.",
       "acceptance_role": "Diagnostic only; not a substitute for the fitted AR(p) null."
-    }
+    },
+    "null_seed_streams": "SHA-256-derived streams over protocol version, series ID, position, selected AR order, phase and replicate index. The base AR null paths are shared across candidate tools; MAD and Bartlett variants receive identical paths for paired comparison. Development and holdout streams never overlap.",
+    "threshold_grids": {
+      "FOCuS": [
+        15,
+        20,
+        25,
+        30,
+        35,
+        40,
+        45,
+        50,
+        60,
+        75,
+        90
+      ],
+      "POST_QUIET_HUBER_MAD": [
+        4,
+        6,
+        8,
+        10,
+        12,
+        14,
+        16,
+        20,
+        24,
+        32
+      ],
+      "POST_QUIET_HUBER_BARTLETT": [
+        4,
+        6,
+        8,
+        10,
+        12,
+        14,
+        16,
+        20,
+        24,
+        32
+      ]
+    },
+    "threshold_grid_rule": "Evaluate thresholds in ascending numeric order on the same development null traces. Select the lowest threshold whose one-sided 95% Wilson upper bound for P0 is <=0.10. If none qualifies, mark NOT_CALIBRATABLE/INCONCLUSIVE; do not extend the grid after seeing holdout.",
+    "paired_paths_rule": "For each series-position-AR(p)-phase-replicate, generate one deterministic null path and reuse it across FOCuS, Huber MAD, Huber Bartlett, BOCPD and R-FPOP as appropriate. MAD and Bartlett thresholds are estimated independently on these identical paths."
   },
   "measurements": {
     "original_alarm_burden": {
@@ -296,11 +337,22 @@
           "BOCPD_POSTERIOR_ONLY_DIAGNOSTIC versus FOCUS_ONLY"
         ],
         "statistic": "Per-series difference in direction-correct recall and, separately, false-alarm P0.",
-        "effect_size": "Cohen's dz on the paired per-series difference in mean expected run length (post-break minus pre-break); no time-point independence assumption.",
+        "effect_size": "Cohen's dz on paired per-series difference in mean expected run length between post-break and pre-break; compute across independent series, not time points.",
         "p_value_threshold": 0.05,
         "minimum_gain": "At least +0.05 absolute recall with no P0 worsening, or at least -0.05 absolute P0 with recall loss <=0.10, and series-level p<0.05.",
         "restrictions": "Do not run Mann-Whitney U/KS over dependent time points. Forecast value is not tested here; that belongs to Engine 2 rolling-origin evaluation.",
         "replicates": 1000
+      },
+      "fixed_parameters": {
+        "hazard": 0.016666666666666666,
+        "max_run_length": 539,
+        "short_run_max": 24,
+        "short_run_mass_threshold": 0.35,
+        "posterior_persistence": 12,
+        "min_regime_shift_sigma": 1,
+        "min_contrast_z": 2,
+        "rearm_long_mass": 0.8,
+        "rearm_persistence": 3
       }
     },
     "R-FPOP": {
@@ -317,8 +369,9 @@
           0.5,
           0.75,
           1,
-          1.25,
-          1.5,
+          1.2,
+          1.4,
+          1.6,
           2,
           3,
           4,
@@ -373,7 +426,7 @@
   },
   "execution": {
     "heavy_execution_environment": "GitHub Actions only",
-    "matrix": "One matrix job per selected series. Each job executes the original baseline and all 18 injected cases for that series; calibration/null traces are generated once per series-position-model-tool phase and reused only where the protocol permits.",
+    "matrix": "One matrix job per selected series. Each job executes the original baseline and all 18 injected cases for that series. Each series-position null bank is generated once per development/holdout phase and reused across candidate arms; paired variants never receive different null paths.",
     "cases_per_series": 19,
     "raw_values_in_artifacts": false,
     "required_preflight_gates": [
@@ -409,6 +462,7 @@
     ],
     "artifact_integrity": "SHA-256 each per-series artifact and posterior PMF artifact before upload. Aggregate only the exact frozen series IDs and verify all files/hashes.",
     "replay": "Every per-series output includes deterministic replay command and exact source, model, tool version, protocol SHA and seed identities.",
-    "pilot_start_gate": "Do not dispatch until every preflight item passes on the exact Pilot commit. The dispatch itself is a separate [skip-p2-full] commit/action. C3 may remain pending only with the declared scope limitation."
+    "pilot_start_gate": "Do not dispatch until every preflight item passes on the exact Pilot commit. The dispatch itself is a separate [skip-p2-full] commit/action. C3 may remain pending only with the declared scope limitation.",
+    "seed_rule": "Seed identity excludes tool/scale variant so paired arms receive identical stochastic inputs; separate streams are keyed by protocol, series, position, AR order, phase and replicate."
   }
 }
