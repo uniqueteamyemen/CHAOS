@@ -206,10 +206,21 @@ def calibrate_threshold(
 
 
 def focus_reset_rearm(
-    values: Sequence[float], *, threshold: float, quiet_points: int = MIN_QUIET, max_events: int = 12,
+    values: Sequence[float], *, threshold: float, quiet_points: int = MIN_QUIET,
+    max_events: int = 12, min_series_length: int = 150,
 ) -> dict[str, Any]:
-    """Re-arm FOCuS after each hit; next 40 values are calibration, not monitored."""
+    """Re-arm FOCuS; each post-hit prefix starts a fresh 40-point calibration window."""
     x = _values(values)
+    if x.size < int(min_series_length):
+        return {
+            "status": "NOT_ELIGIBLE",
+            "reason": "FOCUS_MIN_N_150_REQUIRED",
+            "observations": int(x.size),
+            "minimum_observations": int(min_series_length),
+            "hits": [],
+            "event_count": 0,
+            "rearm_intervals": [],
+        }
     from p2_b_benchmark.p2c_engine import focus_detector
     hits, intervals, cursor = [], [], 0
     while x.size - cursor > quiet_points and len(hits) < max_events:
@@ -251,15 +262,33 @@ def evaluate_online_hits(
     post = [row for row in hits if int(row["detection_index"]) >= onset]
     correct = [row for row in post if int(row["sign"]) == direction]
     wrong = [row for row in post if int(row["sign"]) != direction]
-    uncovered = break_is_unmonitored(onset, rearm_intervals)
-    selected = None if uncovered or not correct else min(correct, key=lambda row: int(row["detection_index"]))
-    status = "UNMONITORED_REARM" if uncovered else ("DETECTED" if selected else "MISSED")
+    overlap = break_is_unmonitored(onset, rearm_intervals)
+    if overlap:
+        return {
+            "status": "INVALID_INJECTION",
+            "detected": False,
+            "pre_onset_alert_count": len(pre),
+            "wrong_direction_alert_count": len(wrong),
+            "detection_index": None,
+            "delay": None,
+            "missed": False,
+            "false_negative": False,
+            "uncovered_by_rearm": True,
+            "calibration_overlap_with_injection": True,
+            "excluded_from_recall": True,
+            "invalid_reason": "INJECTION_FELL_INSIDE_FOCU S_REARM_CALIBRATION_WINDOW".replace(" ", ""),
+        }
+    selected = None if not correct else min(correct, key=lambda row: int(row["detection_index"]))
+    status = "DETECTED" if selected else "MISSED"
     return {
         "status": status, "detected": selected is not None,
         "pre_onset_alert_count": len(pre), "wrong_direction_alert_count": len(wrong),
         "detection_index": int(selected["detection_index"]) if selected else None,
         "delay": int(selected["detection_index"]) - onset if selected else None,
-        "missed": selected is None, "uncovered_by_rearm": uncovered,
+        "missed": selected is None, "false_negative": selected is None,
+        "uncovered_by_rearm": False,
+        "calibration_overlap_with_injection": False,
+        "excluded_from_recall": False,
     }
 
 
@@ -306,7 +335,14 @@ def execute_case(
     fpop = r_fpop_segment(x, penalty_multiplier=rfpop_penalty_multiplier)
     output = {
         "series_length": int(x.size),
-        "focus_reset_rearm": {"hits": focus["hits"], "rearm_intervals": focus["rearm_intervals"]},
+        "focus_reset_rearm": {
+            "status": focus["status"],
+            "reason": focus.get("reason"),
+            "observations": int(x.size),
+            "minimum_observations": int(focus.get("minimum_observations", 150)),
+            "hits": focus.get("hits", []),
+            "rearm_intervals": focus.get("rearm_intervals", []),
+        },
         "post_quiet_huber_mad": {"hits": mad.get("hits", []), "status": mad["status"]},
         "post_quiet_huber_bartlett": {"hits": bartlett.get("hits", []), "status": bartlett["status"]},
         "bocpd_features": {
@@ -320,8 +356,18 @@ def execute_case(
     }
     if true_break_index is not None and true_direction in {-1, 1}:
         output["outcomes"] = {
-            "FOCuS": evaluate_online_hits(focus["hits"], true_break_index=true_break_index,
-                true_direction=int(true_direction), rearm_intervals=focus["rearm_intervals"]),
+            "FOCuS": (
+                {"status": "NOT_ELIGIBLE", "detected": False, "missed": False,
+                 "false_negative": False, "calibration_overlap_with_injection": False,
+                 "excluded_from_recall": True,
+                 "invalid_reason": focus.get("reason", "FOCUS_NOT_ELIGIBLE")}
+                if focus.get("status") == "NOT_ELIGIBLE"
+                else evaluate_online_hits(
+                    focus.get("hits", []), true_break_index=true_break_index,
+                    true_direction=int(true_direction),
+                    rearm_intervals=focus.get("rearm_intervals", []),
+                )
+            ),
             "POST_QUIET_HUBER_MAD": evaluate_online_hits(mad.get("hits", []),
                 true_break_index=true_break_index, true_direction=int(true_direction)),
             "POST_QUIET_HUBER_BARTLETT": evaluate_online_hits(bartlett.get("hits", []),
