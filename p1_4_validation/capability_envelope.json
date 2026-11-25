@@ -127,9 +127,9 @@
         "heavy_tails_outside_fitted_ar_null",
         "poorly_identified_ar_parameters"
       ],
-      "implementation_status": "PILOT_RUNNER_NOT_YET_IMPLEMENTED",
-      "runtime_supported": false,
-      "pilot_enabled": false,
+      "implementation_status": "P1_4_RESET_REARM_ADAPTER_IMPLEMENTED_CONTRACT_TESTED",
+      "runtime_supported": true,
+      "pilot_enabled": true,
       "scientific_validation_status": "PENDING",
       "validation_history": [
         {
@@ -137,6 +137,12 @@
           "status": "CONTRACT_ONLY",
           "validated_role": false,
           "note": "Reset/rearm and per-series P0 calibration are mandatory but the execution adapter is not implemented yet."
+        },
+        {
+          "evidence_id": "P1.4-INJECTION-RUNNER",
+          "status": "IMPLEMENTED_CONTRACT_TESTS_PENDING",
+          "validated_role": false,
+          "note": "Reset/re-arm adapter exists with an explicit 40-observation re-calibration window. Cohort Pilot not executed; detector role remains unvalidated."
         }
       ]
     },
@@ -284,9 +290,9 @@
         "serial_dependence_misspecification",
         "variance_change_confounded_with_mean_change"
       ],
-      "implementation_status": "BLOCKED_FULL_RUN_LENGTH_PMF_NOT_EXPORTED_BY_CURRENT_ENGINE",
-      "runtime_supported": false,
-      "pilot_enabled": false,
+      "implementation_status": "P1_4_FULL_POSTERIOR_EXPORT_IMPLEMENTED_CONTRACT_TESTED",
+      "runtime_supported": true,
+      "pilot_enabled": true,
       "scientific_validation_status": "PENDING",
       "validation_history": [
         {
@@ -294,6 +300,12 @@
           "status": "IMPLEMENTED_DIAGNOSTIC_ONLY",
           "validated_role": false,
           "note": "Current engine does not emit a full posterior distribution for every prefix. Feature fusion test stays blocked until export is implemented."
+        },
+        {
+          "evidence_id": "P1.4-INJECTION-RUNNER",
+          "status": "FULL_POSTERIOR_EXPORT_IMPLEMENTED_CONTRACT_TESTS_PENDING",
+          "validated_role": false,
+          "note": "Full normalized run-length PMF is emitted at each post-quiet prefix with deterministic SHA-256. This authorizes feature evaluation only, not standalone binary detection."
         }
       ]
     },
