@@ -316,10 +316,20 @@ def bocpd_detector(values: Any, *, quiet_points: int = QUIET_POINTS,
         growth_beta = betas + (
             kappas * (y[t] - means) ** 2 / (2.0 * (kappas + 1.0))
         )
-        means = np.concatenate(([mu0], growth_mean))
-        kappas = np.concatenate(([kappa0], growth_kappa))
-        alphas = np.concatenate(([alpha0], growth_alpha))
-        betas = np.concatenate(([beta0], growth_beta))
+        # The r_t=0 branch is a new regime containing x_t as its first
+        # observation. Update its Normal-Inverse-Gamma sufficient statistics
+        # from the reset prior with this same datum; retaining the untouched
+        # prior here would silently discard the change-point observation.
+        change_mean = (kappa0 * mu0 + y[t]) / (kappa0 + 1.0)
+        change_kappa = kappa0 + 1.0
+        change_alpha = alpha0 + 0.5
+        change_beta = beta0 + (
+            kappa0 * (y[t] - mu0) ** 2 / (2.0 * (kappa0 + 1.0))
+        )
+        means = np.concatenate(([change_mean], growth_mean))
+        kappas = np.concatenate(([change_kappa], growth_kappa))
+        alphas = np.concatenate(([change_alpha], growth_alpha))
+        betas = np.concatenate(([change_beta], growth_beta))
         run_lengths = np.concatenate(([0], run_lengths + 1))
 
         keep = run_lengths <= int(max_run)
