@@ -67,7 +67,7 @@ def _length_band(n: int) -> str:
 
 
 def _monthly_index(label: str) -> int:
-    match = __import__("re").fullmatch(r"(\\d{4})-(\\d{2})", str(label))
+    match = __import__("re").fullmatch(r"(\d{4})-(\d{2})", str(label))
     if not match:
         raise ValueError(f"unsupported_monthly_axis_label:{label}")
     year, month = int(match.group(1)), int(match.group(2))
