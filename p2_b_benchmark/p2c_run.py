@@ -374,6 +374,8 @@ def _combine_shards(shards: list[dict[str, Any]], expected_series_count: int = 5
             raise ValueError(f"p2c_shard_{key}_disagreement")
     if first.get("schema") != "chaos-p2-c-shard-v1":
         raise ValueError("p2c_shard_schema_invalid")
+    if not str(first.get("run_id", "")) or int(first.get("run_attempt", 0)) < 1:
+        raise ValueError("p2c_shard_run_identity_invalid")
     if int(first.get("expected_series_count", -1)) != expected_series_count:
         raise ValueError("p2c_expected_series_count_mismatch")
     sorted_ids = first.get("sorted_ids")
@@ -392,7 +394,9 @@ def _combine_shards(shards: list[dict[str, Any]], expected_series_count: int = 5
             value for i, value in enumerate(sorted_ids) if i % SHARD_COUNT == index
         ]
         shard_rows = shard.get("series_results")
-        if not isinstance(shard_rows, list) or len(shard_rows) != len(expected):
+        expected_row_count = len(expected)
+        if (not isinstance(shard_rows, list) or len(shard_rows) != expected_row_count
+                or int(shard.get("expected_shard_rows", -1)) != expected_row_count):
             raise ValueError(f"p2c_shard_rows_mismatch:{index}")
         _assert_metrics_only(shard_rows)
         ids = [str(r.get("id", "")) for r in shard_rows]
@@ -421,6 +425,7 @@ def _combine_shards(shards: list[dict[str, Any]], expected_series_count: int = 5
         "null_eligible_gem": sum(
             r["source"] == "gem" and bool(r["null_eligible"]) for r in rows
         ),
+        "null_ineligible": sum(not bool(r["null_eligible"]) for r in rows),
     }
     if expected_series_count == 509 and counts != EXPECTED_COUNTS:
         raise ValueError(f"p2c_cohort_counts_mismatch:{counts}")
