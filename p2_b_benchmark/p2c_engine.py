@@ -31,7 +31,7 @@ BOCPD_MAX_RUN = 539
 BOCPD_SHORT_RUN_MAX = 3
 BOCPD_SHORT_MASS_THRESHOLD = 0.35
 BOCPD_PERSISTENCE = 3
-BOCPD_MIN_REGIME_SHIFT = 0.75
+BOCPD_MIN_REGIME_SHIFT = 1.50
 BOCPD_REARM_LONG_MASS = 0.80
 BOCPD_REARM_PERSISTENCE = 3
 HUBER_C = 1.345
@@ -428,7 +428,30 @@ def bocpd_detector(values: Any, *, quiet_points: int = QUIET_POINTS,
                 "estimated_change_index": estimate, "detection_index": t,
                 "method": "posterior_short_run_length_mass",
             })
-            armed = False
+            # A confirmed transition closes the previous active regime.
+            # Re-seed the online posterior from the newly confirmed segment so
+            # the next transition is measured against this active regime rather
+            # than a mixture dominated by much older run-length hypotheses.
+            segment = y[estimate:t + 1]
+            segment_n = int(segment.size)
+            segment_mean = float(np.mean(segment))
+            segment_sum = float(np.sum(segment))
+            segment_ss = float(np.sum((segment - segment_mean) ** 2))
+            new_kappa = kappa0 + segment_n
+            new_mean = (kappa0 * mu0 + segment_sum) / new_kappa
+            new_alpha = alpha0 + segment_n / 2.0
+            new_beta = (
+                beta0 + 0.5 * segment_ss
+                + (kappa0 * segment_n * (segment_mean - mu0) ** 2)
+                  / (2.0 * new_kappa)
+            )
+            posterior = np.array([1.0], dtype=float)
+            means = np.array([new_mean], dtype=float)
+            kappas = np.array([new_kappa], dtype=float)
+            alphas = np.array([new_alpha], dtype=float)
+            betas = np.array([new_beta], dtype=float)
+            run_lengths = np.array([segment_n], dtype=int)
+            armed = True
             stable_long_streak = 0
             streak = 0
             candidate = None
@@ -443,6 +466,7 @@ def bocpd_detector(values: Any, *, quiet_points: int = QUIET_POINTS,
                          "min_regime_shift": BOCPD_MIN_REGIME_SHIFT,
                          "rearm_long_mass": BOCPD_REARM_LONG_MASS,
                          "rearm_persistence": BOCPD_REARM_PERSISTENCE,
+                         "confirmed_regime_reseed": "NIG posterior reinitialized from confirmed segment statistics",
                          "persistence": persistence,
                          "predictive": "Normal-Inverse-Gamma Student-t",
                          "direction_reference": "MAP prior-regime predictive mean"}}
