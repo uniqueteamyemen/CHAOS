@@ -164,7 +164,7 @@ jobs:
       - name: Calibrate exact frozen C2 series (1000 development + 1000 holdout per position)
         run: |
           set -euo pipefail
-          python p1_4_validation/run_c2_stable_pilot.py \
+          PYTHONPATH="$GITHUB_WORKSPACE" python p1_4_validation/run_c2_stable_pilot.py \
             --phase calibrate \
             --series-id "${{ matrix.series_id }}" \
             --prepared-zip frozen-inputs/p2-prepared.zip \
@@ -221,7 +221,7 @@ jobs:
       - name: Recompute Holdout gates and execute the C2 injection pilot
         run: |
           set -euo pipefail
-          python p1_4_validation/run_c2_stable_pilot.py \
+          PYTHONPATH="$GITHUB_WORKSPACE" python p1_4_validation/run_c2_stable_pilot.py \
             --phase postprocess \
             --prepared-zip frozen-inputs/p2-prepared.zip \
             --manifest p1_4_validation/cohort_manifest.json \
