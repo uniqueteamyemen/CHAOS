@@ -39,12 +39,13 @@
     "c1_verified_count": 147,
     "c1_interpretation_discrepancy_severity": "material",
     "old_branch_source": "feat/p1-4-capability-envelope-pilot-v1@ad419702958f3fa7f7c79f623c59dd702c8379e5",
-    "selection_workflow_run_id": 45538866028,
-    "selection_artifact_id": 14988741300,
-    "selection_json_sha256": "b916e5d1f40f9e224a229096565e618c8bcdec659303def9041769c7834dc960",
-    "selection_zip_sha256": "c5a3720c2a5cd7754f9f9da022e70305cda90cde17bed4f74884a39026830523",
-    "selection_commit": "608c14a565f8b207804dd7523a702991536d4ec2",
-    "final_protocol_resync_required": true
+    "selection_workflow_run_id": 45545605162,
+    "selection_artifact_id": 14991172651,
+    "selection_json_sha256": "e5dfe77b204a4da075f5776f4cfb2ec90dacc9c6548c3c6da72ee4feea281d97",
+    "selection_zip_sha256": "339c9c097ea5b2e0f6f98f0ef99a67b36ba728c84ee4ed2c872342f3e1a7d9f9",
+    "selection_commit": "d2f361a044b156561022ea74eb722561c0c9a17e",
+    "final_protocol_resync_required": false,
+    "protocol_sha256": "f9fa144e38b940350b6fa6f57c4da98bfa927d5653dd6f115567a11320f4bd81"
   },
   "cohorts": {
     "C1": {
@@ -406,22 +407,21 @@
     }
   },
   "selection_artifact": {
-    "status": "VERIFIED_HISTORICAL_SELECTION_PENDING_PROTOCOL_RESYNC",
-    "workflow_run_id": 45538866028,
-    "workflow_url": "https://github.com/uniqueteamyemen/CHAOS/actions/runs/45538866028",
-    "workflow_head_commit": "608c14a565f8b207804dd7523a702991536d4ec2",
-    "selection_builder_commit": "608c14a565f8b207804dd7523a702991536d4ec2",
-    "artifact_id": 14988741300,
-    "artifact_name": "chaos-p1-4-cohort-selection-45538866028-1",
-    "artifact_zip_sha256": "c5a3720c2a5cd7754f9f9da022e70305cda90cde17bed4f74884a39026830523",
-    "selection_json_sha256": "b916e5d1f40f9e224a229096565e618c8bcdec659303def9041769c7834dc960",
+    "status": "VERIFIED_CURRENT_PROTOCOL_BOUND",
+    "workflow_run_id": 45545605162,
+    "workflow_url": "https://github.com/uniqueteamyemen/CHAOS/actions/runs/45545605162",
+    "workflow_head_commit": "d2f361a044b156561022ea74eb722561c0c9a17e",
+    "selection_builder_commit": "d2f361a044b156561022ea74eb722561c0c9a17e",
+    "artifact_id": 14991172651,
+    "artifact_name": "chaos-p1-4-cohort-selection-45545605162-1",
+    "artifact_zip_sha256": "339c9c097ea5b2e0f6f98f0ef99a67b36ba728c84ee4ed2c872342f3e1a7d9f9",
+    "selection_json_sha256": "e5dfe77b204a4da075f5776f4cfb2ec90dacc9c6548c3c6da72ee4feea281d97",
     "selection_sidecar_verified": true,
-    "protocol_sha256": "e2d1634a2bcfe60ccd3866e744fb57461cffd49f071ba49fedc90ddf7452d8dd",
+    "protocol_sha256": "f9fa144e38b940350b6fa6f57c4da98bfa927d5653dd6f115567a11320f4bd81",
     "prepared_artifact_sha256": "c83f6e960296fbbdb687650a798959f08cb8d98db68de8ca713d7be278e824fe",
     "candidate_registry_sha256": "4c6643acd6ae1ccf30570c103b163340a460e2b7dfbfa9f2a11eee537d0e78f9",
-    "cohort_selection_commit": "608c14a565f8b207804dd7523a702991536d4ec2",
-    "protocol_sha256_at_selection": "e2d1634a2bcfe60ccd3866e744fb57461cffd49f071ba49fedc90ddf7452d8dd",
-    "resync_required_reason": "The pilot protocol will be corrected and versioned before any Pilot execution; cohort IDs remain frozen, but a fresh selection artifact must bind the final protocol SHA-256."
+    "cohort_selection_commit": "d2f361a044b156561022ea74eb722561c0c9a17e",
+    "protocol_sha256_at_selection": "f9fa144e38b940350b6fa6f57c4da98bfa927d5653dd6f115567a11320f4bd81"
   },
   "pilot_scope": {
     "status": "SELECTED_NOT_EXECUTED",
@@ -479,8 +479,8 @@
     "C3_included": false,
     "C3_status": "PENDING_EXTERNAL_EVIDENCE",
     "raw_values_persisted": false,
-    "protocol_binding_status": "REQUIRES_RESYNC_AFTER_PROTOCOL_V1_1",
-    "selection_artifact_id": 14988741300,
-    "selection_workflow_run_id": 45538866028
+    "protocol_binding_status": "BOUND_TO_FROZEN_PROTOCOL_V1_1_2",
+    "selection_artifact_id": 14991172651,
+    "selection_workflow_run_id": 45545605162
   }
 }
