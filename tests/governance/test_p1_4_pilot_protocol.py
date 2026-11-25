@@ -194,8 +194,7 @@ class P14PilotProtocolTests(unittest.TestCase):
     def test_c1_selected_sample_evidence_cannot_be_full_validation_or_rejection(self):
         decision = self.protocol["decision_rules"]["cohort_decisions"]["C1_SELECTED_SAMPLE_EVIDENCE"]
         serialized = " ".join(all_strings(decision)).lower()
-        self.assertIn("must not be labeled validated", serialized)
-        self.assertIn("must not be labeled locked_rejected", serialized)
+        self.assertIn("must not be labeled validated or locked_rejected", serialized)
         self.assertIn("must not claim c2 validation", serialized)
 
 
