@@ -1,0 +1,22 @@
+{
+  "html_path": "/home/ubuntu/upload/data-explorer.oecd.org_vis_tenant_archive_df_ds__DisseminateArchiveDMZ_df_id__DF_PMR_df_ag__OECD_dq__1787784348811.html",
+  "candidate_links": [
+    {
+      "text": "Product Market Regulation 2013.",
+      "href": "https://data-explorer.oecd.org/vis?tenant=archive&df[ds]=DisseminateArchiveDMZ&df[id]=DF_PMR&df[ag]=OECD&dq=.&lom=LASTNPERIODS&lo=5&to[TIME_PERIOD]=false"
+    },
+    {
+      "text": "Filtered data in tabular text (CSV)",
+      "href": "https://sdmx.oecd.org/archive/rest/data/OECD,DF_PMR,/all?startPeriod=2009&dimensionAtObservation=AllDimensions&format=csvfilewithlabels"
+    },
+    {
+      "text": "Unfiltered data in tabular text (CSV)",
+      "href": "https://sdmx.oecd.org/archive/rest/data/OECD,DF_PMR,/all?dimensionAtObservation=AllDimensions&format=csvfilewithlabels"
+    },
+    {
+      "text": "Unfiltered reference information in tabular text (CSV)",
+      "href": "https://sdmx.oecd.org/archive/rest/v2/data/dataflow/OECD/DF_PMR/~/?attributes=msd&measures=none&dimensionAtObservation=AllDimensions&format=csvfilewithlabels"
+    }
+  ],
+  "status": "html_inspection_complete"
+}

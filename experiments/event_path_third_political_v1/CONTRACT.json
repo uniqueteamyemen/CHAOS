@@ -1,0 +1,13 @@
+{
+  "contract_id": "event-path-third-political-v1",
+  "source": "/home/ubuntu/CHAOS/experiments/macro_plus_eia_energy/ama_ucdp_cross_domain_v1/AMA_UCDP_CROSS_DOMAIN_REPLAY_ROWS.csv",
+  "value_column": "state_based_conflict",
+  "unit": "country-year",
+  "native_frequency": "annual",
+  "window_width": 3,
+  "train_size": 8,
+  "min_support": 2,
+  "path_policy": "frozen conditional path; abstain when unsupported",
+  "economic_model_tuning": false,
+  "causal_claims_permitted": false
+}

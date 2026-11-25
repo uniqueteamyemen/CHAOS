@@ -1,0 +1,25 @@
+{
+  "campaign_id":"CHAOS_OPEN_MULTI_DOMAIN_CAMPAIGN_V1",
+  "run_id":"CHAOS_CAMPAIGN_RUN_2026_08_27_01",
+  "supervisor":"CHAOS_SUPERVISOR",
+  "baseline_ref":"campaigns/CAMPAIGN_BASELINE_V1.json",
+  "orchestration_ref":"campaigns/AGENT_ORCHESTRATION_REGISTRY_V1.json",
+  "agent_status":{
+    "trade":{"status":"not_testable_current_assets","records":124,"reporters":5,"http_200":124,"http_non_200":1,"positive_edges":0},
+    "institutions_policy":{"status":"completed_no_positive_edge","wgi_states":32403,"entities":216,"dimensions":6,"positive_edges":0,"rejected_edges":5,"not_testable_edges":5},
+    "energy":{"status":"completed_no_new_positive_edge","positive_edges":0},
+    "environment_disaster":{"status":"native_states_ready_edge_blocked","events":1141,"positive_edges":0},
+    "health_pandemic":{"status":"native_states_ready_edge_blocked","reported_rows":215751,"entities":239,"positive_edges":0},
+    "evidence_composition":{"status":"supervisor_gate_active","admitted_supported_predictive_records":2,"quarantined_records":20,"runtime_eligible_patterns":0}
+  },
+  "supervisor_decisions":[
+    {"artifact":"campaigns/agents/trade_v1/TRADE_TRANSITION_EVIDENCE_V1.jsonl","decision":"not_testable","reason":"bounded preview lacks sufficient multidimensional historical coverage"},
+    {"artifact":"campaigns/agents/institutions_policy_v1/WGI_INSTITUTIONAL_EDGE_DECISION_V1.json","decision":"no_positive_admission","reason":"continuity edges trivial prevalence; decline edges rare/degenerate; WGI alone does not observe policy shocks or leader deviations"},
+    {"artifact":"campaigns/CAMPAIGN_SHARED_GATE_V1/SUPERVISOR_GATE_DECISION_V1.json","decision":"pass","reason":"only supported_predictive records admitted; all other statuses quarantined"}
+  ],
+  "resume_policy":"Each agent workspace is idempotent and may resume from raw/provenance/run manifests; no browser session required.",
+  "raw_policy":"Raw inputs remain immutable and outside Git when large or source-restricted; hashes and provenance are tracked.",
+  "causal_claims_permitted":false,
+  "market_intelligence_engine_modified":false,
+  "status":"in_progress_open_campaign"
+}

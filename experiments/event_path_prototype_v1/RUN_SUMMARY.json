@@ -1,0 +1,35 @@
+{
+  "source": {
+    "source_id": "annual-panel:wdi__NY.GDP.MKTP.KD.ZG",
+    "source_ref": "/home/ubuntu/CHAOS/catalog_first/readiness_gate/ANNUAL_PANEL_RAW_WDI_IMF_2000_2024.csv",
+    "source_sha256": "747f672a2aabd867dfead268bbdcda52dcaa9273c0f8bd913ac7fb98f3ca274f"
+  },
+  "counts": {
+    "events": 4780,
+    "states": 4780,
+    "transitions": 4586,
+    "predictions": 3229
+  },
+  "metrics": {
+    "path_model": {
+      "n": 1523.0,
+      "accuracy": 0.602757715036113,
+      "coverage": 0.4716630535769588
+    },
+    "majority_baseline": {
+      "n": 1523.0,
+      "accuracy": 0.48588312541037426,
+      "coverage": 0.4716630535769588
+    },
+    "persistence_baseline": {
+      "n": 1523.0,
+      "accuracy": 0.345370978332239,
+      "coverage": 0.4716630535769588
+    },
+    "abstention": {
+      "n": 1706.0,
+      "rate": 0.5283369464230412
+    }
+  },
+  "status": "provisional"
+}

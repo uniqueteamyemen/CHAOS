@@ -1,0 +1,15 @@
+{
+  "agent_id":"TRADE_AGENT_V1",
+  "status":"not_testable_current_assets",
+  "available_assets":[
+    {"path":"campaign/raw/20260825T200757Z/un_comtrade_2022_au_imports.json","scope":"one reporter-year aggregate preview record","year":2022,"frequency":"annual","rows":1,"sufficient_for_historical_edge":false},
+    {"path":"campaign/raw/20260825T201223Z/worldbank_WLD_trade_growth.json","scope":"World aggregate indicator probe","frequency":"annual","sufficient_for_country_trade_network":false}
+  ],
+  "required_for_next_trade_run":["bounded reporter/partner/commodity/flow contract","multi-year coverage","entity crosswalk","source license/access review","no silent aggregation"],
+  "current_domain_state_output":0,
+  "current_transition_evidence_output":1,
+  "transition_evidence_status":"not_testable",
+  "reason":"available Comtrade asset is a single preview observation and World Bank probe is an aggregate; neither supports a country/partner/commodity historical edge",
+  "causal_claims_permitted":false,
+  "supervisor_review_required":true
+}

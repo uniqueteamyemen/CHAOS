@@ -1,0 +1,406 @@
+run_id,seed,encoder,field,batch,shape,mean,std
+stability_seed17_enc3,17,3,encoder_variables,0,"[64, 3, 1, 11]",0.09090909361839294,0.1154143437743187
+stability_seed17_enc3,17,3,decoder_variables,0,"[64, 1, 1, 0]",,
+stability_seed17_enc3,17,3,encoder_attention,0,"[64, 1, 2, 3]",0.3333333432674408,0.10899235308170319
+stability_seed17_enc3,17,3,decoder_attention,0,"[64, 1, 2, 1]",0.0,0.0
+stability_seed17_enc3,17,3,static_variables,0,"[64, 1, 1]",1.0,0.0
+stability_seed17_enc3,17,3,encoder_variables,1,"[64, 3, 1, 11]",0.09090909361839294,0.12477995455265045
+stability_seed17_enc3,17,3,decoder_variables,1,"[64, 1, 1, 0]",,
+stability_seed17_enc3,17,3,encoder_attention,1,"[64, 1, 2, 3]",0.3333333432674408,0.14613576233386993
+stability_seed17_enc3,17,3,decoder_attention,1,"[64, 1, 2, 1]",0.0,0.0
+stability_seed17_enc3,17,3,static_variables,1,"[64, 1, 1]",1.0,0.0
+stability_seed17_enc3,17,3,encoder_variables,2,"[64, 3, 1, 11]",0.09090909361839294,0.11540046334266663
+stability_seed17_enc3,17,3,decoder_variables,2,"[64, 1, 1, 0]",,
+stability_seed17_enc3,17,3,encoder_attention,2,"[64, 1, 2, 3]",0.3333333432674408,0.11893235146999359
+stability_seed17_enc3,17,3,decoder_attention,2,"[64, 1, 2, 1]",0.0,0.0
+stability_seed17_enc3,17,3,static_variables,2,"[64, 1, 1]",1.0,0.0
+stability_seed17_enc3,17,3,encoder_variables,3,"[64, 3, 1, 11]",0.09090909361839294,0.1154184341430664
+stability_seed17_enc3,17,3,decoder_variables,3,"[64, 1, 1, 0]",,
+stability_seed17_enc3,17,3,encoder_attention,3,"[64, 1, 2, 3]",0.3333333432674408,0.10496536642313004
+stability_seed17_enc3,17,3,decoder_attention,3,"[64, 1, 2, 1]",0.0,0.0
+stability_seed17_enc3,17,3,static_variables,3,"[64, 1, 1]",1.0,0.0
+stability_seed17_enc3,17,3,encoder_variables,4,"[64, 3, 1, 11]",0.09090909361839294,0.11541172116994858
+stability_seed17_enc3,17,3,decoder_variables,4,"[64, 1, 1, 0]",,
+stability_seed17_enc3,17,3,encoder_attention,4,"[64, 1, 2, 3]",0.3333333432674408,0.12471402436494827
+stability_seed17_enc3,17,3,decoder_attention,4,"[64, 1, 2, 1]",0.0,0.0
+stability_seed17_enc3,17,3,static_variables,4,"[64, 1, 1]",1.0,0.0
+stability_seed17_enc3,17,3,encoder_variables,5,"[64, 3, 1, 11]",0.09090909361839294,0.11535646766424179
+stability_seed17_enc3,17,3,decoder_variables,5,"[64, 1, 1, 0]",,
+stability_seed17_enc3,17,3,encoder_attention,5,"[64, 1, 2, 3]",0.3333333432674408,0.11001978814601898
+stability_seed17_enc3,17,3,decoder_attention,5,"[64, 1, 2, 1]",0.0,0.0
+stability_seed17_enc3,17,3,static_variables,5,"[64, 1, 1]",1.0,0.0
+stability_seed17_enc3,17,3,encoder_variables,6,"[64, 3, 1, 11]",0.09090908616781235,0.11542145907878876
+stability_seed17_enc3,17,3,decoder_variables,6,"[64, 1, 1, 0]",,
+stability_seed17_enc3,17,3,encoder_attention,6,"[64, 1, 2, 3]",0.3333333432674408,0.11885076761245728
+stability_seed17_enc3,17,3,decoder_attention,6,"[64, 1, 2, 1]",0.0,0.0
+stability_seed17_enc3,17,3,static_variables,6,"[64, 1, 1]",1.0,0.0
+stability_seed17_enc3,17,3,encoder_variables,7,"[64, 3, 1, 11]",0.09090909361839294,0.115367591381073
+stability_seed17_enc3,17,3,decoder_variables,7,"[64, 1, 1, 0]",,
+stability_seed17_enc3,17,3,encoder_attention,7,"[64, 1, 2, 3]",0.3333333432674408,0.13574132323265076
+stability_seed17_enc3,17,3,decoder_attention,7,"[64, 1, 2, 1]",0.0,0.0
+stability_seed17_enc3,17,3,static_variables,7,"[64, 1, 1]",1.0,0.0
+stability_seed17_enc3,17,3,encoder_variables,8,"[44, 3, 1, 11]",0.09090909361839294,0.12415707856416702
+stability_seed17_enc3,17,3,decoder_variables,8,"[44, 1, 1, 0]",,
+stability_seed17_enc3,17,3,encoder_attention,8,"[44, 1, 2, 3]",0.3333333432674408,0.10023204982280731
+stability_seed17_enc3,17,3,decoder_attention,8,"[44, 1, 2, 1]",0.0,0.0
+stability_seed17_enc3,17,3,static_variables,8,"[44, 1, 1]",1.0,0.0
+stability_seed17_enc5,17,5,encoder_variables,0,"[64, 5, 1, 11]",0.09090909361839294,0.11578312516212463
+stability_seed17_enc5,17,5,decoder_variables,0,"[64, 1, 1, 0]",,
+stability_seed17_enc5,17,5,encoder_attention,0,"[64, 1, 2, 5]",0.20000000298023224,0.0729723647236824
+stability_seed17_enc5,17,5,decoder_attention,0,"[64, 1, 2, 1]",0.0,0.0
+stability_seed17_enc5,17,5,static_variables,0,"[64, 1, 1]",1.0,0.0
+stability_seed17_enc5,17,5,encoder_variables,1,"[64, 5, 1, 11]",0.09090909361839294,0.11682094633579254
+stability_seed17_enc5,17,5,decoder_variables,1,"[64, 1, 1, 0]",,
+stability_seed17_enc5,17,5,encoder_attention,1,"[64, 1, 2, 5]",0.20000000298023224,0.1029658243060112
+stability_seed17_enc5,17,5,decoder_attention,1,"[64, 1, 2, 1]",0.0,0.0
+stability_seed17_enc5,17,5,static_variables,1,"[64, 1, 1]",1.0,0.0
+stability_seed17_enc5,17,5,encoder_variables,2,"[64, 5, 1, 11]",0.09090909361839294,0.11575401574373245
+stability_seed17_enc5,17,5,decoder_variables,2,"[64, 1, 1, 0]",,
+stability_seed17_enc5,17,5,encoder_attention,2,"[64, 1, 2, 5]",0.20000000298023224,0.07875113934278488
+stability_seed17_enc5,17,5,decoder_attention,2,"[64, 1, 2, 1]",0.0,0.0
+stability_seed17_enc5,17,5,static_variables,2,"[64, 1, 1]",1.0,0.0
+stability_seed17_enc5,17,5,encoder_variables,3,"[64, 5, 1, 11]",0.09090909361839294,0.11583403497934341
+stability_seed17_enc5,17,5,decoder_variables,3,"[64, 1, 1, 0]",,
+stability_seed17_enc5,17,5,encoder_attention,3,"[64, 1, 2, 5]",0.20000000298023224,0.06799858063459396
+stability_seed17_enc5,17,5,decoder_attention,3,"[64, 1, 2, 1]",0.0,0.0
+stability_seed17_enc5,17,5,static_variables,3,"[64, 1, 1]",1.0,0.0
+stability_seed17_enc5,17,5,encoder_variables,4,"[64, 5, 1, 11]",0.09090909361839294,0.11581377685070038
+stability_seed17_enc5,17,5,decoder_variables,4,"[64, 1, 1, 0]",,
+stability_seed17_enc5,17,5,encoder_attention,4,"[64, 1, 2, 5]",0.20000000298023224,0.07118472456932068
+stability_seed17_enc5,17,5,decoder_attention,4,"[64, 1, 2, 1]",0.0,0.0
+stability_seed17_enc5,17,5,static_variables,4,"[64, 1, 1]",1.0,0.0
+stability_seed17_enc5,17,5,encoder_variables,5,"[64, 5, 1, 11]",0.09090909361839294,0.11570466309785843
+stability_seed17_enc5,17,5,decoder_variables,5,"[64, 1, 1, 0]",,
+stability_seed17_enc5,17,5,encoder_attention,5,"[64, 1, 2, 5]",0.20000000298023224,0.07267018407583237
+stability_seed17_enc5,17,5,decoder_attention,5,"[64, 1, 2, 1]",0.0,0.0
+stability_seed17_enc5,17,5,static_variables,5,"[64, 1, 1]",1.0,0.0
+stability_seed17_enc5,17,5,encoder_variables,6,"[64, 5, 1, 11]",0.09090909361839294,0.11581719666719437
+stability_seed17_enc5,17,5,decoder_variables,6,"[64, 1, 1, 0]",,
+stability_seed17_enc5,17,5,encoder_attention,6,"[64, 1, 2, 5]",0.20000000298023224,0.07230284810066223
+stability_seed17_enc5,17,5,decoder_attention,6,"[64, 1, 2, 1]",0.0,0.0
+stability_seed17_enc5,17,5,static_variables,6,"[64, 1, 1]",1.0,0.0
+stability_seed17_enc5,17,5,encoder_variables,7,"[64, 5, 1, 11]",0.09090909361839294,0.11572319269180298
+stability_seed17_enc5,17,5,decoder_variables,7,"[64, 1, 1, 0]",,
+stability_seed17_enc5,17,5,encoder_attention,7,"[64, 1, 2, 5]",0.20000000298023224,0.0812501385807991
+stability_seed17_enc5,17,5,decoder_attention,7,"[64, 1, 2, 1]",0.0,0.0
+stability_seed17_enc5,17,5,static_variables,7,"[64, 1, 1]",1.0,0.0
+stability_seed17_enc5,17,5,encoder_variables,8,"[44, 5, 1, 11]",0.09090909361839294,0.12398028373718262
+stability_seed17_enc5,17,5,decoder_variables,8,"[44, 1, 1, 0]",,
+stability_seed17_enc5,17,5,encoder_attention,8,"[44, 1, 2, 5]",0.20000000298023224,0.07080078125
+stability_seed17_enc5,17,5,decoder_attention,8,"[44, 1, 2, 1]",0.0,0.0
+stability_seed17_enc5,17,5,static_variables,8,"[44, 1, 1]",1.0,0.0
+stability_seed17_enc7,17,7,encoder_variables,0,"[64, 7, 1, 11]",0.09090909361839294,0.1109795793890953
+stability_seed17_enc7,17,7,decoder_variables,0,"[64, 1, 1, 0]",,
+stability_seed17_enc7,17,7,encoder_attention,0,"[64, 1, 2, 7]",0.1428571492433548,0.057194389402866364
+stability_seed17_enc7,17,7,decoder_attention,0,"[64, 1, 2, 1]",0.0,0.0
+stability_seed17_enc7,17,7,static_variables,0,"[64, 1, 1]",1.0,0.0
+stability_seed17_enc7,17,7,encoder_variables,1,"[64, 7, 1, 11]",0.09090909361839294,0.11956201493740082
+stability_seed17_enc7,17,7,decoder_variables,1,"[64, 1, 1, 0]",,
+stability_seed17_enc7,17,7,encoder_attention,1,"[64, 1, 2, 7]",0.1428571492433548,0.09749095141887665
+stability_seed17_enc7,17,7,decoder_attention,1,"[64, 1, 2, 1]",0.0,0.0
+stability_seed17_enc7,17,7,static_variables,1,"[64, 1, 1]",1.0,0.0
+stability_seed17_enc7,17,7,encoder_variables,2,"[64, 7, 1, 11]",0.09090909361839294,0.11088178306818008
+stability_seed17_enc7,17,7,decoder_variables,2,"[64, 1, 1, 0]",,
+stability_seed17_enc7,17,7,encoder_attention,2,"[64, 1, 2, 7]",0.1428571492433548,0.07734471559524536
+stability_seed17_enc7,17,7,decoder_attention,2,"[64, 1, 2, 1]",0.0,0.0
+stability_seed17_enc7,17,7,static_variables,2,"[64, 1, 1]",1.0,0.0
+stability_seed17_enc7,17,7,encoder_variables,3,"[64, 7, 1, 11]",0.09090909361839294,0.11115673929452896
+stability_seed17_enc7,17,7,decoder_variables,3,"[64, 1, 1, 0]",,
+stability_seed17_enc7,17,7,encoder_attention,3,"[64, 1, 2, 7]",0.1428571492433548,0.07094692438840866
+stability_seed17_enc7,17,7,decoder_attention,3,"[64, 1, 2, 1]",0.0,0.0
+stability_seed17_enc7,17,7,static_variables,3,"[64, 1, 1]",1.0,0.0
+stability_seed17_enc7,17,7,encoder_variables,4,"[64, 7, 1, 11]",0.09090909361839294,0.11108700931072235
+stability_seed17_enc7,17,7,decoder_variables,4,"[64, 1, 1, 0]",,
+stability_seed17_enc7,17,7,encoder_attention,4,"[64, 1, 2, 7]",0.1428571492433548,0.08095704764127731
+stability_seed17_enc7,17,7,decoder_attention,4,"[64, 1, 2, 1]",0.0,0.0
+stability_seed17_enc7,17,7,static_variables,4,"[64, 1, 1]",1.0,0.0
+stability_seed17_enc7,17,7,encoder_variables,5,"[64, 7, 1, 11]",0.09090909361839294,0.11071058362722397
+stability_seed17_enc7,17,7,decoder_variables,5,"[64, 1, 1, 0]",,
+stability_seed17_enc7,17,7,encoder_attention,5,"[64, 1, 2, 7]",0.1428571492433548,0.07718831300735474
+stability_seed17_enc7,17,7,decoder_attention,5,"[64, 1, 2, 1]",0.0,0.0
+stability_seed17_enc7,17,7,static_variables,5,"[64, 1, 1]",1.0,0.0
+stability_seed17_enc7,17,7,encoder_variables,6,"[64, 7, 1, 11]",0.09090909361839294,0.11109080165624619
+stability_seed17_enc7,17,7,decoder_variables,6,"[64, 1, 1, 0]",,
+stability_seed17_enc7,17,7,encoder_attention,6,"[64, 1, 2, 7]",0.1428571492433548,0.07659447938203812
+stability_seed17_enc7,17,7,decoder_attention,6,"[64, 1, 2, 1]",0.0,0.0
+stability_seed17_enc7,17,7,static_variables,6,"[64, 1, 1]",1.0,0.0
+stability_seed17_enc7,17,7,encoder_variables,7,"[64, 7, 1, 11]",0.09090909361839294,0.11074960976839066
+stability_seed17_enc7,17,7,decoder_variables,7,"[64, 1, 1, 0]",,
+stability_seed17_enc7,17,7,encoder_attention,7,"[64, 1, 2, 7]",0.1428571492433548,0.0961255207657814
+stability_seed17_enc7,17,7,decoder_attention,7,"[64, 1, 2, 1]",0.0,0.0
+stability_seed17_enc7,17,7,static_variables,7,"[64, 1, 1]",1.0,0.0
+stability_seed17_enc7,17,7,encoder_variables,8,"[44, 7, 1, 11]",0.09090909361839294,0.12181105464696884
+stability_seed17_enc7,17,7,decoder_variables,8,"[44, 1, 1, 0]",,
+stability_seed17_enc7,17,7,encoder_attention,8,"[44, 1, 2, 7]",0.1428571492433548,0.07819635421037674
+stability_seed17_enc7,17,7,decoder_attention,8,"[44, 1, 2, 1]",0.0,0.0
+stability_seed17_enc7,17,7,static_variables,8,"[44, 1, 1]",1.0,0.0
+stability_seed43_enc3,43,3,encoder_variables,0,"[64, 3, 1, 11]",0.09090909361839294,0.06844613701105118
+stability_seed43_enc3,43,3,decoder_variables,0,"[64, 1, 1, 0]",,
+stability_seed43_enc3,43,3,encoder_attention,0,"[64, 1, 2, 3]",0.3333333432674408,0.05112522467970848
+stability_seed43_enc3,43,3,decoder_attention,0,"[64, 1, 2, 1]",0.0,0.0
+stability_seed43_enc3,43,3,static_variables,0,"[64, 1, 1]",1.0,0.0
+stability_seed43_enc3,43,3,encoder_variables,1,"[64, 3, 1, 11]",0.09090909361839294,0.07113892585039139
+stability_seed43_enc3,43,3,decoder_variables,1,"[64, 1, 1, 0]",,
+stability_seed43_enc3,43,3,encoder_attention,1,"[64, 1, 2, 3]",0.3333333432674408,0.04897383973002434
+stability_seed43_enc3,43,3,decoder_attention,1,"[64, 1, 2, 1]",0.0,0.0
+stability_seed43_enc3,43,3,static_variables,1,"[64, 1, 1]",1.0,0.0
+stability_seed43_enc3,43,3,encoder_variables,2,"[64, 3, 1, 11]",0.09090909361839294,0.06832263618707657
+stability_seed43_enc3,43,3,decoder_variables,2,"[64, 1, 1, 0]",,
+stability_seed43_enc3,43,3,encoder_attention,2,"[64, 1, 2, 3]",0.3333333432674408,0.04585399478673935
+stability_seed43_enc3,43,3,decoder_attention,2,"[64, 1, 2, 1]",0.0,0.0
+stability_seed43_enc3,43,3,static_variables,2,"[64, 1, 1]",1.0,0.0
+stability_seed43_enc3,43,3,encoder_variables,3,"[64, 3, 1, 11]",0.09090909361839294,0.06872308254241943
+stability_seed43_enc3,43,3,decoder_variables,3,"[64, 1, 1, 0]",,
+stability_seed43_enc3,43,3,encoder_attention,3,"[64, 1, 2, 3]",0.3333333432674408,0.06328333169221878
+stability_seed43_enc3,43,3,decoder_attention,3,"[64, 1, 2, 1]",0.0,0.0
+stability_seed43_enc3,43,3,static_variables,3,"[64, 1, 1]",1.0,0.0
+stability_seed43_enc3,43,3,encoder_variables,4,"[64, 3, 1, 11]",0.09090909361839294,0.06862182170152664
+stability_seed43_enc3,43,3,decoder_variables,4,"[64, 1, 1, 0]",,
+stability_seed43_enc3,43,3,encoder_attention,4,"[64, 1, 2, 3]",0.3333333432674408,0.04619623348116875
+stability_seed43_enc3,43,3,decoder_attention,4,"[64, 1, 2, 1]",0.0,0.0
+stability_seed43_enc3,43,3,static_variables,4,"[64, 1, 1]",1.0,0.0
+stability_seed43_enc3,43,3,encoder_variables,5,"[64, 3, 1, 11]",0.09090909361839294,0.06844905018806458
+stability_seed43_enc3,43,3,decoder_variables,5,"[64, 1, 1, 0]",,
+stability_seed43_enc3,43,3,encoder_attention,5,"[64, 1, 2, 3]",0.3333333432674408,0.03982025384902954
+stability_seed43_enc3,43,3,decoder_attention,5,"[64, 1, 2, 1]",0.0,0.0
+stability_seed43_enc3,43,3,static_variables,5,"[64, 1, 1]",1.0,0.0
+stability_seed43_enc3,43,3,encoder_variables,6,"[64, 3, 1, 11]",0.09090909361839294,0.0686342790722847
+stability_seed43_enc3,43,3,decoder_variables,6,"[64, 1, 1, 0]",,
+stability_seed43_enc3,43,3,encoder_attention,6,"[64, 1, 2, 3]",0.3333333432674408,0.05496014282107353
+stability_seed43_enc3,43,3,decoder_attention,6,"[64, 1, 2, 1]",0.0,0.0
+stability_seed43_enc3,43,3,static_variables,6,"[64, 1, 1]",1.0,0.0
+stability_seed43_enc3,43,3,encoder_variables,7,"[64, 3, 1, 11]",0.09090909361839294,0.06826053559780121
+stability_seed43_enc3,43,3,decoder_variables,7,"[64, 1, 1, 0]",,
+stability_seed43_enc3,43,3,encoder_attention,7,"[64, 1, 2, 3]",0.3333333432674408,0.05846165865659714
+stability_seed43_enc3,43,3,decoder_attention,7,"[64, 1, 2, 1]",0.0,0.0
+stability_seed43_enc3,43,3,static_variables,7,"[64, 1, 1]",1.0,0.0
+stability_seed43_enc3,43,3,encoder_variables,8,"[44, 3, 1, 11]",0.09090909361839294,0.07337547093629837
+stability_seed43_enc3,43,3,decoder_variables,8,"[44, 1, 1, 0]",,
+stability_seed43_enc3,43,3,encoder_attention,8,"[44, 1, 2, 3]",0.3333333432674408,0.059473078697919846
+stability_seed43_enc3,43,3,decoder_attention,8,"[44, 1, 2, 1]",0.0,0.0
+stability_seed43_enc3,43,3,static_variables,8,"[44, 1, 1]",1.0,0.0
+stability_seed43_enc5,43,5,encoder_variables,0,"[64, 5, 1, 11]",0.09090909361839294,0.060666587203741074
+stability_seed43_enc5,43,5,decoder_variables,0,"[64, 1, 1, 0]",,
+stability_seed43_enc5,43,5,encoder_attention,0,"[64, 1, 2, 5]",0.20000000298023224,0.03496430069208145
+stability_seed43_enc5,43,5,decoder_attention,0,"[64, 1, 2, 1]",0.0,0.0
+stability_seed43_enc5,43,5,static_variables,0,"[64, 1, 1]",1.0,0.0
+stability_seed43_enc5,43,5,encoder_variables,1,"[64, 5, 1, 11]",0.09090909361839294,0.06318492442369461
+stability_seed43_enc5,43,5,decoder_variables,1,"[64, 1, 1, 0]",,
+stability_seed43_enc5,43,5,encoder_attention,1,"[64, 1, 2, 5]",0.20000000298023224,0.05274319276213646
+stability_seed43_enc5,43,5,decoder_attention,1,"[64, 1, 2, 1]",0.0,0.0
+stability_seed43_enc5,43,5,static_variables,1,"[64, 1, 1]",1.0,0.0
+stability_seed43_enc5,43,5,encoder_variables,2,"[64, 5, 1, 11]",0.09090909361839294,0.06062394008040428
+stability_seed43_enc5,43,5,decoder_variables,2,"[64, 1, 1, 0]",,
+stability_seed43_enc5,43,5,encoder_attention,2,"[64, 1, 2, 5]",0.20000000298023224,0.03680385649204254
+stability_seed43_enc5,43,5,decoder_attention,2,"[64, 1, 2, 1]",0.0,0.0
+stability_seed43_enc5,43,5,static_variables,2,"[64, 1, 1]",1.0,0.0
+stability_seed43_enc5,43,5,encoder_variables,3,"[64, 5, 1, 11]",0.09090909361839294,0.060791902244091034
+stability_seed43_enc5,43,5,decoder_variables,3,"[64, 1, 1, 0]",,
+stability_seed43_enc5,43,5,encoder_attention,3,"[64, 1, 2, 5]",0.20000000298023224,0.04261675477027893
+stability_seed43_enc5,43,5,decoder_attention,3,"[64, 1, 2, 1]",0.0,0.0
+stability_seed43_enc5,43,5,static_variables,3,"[64, 1, 1]",1.0,0.0
+stability_seed43_enc5,43,5,encoder_variables,4,"[64, 5, 1, 11]",0.09090909361839294,0.06072743237018585
+stability_seed43_enc5,43,5,decoder_variables,4,"[64, 1, 1, 0]",,
+stability_seed43_enc5,43,5,encoder_attention,4,"[64, 1, 2, 5]",0.20000000298023224,0.030584091320633888
+stability_seed43_enc5,43,5,decoder_attention,4,"[64, 1, 2, 1]",0.0,0.0
+stability_seed43_enc5,43,5,static_variables,4,"[64, 1, 1]",1.0,0.0
+stability_seed43_enc5,43,5,encoder_variables,5,"[64, 5, 1, 11]",0.09090909361839294,0.06073978915810585
+stability_seed43_enc5,43,5,decoder_variables,5,"[64, 1, 1, 0]",,
+stability_seed43_enc5,43,5,encoder_attention,5,"[64, 1, 2, 5]",0.20000000298023224,0.03398625925183296
+stability_seed43_enc5,43,5,decoder_attention,5,"[64, 1, 2, 1]",0.0,0.0
+stability_seed43_enc5,43,5,static_variables,5,"[64, 1, 1]",1.0,0.0
+stability_seed43_enc5,43,5,encoder_variables,6,"[64, 5, 1, 11]",0.09090909361839294,0.06072036921977997
+stability_seed43_enc5,43,5,decoder_variables,6,"[64, 1, 1, 0]",,
+stability_seed43_enc5,43,5,encoder_attention,6,"[64, 1, 2, 5]",0.20000000298023224,0.04306633770465851
+stability_seed43_enc5,43,5,decoder_attention,6,"[64, 1, 2, 1]",0.0,0.0
+stability_seed43_enc5,43,5,static_variables,6,"[64, 1, 1]",1.0,0.0
+stability_seed43_enc5,43,5,encoder_variables,7,"[64, 5, 1, 11]",0.09090909361839294,0.06062156334519386
+stability_seed43_enc5,43,5,decoder_variables,7,"[64, 1, 1, 0]",,
+stability_seed43_enc5,43,5,encoder_attention,7,"[64, 1, 2, 5]",0.20000000298023224,0.0434042289853096
+stability_seed43_enc5,43,5,decoder_attention,7,"[64, 1, 2, 1]",0.0,0.0
+stability_seed43_enc5,43,5,static_variables,7,"[64, 1, 1]",1.0,0.0
+stability_seed43_enc5,43,5,encoder_variables,8,"[44, 5, 1, 11]",0.09090909361839294,0.062324415892362595
+stability_seed43_enc5,43,5,decoder_variables,8,"[44, 1, 1, 0]",,
+stability_seed43_enc5,43,5,encoder_attention,8,"[44, 1, 2, 5]",0.20000000298023224,0.039599448442459106
+stability_seed43_enc5,43,5,decoder_attention,8,"[44, 1, 2, 1]",0.0,0.0
+stability_seed43_enc5,43,5,static_variables,8,"[44, 1, 1]",1.0,0.0
+stability_seed43_enc7,43,7,encoder_variables,0,"[64, 7, 1, 11]",0.09090909361839294,0.05804794281721115
+stability_seed43_enc7,43,7,decoder_variables,0,"[64, 1, 1, 0]",,
+stability_seed43_enc7,43,7,encoder_attention,0,"[64, 1, 2, 7]",0.1428571492433548,0.023569103330373764
+stability_seed43_enc7,43,7,decoder_attention,0,"[64, 1, 2, 1]",0.0,0.0
+stability_seed43_enc7,43,7,static_variables,0,"[64, 1, 1]",1.0,0.0
+stability_seed43_enc7,43,7,encoder_variables,1,"[64, 7, 1, 11]",0.09090909361839294,0.06123471260070801
+stability_seed43_enc7,43,7,decoder_variables,1,"[64, 1, 1, 0]",,
+stability_seed43_enc7,43,7,encoder_attention,1,"[64, 1, 2, 7]",0.1428571492433548,0.033308930695056915
+stability_seed43_enc7,43,7,decoder_attention,1,"[64, 1, 2, 1]",0.0,0.0
+stability_seed43_enc7,43,7,static_variables,1,"[64, 1, 1]",1.0,0.0
+stability_seed43_enc7,43,7,encoder_variables,2,"[64, 7, 1, 11]",0.09090909361839294,0.05798373743891716
+stability_seed43_enc7,43,7,decoder_variables,2,"[64, 1, 1, 0]",,
+stability_seed43_enc7,43,7,encoder_attention,2,"[64, 1, 2, 7]",0.1428571492433548,0.028761396184563637
+stability_seed43_enc7,43,7,decoder_attention,2,"[64, 1, 2, 1]",0.0,0.0
+stability_seed43_enc7,43,7,static_variables,2,"[64, 1, 1]",1.0,0.0
+stability_seed43_enc7,43,7,encoder_variables,3,"[64, 7, 1, 11]",0.09090909361839294,0.058251574635505676
+stability_seed43_enc7,43,7,decoder_variables,3,"[64, 1, 1, 0]",,
+stability_seed43_enc7,43,7,encoder_attention,3,"[64, 1, 2, 7]",0.1428571492433548,0.037760041654109955
+stability_seed43_enc7,43,7,decoder_attention,3,"[64, 1, 2, 1]",0.0,0.0
+stability_seed43_enc7,43,7,static_variables,3,"[64, 1, 1]",1.0,0.0
+stability_seed43_enc7,43,7,encoder_variables,4,"[64, 7, 1, 11]",0.09090909361839294,0.05813270062208176
+stability_seed43_enc7,43,7,decoder_variables,4,"[64, 1, 1, 0]",,
+stability_seed43_enc7,43,7,encoder_attention,4,"[64, 1, 2, 7]",0.1428571492433548,0.022310128435492516
+stability_seed43_enc7,43,7,decoder_attention,4,"[64, 1, 2, 1]",0.0,0.0
+stability_seed43_enc7,43,7,static_variables,4,"[64, 1, 1]",1.0,0.0
+stability_seed43_enc7,43,7,encoder_variables,5,"[64, 7, 1, 11]",0.09090909361839294,0.057938091456890106
+stability_seed43_enc7,43,7,decoder_variables,5,"[64, 1, 1, 0]",,
+stability_seed43_enc7,43,7,encoder_attention,5,"[64, 1, 2, 7]",0.1428571492433548,0.028900060802698135
+stability_seed43_enc7,43,7,decoder_attention,5,"[64, 1, 2, 1]",0.0,0.0
+stability_seed43_enc7,43,7,static_variables,5,"[64, 1, 1]",1.0,0.0
+stability_seed43_enc7,43,7,encoder_variables,6,"[64, 7, 1, 11]",0.09090909361839294,0.05817386135458946
+stability_seed43_enc7,43,7,decoder_variables,6,"[64, 1, 1, 0]",,
+stability_seed43_enc7,43,7,encoder_attention,6,"[64, 1, 2, 7]",0.1428571492433548,0.024732204154133797
+stability_seed43_enc7,43,7,decoder_attention,6,"[64, 1, 2, 1]",0.0,0.0
+stability_seed43_enc7,43,7,static_variables,6,"[64, 1, 1]",1.0,0.0
+stability_seed43_enc7,43,7,encoder_variables,7,"[64, 7, 1, 11]",0.09090909361839294,0.05790465325117111
+stability_seed43_enc7,43,7,decoder_variables,7,"[64, 1, 1, 0]",,
+stability_seed43_enc7,43,7,encoder_attention,7,"[64, 1, 2, 7]",0.1428571492433548,0.0446687713265419
+stability_seed43_enc7,43,7,decoder_attention,7,"[64, 1, 2, 1]",0.0,0.0
+stability_seed43_enc7,43,7,static_variables,7,"[64, 1, 1]",1.0,0.0
+stability_seed43_enc7,43,7,encoder_variables,8,"[44, 7, 1, 11]",0.09090909361839294,0.05774330347776413
+stability_seed43_enc7,43,7,decoder_variables,8,"[44, 1, 1, 0]",,
+stability_seed43_enc7,43,7,encoder_attention,8,"[44, 1, 2, 7]",0.1428571492433548,0.02452889457345009
+stability_seed43_enc7,43,7,decoder_attention,8,"[44, 1, 2, 1]",0.0,0.0
+stability_seed43_enc7,43,7,static_variables,8,"[44, 1, 1]",1.0,0.0
+stability_seed101_enc3,101,3,encoder_variables,0,"[64, 3, 1, 11]",0.09090909361839294,0.07104223966598511
+stability_seed101_enc3,101,3,decoder_variables,0,"[64, 1, 1, 0]",,
+stability_seed101_enc3,101,3,encoder_attention,0,"[64, 1, 2, 3]",0.3333333432674408,0.08334201574325562
+stability_seed101_enc3,101,3,decoder_attention,0,"[64, 1, 2, 1]",0.0,0.0
+stability_seed101_enc3,101,3,static_variables,0,"[64, 1, 1]",1.0,0.0
+stability_seed101_enc3,101,3,encoder_variables,1,"[64, 3, 1, 11]",0.09090909361839294,0.07380326837301254
+stability_seed101_enc3,101,3,decoder_variables,1,"[64, 1, 1, 0]",,
+stability_seed101_enc3,101,3,encoder_attention,1,"[64, 1, 2, 3]",0.3333333432674408,0.08278191834688187
+stability_seed101_enc3,101,3,decoder_attention,1,"[64, 1, 2, 1]",0.0,0.0
+stability_seed101_enc3,101,3,static_variables,1,"[64, 1, 1]",1.0,0.0
+stability_seed101_enc3,101,3,encoder_variables,2,"[64, 3, 1, 11]",0.09090909361839294,0.07112912088632584
+stability_seed101_enc3,101,3,decoder_variables,2,"[64, 1, 1, 0]",,
+stability_seed101_enc3,101,3,encoder_attention,2,"[64, 1, 2, 3]",0.3333333432674408,0.05996369197964668
+stability_seed101_enc3,101,3,decoder_attention,2,"[64, 1, 2, 1]",0.0,0.0
+stability_seed101_enc3,101,3,static_variables,2,"[64, 1, 1]",1.0,0.0
+stability_seed101_enc3,101,3,encoder_variables,3,"[64, 3, 1, 11]",0.09090909361839294,0.0709305852651596
+stability_seed101_enc3,101,3,decoder_variables,3,"[64, 1, 1, 0]",,
+stability_seed101_enc3,101,3,encoder_attention,3,"[64, 1, 2, 3]",0.3333333432674408,0.09218976646661758
+stability_seed101_enc3,101,3,decoder_attention,3,"[64, 1, 2, 1]",0.0,0.0
+stability_seed101_enc3,101,3,static_variables,3,"[64, 1, 1]",1.0,0.0
+stability_seed101_enc3,101,3,encoder_variables,4,"[64, 3, 1, 11]",0.09090909361839294,0.07097335159778595
+stability_seed101_enc3,101,3,decoder_variables,4,"[64, 1, 1, 0]",,
+stability_seed101_enc3,101,3,encoder_attention,4,"[64, 1, 2, 3]",0.3333333432674408,0.08023115992546082
+stability_seed101_enc3,101,3,decoder_attention,4,"[64, 1, 2, 1]",0.0,0.0
+stability_seed101_enc3,101,3,static_variables,4,"[64, 1, 1]",1.0,0.0
+stability_seed101_enc3,101,3,encoder_variables,5,"[64, 3, 1, 11]",0.09090909361839294,0.07124250382184982
+stability_seed101_enc3,101,3,decoder_variables,5,"[64, 1, 1, 0]",,
+stability_seed101_enc3,101,3,encoder_attention,5,"[64, 1, 2, 3]",0.3333333432674408,0.0749702900648117
+stability_seed101_enc3,101,3,decoder_attention,5,"[64, 1, 2, 1]",0.0,0.0
+stability_seed101_enc3,101,3,static_variables,5,"[64, 1, 1]",1.0,0.0
+stability_seed101_enc3,101,3,encoder_variables,6,"[64, 3, 1, 11]",0.09090909361839294,0.07096254825592041
+stability_seed101_enc3,101,3,decoder_variables,6,"[64, 1, 1, 0]",,
+stability_seed101_enc3,101,3,encoder_attention,6,"[64, 1, 2, 3]",0.3333333432674408,0.09540868550539017
+stability_seed101_enc3,101,3,decoder_attention,6,"[64, 1, 2, 1]",0.0,0.0
+stability_seed101_enc3,101,3,static_variables,6,"[64, 1, 1]",1.0,0.0
+stability_seed101_enc3,101,3,encoder_variables,7,"[64, 3, 1, 11]",0.09090909361839294,0.07123754173517227
+stability_seed101_enc3,101,3,decoder_variables,7,"[64, 1, 1, 0]",,
+stability_seed101_enc3,101,3,encoder_attention,7,"[64, 1, 2, 3]",0.3333333432674408,0.06994491815567017
+stability_seed101_enc3,101,3,decoder_attention,7,"[64, 1, 2, 1]",0.0,0.0
+stability_seed101_enc3,101,3,static_variables,7,"[64, 1, 1]",1.0,0.0
+stability_seed101_enc3,101,3,encoder_variables,8,"[44, 3, 1, 11]",0.09090909361839294,0.07482098042964935
+stability_seed101_enc3,101,3,decoder_variables,8,"[44, 1, 1, 0]",,
+stability_seed101_enc3,101,3,encoder_attention,8,"[44, 1, 2, 3]",0.3333333432674408,0.07517068833112717
+stability_seed101_enc3,101,3,decoder_attention,8,"[44, 1, 2, 1]",0.0,0.0
+stability_seed101_enc3,101,3,static_variables,8,"[44, 1, 1]",1.0,0.0
+stability_seed101_enc5,101,5,encoder_variables,0,"[64, 5, 1, 11]",0.09090909361839294,0.061052266508340836
+stability_seed101_enc5,101,5,decoder_variables,0,"[64, 1, 1, 0]",,
+stability_seed101_enc5,101,5,encoder_attention,0,"[64, 1, 2, 5]",0.20000000298023224,0.08081034570932388
+stability_seed101_enc5,101,5,decoder_attention,0,"[64, 1, 2, 1]",0.0,0.0
+stability_seed101_enc5,101,5,static_variables,0,"[64, 1, 1]",1.0,0.0
+stability_seed101_enc5,101,5,encoder_variables,1,"[64, 5, 1, 11]",0.09090909361839294,0.060606494545936584
+stability_seed101_enc5,101,5,decoder_variables,1,"[64, 1, 1, 0]",,
+stability_seed101_enc5,101,5,encoder_attention,1,"[64, 1, 2, 5]",0.20000000298023224,0.10400114208459854
+stability_seed101_enc5,101,5,decoder_attention,1,"[64, 1, 2, 1]",0.0,0.0
+stability_seed101_enc5,101,5,static_variables,1,"[64, 1, 1]",1.0,0.0
+stability_seed101_enc5,101,5,encoder_variables,2,"[64, 5, 1, 11]",0.09090909361839294,0.061103641986846924
+stability_seed101_enc5,101,5,decoder_variables,2,"[64, 1, 1, 0]",,
+stability_seed101_enc5,101,5,encoder_attention,2,"[64, 1, 2, 5]",0.20000000298023224,0.06884943693876266
+stability_seed101_enc5,101,5,decoder_attention,2,"[64, 1, 2, 1]",0.0,0.0
+stability_seed101_enc5,101,5,static_variables,2,"[64, 1, 1]",1.0,0.0
+stability_seed101_enc5,101,5,encoder_variables,3,"[64, 5, 1, 11]",0.09090909361839294,0.06098093464970589
+stability_seed101_enc5,101,5,decoder_variables,3,"[64, 1, 1, 0]",,
+stability_seed101_enc5,101,5,encoder_attention,3,"[64, 1, 2, 5]",0.20000000298023224,0.08510549366474152
+stability_seed101_enc5,101,5,decoder_attention,3,"[64, 1, 2, 1]",0.0,0.0
+stability_seed101_enc5,101,5,static_variables,3,"[64, 1, 1]",1.0,0.0
+stability_seed101_enc5,101,5,encoder_variables,4,"[64, 5, 1, 11]",0.09090909361839294,0.061008140444755554
+stability_seed101_enc5,101,5,decoder_variables,4,"[64, 1, 1, 0]",,
+stability_seed101_enc5,101,5,encoder_attention,4,"[64, 1, 2, 5]",0.20000000298023224,0.06525328010320663
+stability_seed101_enc5,101,5,decoder_attention,4,"[64, 1, 2, 1]",0.0,0.0
+stability_seed101_enc5,101,5,static_variables,4,"[64, 1, 1]",1.0,0.0
+stability_seed101_enc5,101,5,encoder_variables,5,"[64, 5, 1, 11]",0.09090909361839294,0.06118811294436455
+stability_seed101_enc5,101,5,decoder_variables,5,"[64, 1, 1, 0]",,
+stability_seed101_enc5,101,5,encoder_attention,5,"[64, 1, 2, 5]",0.20000000298023224,0.09290377795696259
+stability_seed101_enc5,101,5,decoder_attention,5,"[64, 1, 2, 1]",0.0,0.0
+stability_seed101_enc5,101,5,static_variables,5,"[64, 1, 1]",1.0,0.0
+stability_seed101_enc5,101,5,encoder_variables,6,"[64, 5, 1, 11]",0.09090909361839294,0.06100485101342201
+stability_seed101_enc5,101,5,decoder_variables,6,"[64, 1, 1, 0]",,
+stability_seed101_enc5,101,5,encoder_attention,6,"[64, 1, 2, 5]",0.20000000298023224,0.10978357493877411
+stability_seed101_enc5,101,5,decoder_attention,6,"[64, 1, 2, 1]",0.0,0.0
+stability_seed101_enc5,101,5,static_variables,6,"[64, 1, 1]",1.0,0.0
+stability_seed101_enc5,101,5,encoder_variables,7,"[64, 5, 1, 11]",0.09090909361839294,0.06117052957415581
+stability_seed101_enc5,101,5,decoder_variables,7,"[64, 1, 1, 0]",,
+stability_seed101_enc5,101,5,encoder_attention,7,"[64, 1, 2, 5]",0.20000000298023224,0.08907271176576614
+stability_seed101_enc5,101,5,decoder_attention,7,"[64, 1, 2, 1]",0.0,0.0
+stability_seed101_enc5,101,5,static_variables,7,"[64, 1, 1]",1.0,0.0
+stability_seed101_enc5,101,5,encoder_variables,8,"[44, 5, 1, 11]",0.09090909361839294,0.06593786925077438
+stability_seed101_enc5,101,5,decoder_variables,8,"[44, 1, 1, 0]",,
+stability_seed101_enc5,101,5,encoder_attention,8,"[44, 1, 2, 5]",0.20000000298023224,0.08561974763870239
+stability_seed101_enc5,101,5,decoder_attention,8,"[44, 1, 2, 1]",0.0,0.0
+stability_seed101_enc5,101,5,static_variables,8,"[44, 1, 1]",1.0,0.0
+stability_seed101_enc7,101,7,encoder_variables,0,"[64, 7, 1, 11]",0.09090909361839294,0.052858345210552216
+stability_seed101_enc7,101,7,decoder_variables,0,"[64, 1, 1, 0]",,
+stability_seed101_enc7,101,7,encoder_attention,0,"[64, 1, 2, 7]",0.1428571492433548,0.062063515186309814
+stability_seed101_enc7,101,7,decoder_attention,0,"[64, 1, 2, 1]",0.0,0.0
+stability_seed101_enc7,101,7,static_variables,0,"[64, 1, 1]",1.0,0.0
+stability_seed101_enc7,101,7,encoder_variables,1,"[64, 7, 1, 11]",0.09090909361839294,0.05355999991297722
+stability_seed101_enc7,101,7,decoder_variables,1,"[64, 1, 1, 0]",,
+stability_seed101_enc7,101,7,encoder_attention,1,"[64, 1, 2, 7]",0.1428571492433548,0.090724878013134
+stability_seed101_enc7,101,7,decoder_attention,1,"[64, 1, 2, 1]",0.0,0.0
+stability_seed101_enc7,101,7,static_variables,1,"[64, 1, 1]",1.0,0.0
+stability_seed101_enc7,101,7,encoder_variables,2,"[64, 7, 1, 11]",0.09090909361839294,0.052883680909872055
+stability_seed101_enc7,101,7,decoder_variables,2,"[64, 1, 1, 0]",,
+stability_seed101_enc7,101,7,encoder_attention,2,"[64, 1, 2, 7]",0.1428571492433548,0.07198154181241989
+stability_seed101_enc7,101,7,decoder_attention,2,"[64, 1, 2, 1]",0.0,0.0
+stability_seed101_enc7,101,7,static_variables,2,"[64, 1, 1]",1.0,0.0
+stability_seed101_enc7,101,7,encoder_variables,3,"[64, 7, 1, 11]",0.09090909361839294,0.05283065140247345
+stability_seed101_enc7,101,7,decoder_variables,3,"[64, 1, 1, 0]",,
+stability_seed101_enc7,101,7,encoder_attention,3,"[64, 1, 2, 7]",0.1428571492433548,0.07825803756713867
+stability_seed101_enc7,101,7,decoder_attention,3,"[64, 1, 2, 1]",0.0,0.0
+stability_seed101_enc7,101,7,static_variables,3,"[64, 1, 1]",1.0,0.0
+stability_seed101_enc7,101,7,encoder_variables,4,"[64, 7, 1, 11]",0.09090909361839294,0.052842579782009125
+stability_seed101_enc7,101,7,decoder_variables,4,"[64, 1, 1, 0]",,
+stability_seed101_enc7,101,7,encoder_attention,4,"[64, 1, 2, 7]",0.1428571492433548,0.05449594184756279
+stability_seed101_enc7,101,7,decoder_attention,4,"[64, 1, 2, 1]",0.0,0.0
+stability_seed101_enc7,101,7,static_variables,4,"[64, 1, 1]",1.0,0.0
+stability_seed101_enc7,101,7,encoder_variables,5,"[64, 7, 1, 11]",0.09090909361839294,0.052927933633327484
+stability_seed101_enc7,101,7,decoder_variables,5,"[64, 1, 1, 0]",,
+stability_seed101_enc7,101,7,encoder_attention,5,"[64, 1, 2, 7]",0.1428571492433548,0.08300316333770752
+stability_seed101_enc7,101,7,decoder_attention,5,"[64, 1, 2, 1]",0.0,0.0
+stability_seed101_enc7,101,7,static_variables,5,"[64, 1, 1]",1.0,0.0
+stability_seed101_enc7,101,7,encoder_variables,6,"[64, 7, 1, 11]",0.09090909361839294,0.05283869057893753
+stability_seed101_enc7,101,7,decoder_variables,6,"[64, 1, 1, 0]",,
+stability_seed101_enc7,101,7,encoder_attention,6,"[64, 1, 2, 7]",0.1428571492433548,0.09195730835199356
+stability_seed101_enc7,101,7,decoder_attention,6,"[64, 1, 2, 1]",0.0,0.0
+stability_seed101_enc7,101,7,static_variables,6,"[64, 1, 1]",1.0,0.0
+stability_seed101_enc7,101,7,encoder_variables,7,"[64, 7, 1, 11]",0.09090909361839294,0.052915412932634354
+stability_seed101_enc7,101,7,decoder_variables,7,"[64, 1, 1, 0]",,
+stability_seed101_enc7,101,7,encoder_attention,7,"[64, 1, 2, 7]",0.1428571492433548,0.07280541956424713
+stability_seed101_enc7,101,7,decoder_attention,7,"[64, 1, 2, 1]",0.0,0.0
+stability_seed101_enc7,101,7,static_variables,7,"[64, 1, 1]",1.0,0.0
+stability_seed101_enc7,101,7,encoder_variables,8,"[44, 7, 1, 11]",0.09090909361839294,0.05661134794354439
+stability_seed101_enc7,101,7,decoder_variables,8,"[44, 1, 1, 0]",,
+stability_seed101_enc7,101,7,encoder_attention,8,"[44, 1, 2, 7]",0.1428571492433548,0.06408712267875671
+stability_seed101_enc7,101,7,decoder_attention,8,"[44, 1, 2, 1]",0.0,0.0
+stability_seed101_enc7,101,7,static_variables,8,"[44, 1, 1]",1.0,0.0

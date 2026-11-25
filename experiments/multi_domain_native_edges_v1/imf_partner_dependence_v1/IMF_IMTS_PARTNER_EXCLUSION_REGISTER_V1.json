@@ -1,0 +1,332 @@
+{
+  "source": "CL_IMTS_COUNTRY",
+  "source_artifact": "campaigns/research_rounds/20260827_BROWSER_DEEP_RESEARCH/IMF_IMTS_CODELISTS_V1.json",
+  "reporters": [
+    "USA",
+    "CHN",
+    "DEU",
+    "JPN",
+    "IND",
+    "GBR",
+    "FRA",
+    "ITA",
+    "CAN",
+    "KOR",
+    "BRA",
+    "MEX",
+    "SAU",
+    "TUR",
+    "ZAF"
+  ],
+  "rules": "contract-defined code and source-name exclusions; no missing-as-zero",
+  "rows": [
+    {
+      "counterpart_code": "TX799",
+      "source_name": "Africa not specified",
+      "reasons": [
+        "aggregate_or_unspecified_source_name"
+      ],
+      "eligible_as_named_partner": false,
+      "contract": "IMF_IMTS_DOMINANT_PARTNER_DEPENDENCE_CONTRACT_V1"
+    },
+    {
+      "counterpart_code": "TX598",
+      "source_name": "Asia not specified",
+      "reasons": [
+        "aggregate_or_unspecified_source_name"
+      ],
+      "eligible_as_named_partner": false,
+      "contract": "IMF_IMTS_DOMINANT_PARTNER_DEPENDENCE_CONTRACT_V1"
+    },
+    {
+      "counterpart_code": "TX898",
+      "source_name": "Countries & Areas not specified",
+      "reasons": [
+        "aggregate_or_unspecified_source_name"
+      ],
+      "eligible_as_named_partner": false,
+      "contract": "IMF_IMTS_DOMINANT_PARTNER_DEPENDENCE_CONTRACT_V1"
+    },
+    {
+      "counterpart_code": "TX884",
+      "source_name": "Europe not specified",
+      "reasons": [
+        "aggregate_or_unspecified_source_name"
+      ],
+      "eligible_as_named_partner": false,
+      "contract": "IMF_IMTS_DOMINANT_PARTNER_DEPENDENCE_CONTRACT_V1"
+    },
+    {
+      "counterpart_code": "TX489",
+      "source_name": "Middle East and Central Asia not specified",
+      "reasons": [
+        "aggregate_or_unspecified_source_name"
+      ],
+      "eligible_as_named_partner": false,
+      "contract": "IMF_IMTS_DOMINANT_PARTNER_DEPENDENCE_CONTRACT_V1"
+    },
+    {
+      "counterpart_code": "TX899",
+      "source_name": "Special Categories",
+      "reasons": [
+        "aggregate_or_unspecified_source_name"
+      ],
+      "eligible_as_named_partner": false,
+      "contract": "IMF_IMTS_DOMINANT_PARTNER_DEPENDENCE_CONTRACT_V1"
+    },
+    {
+      "counterpart_code": "TX399",
+      "source_name": "Western Hemisphere not specified",
+      "reasons": [
+        "aggregate_or_unspecified_source_name"
+      ],
+      "eligible_as_named_partner": false,
+      "contract": "IMF_IMTS_DOMINANT_PARTNER_DEPENDENCE_CONTRACT_V1"
+    },
+    {
+      "counterpart_code": "TX910",
+      "source_name": "Other Countries n.i.e.",
+      "reasons": [
+        "aggregate_or_unspecified_source_name"
+      ],
+      "eligible_as_named_partner": false,
+      "contract": "IMF_IMTS_DOMINANT_PARTNER_DEPENDENCE_CONTRACT_V1"
+    },
+    {
+      "counterpart_code": "BRA",
+      "source_name": "Brazil",
+      "reasons": [
+        "self_reporter_for_BRA"
+      ],
+      "eligible_as_named_partner": false,
+      "contract": "IMF_IMTS_DOMINANT_PARTNER_DEPENDENCE_CONTRACT_V1"
+    },
+    {
+      "counterpart_code": "CAN",
+      "source_name": "Canada",
+      "reasons": [
+        "self_reporter_for_CAN"
+      ],
+      "eligible_as_named_partner": false,
+      "contract": "IMF_IMTS_DOMINANT_PARTNER_DEPENDENCE_CONTRACT_V1"
+    },
+    {
+      "counterpart_code": "CHN",
+      "source_name": "China, People's Republic of",
+      "reasons": [
+        "self_reporter_for_CHN"
+      ],
+      "eligible_as_named_partner": false,
+      "contract": "IMF_IMTS_DOMINANT_PARTNER_DEPENDENCE_CONTRACT_V1"
+    },
+    {
+      "counterpart_code": "COM",
+      "source_name": "Comoros, Union of the",
+      "reasons": [
+        "aggregate_or_unspecified_source_name"
+      ],
+      "eligible_as_named_partner": false,
+      "contract": "IMF_IMTS_DOMINANT_PARTNER_DEPENDENCE_CONTRACT_V1"
+    },
+    {
+      "counterpart_code": "FRA",
+      "source_name": "France",
+      "reasons": [
+        "self_reporter_for_FRA"
+      ],
+      "eligible_as_named_partner": false,
+      "contract": "IMF_IMTS_DOMINANT_PARTNER_DEPENDENCE_CONTRACT_V1"
+    },
+    {
+      "counterpart_code": "DEU",
+      "source_name": "Germany",
+      "reasons": [
+        "self_reporter_for_DEU"
+      ],
+      "eligible_as_named_partner": false,
+      "contract": "IMF_IMTS_DOMINANT_PARTNER_DEPENDENCE_CONTRACT_V1"
+    },
+    {
+      "counterpart_code": "HKG",
+      "source_name": "Hong Kong Special Administrative Region, People's Republic of China",
+      "reasons": [
+        "aggregate_or_unspecified_source_name"
+      ],
+      "eligible_as_named_partner": false,
+      "contract": "IMF_IMTS_DOMINANT_PARTNER_DEPENDENCE_CONTRACT_V1"
+    },
+    {
+      "counterpart_code": "IND",
+      "source_name": "India",
+      "reasons": [
+        "self_reporter_for_IND"
+      ],
+      "eligible_as_named_partner": false,
+      "contract": "IMF_IMTS_DOMINANT_PARTNER_DEPENDENCE_CONTRACT_V1"
+    },
+    {
+      "counterpart_code": "ITA",
+      "source_name": "Italy",
+      "reasons": [
+        "self_reporter_for_ITA"
+      ],
+      "eligible_as_named_partner": false,
+      "contract": "IMF_IMTS_DOMINANT_PARTNER_DEPENDENCE_CONTRACT_V1"
+    },
+    {
+      "counterpart_code": "JPN",
+      "source_name": "Japan",
+      "reasons": [
+        "self_reporter_for_JPN"
+      ],
+      "eligible_as_named_partner": false,
+      "contract": "IMF_IMTS_DOMINANT_PARTNER_DEPENDENCE_CONTRACT_V1"
+    },
+    {
+      "counterpart_code": "KOR",
+      "source_name": "Korea, Republic of",
+      "reasons": [
+        "self_reporter_for_KOR"
+      ],
+      "eligible_as_named_partner": false,
+      "contract": "IMF_IMTS_DOMINANT_PARTNER_DEPENDENCE_CONTRACT_V1"
+    },
+    {
+      "counterpart_code": "MAC",
+      "source_name": "Macao Special Administrative Region, People's Republic of China",
+      "reasons": [
+        "aggregate_or_unspecified_source_name"
+      ],
+      "eligible_as_named_partner": false,
+      "contract": "IMF_IMTS_DOMINANT_PARTNER_DEPENDENCE_CONTRACT_V1"
+    },
+    {
+      "counterpart_code": "MEX",
+      "source_name": "Mexico",
+      "reasons": [
+        "self_reporter_for_MEX"
+      ],
+      "eligible_as_named_partner": false,
+      "contract": "IMF_IMTS_DOMINANT_PARTNER_DEPENDENCE_CONTRACT_V1"
+    },
+    {
+      "counterpart_code": "REU",
+      "source_name": "Réunion",
+      "reasons": [
+        "aggregate_or_unspecified_source_name"
+      ],
+      "eligible_as_named_partner": false,
+      "contract": "IMF_IMTS_DOMINANT_PARTNER_DEPENDENCE_CONTRACT_V1"
+    },
+    {
+      "counterpart_code": "SAU",
+      "source_name": "Saudi Arabia",
+      "reasons": [
+        "self_reporter_for_SAU"
+      ],
+      "eligible_as_named_partner": false,
+      "contract": "IMF_IMTS_DOMINANT_PARTNER_DEPENDENCE_CONTRACT_V1"
+    },
+    {
+      "counterpart_code": "ZAF",
+      "source_name": "South Africa",
+      "reasons": [
+        "self_reporter_for_ZAF"
+      ],
+      "eligible_as_named_partner": false,
+      "contract": "IMF_IMTS_DOMINANT_PARTNER_DEPENDENCE_CONTRACT_V1"
+    },
+    {
+      "counterpart_code": "TUR",
+      "source_name": "Türkiye, Republic of",
+      "reasons": [
+        "self_reporter_for_TUR"
+      ],
+      "eligible_as_named_partner": false,
+      "contract": "IMF_IMTS_DOMINANT_PARTNER_DEPENDENCE_CONTRACT_V1"
+    },
+    {
+      "counterpart_code": "GBR",
+      "source_name": "United Kingdom",
+      "reasons": [
+        "self_reporter_for_GBR"
+      ],
+      "eligible_as_named_partner": false,
+      "contract": "IMF_IMTS_DOMINANT_PARTNER_DEPENDENCE_CONTRACT_V1"
+    },
+    {
+      "counterpart_code": "USA",
+      "source_name": "United States",
+      "reasons": [
+        "self_reporter_for_USA"
+      ],
+      "eligible_as_named_partner": false,
+      "contract": "IMF_IMTS_DOMINANT_PARTNER_DEPENDENCE_CONTRACT_V1"
+    },
+    {
+      "counterpart_code": "SUN",
+      "source_name": "Union of Soviet Socialist Republics (USSR)",
+      "reasons": [
+        "aggregate_or_unspecified_source_name"
+      ],
+      "eligible_as_named_partner": false,
+      "contract": "IMF_IMTS_DOMINANT_PARTNER_DEPENDENCE_CONTRACT_V1"
+    },
+    {
+      "counterpart_code": "G309",
+      "source_name": "Eastern Caribbean Currency Union (ECCU)",
+      "reasons": [
+        "aggregate_or_unspecified_source_name"
+      ],
+      "eligible_as_named_partner": false,
+      "contract": "IMF_IMTS_DOMINANT_PARTNER_DEPENDENCE_CONTRACT_V1"
+    },
+    {
+      "counterpart_code": "G998",
+      "source_name": "European Union (EU)",
+      "reasons": [
+        "aggregate_or_unspecified_source_name"
+      ],
+      "eligible_as_named_partner": false,
+      "contract": "IMF_IMTS_DOMINANT_PARTNER_DEPENDENCE_CONTRACT_V1"
+    },
+    {
+      "counterpart_code": "G757",
+      "source_name": "Southern African Customs Union (SACU)",
+      "reasons": [
+        "aggregate_or_unspecified_source_name"
+      ],
+      "eligible_as_named_partner": false,
+      "contract": "IMF_IMTS_DOMINANT_PARTNER_DEPENDENCE_CONTRACT_V1"
+    },
+    {
+      "counterpart_code": "G759",
+      "source_name": "West African Economic and Monetary Union (WAEMU)",
+      "reasons": [
+        "aggregate_or_unspecified_source_name"
+      ],
+      "eligible_as_named_partner": false,
+      "contract": "IMF_IMTS_DOMINANT_PARTNER_DEPENDENCE_CONTRACT_V1"
+    },
+    {
+      "counterpart_code": "G001",
+      "source_name": "World",
+      "reasons": [
+        "world_denominator_only",
+        "aggregate_or_unspecified_source_name"
+      ],
+      "eligible_as_named_partner": false,
+      "contract": "IMF_IMTS_DOMINANT_PARTNER_DEPENDENCE_CONTRACT_V1"
+    },
+    {
+      "counterpart_code": "GSAC",
+      "source_name": "Southern African Customs Union (SACU)",
+      "reasons": [
+        "aggregate_or_unspecified_source_name"
+      ],
+      "eligible_as_named_partner": false,
+      "contract": "IMF_IMTS_DOMINANT_PARTNER_DEPENDENCE_CONTRACT_V1"
+    }
+  ],
+  "count": 34
+}

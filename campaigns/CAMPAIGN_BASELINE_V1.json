@@ -1,0 +1,30 @@
+{
+  "campaign_id":"CHAOS_OPEN_MULTI_DOMAIN_CAMPAIGN_V1",
+  "created_at":"2026-08-27",
+  "parent_research_snapshot":"experiments/macro_plus_eia_energy/RESEARCH_SNAPSHOT_V3.json",
+  "parent_commit":"4a1a75fe553c9595a1fac9cde60f735cd0700509",
+  "baseline_scope":"Use current Research Snapshot as immutable reference; expand Evidence Library without rewriting historical findings.",
+  "baseline_rules":{
+    "schemas":"DOMAIN_STATE_SCHEMA_V1 and TRANSITION_EVIDENCE_SCHEMA_V1",
+    "terminology":"CHAOS_TERMINOLOGY_AND_RELATIONSHIPS.md",
+    "native_frequency_preserved":true,
+    "raw_immutable":true,
+    "no_imputation":true,
+    "no_forced_source_reconciliation":true,
+    "no_daily_or_event_to_annual_conversion_without_alignment_contract":true,
+    "future_outcome_cannot_define_current_state":true,
+    "rejected_unresolved_not_testable_edges_positive_weight":false,
+    "max_stat_required_for_search_family":true,
+    "oos_and_stability_required":true,
+    "causal_claims_permitted":false,
+    "market_intelligence_engine_modified":false
+  },
+  "reference_patterns":{
+    "HG_MATERIAL_DETERIORATION_3Y_V1":"provisionally_supported_descriptive",
+    "direct_high_growth_to_conflict":"rejected_or_not_supported_by_current_null",
+    "path_composer_v1_1":"rejected_for_out_of_sample_degradation"
+  },
+  "promotion_gate":{"eligible_edge_status":"supported_predictive","required":"contract + provenance + null + chronological OOS + stability + failure cases + supervisor review","runtime_default":false},
+  "shared_outputs":"campaigns/CAMPAIGN_SHARED_GATE_V1/",
+  "supervisor_only_write_to_shared":true
+}

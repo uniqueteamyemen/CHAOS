@@ -1,0 +1,8 @@
+{
+  "name": "CHAOS",
+  "description": "Independent governed historical-data layer, experimental contracts, supervisor gates, and structural-analysis platform.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

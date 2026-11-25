@@ -1,0 +1,11 @@
+{
+  "test_id": "IMF_IMTS_PARTNER_DEPENDENCE_V2",
+  "contract_id": "IMF_IMTS_PARTNER_DEPENDENCE_CONTRACT_V2",
+  "summary_source": "IMF_IMTS_PARTNER_DEPENDENCE_SUMMARY_V2.json",
+  "holdout_artifact": "IMF_IMTS_REGION_HOLDOUT_V2.csv",
+  "region_holdout_pass": true,
+  "regions": 7,
+  "status": "rejected",
+  "causal_claim": false,
+  "runtime_eligible": false
+}

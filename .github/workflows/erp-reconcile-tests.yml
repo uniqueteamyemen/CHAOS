@@ -1,0 +1,109 @@
+name: ERP reconciliation tests
+
+on:
+  push:
+    branches:
+      - feat/erp-reconcile-hardening
+      - feat/erp-hybrid-reconciliation
+      - feat/erp-shadow-mode
+      - review/abc-adversarial
+    paths:
+      - "experiments/identity_lab/exp_j_erp/**"
+      - "experiments/identity_lab/exp_m_pr_curve_complexity/**"
+      - "experiments/identity_lab/exp_p_engine/**"
+      - "experiments/identity_lab/exp_q_precursor/**"
+      - "experiments/identity_lab/exp_r_grade4/**"
+      - "experiments/identity_lab/exp_c_eia/raw/**"
+      - ".github/workflows/erp-reconcile-tests.yml"
+  pull_request:
+    paths:
+      - "experiments/identity_lab/exp_j_erp/**"
+      - "experiments/identity_lab/exp_m_pr_curve_complexity/**"
+      - "experiments/identity_lab/exp_p_engine/**"
+      - "experiments/identity_lab/exp_q_precursor/**"
+      - "experiments/identity_lab/exp_r_grade4/**"
+      - "experiments/identity_lab/exp_c_eia/raw/**"
+      - ".github/workflows/erp-reconcile-tests.yml"
+
+jobs:
+  reconcile-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Run existing ERP reconciliation unit tests
+        run: python -m unittest experiments.identity_lab.exp_j_erp.test_erp_reconcile -v
+      - name: Run hybrid reconciliation regression tests
+        run: python -m unittest experiments.identity_lab.exp_j_erp.test_hybrid_reconcile -v
+      - name: Run paired A/B/C comparative benchmark tests
+        run: python -m unittest experiments.identity_lab.exp_j_erp.test_benchmark_abc -v
+      - name: Run hybrid Odoo export integration tests
+        run: python -m unittest experiments.identity_lab.exp_j_erp.test_hybrid_odoo_integration -v
+      - name: Run read-only A/B/C shadow mode tests
+        run: python -m unittest experiments.identity_lab.exp_j_erp.test_shadow_mode -v
+      - name: Run Odoo 17 demo movement A/B/C integration tests
+        run: python -m unittest experiments.identity_lab.exp_j_erp.test_odoo17_demo_shadow -v
+      - name: Run Odoo 17 demo movement A/B/C shadow experiment
+        run: python -m experiments.identity_lab.exp_j_erp.run_odoo17_demo_shadow
+      - name: Run public-ledger candidate-only shadow probe tests
+        run: python -m unittest experiments.identity_lab.exp_j_erp.test_public_ledger_shadow_probe -v
+      - name: Run public-ledger A/B/C candidate-only shadow probe
+        run: python -m experiments.identity_lab.exp_j_erp.run_public_ledger_shadow_probe
+      - name: Run deterministic plumbing fixture
+        run: python experiments/identity_lab/exp_j_erp/run_reconcile.py
+      - name: Run adversarial A/B/C cases (decoy quantity, multiline picking, receipt reuse)
+        run: python -m experiments.identity_lab.exp_j_erp.adversarial_abc
+      - name: Run temporal precision-recall and concurrent UoM tests
+        run: python -m unittest experiments.identity_lab.exp_m_pr_curve_complexity.test_experiment -v
+      - name: Generate precision-recall curve and complexity report
+        run: python -m experiments.identity_lab.exp_m_pr_curve_complexity.experiment
+      - name: Run consolidated engine tests (exp P)
+        run: python -m unittest experiments.identity_lab.exp_p_engine.test_engine -v
+      - name: Run parallel detector and event fusion tests (exp P)
+        run: python -m unittest experiments.identity_lab.exp_p_engine.test_parallel_fusion -v
+      - name: Run paired 500-seed A/B/C P-engine benchmark
+        run: python -m experiments.identity_lab.exp_p_engine.benchmark_parallel_fusion
+      - name: Run precursor bridge, pulse counter and threshold study (exp Q)
+        run: |
+          python experiments/identity_lab/exp_q_precursor/precursor.py
+          python experiments/identity_lab/exp_q_precursor/pulse_counter.py
+          python experiments/identity_lab/exp_q_precursor/threshold_study.py
+      - name: Verify archived EIA snapshot checksums (exp R, no download)
+        run: cd experiments/identity_lab/exp_c_eia/raw && sha256sum -c ../../exp_r_grade4/EIA_SNAPSHOT.sha256
+      - name: Run grade-4 EIA diagnostics on the archived snapshot (exp R)
+        run: python -m experiments.identity_lab.exp_r_grade4.grade4_diagnostics
+      - name: Upload P/Q/R deterministic experiment outputs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: chaos-pqr-experiment-results
+          path: |
+            experiments/identity_lab/exp_p_engine/results/**
+            experiments/identity_lab/exp_q_precursor/results/**
+            experiments/identity_lab/exp_r_grade4/results/**
+          if-no-files-found: warn
+      - name: Upload A/B/C comparative benchmark report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: erp-abc-comparative-report
+          path: |
+            experiments/identity_lab/results/erp_abc_benchmark.json
+            experiments/identity_lab/results/erp_abc_benchmark.md
+          if-no-files-found: warn
+      - name: Upload public-ledger shadow probe artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: erp-public-ledger-shadow-probe
+          path: ${{ runner.temp }}/erp-public-ledger-shadow-probe/**
+          if-no-files-found: warn
+      - name: Upload Odoo 17 demo movement A/B/C artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: erp-odoo17-demo-shadow
+          path: ${{ runner.temp }}/odoo17-demo-stock-shadow/**
+          if-no-files-found: warn

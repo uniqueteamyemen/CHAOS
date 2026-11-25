@@ -1,0 +1,52 @@
+# CHAOS repository policy
+# Keep source datasets and derived artifacts with external licensing/size constraints out of Git.
+/catalog_first/raw/
+/catalog_first/staged/
+/catalog_first/readiness_gate/VARIABLE_LEVEL_COVERAGE_MATRIX.csv
+/catalog_first/readiness_gate/VARIABLE_LEVEL_COVERAGE_MATRIX_GAP_AUGMENTED.csv
+/catalog_first/readiness_gate/macro_plus_eia_energy/MACRO_PLUS_EIA_ENERGY_RAW_2000_2024_LONG.csv
+/catalog_first/readiness_gate/macro_plus_eia_energy/MACRO_PLUS_EIA_ENERGY_COMPLETE_140_RAW_2000_2024_LONG.csv
+/structural_engine/node_modules/
+**/.pytest_cache/
+**/__pycache__/
+*.pyc
+.DS_Store
+.env
+.env.*
+*.sqlite
+*.db
+*.log
+
+# Large local exports; preserve their inventory in manifests.
+*.zip
+*.xlsx
+*.tar
+*.gz
+*.parquet
+
+# Large raw UCDP GED remains outside Git; tracked manifest/codebook only
+/catalog_first/readiness_gate/independent_sources/ucdp_ged_26_1/raw/
+
+# New raw source downloads; retain provenance manifests and derived adapters only
+/catalog_first/readiness_gate/independent_sources/who_covid_2026/raw/
+/catalog_first/readiness_gate/independent_sources/usgs_earthquake_2026/raw/
+/catalog_first/readiness_gate/independent_sources/worldbank_wgi_2025/raw/
+/campaigns/agents/trade_v1/raw/
+
+# Immutable raw files from the 20260827 browser deep-research round
+/campaigns/research_rounds/20260827_BROWSER_DEEP_RESEARCH/raw/
+
+# Large derived IMTS monolithic state file; use tracked reporter shards instead
+experiments/multi_domain_native_adapters_v1/imf_imts_v1/IMF_IMTS_DOMAIN_STATES_ANNUAL_V1.jsonl
+
+# IMF IMTS V2 raw responses remain immutable but outside Git; derived observations are tracked as reporter shards.
+/campaigns/research_rounds/20260827_BROWSER_DEEP_RESEARCH/raw/imf_imts_wdi_target_ready_v2/
+/campaigns/research_rounds/20260827_BROWSER_DEEP_RESEARCH/raw/imf_imts_wdi_target_ready_xg_v2/
+/campaigns/research_rounds/20260827_BROWSER_DEEP_RESEARCH/raw/worldbank_country_metadata_v2/
+/experiments/multi_domain_native_adapters_v1/imf_imts_v2/IMF_IMTS_XG_OBSERVED_RECORDS_2000_2024.csv
+
+# Raw snapshots and intermediate outputs from the P2.2 stress pipeline
+/artifacts/real_data_stress/
+
+# Runtime advisory lock for the canonical research ledger
+/governance/ledger/*.lock

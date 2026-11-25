@@ -1,0 +1,22 @@
+{
+  "run_id": "TRADE_REGIME_TRANSITION_DISCOVERY_V1_RUN",
+  "contract_ref": "experimental_contracts/dual_track_v02/TRADE_REGIME_TRANSITION_DISCOVERY_CONTRACT_V1.json",
+  "contract_sha256": "3d64c727feffc9bd46df4c9790fb79698898c341a5347fd81060b41f1618f0d5",
+  "code_ref": "tooling/run_trade_regime_transition_discovery_v1.py",
+  "code_sha256": "46c0db71b183d693f12ffe762438c789620093d19f000151aace16a518a365d9",
+  "seed": 271108,
+  "inputs": [
+    "experiments/multi_domain_native_edges_v2/imf_partner_dependence_v2/IMF_IMTS_PARTNER_SELECTION_REGISTER_V2.csv",
+    "experiments/multi_domain_native_adapters_v1/imf_imts_v2/IMF_IMTS_XG_OBSERVED_RECORDS_2000_2024.csv"
+  ],
+  "null_replicates": {
+    "block": 2000,
+    "rank": 2000,
+    "time": 2000
+  },
+  "status": "rejected",
+  "research_only": true,
+  "causal_validation_status": "not_run",
+  "runtime_eligible": false,
+  "causal_claim": false
+}

@@ -1,0 +1,26 @@
+{
+  "method": "pooled_cross_entity_path_registry",
+  "metrics": {
+    "path_model": {
+      "n": 1047.0,
+      "accuracy": 0.4804202483285578,
+      "coverage": 1.0
+    },
+    "majority_baseline": {
+      "n": 1047.0,
+      "accuracy": 0.5090735434574976,
+      "coverage": 1.0
+    },
+    "abstention": {
+      "n": 0.0,
+      "rate": 0.0
+    },
+    "target": {
+      "horizon_years": 3.0,
+      "n": 1047.0,
+      "min_entity_support": 2.0
+    }
+  },
+  "entity_support_min": 2,
+  "status": "diagnostic; no threshold tuning"
+}

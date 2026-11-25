@@ -1,0 +1,309 @@
+{
+  "contract_id": "TRADE_REGIME_TRANSITION_DISCOVERY_V1",
+  "contract_sha256": "3d64c727feffc9bd46df4c9790fb79698898c341a5347fd81060b41f1618f0d5",
+  "selection_sha256": "936dcf922c3470e0966efe2f1bfc56cc10c7fb42396bf09562f7a92808ab9a1e",
+  "observation_sha256": "a5fdda798b44806eb7a97c461888d516b44b54bc7de763a4f9b6a5b6cebd6906",
+  "seed": 271108,
+  "reporters": 135,
+  "duplicate_input_keys": 0,
+  "state_rows": 3375,
+  "event_rows": 180,
+  "regime_count": 8,
+  "rolling_metrics": [
+    {
+      "train_events": 45,
+      "eval_events": 9,
+      "reporters": 9,
+      "candidate_brier": 0.0682538629944444,
+      "candidate_accuracy": 0.8888888888888888,
+      "alpha": 0.1,
+      "target_history_brier": 0.10641975308641975,
+      "state_persistence_brier": 0.15243342516069788,
+      "previous_state_brier": 0.07015033173763333,
+      "origin": 2009,
+      "horizon": 1
+    },
+    {
+      "train_events": 45,
+      "eval_events": 9,
+      "reporters": 9,
+      "candidate_brier": 0.06298298824015341,
+      "candidate_accuracy": 0.8888888888888888,
+      "alpha": 0.1,
+      "target_history_brier": 0.09530864197530864,
+      "state_persistence_brier": 0.11455463728191001,
+      "previous_state_brier": 0.058106995884773666,
+      "origin": 2009,
+      "horizon": 2
+    },
+    {
+      "train_events": 45,
+      "eval_events": 9,
+      "reporters": 9,
+      "candidate_brier": 0.0594355722631158,
+      "candidate_accuracy": 0.8888888888888888,
+      "alpha": 0.1,
+      "target_history_brier": 0.06938271604938272,
+      "state_persistence_brier": 0.10629017447199265,
+      "previous_state_brier": 0.06261694801377342,
+      "origin": 2009,
+      "horizon": 3
+    },
+    {
+      "train_events": 54,
+      "eval_events": 20,
+      "reporters": 20,
+      "candidate_brier": 0.09906313491777981,
+      "candidate_accuracy": 0.8,
+      "alpha": 0.1,
+      "target_history_brier": 0.16450617283950622,
+      "state_persistence_brier": 0.056912950365331325,
+      "previous_state_brier": 0.06411072530864197,
+      "origin": 2011,
+      "horizon": 1
+    },
+    {
+      "train_events": 54,
+      "eval_events": 20,
+      "reporters": 20,
+      "candidate_brier": 0.13166242995999228,
+      "candidate_accuracy": 0.7,
+      "alpha": 0.1,
+      "target_history_brier": 0.17222222222222225,
+      "state_persistence_brier": 0.09130881519274377,
+      "previous_state_brier": 0.10000000000000002,
+      "origin": 2011,
+      "horizon": 2
+    },
+    {
+      "train_events": 54,
+      "eval_events": 20,
+      "reporters": 20,
+      "candidate_brier": 0.1463513061304474,
+      "candidate_accuracy": 0.45,
+      "alpha": 0.1,
+      "target_history_brier": 0.16080246913580248,
+      "state_persistence_brier": 0.11304012345679011,
+      "previous_state_brier": 0.12406442901234568,
+      "origin": 2011,
+      "horizon": 3
+    },
+    {
+      "train_events": 74,
+      "eval_events": 24,
+      "reporters": 24,
+      "candidate_brier": 0.06514521054888432,
+      "candidate_accuracy": 0.8333333333333334,
+      "alpha": 0.1,
+      "target_history_brier": 0.125,
+      "state_persistence_brier": 0.03152605011718045,
+      "previous_state_brier": 0.03266389658356417,
+      "origin": 2013,
+      "horizon": 1
+    },
+    {
+      "train_events": 74,
+      "eval_events": 24,
+      "reporters": 24,
+      "candidate_brier": 0.07943472207577722,
+      "candidate_accuracy": 0.7916666666666666,
+      "alpha": 0.1,
+      "target_history_brier": 0.12221512052593138,
+      "state_persistence_brier": 0.05303542455381288,
+      "previous_state_brier": 0.052343028624192066,
+      "origin": 2013,
+      "horizon": 2
+    },
+    {
+      "train_events": 74,
+      "eval_events": 24,
+      "reporters": 24,
+      "candidate_brier": 0.057201046136939306,
+      "candidate_accuracy": 0.8333333333333334,
+      "alpha": 0.1,
+      "target_history_brier": 0.08649866082298514,
+      "state_persistence_brier": 0.04186947899765639,
+      "previous_state_brier": 0.04212834718374884,
+      "origin": 2013,
+      "horizon": 3
+    },
+    {
+      "train_events": 98,
+      "eval_events": 16,
+      "reporters": 16,
+      "candidate_brier": 0.08602482769458514,
+      "candidate_accuracy": 0.75,
+      "alpha": 0.1,
+      "target_history_brier": 0.10774156601416078,
+      "state_persistence_brier": 0.1197015570934256,
+      "previous_state_brier": 0.130789224952741,
+      "origin": 2015,
+      "horizon": 1
+    },
+    {
+      "train_events": 98,
+      "eval_events": 16,
+      "reporters": 16,
+      "candidate_brier": 0.0817683630119348,
+      "candidate_accuracy": 0.6875,
+      "alpha": 0.1,
+      "target_history_brier": 0.09060027072053312,
+      "state_persistence_brier": 0.10947675893886966,
+      "previous_state_brier": 0.11787147920604915,
+      "origin": 2015,
+      "horizon": 2
+    },
+    {
+      "train_events": 98,
+      "eval_events": 16,
+      "reporters": 16,
+      "candidate_brier": 0.058007292340372524,
+      "candidate_accuracy": 0.9375,
+      "alpha": 0.1,
+      "target_history_brier": 0.05897282382340692,
+      "state_persistence_brier": 0.07698961937716264,
+      "previous_state_brier": 0.08035503308128544,
+      "origin": 2015,
+      "horizon": 3
+    }
+  ],
+  "locked_confirmation": {
+    "1": {
+      "train_events": 78,
+      "eval_events": 81,
+      "reporters": 56,
+      "candidate_brier": 0.09288313982309176,
+      "candidate_accuracy": 0.7407407407407407,
+      "alpha": 0.1,
+      "target_history_brier": 0.12769376871940974,
+      "state_persistence_brier": 0.09171742631099909,
+      "previous_state_brier": 0.09899614273007365
+    },
+    "2": {
+      "train_events": 78,
+      "eval_events": 81,
+      "reporters": 56,
+      "candidate_brier": 0.0969183128265247,
+      "candidate_accuracy": 0.6666666666666666,
+      "alpha": 0.1,
+      "target_history_brier": 0.11610599751625392,
+      "state_persistence_brier": 0.09789026581717192,
+      "previous_state_brier": 0.10177736520589692
+    },
+    "3": {
+      "train_events": 78,
+      "eval_events": 76,
+      "reporters": 55,
+      "candidate_brier": 0.07601016051718736,
+      "candidate_accuracy": 0.8289473684210527,
+      "alpha": 0.1,
+      "target_history_brier": 0.08855410221806981,
+      "state_persistence_brier": 0.0807568898617053,
+      "previous_state_brier": 0.07770033507022829
+    }
+  },
+  "subwindows": [
+    {
+      "window": [
+        2015,
+        2017
+      ],
+      "train_events": 78,
+      "eval_events": 36,
+      "reporters": 36,
+      "candidate_brier": 0.07978553813359508,
+      "candidate_accuracy": 0.7777777777777778,
+      "alpha": 0.1,
+      "target_history_brier": 0.11545310103002408,
+      "state_persistence_brier": 0.08081285444234404,
+      "previous_state_brier": 0.08581201665675192
+    },
+    {
+      "window": [
+        2018,
+        2020
+      ],
+      "train_events": 78,
+      "eval_events": 31,
+      "reporters": 31,
+      "candidate_brier": 0.11006060609232787,
+      "candidate_accuracy": 0.5806451612903226,
+      "alpha": 0.1,
+      "target_history_brier": 0.11721649593858029,
+      "state_persistence_brier": 0.11692786145496678,
+      "previous_state_brier": 0.11558946909098143
+    },
+    {
+      "window": [
+        2021,
+        2022
+      ],
+      "train_events": 78,
+      "eval_events": 14,
+      "reporters": 14,
+      "candidate_brier": 0.11187322694835099,
+      "candidate_accuracy": 0.5714285714285714,
+      "alpha": 0.1,
+      "target_history_brier": 0.11532591340283647,
+      "state_persistence_brier": 0.09964893329732649,
+      "previous_state_brier": 0.11224717430101129
+    }
+  ],
+  "nulls": [
+    {
+      "variant": "block",
+      "horizon": 2,
+      "replicates": 2000,
+      "null_mean": 0.007289749747915707,
+      "null_sd": 0.007307885897821135,
+      "observed_advantage": -0.0009719529906472152,
+      "p_lower_tail": 0.127936031984008,
+      "unique_statistics": 2000,
+      "status": "non_degenerate"
+    },
+    {
+      "variant": "rank",
+      "horizon": 2,
+      "replicates": 2000,
+      "null_mean": 0.003397581528127879,
+      "null_sd": 0.003097743695607761,
+      "observed_advantage": -0.0009719529906472152,
+      "p_lower_tail": 0.06096951524237881,
+      "unique_statistics": 2000,
+      "status": "non_degenerate"
+    },
+    {
+      "variant": "time",
+      "horizon": 2,
+      "replicates": 2000,
+      "null_mean": 0.01813487908994751,
+      "null_sd": 0.034903281211718054,
+      "observed_advantage": -0.0009719529906472152,
+      "p_lower_tail": 0.11344327836081959,
+      "unique_statistics": 2000,
+      "status": "non_degenerate"
+    }
+  ],
+  "observed_advantage_h2": -0.0009719529906472152,
+  "admission_checks": {
+    "event_rows": 180,
+    "final_h2_events": 81,
+    "coverage": true,
+    "candidate_gain_vs_best_h2": false,
+    "rolling_origins": 12,
+    "rolling_effect_direction": false,
+    "three_subwindows": false,
+    "nulls_non_degenerate": true,
+    "influential_exclusion_not_implemented": false
+  },
+  "predictive_evidence_status": "rejected",
+  "causal_validation_status": "not_run",
+  "runtime_status": "not_eligible",
+  "causal_claim": false,
+  "notes": [
+    "Model learns sequence-to-outcome probabilities from fit only.",
+    "No raw modification, imputation, normalization, source averaging, or frequency conversion.",
+    "Rank and block nulls preserve declared raw/state invariants; time placebo changes event timing only.",
+    "This is the final predictive attempt on current IMTS trade observations."
+  ]
+}

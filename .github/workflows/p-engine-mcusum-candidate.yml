@@ -1,0 +1,35 @@
+name: CHAOS Gemini M-CUSUM candidate comparison
+
+on:
+  push:
+    branches:
+      - experiment/p-engine-parallel-fusion-v1
+    paths:
+      - "experiments/identity_lab/exp_p_engine_holdout/m_cusum_comparison.py"
+      - "experiments/identity_lab/exp_p_engine_holdout/test_m_cusum_comparison.py"
+      - ".github/workflows/p-engine-mcusum-candidate.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  mcusum-comparison:
+    runs-on: ubuntu-latest
+    timeout-minutes: 50
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Unit tests for M-CUSUM and ablations
+        run: python -m unittest experiments.identity_lab.exp_p_engine_holdout.test_m_cusum_comparison -v
+      - name: Run paired 500-seed M-CUSUM comparison against C/E/F
+        run: python -m experiments.identity_lab.exp_p_engine_holdout.m_cusum_comparison
+      - name: Upload M-CUSUM holdout comparison
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: chaos-gemini-mcusum-comparison
+          path: experiments/identity_lab/exp_p_engine_holdout/results/gemini_mcusum_comparison.json
+          if-no-files-found: warn
+          retention-days: 90

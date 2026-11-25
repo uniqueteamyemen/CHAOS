@@ -1,0 +1,16 @@
+{
+  "run_id": "TRADE_NETWORK_ADAPTATION_PATH_V1_RUN",
+  "contract_ref": "experimental_contracts/dual_track_v02/TRADE_NETWORK_ADAPTATION_PATH_CONTRACT_V1.json",
+  "contract_sha256": "9f58d578662e5b4ba1c6bd4f9be5af11a6787ca1a6c1e7cab620d41c5db50581",
+  "code_ref": "tooling/run_trade_network_adaptation_path_v1.py",
+  "code_sha256": "a00811832d3388d8bfeb34bb696f36942798ab5a9faf3df29e064d0b853ed13c",
+  "seed": 271108,
+  "inputs": [
+    "experiments/multi_domain_native_edges_v2/imf_partner_dependence_v2/IMF_IMTS_PARTNER_SELECTION_REGISTER_V2.csv",
+    "experiments/multi_domain_native_adapters_v1/imf_imts_v2/IMF_IMTS_XG_OBSERVED_RECORDS_2000_2024.csv"
+  ],
+  "status": "not_testable",
+  "research_only": true,
+  "causal_claim": false,
+  "runtime_eligible": false
+}

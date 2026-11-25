@@ -1,0 +1,245 @@
+{
+  "contract_id": "IMF_IMTS_PARTNER_SUBSTITUTION_V3",
+  "contract_sha256": "ed77ba6aea5d5c6a22dfc02bbdce9407365e3ded7451bad8295574cdf77969b7",
+  "observation_mode": "aggregate_local",
+  "selection_sha256": "936dcf922c3470e0966efe2f1bfc56cc10c7fb42396bf09562f7a92808ab9a1e",
+  "observation_sha256": "a5fdda798b44806eb7a97c461888d516b44b54bc7de763a4f9b6a5b6cebd6906",
+  "reporters": 135,
+  "candidate_pool_size": 10,
+  "fit_period": [
+    2005,
+    2014
+  ],
+  "confirmation_period": [
+    2015,
+    2024
+  ],
+  "metrics_ref": "IMF_IMTS_PARTNER_SUBSTITUTION_METRICS_V3.csv",
+  "events_ref": "IMF_IMTS_PARTNER_SUBSTITUTION_EVENTS_V3.csv",
+  "nulls": [
+    {
+      "split": "fit",
+      "variant": "identity_sequence_null",
+      "horizon": 1,
+      "replicates": 10000,
+      "observed_rate": 0.855,
+      "null_mean": 0.572761,
+      "null_sd": 0.018198351491266983,
+      "contrast": 0.282239,
+      "p_value": 9.999000099990002e-05,
+      "unique_statistics": 29,
+      "status": "pass_non_degenerate"
+    },
+    {
+      "split": "fit",
+      "variant": "reporter_cluster_bootstrap",
+      "horizon": 1,
+      "replicates": 5000,
+      "mean": 0.8522659881264278,
+      "q025": 0.776217088922007,
+      "q975": 0.9135349948946441
+    },
+    {
+      "split": "fit",
+      "variant": "time_placebo_sequence_shift_proxy",
+      "horizon": 1,
+      "replicates": 5000,
+      "observed_rate": 0.855,
+      "null_mean": 0.6853610000000001,
+      "null_sd": 0.011148521736417826,
+      "contrast": 0.16963899999999987,
+      "p_value": 0.0001999600079984003,
+      "unique_statistics": 17,
+      "status": "recorded_diagnostic_only"
+    },
+    {
+      "split": "fit",
+      "variant": "identity_sequence_null",
+      "horizon": 2,
+      "replicates": 10000,
+      "observed_rate": 0.775,
+      "null_mean": 0.39233599999999996,
+      "null_sd": 0.018174738955858798,
+      "contrast": 0.38266400000000006,
+      "p_value": 9.999000099990002e-05,
+      "unique_statistics": 26,
+      "status": "pass_non_degenerate"
+    },
+    {
+      "split": "fit",
+      "variant": "reporter_cluster_bootstrap",
+      "horizon": 2,
+      "replicates": 5000,
+      "mean": 0.7727379094404004,
+      "q025": 0.6582195203197868,
+      "q975": 0.8722490392726591
+    },
+    {
+      "split": "fit",
+      "variant": "time_placebo_sequence_shift_proxy",
+      "horizon": 2,
+      "replicates": 5000,
+      "observed_rate": 0.775,
+      "null_mean": 0.48121899999999995,
+      "null_sd": 0.015097503963410143,
+      "contrast": 0.29378100000000007,
+      "p_value": 0.0001999600079984003,
+      "unique_statistics": 22,
+      "status": "recorded_diagnostic_only"
+    },
+    {
+      "split": "fit",
+      "variant": "identity_sequence_null",
+      "horizon": 3,
+      "replicates": 10000,
+      "observed_rate": 0.715,
+      "null_mean": 0.293933,
+      "null_sd": 0.016496324556469755,
+      "contrast": 0.42106699999999997,
+      "p_value": 9.999000099990002e-05,
+      "unique_statistics": 24,
+      "status": "pass_non_degenerate"
+    },
+    {
+      "split": "fit",
+      "variant": "reporter_cluster_bootstrap",
+      "horizon": 3,
+      "replicates": 5000,
+      "mean": 0.7126606553335674,
+      "q025": 0.5661350703803534,
+      "q975": 0.8325586656845206
+    },
+    {
+      "split": "fit",
+      "variant": "time_placebo_sequence_shift_proxy",
+      "horizon": 3,
+      "replicates": 5000,
+      "observed_rate": 0.715,
+      "null_mean": 0.343217,
+      "null_sd": 0.016549340988009982,
+      "contrast": 0.371783,
+      "p_value": 0.0001999600079984003,
+      "unique_statistics": 24,
+      "status": "recorded_diagnostic_only"
+    },
+    {
+      "split": "confirmation",
+      "variant": "identity_sequence_null",
+      "horizon": 1,
+      "replicates": 10000,
+      "observed_rate": 0.8612903225806452,
+      "null_mean": 0.7768832703273786,
+      "null_sd": 0.011848030177416122,
+      "contrast": 0.08440705225326661,
+      "p_value": 9.999000099990002e-05,
+      "unique_statistics": 317,
+      "status": "pass_non_degenerate"
+    },
+    {
+      "split": "confirmation",
+      "variant": "reporter_cluster_bootstrap",
+      "horizon": 1,
+      "replicates": 5000,
+      "mean": 0.8606492635649694,
+      "q025": 0.8116319518431707,
+      "q975": 0.9047619047619048
+    },
+    {
+      "split": "confirmation",
+      "variant": "time_placebo_sequence_shift_proxy",
+      "horizon": 1,
+      "replicates": 5000,
+      "observed_rate": 0.8612903225806452,
+      "null_mean": 0.8248238738834412,
+      "null_sd": 0.006098929085253564,
+      "contrast": 0.036466448697203946,
+      "p_value": 0.0001999600079984003,
+      "unique_statistics": 156,
+      "status": "recorded_diagnostic_only"
+    },
+    {
+      "split": "confirmation",
+      "variant": "identity_sequence_null",
+      "horizon": 2,
+      "replicates": 10000,
+      "observed_rate": 0.7712177121771218,
+      "null_mean": 0.6461824254975478,
+      "null_sd": 0.016989942897029504,
+      "contrast": 0.12503528667957398,
+      "p_value": 9.999000099990002e-05,
+      "unique_statistics": 490,
+      "status": "pass_non_degenerate"
+    },
+    {
+      "split": "confirmation",
+      "variant": "reporter_cluster_bootstrap",
+      "horizon": 2,
+      "replicates": 5000,
+      "mean": 0.7693840458562513,
+      "q025": 0.6891152719774031,
+      "q975": 0.8407407407407408
+    },
+    {
+      "split": "confirmation",
+      "variant": "time_placebo_sequence_shift_proxy",
+      "horizon": 2,
+      "replicates": 5000,
+      "observed_rate": 0.7712177121771218,
+      "null_mean": 0.7037247932460399,
+      "null_sd": 0.012320513690481408,
+      "contrast": 0.06749291893108189,
+      "p_value": 0.0001999600079984003,
+      "unique_statistics": 355,
+      "status": "recorded_diagnostic_only"
+    },
+    {
+      "split": "confirmation",
+      "variant": "identity_sequence_null",
+      "horizon": 3,
+      "replicates": 10000,
+      "observed_rate": 0.6978723404255319,
+      "null_mean": 0.5659108850298714,
+      "null_sd": 0.020414797962567347,
+      "contrast": 0.1319614553956605,
+      "p_value": 9.999000099990002e-05,
+      "unique_statistics": 557,
+      "status": "pass_non_degenerate"
+    },
+    {
+      "split": "confirmation",
+      "variant": "reporter_cluster_bootstrap",
+      "horizon": 3,
+      "replicates": 5000,
+      "mean": 0.6971083433104003,
+      "q025": 0.5932154119038234,
+      "q975": 0.788399268474684
+    },
+    {
+      "split": "confirmation",
+      "variant": "time_placebo_sequence_shift_proxy",
+      "horizon": 3,
+      "replicates": 5000,
+      "observed_rate": 0.6978723404255319,
+      "null_mean": 0.6189901399647615,
+      "null_sd": 0.018299011302992153,
+      "contrast": 0.07888220046077044,
+      "p_value": 0.0001999600079984003,
+      "unique_statistics": 514,
+      "status": "recorded_diagnostic_only"
+    }
+  ],
+  "search_family": [
+    "primary_top1_displacement",
+    "diagnostic_top1_displacement"
+  ],
+  "predictive_evidence_status": "candidate",
+  "causal_validation_status": "not_run",
+  "runtime_status": "not_eligible",
+  "causal_claim": false,
+  "notes": [
+    "Baseline candidate pool is inherited from locked V2 selection register; no reselection after outcomes.",
+    "Missing candidate-year records are excluded, never zero-filled.",
+    "No imputation, normalization, log, differencing, smoothing, source averaging, or frequency conversion.",
+    "Time-placebo is a diagnostic sequence null and is not treated as causal evidence."
+  ]
+}

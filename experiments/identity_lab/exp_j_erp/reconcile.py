@@ -1,0 +1,416 @@
+"""Movement aggregation and independent counterpart-receipt reconciliation.
+
+A stock.move is one movement record, not a sender row plus a receiver row.
+Counterparty receipts are a separate evidence stream. Approximate matches are never
+promoted to confirmed matches and never generate loss claims.
+"""
+from __future__ import annotations
+
+import hashlib
+import json
+from collections import Counter
+from datetime import date
+from decimal import Decimal
+from typing import Mapping
+
+try:
+    from .uom import UomNormalizationError, normalize_to_reference, relation_id
+except ImportError:  # direct script execution from this directory
+    from uom import UomNormalizationError, normalize_to_reference, relation_id
+
+
+def _executed(move: Mapping) -> Decimal:
+    raw = move.get("quantity")
+    if raw in (None, ""):
+        raw = move.get("quantity_done")  # legacy exports only
+    if raw in (None, ""):
+        raise UomNormalizationError("missing_executed_quantity")
+    try:
+        value = Decimal(str(raw))
+    except Exception as exc:
+        raise UomNormalizationError("quantity_invalid", str(raw)) from exc
+    if not value.is_finite() or value < 0:
+        raise UomNormalizationError("quantity_invalid", str(raw))
+    return value
+
+
+def _date(value: object) -> date | None:
+    if value in (None, ""):
+        return None
+    try:
+        return date.fromisoformat(str(value)[:10])
+    except ValueError:
+        return None
+
+
+def aggregate_moves(
+    moves: list[Mapping],
+    uoms_by_id: Mapping[str, Mapping],
+) -> tuple[list[dict], dict]:
+    """Aggregate completed moves only after conversion to a common reference UoM.
+
+    Main identity is (picking_id, product_id). Different locations, reference units,
+    or source documents remain distinct subgroups and are never silently merged.
+    """
+    groups: dict[tuple, dict] = {}
+    rejected: list[dict] = []
+    done_count = 0
+    pickings: set[str] = set()
+    product_categories: dict[tuple[str, str], set[str]] = {}
+
+    for index, move in enumerate(moves):
+        if str(move.get("state", "")).lower() != "done":
+            continue
+        done_count += 1
+        picking = relation_id(move.get("picking_id"))
+        product = relation_id(move.get("product_id"))
+        if not picking or not product:
+            rejected.append({"row": index, "reason": "movement_identity_missing"})
+            continue
+        pickings.add(picking)
+
+        uom_id = move.get("product_uom") or move.get("product_uom_id")
+        source_uom = uoms_by_id.get(relation_id(uom_id))
+        if source_uom is None:
+            rejected.append({"row": index, "picking_id": picking, "product_id": product,
+                             "reason": "uom_unresolved"})
+            continue
+        try:
+            executed = _executed(move)
+            normalized, ref_uom_id = normalize_to_reference(
+                executed, source_uom, uoms_by_id, move.get("product_uom_category_id")
+            )
+            demand_raw = move.get("product_uom_qty")
+            demand_normalized = None
+            if demand_raw not in (None, ""):
+                demand_normalized, _ = normalize_to_reference(
+                    demand_raw, source_uom, uoms_by_id, move.get("product_uom_category_id")
+                )
+        except UomNormalizationError as exc:
+            rejected.append({"row": index, "picking_id": picking, "product_id": product,
+                             "reason": exc.code, "detail": exc.detail})
+            continue
+
+        category = relation_id(source_uom.get("category_id"))
+        product_categories.setdefault((picking, product), set()).add(category)
+        source = relation_id(move.get("location_id"))
+        destination = relation_id(move.get("location_dest_id"))
+        # Location pair and reference UoM are part of the subgroup key. They are
+        # intentionally not collapsed even when picking and product are identical.
+        source_reference = str(move.get("reference") or move.get("name") or move.get("origin") or "")
+        key = (picking, product, source, destination, ref_uom_id, source_reference)
+        # Stable identity of the aggregated movement group. Two groups may share
+        # (picking, product) and still be distinct; every downstream key uses this.
+        group_id = hashlib.sha256(
+            json.dumps(key, separators=(",", ":"), ensure_ascii=False).encode("utf-8")
+        ).hexdigest()
+        row = groups.setdefault(key, {
+            "movement_group_id": group_id,
+            "picking_id": picking,
+            "product_id": product,
+            "location_id": source,
+            "location_dest_id": destination,
+            "reference_uom_id": ref_uom_id,
+            "uom_category_id": category,
+            "quantity": Decimal("0"),
+            "demand_quantity": Decimal("0"),
+            "has_demand": True,
+            "partial": False,
+            "move_ids": [],
+            "references": set(),
+            "dates": [],
+        })
+        row["quantity"] += normalized
+        if demand_normalized is None:
+            row["has_demand"] = False
+        else:
+            row["demand_quantity"] += demand_normalized
+            # Partial status is computed from the aggregated executed and demand
+            # totals below; a single partial move must not mark a completed group.
+        move_id = move.get("id")
+        if move_id not in (None, ""):
+            row["move_ids"].append(str(move_id))
+        for ref in (move.get("reference"), move.get("name"), move.get("origin")):
+            if ref not in (None, ""):
+                row["references"].add(str(ref))
+        if move.get("date"):
+            row["dates"].append(str(move.get("date")))
+
+    aggregated = []
+    for row in groups.values():
+        row["partial"] = bool(
+            row["has_demand"] and row["quantity"] < row["demand_quantity"]
+        )
+        row["quantity"] = str(row["quantity"])
+        row["demand_quantity"] = str(row["demand_quantity"]) if row["has_demand"] else None
+        row["references"] = sorted(row["references"])
+        row["dates"] = sorted(row["dates"])
+        row["move_count"] = len(row["move_ids"])
+        row["heterogeneous_locations"] = False
+        aggregated.append(row)
+
+    location_variants: dict[tuple[str, str], set[tuple[str, str]]] = {}
+    for row in aggregated:
+        location_variants.setdefault((row["picking_id"], row["product_id"]), set()).add(
+            (row["location_id"], row["location_dest_id"])
+        )
+    for row in aggregated:
+        row["heterogeneous_locations"] = len(
+            location_variants[(row["picking_id"], row["product_id"])]
+        ) > 1
+        row["heterogeneous_uom_categories"] = (
+            len(product_categories[(row["picking_id"], row["product_id"])]) > 1
+        )
+
+    stats = {
+        "moves_total": len(moves),
+        "moves_done": done_count,
+        "pickings": len(pickings),
+        "aggregated_movements": len(aggregated),
+        "rejected_rows": len(rejected),
+        "partial_movements": sum(1 for row in aggregated if row["partial"]),
+        "heterogeneous_location_groups": sum(
+            1 for row in aggregated if row["heterogeneous_locations"]
+        ),
+        "heterogeneous_uom_groups": sum(
+            1 for row in aggregated if row["heterogeneous_uom_categories"]
+        ),
+        "rejected": rejected,
+    }
+    return aggregated, stats
+
+
+def _receipt_evidence_complete(receipt: Mapping) -> bool:
+    required = (
+        "source_picking_id", "counterpart_picking_id", "product_id", "location_id",
+        "counterpart_qty", "counterpart_uom_id", "counterpart_date",
+        "counterpart_system", "counterpart_source", "recorded_at",
+    )
+    return all(receipt.get(field) not in (None, "") for field in required)
+
+
+def match_counterpart_receipts(
+    shipments: list[Mapping],
+    receipts: list[Mapping],
+    uoms_by_id: Mapping[str, Mapping],
+    date_window_days: int = 3,
+    quantity_tolerance: Decimal = Decimal("0.01"),
+    loss_classification_threshold: Decimal | None = None,
+    quantity_tolerance_relative: Decimal | None = None,
+) -> list[dict]:
+    """Match independent receipt records to outbound movements.
+
+    Exact identity requires an explicit source_picking_id on the receipt that points
+    to the sender's picking_id. counterpart_picking_id remains the receiver's own
+    document ID; it is not assumed to equal the sender's ID.
+
+    Approximate matching uses product, destination, date window and quantity. It is
+    a candidate only (never confirmed) and can never emit a loss classification.
+
+    Backward compatibility: quantity_tolerance remains the candidate tolerance and,
+    when loss_classification_threshold is omitted, also remains the loss threshold.
+    New comparisons should pass loss_classification_threshold explicitly so candidate
+    discovery and confirmed-loss classification are independent.
+    """
+    try:
+        candidate_tolerance = Decimal(str(quantity_tolerance))
+        loss_threshold = (
+            candidate_tolerance if loss_classification_threshold is None
+            else Decimal(str(loss_classification_threshold))
+        )
+    except Exception as exc:
+        raise ValueError("quantity_tolerances_must_be_decimal_values") from exc
+    if (not candidate_tolerance.is_finite() or candidate_tolerance < 0
+            or not loss_threshold.is_finite() or loss_threshold < 0):
+        raise ValueError("quantity_tolerances_must_be_finite_and_non_negative")
+
+    results: list[dict] = []
+    used_receipt_ids: set[str] = set()
+    products_in_picking: dict[str, set[str]] = {}
+    group_counts = Counter(
+        (relation_id(s.get("picking_id")), relation_id(s.get("product_id")))
+        for s in shipments
+    )
+    for s in shipments:
+        products_in_picking.setdefault(relation_id(s.get("picking_id")), set()).add(
+            relation_id(s.get("product_id")))
+    for shipment in shipments:
+        shipment_id = relation_id(shipment.get("picking_id"))
+        product_id = relation_id(shipment.get("product_id"))
+        group_id = shipment.get("movement_group_id")
+        if group_counts[(shipment_id, product_id)] > 1:
+            # A picking-level receipt cannot identify one of several groups that
+            # share (picking, product). Refuse to pick one arbitrarily.
+            results.append({
+                "picking_id": shipment_id, "product_id": product_id,
+                "movement_group_id": group_id,
+                "state": "ambiguous", "confirmed": False, "loss_claim": False,
+                "reason": "duplicate_movement_group_identity",
+            })
+            continue
+        if quantity_tolerance_relative is not None:
+            rel = Decimal(str(quantity_tolerance_relative))
+            if not rel.is_finite() or rel < 0:
+                raise ValueError("quantity_tolerance_relative_must_be_finite_and_non_negative")
+            candidate_tolerance = abs(Decimal(str(shipment.get("quantity", "0")))) * rel
+        explicit_links = [
+            receipt for receipt in receipts
+            if relation_id(receipt.get("source_picking_id")) == shipment_id
+            and relation_id(receipt.get("counterpart_picking_id")) not in used_receipt_ids
+        ]
+        # A picking may carry several product lines. A link for another product of
+        # this picking is that line's evidence, not a conflict for this line. A link
+        # for a product no line carries is a genuine conflict.
+        explicit_for_product = [
+            receipt for receipt in explicit_links
+            if relation_id(receipt.get("product_id")) == product_id
+        ]
+        foreign_links = [
+            receipt for receipt in explicit_links
+            if relation_id(receipt.get("product_id"))
+            not in products_in_picking.get(shipment_id, set())
+        ]
+        destination_id = relation_id(shipment.get("location_dest_id"))
+        exact = [
+            receipt for receipt in explicit_for_product
+            if relation_id(receipt.get("location_id")) == destination_id
+        ]
+        explicit_conflict = (
+            (bool(explicit_for_product) and len(exact) != len(explicit_for_product))
+            or bool(foreign_links)
+        )
+        if explicit_conflict:
+            results.append({
+                "picking_id": shipment_id, "product_id": product_id,
+                "movement_group_id": group_id,
+                "state": "ambiguous", "confidence": 0.0, "confirmed": False,
+                "reason": "explicit_link_conflict",
+                "candidate_receipt_ids": [
+                    str(r.get("counterpart_picking_id") or "") for r in explicit_links
+                ],
+            })
+            continue
+        if len(exact) == 1 and not _receipt_evidence_complete(exact[0]):
+            results.append({
+                "picking_id": shipment_id, "product_id": product_id,
+                "movement_group_id": group_id,
+                "state": "ambiguous", "confidence": 0.0, "confirmed": False,
+                "reason": "receipt_provenance_incomplete",
+            })
+            continue
+        if len(exact) > 1:
+            results.append({
+                "picking_id": shipment_id, "product_id": product_id,
+                "movement_group_id": group_id,
+                "state": "ambiguous", "confidence": 0.0, "confirmed": False,
+                "reason": "multiple_exact_receipts",
+                "candidate_receipt_ids": [str(r.get("counterpart_picking_id") or "") for r in exact],
+            })
+            continue
+
+        candidates = exact
+        state = "exact"
+        if not candidates:
+            ship_date = _date((shipment.get("dates") or [None])[0])
+            ship_qty = Decimal(str(shipment.get("quantity", "0")))
+            candidates = []
+            for receipt in receipts:
+                if relation_id(receipt.get("product_id")) != product_id:
+                    continue
+                if relation_id(receipt.get("counterpart_picking_id")) in used_receipt_ids:
+                    continue
+                receipt_location = relation_id(receipt.get("location_id"))
+                if receipt_location and receipt_location != relation_id(shipment.get("location_dest_id")):
+                    continue
+                receipt_date = _date(receipt.get("counterpart_date"))
+                if ship_date is None or receipt_date is None:
+                    continue
+                if abs((receipt_date - ship_date).days) > date_window_days:
+                    continue
+                try:
+                    receipt_uom_id = relation_id(receipt.get("counterpart_uom_id"))
+                    receipt_uom = uoms_by_id[receipt_uom_id]
+                    receipt_qty, receipt_ref_id = normalize_to_reference(
+                        receipt.get("counterpart_qty"), receipt_uom, uoms_by_id,
+                        receipt.get("product_uom_category_id"),
+                    )
+                except (KeyError, UomNormalizationError):
+                    continue
+                if receipt_ref_id != relation_id(shipment.get("reference_uom_id")):
+                    continue
+                if abs(receipt_qty - ship_qty) <= candidate_tolerance:
+                    candidates.append(receipt)
+            if len(candidates) == 1:
+                state = "approximate_unique"
+            elif len(candidates) > 1:
+                state = "ambiguous"
+            else:
+                state = "unmatched"
+
+        if state in ("ambiguous", "unmatched"):
+            results.append({
+                "picking_id": shipment_id, "product_id": product_id,
+                "movement_group_id": group_id,
+                "state": state, "confidence": 0.0, "confirmed": False,
+                "candidate_receipt_ids": [str(r.get("counterpart_picking_id") or "") for r in candidates],
+            })
+            continue
+
+        receipt = candidates[0]
+        try:
+            receipt_uom_id = str(receipt.get("counterpart_uom_id") or "")
+            receipt_uom = uoms_by_id[receipt_uom_id]
+            received_qty, receipt_ref_id = normalize_to_reference(
+                receipt.get("counterpart_qty"), receipt_uom, uoms_by_id,
+                receipt.get("product_uom_category_id"),
+            )
+        except (KeyError, UomNormalizationError) as exc:
+            results.append({
+                "picking_id": shipment_id, "product_id": product_id,
+                "movement_group_id": group_id,
+                "state": "ambiguous", "confidence": 0.0, "confirmed": False,
+                "reason": getattr(exc, "code", "receipt_uom_unresolved"),
+            })
+            continue
+
+        sent_qty = Decimal(str(shipment.get("quantity", "0")))
+        delta = sent_qty - received_qty
+        confirmed = state == "exact"
+        issues = []
+        if confirmed and delta > loss_threshold:
+            issues.append("loss")
+        elif confirmed and delta < -loss_threshold:
+            issues.append("over_receipt")
+        ship_date = _date((shipment.get("dates") or [None])[0])
+        receipt_date = _date(receipt.get("counterpart_date"))
+        if confirmed and ship_date and receipt_date and (receipt_date - ship_date).days > date_window_days:
+            issues.append("delay")
+
+        results.append({
+            "picking_id": shipment_id,
+            "product_id": product_id,
+            "movement_group_id": group_id,
+            "counterpart_picking_id": str(receipt.get("counterpart_picking_id") or ""),
+            "candidate_receipt_ids": [str(receipt.get("counterpart_picking_id") or "")],
+            "date_delta_days": (
+                ( _date(receipt.get("counterpart_date")) - _date((shipment.get("dates") or [None])[0]) ).days
+                if _date(receipt.get("counterpart_date")) and _date((shipment.get("dates") or [None])[0])
+                else None
+            ),
+            "date_window_days": date_window_days,
+            "state": state,
+            "confidence": 1.0 if confirmed else 0.5,
+            "confirmed": confirmed,
+            "qty_sent": str(sent_qty),
+            "qty_received": str(received_qty),
+            "delta": str(delta),
+            "reference_uom_id": receipt_ref_id,
+            "counterpart_system": receipt.get("counterpart_system"),
+            "counterpart_source": receipt.get("counterpart_source"),
+            "recorded_at": receipt.get("recorded_at"),
+            "counterpart_date": receipt.get("counterpart_date"),
+            "issues": issues,
+        })
+        if confirmed:
+            used_receipt_ids.add(relation_id(receipt.get("counterpart_picking_id")))
+    return results

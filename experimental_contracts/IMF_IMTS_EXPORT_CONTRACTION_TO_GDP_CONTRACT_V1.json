@@ -1,0 +1,37 @@
+{
+  "contract_id": "IMF_IMTS_EXPORT_CONTRACTION_TO_GDP_CONTRACT_V1",
+  "purpose": "Test a new source-separated trade-to-economic edge using IMF IMTS world exports, not WDI trade openness",
+  "source_trade": "experiments/multi_domain_native_adapters_v1/imf_imts_v1/IMF_IMTS_DOMAIN_STATES_ANNUAL_V1.jsonl",
+  "source_target": "catalog_first/readiness_gate/macro_plus_eia_energy/MACRO_PLUS_EIA_ENERGY_COMPLETE_139_NUMERIC_RAW_2000_2024_WIDE.csv",
+  "native_frequency": "annual for both source and target",
+  "reporter_scope": ["BRA", "CAN", "CHN", "DEU", "FRA", "GBR", "IND", "ITA", "JPN", "KOR", "MEX", "SAU", "TUR", "USA", "ZAF"],
+  "trade_state": {
+    "id": "imf_imts_export_world_raw_contraction",
+    "definition": "XG_FOB_USD reporter-to-G001 raw annual value at t is strictly lower than the immediately preceding exact source year t-1",
+    "formula": "exports_world[t] < exports_world[t-1]",
+    "transformation_policy": "No log, ratio, percent normalization, smoothing, imputation, or source averaging; only a sign rule over raw USD levels explicitly authorized by this contract"
+  },
+  "target_state": {
+    "id": "wdi_material_gdp_deterioration",
+    "definition": "wdi__NY.GDP.MKTP.KD.ZG[t+h] <= wdi__NY.GDP.MKTP.KD.ZG[t] - 2.0 percentage points",
+    "horizons_years": [1, 2, 3]
+  },
+  "period": "2000-2024",
+  "origin_years": "2001-2021; later origins excluded for h=2/3 when target future values are unavailable",
+  "chronological_splits": {
+    "fit": [2001, 2013],
+    "validation": [2014, 2018],
+    "confirmation": [2019, 2021]
+  },
+  "metric": "one-sided risk difference P(material_deterioration | export_contraction) - P(material_deterioration | no_contraction), max-statistic across horizons on confirmation",
+  "null": {
+    "method": "within-reporter permutation of target annual outcome labels with trade exposure fixed",
+    "replicates": 10000,
+    "multiple_testing": "max statistic across h=1,2,3",
+    "preserve": ["reporter", "horizon", "trade exposure", "native annual frequency"]
+  },
+  "minimum_coverage": "At least 5 positive trade-state origins and 5 positive target outcomes on confirmation, otherwise not_testable",
+  "missing_data": "complete-case per reporter and horizon; exact consecutive source years; no imputation",
+  "promotion": "supported_predictive only if predeclared rule has positive confirmation risk difference and null p<0.05 with no material validation contradiction; otherwise rejected or not_testable",
+  "causal_claim": false
+}

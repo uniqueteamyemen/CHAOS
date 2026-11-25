@@ -1,0 +1,18 @@
+{
+  "repetitions": 1000,
+  "seed": 20260828,
+  "observed": {
+    "lift": 0.0,
+    "path_accuracy": 0.5454545454545454,
+    "majority_accuracy": 0.5454545454545454,
+    "coverage": 0.22248152469856086
+  },
+  "null": {
+    "lift_mean": -0.0482534965034965,
+    "lift_std": 0.02325042052836794,
+    "lift_p95": -0.010489510489510523,
+    "p_ge_observed": 0.01898101898101898,
+    "coverage_mean": 0.22248152469856086,
+    "coverage_std": 0.0
+  }
+}

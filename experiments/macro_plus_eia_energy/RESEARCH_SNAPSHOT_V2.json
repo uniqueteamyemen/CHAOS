@@ -1,0 +1,26 @@
+{
+  "snapshot_id":"CHAOS_RESEARCH_SNAPSHOT_V2",
+  "parent_commit":"9b0791288794bc93e6db3c5549a835e3b20f11b8",
+  "scope":"pre-runtime multi-domain research snapshot",
+  "pattern_status":{
+    "AMA high-growth -> material GDP deterioration within 3 years":"provisionally_supported_descriptive",
+    "AMA high-growth -> UCDP state-based conflict":"rejected_by_current_null",
+    "AMA high-growth -> UCDP high-fatality violence":"unresolved",
+    "population or energy/GDP as additive second node":"rejected_in_locked_test",
+    "energy mediator -> material deterioration":"rejected_as_additive_mediator",
+    "path composer v1.1":"rejected_for_out_of_sample_degradation"
+  },
+  "architecture_status":{
+    "domain_state_schema":"implemented",
+    "transition_evidence_schema":"implemented",
+    "path_composer":"exploratory_only",
+    "runtime":"research_only_sandbox",
+    "market_intelligence_engine":"untouched"
+  },
+  "new_scope_additions":{
+    "natural_disaster":"event -> production shock -> recovery; source-native; not yet testable without adapter",
+    "pandemic":"health shock -> policy/mobility shock -> economic outcome; source-native; not yet testable without adapter",
+    "institutions_policy":"nonlinear/contextual states; not an average coefficient; not yet testable without adapter"
+  },
+  "policies":{"raw_immutable":true,"imputation":false,"normalization":false,"forced_reconciliation":false,"daily_event_to_annual_conversion":false,"causal_promotion":false,"runtime_external_send":false}
+}

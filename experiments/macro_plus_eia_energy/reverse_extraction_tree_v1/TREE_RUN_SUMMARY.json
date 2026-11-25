@@ -1,0 +1,33 @@
+{
+  "run_id": "reverse_extraction_tree_v1_exploratory",
+  "status": "exploratory_validation_only",
+  "candidate_models": 72,
+  "horizons": [
+    1,
+    2,
+    3
+  ],
+  "families": [
+    "onset_contraction",
+    "material_drop_2pp"
+  ],
+  "modes": [
+    "exogenous_only",
+    "with_target_history"
+  ],
+  "depths": [
+    2,
+    3,
+    4
+  ],
+  "seeds": [
+    17,
+    43
+  ],
+  "split_definition": "by target_year; discovery_fit=2006-2012, discovery_inner=2013-2015, validation=2016-2019, locked_test=2020-2024",
+  "locked_test_executed": false,
+  "raw_data_modified": false,
+  "imputation": false,
+  "normalization": false,
+  "decision": "exploratory tree paths only; no promotion; null correction for model family not yet executed"
+}

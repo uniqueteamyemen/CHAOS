@@ -1,0 +1,26 @@
+{
+  "config_version": "1.1",
+  "world_bank_source_id": 15,
+  "data_endpoint_template": "https://api.worldbank.org/v2/country/all/indicator/{indicator_id}",
+  "period_window": "1990M01:2023M12",
+  "monthly_selection_policy": "Only response rows with explicit year-month date keys (for example YYYYMM or YYYYMmm) are accepted. The frequency query parameter is omitted because the World Bank API documents it as an MRV modifier; no quarterly or annual date is relabelled monthly.",
+  "indicators": [
+    {
+      "code": "CPTOTSAXN",
+      "description": "Consumer price index, total, seasonally adjusted"
+    },
+    {
+      "code": "IPTOTSAKD",
+      "description": "Industrial production, total, seasonally adjusted"
+    },
+    {
+      "code": "DXGSRMRCHSAXD",
+      "description": "Merchandise exports, seasonally adjusted, current US dollars"
+    },
+    {
+      "code": "DXGSRMRCHNSKD",
+      "description": "Merchandise exports, seasonally adjusted, constant US dollars"
+    }
+  ],
+  "note": "GEM is a secondary cohort with a minimum of 87 contiguous monthly observations. Its published 1990–2023 range contains at most 408 calendar months, so it cannot enter the strict >500 primary monthly cohort. The GEM Data Catalog identifies CC BY 4.0; preserve attribution and the exact downloaded API response."
+}

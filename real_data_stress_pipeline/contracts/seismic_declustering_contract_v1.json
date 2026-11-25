@@ -1,0 +1,52 @@
+{
+  "contract_id": "CHAOS-SEISMIC-DECLUSTERING-V1",
+  "version": "1.0.0",
+  "status": "experimental_method_not_regionally_validated",
+  "scope": {
+    "input": "USGS ComCat catalog events",
+    "purpose": "Compare frozen-detector behavior before and after GK declustering",
+    "excluded_claims": ["earthquake prediction", "operational warning", "causal attribution", "proof residual catalog is Poisson"],
+    "frozen_detector": "structural_engine/isolated_break_detector_v1/",
+    "detector_changes_permitted": false
+  },
+  "method": {
+    "name": "Gardner-Knopoff Type-I",
+    "space_window_km": "10^(0.1238*M + 0.983)",
+    "time_window_days": "10^(0.5409*M - 0.547) for M < 6.5; 10^(0.032*M + 2.7389) for M >= 6.5",
+    "foreshock_time_fraction_default": 0.5,
+    "sensitivity_values": [0.25, 0.5, 1.0],
+    "processing_order": "descending magnitude, then time, then event ID",
+    "distance": "great-circle haversine; unit-sphere KD-tree candidate lookup",
+    "retention_policy": "retain the largest event in each cluster; preserve every source event with a role label"
+  },
+  "domain_constraints": {
+    "original_method_calibration": "Southern California seismicity",
+    "transfer_to_five_USGS_belts": "not_established",
+    "catalog_completeness_mc_t_region_required_for_inference": true,
+    "network_and_detection_changes_must_be_audited": true,
+    "regional_parameter_sensitivity_required": true
+  },
+  "comparison": {
+    "original_catalog_immutable": true,
+    "compare_before_after": ["event_count", "retained_fraction", "monthly_event_count_distribution", "inter_event_interval_distribution", "detector_alarm_count", "first_alarm_time", "conditional_null_alarm_probability"],
+    "homogeneous_poisson": {
+      "role": "rate-matched exploratory benchmark only",
+      "status": "not_accepted_as_domain_null_without_completeness_and_fit_gates",
+      "not_equivalent_to": "ETAS_or_a_complete_seismic_null"
+    },
+    "fpr_label_allowed": false,
+    "pooling_across_belts_allowed": false
+  },
+  "immutability": {
+    "phase1_detector_files_read_only": true,
+    "experiments_archive_read_only": true,
+    "p2_2_historical_manifest_read_only": true,
+    "new_code_and_outputs_outside_experiments": true,
+    "raw_event_records_preserved": true
+  },
+  "provenance": {
+    "method_reference": "Gardner, J.K. and Knopoff, L. (1974), Bulletin of the Seismological Society of America, 64(5), 1363-1367.",
+    "implementation_reference": "OpenQuake HMTK GardnerKnopoffType1 and GardnerKnopoffWindow",
+    "implementation_reference_url": "https://docs.openquake.org/oq-engine/3.21/manual/_modules/openquake/hmtk/seismicity/declusterer/distance_time_windows.html"
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "source": "/tmp/imts_resource_probe.bin",
+  "bytes": 154559,
+  "matches": [
+    "download",
+    "https://p11.techlab-cdn.com",
+    "ondownloading"
+  ],
+  "status": "route_analysis_complete"
+}

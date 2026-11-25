@@ -1,0 +1,44 @@
+{
+  "contract": "targeted-three-null-v1",
+  "seed": 20260828,
+  "prediction_count": 3229,
+  "observed": {
+    "accuracy": 0.5274078662124497
+  },
+  "nulls": [
+    {
+      "null_id": "break_event_outcome_association",
+      "question": "هل يختفي التفوق عند كسر علاقة الحدث بالنتيجة؟",
+      "repetitions": 1000,
+      "observed_accuracy": 0.5274078662124497,
+      "null_mean": 0.5093620315887272,
+      "null_std": 0.008460215598205678,
+      "null_p95": 0.5230721585630226,
+      "empirical_p_value_ge_observed": 0.01898101898101898,
+      "interpretation": "diagnostic_only"
+    },
+    {
+      "null_id": "break_temporal_order",
+      "question": "هل يعتمد التفوق على الترتيب الزمني؟",
+      "repetitions": 1000,
+      "observed_accuracy": 0.5274078662124497,
+      "null_mean": 0.5137249922576649,
+      "null_std": 0.009809583781249768,
+      "null_p95": 0.5292660266336328,
+      "empirical_p_value_ge_observed": 0.07892107892107893,
+      "interpretation": "diagnostic_only"
+    },
+    {
+      "null_id": "break_path_identity",
+      "question": "هل يعتمد التفوق على هوية الـPath؟",
+      "repetitions": 1000,
+      "observed_accuracy": 0.5274078662124497,
+      "null_mean": 0.5140068132548776,
+      "null_std": 0.008094357235572726,
+      "null_p95": 0.5274078662124497,
+      "empirical_p_value_ge_observed": 0.052947052947052944,
+      "interpretation": "diagnostic_only"
+    }
+  ],
+  "decision_rule": "لا نفتح عائلة Null جديدة؛ نثبت الحكم على Event-Path فقط بعد قراءة هذه التشخيصات الثلاثة."
+}

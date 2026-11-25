@@ -1,0 +1,316 @@
+{
+  "source": "CL_IMTS_COUNTRY",
+  "reporters": [
+    "ALB",
+    "DZA",
+    "AGO",
+    "ARM",
+    "AUS",
+    "AUT",
+    "AZE",
+    "BHS",
+    "BHR",
+    "BGD",
+    "BLR",
+    "BEL",
+    "BLZ",
+    "BEN",
+    "BTN",
+    "BOL",
+    "BWA",
+    "BRA",
+    "BRN",
+    "BGR",
+    "BFA",
+    "BDI",
+    "CPV",
+    "KHM",
+    "CMR",
+    "CAN",
+    "CAF",
+    "TCD",
+    "CHL",
+    "CHN",
+    "COL",
+    "COG",
+    "CRI",
+    "HRV",
+    "CYP",
+    "CZE",
+    "CIV",
+    "DNK",
+    "DMA",
+    "DOM",
+    "ECU",
+    "EGY",
+    "SLV",
+    "EST",
+    "ETH",
+    "FJI",
+    "FIN",
+    "FRA",
+    "GAB",
+    "GMB",
+    "GEO",
+    "DEU",
+    "GHA",
+    "GRC",
+    "GTM",
+    "GNB",
+    "GUY",
+    "HTI",
+    "HND",
+    "HKG",
+    "HUN",
+    "IND",
+    "IDN",
+    "IRN",
+    "IRL",
+    "ISR",
+    "ITA",
+    "JAM",
+    "JPN",
+    "JOR",
+    "KAZ",
+    "KEN",
+    "KOR",
+    "KGZ",
+    "LAO",
+    "LVA",
+    "LSO",
+    "LBY",
+    "LTU",
+    "LUX",
+    "MDG",
+    "MWI",
+    "MYS",
+    "MDV",
+    "MLI",
+    "MRT",
+    "MUS",
+    "MEX",
+    "MDA",
+    "MNG",
+    "MAR",
+    "NPL",
+    "NLD",
+    "NZL",
+    "NIC",
+    "NER",
+    "NGA",
+    "MKD",
+    "NOR",
+    "PAK",
+    "PAN",
+    "PNG",
+    "PRY",
+    "PER",
+    "PHL",
+    "POL",
+    "PRT",
+    "QAT",
+    "ROU",
+    "RUS",
+    "RWA",
+    "WSM",
+    "SAU",
+    "SEN",
+    "SYC",
+    "SGP",
+    "SVK",
+    "SVN",
+    "SLB",
+    "ZAF",
+    "ESP",
+    "LKA",
+    "LCA",
+    "SWE",
+    "CHE",
+    "STP",
+    "TZA",
+    "THA",
+    "TGO",
+    "TON",
+    "TUN",
+    "TUR",
+    "UGA",
+    "UKR",
+    "GBR",
+    "USA",
+    "VUT",
+    "VNM",
+    "ZMB"
+  ],
+  "rules": [
+    "world",
+    "not specified",
+    "unspecified",
+    "special categories",
+    "countries & areas",
+    "other countries",
+    "all countries",
+    "regional aggregate",
+    "region",
+    "group",
+    "union",
+    "area not elsewhere included",
+    "oil related aggregate",
+    "services aggregate"
+  ],
+  "rows": [
+    {
+      "counterpart_code": "TX799",
+      "source_name": "Africa not specified",
+      "reasons": [
+        "aggregate_or_unspecified_name"
+      ],
+      "eligible_as_named_partner": false
+    },
+    {
+      "counterpart_code": "TX598",
+      "source_name": "Asia not specified",
+      "reasons": [
+        "aggregate_or_unspecified_name"
+      ],
+      "eligible_as_named_partner": false
+    },
+    {
+      "counterpart_code": "TX898",
+      "source_name": "Countries & Areas not specified",
+      "reasons": [
+        "aggregate_or_unspecified_name"
+      ],
+      "eligible_as_named_partner": false
+    },
+    {
+      "counterpart_code": "TX884",
+      "source_name": "Europe not specified",
+      "reasons": [
+        "aggregate_or_unspecified_name"
+      ],
+      "eligible_as_named_partner": false
+    },
+    {
+      "counterpart_code": "TX489",
+      "source_name": "Middle East and Central Asia not specified",
+      "reasons": [
+        "aggregate_or_unspecified_name"
+      ],
+      "eligible_as_named_partner": false
+    },
+    {
+      "counterpart_code": "TX899",
+      "source_name": "Special Categories",
+      "reasons": [
+        "aggregate_or_unspecified_name"
+      ],
+      "eligible_as_named_partner": false
+    },
+    {
+      "counterpart_code": "TX399",
+      "source_name": "Western Hemisphere not specified",
+      "reasons": [
+        "aggregate_or_unspecified_name"
+      ],
+      "eligible_as_named_partner": false
+    },
+    {
+      "counterpart_code": "TX910",
+      "source_name": "Other Countries n.i.e.",
+      "reasons": [
+        "aggregate_or_unspecified_name"
+      ],
+      "eligible_as_named_partner": false
+    },
+    {
+      "counterpart_code": "COM",
+      "source_name": "Comoros, Union of the",
+      "reasons": [
+        "aggregate_or_unspecified_name"
+      ],
+      "eligible_as_named_partner": false
+    },
+    {
+      "counterpart_code": "HKG",
+      "source_name": "Hong Kong Special Administrative Region, People's Republic of China",
+      "reasons": [
+        "aggregate_or_unspecified_name"
+      ],
+      "eligible_as_named_partner": false
+    },
+    {
+      "counterpart_code": "MAC",
+      "source_name": "Macao Special Administrative Region, People's Republic of China",
+      "reasons": [
+        "aggregate_or_unspecified_name"
+      ],
+      "eligible_as_named_partner": false
+    },
+    {
+      "counterpart_code": "REU",
+      "source_name": "Réunion",
+      "reasons": [
+        "aggregate_or_unspecified_name"
+      ],
+      "eligible_as_named_partner": false
+    },
+    {
+      "counterpart_code": "SUN",
+      "source_name": "Union of Soviet Socialist Republics (USSR)",
+      "reasons": [
+        "aggregate_or_unspecified_name"
+      ],
+      "eligible_as_named_partner": false
+    },
+    {
+      "counterpart_code": "G309",
+      "source_name": "Eastern Caribbean Currency Union (ECCU)",
+      "reasons": [
+        "aggregate_or_unspecified_name"
+      ],
+      "eligible_as_named_partner": false
+    },
+    {
+      "counterpart_code": "G998",
+      "source_name": "European Union (EU)",
+      "reasons": [
+        "aggregate_or_unspecified_name"
+      ],
+      "eligible_as_named_partner": false
+    },
+    {
+      "counterpart_code": "G757",
+      "source_name": "Southern African Customs Union (SACU)",
+      "reasons": [
+        "aggregate_or_unspecified_name"
+      ],
+      "eligible_as_named_partner": false
+    },
+    {
+      "counterpart_code": "G759",
+      "source_name": "West African Economic and Monetary Union (WAEMU)",
+      "reasons": [
+        "aggregate_or_unspecified_name"
+      ],
+      "eligible_as_named_partner": false
+    },
+    {
+      "counterpart_code": "G001",
+      "source_name": "World",
+      "reasons": [
+        "world_denominator_only",
+        "aggregate_or_unspecified_name"
+      ],
+      "eligible_as_named_partner": false
+    },
+    {
+      "counterpart_code": "GSAC",
+      "source_name": "Southern African Customs Union (SACU)",
+      "reasons": [
+        "aggregate_or_unspecified_name"
+      ],
+      "eligible_as_named_partner": false
+    }
+  ],
+  "count": 19
+}

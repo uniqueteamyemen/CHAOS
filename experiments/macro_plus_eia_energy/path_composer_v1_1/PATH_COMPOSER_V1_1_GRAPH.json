@@ -1,0 +1,15 @@
+{
+  "composer_id": "PATH_COMPOSER_V1_1",
+  "formula": "p = p_base if not high_growth; p = p_high_growth if high_growth and not energy_down_t2; p = p_high_growth_energy_down if high_growth and energy_down_t2",
+  "parameters_fit_only": {
+    "p_base": 0.38530465949820786,
+    "p_high_growth": 0.6,
+    "p_high_growth_energy_down": 0.6740331491712708
+  },
+  "threshold_for_binary_metrics": 0.5,
+  "interpretation": "probability composition; no causal coefficients",
+  "locked_test_used": false,
+  "raw_modified": false,
+  "imputation": false,
+  "normalization": false
+}

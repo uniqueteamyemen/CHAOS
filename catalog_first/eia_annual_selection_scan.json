@@ -1,0 +1,753 @@
+{
+  "annual_keyword_counts": {
+    "energy consumption per gdp": 265,
+    "energy consumption per capita": 265,
+    "total energy consumption": 2385,
+    "coal consumption": 2650,
+    "natural gas consumption": 1320
+  },
+  "examples": {
+    "energy consumption per gdp": [
+      {
+        "series_id": "INTL.47-34-WP15-TBTUUSDPP.A",
+        "name": "Energy consumption per GDP, China, Annual",
+        "units": "thousand Btu per USD at purchasing power parities",
+        "geography": "CHN",
+        "start": "1980",
+        "end": "2024"
+      },
+      {
+        "series_id": "INTL.47-34-IRN-TBTUUSDPP.A",
+        "name": "Energy consumption per GDP, Iran, Annual",
+        "units": "thousand Btu per USD at purchasing power parities",
+        "geography": "IRN",
+        "start": "1980",
+        "end": "2024"
+      },
+      {
+        "series_id": "INTL.47-34-BWA-TBTUUSDPP.A",
+        "name": "Energy consumption per GDP, Botswana, Annual",
+        "units": "thousand Btu per USD at purchasing power parities",
+        "geography": "BWA",
+        "start": "1980",
+        "end": "2024"
+      },
+      {
+        "series_id": "INTL.47-34-ROU-TBTUUSDPP.A",
+        "name": "Energy consumption per GDP, Romania, Annual",
+        "units": "thousand Btu per USD at purchasing power parities",
+        "geography": "ROU",
+        "start": "1980",
+        "end": "2024"
+      },
+      {
+        "series_id": "INTL.47-34-CHN-TBTUUSDPP.A",
+        "name": "Energy consumption per GDP, China, Annual",
+        "units": "thousand Btu per USD at purchasing power parities",
+        "geography": "CHN",
+        "start": "1980",
+        "end": "2024"
+      },
+      {
+        "series_id": "INTL.47-34-HUN-TBTUUSDPP.A",
+        "name": "Energy consumption per GDP, Hungary, Annual",
+        "units": "thousand Btu per USD at purchasing power parities",
+        "geography": "HUN",
+        "start": "1980",
+        "end": "2024"
+      },
+      {
+        "series_id": "INTL.47-34-DEU-TBTUUSDPP.A",
+        "name": "Energy consumption per GDP, Germany, Annual",
+        "units": "thousand Btu per USD at purchasing power parities",
+        "geography": "DEU",
+        "start": "1980",
+        "end": "2024"
+      },
+      {
+        "series_id": "INTL.47-34-MIDE-TBTUUSDPP.A",
+        "name": "Energy consumption per GDP, Middle East, Annual",
+        "units": "thousand Btu per USD at purchasing power parities",
+        "geography": "ARE+BHR+IRN+IRQ+ISR+JOR+KWT+LBN+OMN+PSE+QAT+SAU+SYR+YEM",
+        "start": "1980",
+        "end": "2024"
+      },
+      {
+        "series_id": "INTL.47-34-OPNO-TBTUUSDPP.A",
+        "name": "Energy consumption per GDP, Non-OPEC, Annual",
+        "units": "thousand Btu per USD at purchasing power parities",
+        "geography": "ABW+AFG+AGO+ALB+ARG+ARM+ASM+ATA+ATG+AUS+AUT+AZE+BDI+BEL+BEN+BFA+BGD+BGR+BHR+BHS+BIH+BLR+BLZ+BMU+BOL+BRA+BRB+BRN+BTN+BWA+CAF+CAN+CHE+CHL+CHN+CIV+CMR+COD+COK+COL+COM+CPV+CRI+CSK+CUB+CYM+CYP+CZE+DDR+DEU+DEUW+DJI+DMA+DNK+DOM+ECU+EGY+ERI+ESH+ESP+EST+ETH+FIN+FJI+FLK+FRA+FRO+FSM+GBR+GEO+GHA+GIB+GIN+GLP+GMB+GNB+GRC+GRD+GRL+GTM+GUF+GUM+GUY+HITZ+HKG+HND+HRV+HTI+HUN+IDN+IND+IRL+ISL+ISR+ITA+JAM+JOR+JPN+KAZ+KEN+KGZ+KHM+KIR+KNA+KOR+LAO+LBN+LBR+LCA+LKA+LSO+LTU+LUX+LVA+MAC+MAR+MDA+MDG+MDV+MEX+MKD+MLI+MLT+MMR+MNE+MNG+MNP+MOZ+MRT+MSR+MTQ+MUS+MWI+MYS+NAM+NCL+NER+NIC+NIU+NLD+NLDA+NOR+NPL+NRU+NZL+OMN+PAK+PAN+PER+PHL+PNG+POL+PRI+PRK+PRT+PRY+PSE+PYF+QAT+REU+ROU+RUS+RWA+SCG+SDN+SEN+SGP+SHN+SLB+SLE+SLV+SOM+SPM+SRB+SSD+STP+SUN+SUR+SVK+SVN+SWE+SWZ+SYC+SYR+TCA+TCD+TGO+THA+TJK+TKM+TLS+TON+TTO+TUN+TUR+TUV+TWN+TZA+UGA+UKR+URY+USA+USIQ+UZB+VCT+VGB+VIR+VNM+VUT+WAK+WSM+XKS+YEM+YUG+ZAF+ZMB+ZWE",
+        "start": "1980",
+        "end": "2024"
+      },
+      {
+        "series_id": "INTL.47-34-WP19-TBTUUSDPP.A",
+        "name": "Energy consumption per GDP, IEO - Middle East, Annual",
+        "units": "thousand Btu per USD at purchasing power parities",
+        "geography": "ARE+BHR+IRN+IRQ+ISR+JOR+KWT+LBN+OMN+PSE+QAT+SAU+SYR+YEM",
+        "start": "1980",
+        "end": "2024"
+      }
+    ],
+    "energy consumption per capita": [
+      {
+        "series_id": "INTL.47-33-WORL-MBTUPP.A",
+        "name": "Energy consumption per capita, World, Annual",
+        "units": "million Btu per person",
+        "geography": "WLD",
+        "start": "1980",
+        "end": "2024"
+      },
+      {
+        "series_id": "INTL.47-33-EURO-MBTUPP.A",
+        "name": "Energy consumption per capita, Europe, Annual",
+        "units": "million Btu per person",
+        "geography": "ALB+AUT+BEL+BGR+BIH+CHE+CSK+CYP+CZE+DDR+DEU+DEUW+DNK+ESP+EST+FIN+FRA+FRO+GBR+GIB+GRC+HRV+HUN+IRL+ISL+ITA+LTU+LUX+LVA+MKD+MLT+MNE+NLD+NOR+POL+PRT+ROU+SCG+SRB+SVK+SVN+SWE+TUR+XKS+YUG",
+        "start": "1980",
+        "end": "2024"
+      },
+      {
+        "series_id": "INTL.47-33-CHE-MBTUPP.A",
+        "name": "Energy consumption per capita, Switzerland, Annual",
+        "units": "million Btu per person",
+        "geography": "CHE",
+        "start": "1980",
+        "end": "2024"
+      },
+      {
+        "series_id": "INTL.47-33-WP21-MBTUPP.A",
+        "name": "Energy consumption per capita, Western Europe, Annual",
+        "units": "million Btu per person",
+        "geography": "ALB+AUT+BEL+BGR+BIH+CHE+CSK+CYP+CZE+DDR+DEU+DEUW+DNK+ESP+EST+FIN+FRA+FRO+GBR+GIB+GRC+HRV+HUN+IRL+ISL+ITA+LTU+LUX+LVA+MKD+MLT+MNE+NLD+NOR+POL+PRT+ROU+SRB+SVK+SVN+SWE+TUR+XKS",
+        "start": "1980",
+        "end": "2024"
+      },
+      {
+        "series_id": "INTL.47-33-OECD-MBTUPP.A",
+        "name": "Energy consumption per capita, OECD, Annual",
+        "units": "million Btu per person",
+        "geography": "ASM+AUS+AUT+BEL+CAN+CHE+CHL+COL+CRI+CSK+CZE+DDR+DEU+DEUW+DNK+ESP+EST+FIN+FRA+GBR+GRC+GUM+HITZ+HUN+IRL+ISL+ISR+ITA+JPN+KOR+LTU+LUX+LVA+MEX+NLD+NOR+NZL+POL+PRI+PRT+SVK+SVN+SWE+TUR+USA+USOH+VIR",
+        "start": "1980",
+        "end": "2024"
+      },
+      {
+        "series_id": "INTL.47-33-OEEU-MBTUPP.A",
+        "name": "Energy consumption per capita, OECD - Europe, Annual",
+        "units": "million Btu per person",
+        "geography": "AUT+BEL+CHE+CSK+CZE+DDR+DEU+DEUW+DNK+ESP+EST+FIN+FRA+GBR+GRC+HUN+IRL+ISL+ITA+LTU+LUX+LVA+NLD+NOR+POL+PRT+SVK+SVN+SWE+TUR",
+        "start": "1980",
+        "end": "2024"
+      },
+      {
+        "series_id": "INTL.47-33-OPNO-MBTUPP.A",
+        "name": "Energy consumption per capita, Non-OPEC, Annual",
+        "units": "million Btu per person",
+        "geography": "ABW+AFG+AGO+ALB+ARG+ARM+ASM+ATA+ATG+AUS+AUT+AZE+BDI+BEL+BEN+BFA+BGD+BGR+BHR+BHS+BIH+BLR+BLZ+BMU+BOL+BRA+BRB+BRN+BTN+BWA+CAF+CAN+CHE+CHL+CHN+CIV+CMR+COD+COK+COL+COM+CPV+CRI+CSK+CUB+CYM+CYP+CZE+DDR+DEU+DEUW+DJI+DMA+DNK+DOM+ECU+EGY+ERI+ESH+ESP+EST+ETH+FIN+FJI+FLK+FRA+FRO+FSM+GBR+GEO+GHA+GIB+GIN+GLP+GMB+GNB+GRC+GRD+GRL+GTM+GUF+GUM+GUY+HITZ+HKG+HND+HRV+HTI+HUN+IDN+IND+IRL+ISL+ISR+ITA+JAM+JOR+JPN+KAZ+KEN+KGZ+KHM+KIR+KNA+KOR+LAO+LBN+LBR+LCA+LKA+LSO+LTU+LUX+LVA+MAC+MAR+MDA+MDG+MDV+MEX+MKD+MLI+MLT+MMR+MNE+MNG+MNP+MOZ+MRT+MSR+MTQ+MUS+MWI+MYS+NAM+NCL+NER+NIC+NIU+NLD+NLDA+NOR+NPL+NRU+NZL+OMN+PAK+PAN+PER+PHL+PNG+POL+PRI+PRK+PRT+PRY+PSE+PYF+QAT+REU+ROU+RUS+RWA+SCG+SDN+SEN+SGP+SHN+SLB+SLE+SLV+SOM+SPM+SRB+SSD+STP+SUN+SUR+SVK+SVN+SWE+SWZ+SYC+SYR+TCA+TCD+TGO+THA+TJK+TKM+TLS+TON+TTO+TUN+TUR+TUV+TWN+TZA+UGA+UKR+URY+USA+USIQ+UZB+VCT+VGB+VIR+VNM+VUT+WAK+WSM+XKS+YEM+YUG+ZAF+ZMB+ZWE",
+        "start": "1980",
+        "end": "2024"
+      },
+      {
+        "series_id": "INTL.47-33-EST-MBTUPP.A",
+        "name": "Energy consumption per capita, Estonia, Annual",
+        "units": "million Btu per person",
+        "geography": "EST",
+        "start": "1980",
+        "end": "2024"
+      },
+      {
+        "series_id": "INTL.47-33-EU27-MBTUPP.A",
+        "name": "Energy consumption per capita, European Union, Annual",
+        "units": "million Btu per person",
+        "geography": "AUT+BEL+BGR+CSK+CYP+CZE+DDR+DEU+DEUW+DNK+ESP+EST+FIN+FRA+GRC+HRV+HUN+IRL+ITA+LTU+LUX+LVA+MLT+NLD+POL+PRT+ROU+SVK+SVN+SWE",
+        "start": "1980",
+        "end": "2024"
+      },
+      {
+        "series_id": "INTL.47-33-ITA-MBTUPP.A",
+        "name": "Energy consumption per capita, Italy, Annual",
+        "units": "million Btu per person",
+        "geography": "ITA",
+        "start": "1980",
+        "end": "2024"
+      }
+    ],
+    "total energy consumption": [
+      {
+        "series_id": "INTL.4411-2-ZAF-QBTU.A",
+        "name": "Total energy consumption from coal, South Africa, Annual",
+        "units": "quadrillion Btu",
+        "geography": "ZAF",
+        "start": "1980",
+        "end": "2024"
+      },
+      {
+        "series_id": "INTL.4411-2-SSD-QBTU.A",
+        "name": "Total energy consumption from coal, South Sudan, Annual",
+        "units": "quadrillion Btu",
+        "geography": "SSD",
+        "start": "1980",
+        "end": "2024"
+      },
+      {
+        "series_id": "INTL.4411-2-STP-QBTU.A",
+        "name": "Total energy consumption from coal, Sao Tome and Principe, Annual",
+        "units": "quadrillion Btu",
+        "geography": "STP",
+        "start": "1980",
+        "end": "2024"
+      },
+      {
+        "series_id": "INTL.4411-2-SUN-QBTU.A",
+        "name": "Total energy consumption from coal, Former U.S.S.R., Annual",
+        "units": "quadrillion Btu",
+        "geography": "SUN",
+        "start": "1980",
+        "end": "2024"
+      },
+      {
+        "series_id": "INTL.4411-2-SUR-QBTU.A",
+        "name": "Total energy consumption from coal, Suriname, Annual",
+        "units": "quadrillion Btu",
+        "geography": "SUR",
+        "start": "1980",
+        "end": "2024"
+      },
+      {
+        "series_id": "INTL.44-2-WAK-TJ.A",
+        "name": "Total energy consumption, Wake Island, Annual",
+        "units": "terajoules",
+        "geography": "WAK",
+        "start": "1980",
+        "end": "2024"
+      },
+      {
+        "series_id": "INTL.44-2-WORL-MTOE.A",
+        "name": "Total energy consumption, World, Annual",
+        "units": "million metric tons of oil equivalent",
+        "geography": "WLD",
+        "start": "1980",
+        "end": "2024"
+      },
+      {
+        "series_id": "INTL.44-2-WORL-QBTU.A",
+        "name": "Total energy consumption, World, Annual",
+        "units": "quadrillion Btu",
+        "geography": "WLD",
+        "start": "1980",
+        "end": "2024"
+      },
+      {
+        "series_id": "INTL.4411-2-OPEC-QBTU.A",
+        "name": "Total energy consumption from coal, OPEC, Annual",
+        "units": "quadrillion Btu",
+        "geography": "ARE+COG+DZA+GAB+GNQ+IRN+IRQ+KWT+LBY+NGA+SAU+VEN",
+        "start": "1980",
+        "end": "2024"
+      },
+      {
+        "series_id": "INTL.4411-2-OPNO-QBTU.A",
+        "name": "Total energy consumption from coal, Non-OPEC, Annual",
+        "units": "quadrillion Btu",
+        "geography": "ABW+AFG+AGO+ALB+ARG+ARM+ASM+ATA+ATG+AUS+AUT+AZE+BDI+BEL+BEN+BFA+BGD+BGR+BHR+BHS+BIH+BLR+BLZ+BMU+BOL+BRA+BRB+BRN+BTN+BWA+CAF+CAN+CHE+CHL+CHN+CIV+CMR+COD+COK+COL+COM+CPV+CRI+CSK+CUB+CYM+CYP+CZE+DDR+DEU+DEUW+DJI+DMA+DNK+DOM+ECU+EGY+ERI+ESH+ESP+EST+ETH+FIN+FJI+FLK+FRA+FRO+FSM+GBR+GEO+GHA+GIB+GIN+GLP+GMB+GNB+GRC+GRD+GRL+GTM+GUF+GUM+GUY+HITZ+HKG+HND+HRV+HTI+HUN+IDN+IND+IRL+ISL+ISR+ITA+JAM+JOR+JPN+KAZ+KEN+KGZ+KHM+KIR+KNA+KOR+LAO+LBN+LBR+LCA+LKA+LSO+LTU+LUX+LVA+MAC+MAR+MDA+MDG+MDV+MEX+MKD+MLI+MLT+MMR+MNE+MNG+MNP+MOZ+MRT+MSR+MTQ+MUS+MWI+MYS+NAM+NCL+NER+NIC+NIU+NLD+NLDA+NOR+NPL+NRU+NZL+OMN+PAK+PAN+PER+PHL+PNG+POL+PRI+PRK+PRT+PRY+PSE+PYF+QAT+REU+ROU+RUS+RWA+SCG+SDN+SEN+SGP+SHN+SLB+SLE+SLV+SOM+SPM+SRB+SSD+STP+SUN+SUR+SVK+SVN+SWE+SWZ+SYC+SYR+TCA+TCD+TGO+THA+TJK+TKM+TLS+TON+TTO+TUN+TUR+TUV+TWN+TZA+UGA+UKR+URY+USA+USIQ+UZB+VCT+VGB+VIR+VNM+VUT+WAK+WSM+XKS+YEM+YUG+ZAF+ZMB+ZWE",
+        "start": "1980",
+        "end": "2024"
+      }
+    ],
+    "coal consumption": [
+      {
+        "series_id": "INTL.130-2-YEM-MT.A",
+        "name": "Metallurgical coal consumption, Yemen, Annual",
+        "units": "1000 metric tons",
+        "geography": "YEM",
+        "start": "1980",
+        "end": "2024"
+      },
+      {
+        "series_id": "INTL.130-2-YEM-MTOE.A",
+        "name": "Metallurgical coal consumption, Yemen, Annual",
+        "units": "million metric tons of oil equivalent",
+        "geography": "YEM",
+        "start": "1980",
+        "end": "2024"
+      },
+      {
+        "series_id": "INTL.130-2-YEM-QBTU.A",
+        "name": "Metallurgical coal consumption, Yemen, Annual",
+        "units": "quadrillion Btu",
+        "geography": "YEM",
+        "start": "1980",
+        "end": "2024"
+      },
+      {
+        "series_id": "INTL.130-2-YEM-TJ.A",
+        "name": "Metallurgical coal consumption, Yemen, Annual",
+        "units": "terajoules",
+        "geography": "YEM",
+        "start": "1980",
+        "end": "2024"
+      },
+      {
+        "series_id": "INTL.130-2-YEM-TST.A",
+        "name": "Metallurgical coal consumption, Yemen, Annual",
+        "units": "thousand short tons",
+        "geography": "YEM",
+        "start": "1980",
+        "end": "2024"
+      },
+      {
+        "series_id": "INTL.130-2-WP24-TJ.A",
+        "name": "Metallurgical coal consumption, Eastern Europe and Eurasia, Annual",
+        "units": "terajoules",
+        "geography": "ARM+AZE+BLR+GEO+KAZ+KGZ+MDA+SCG+SUN+TJK+TKM+UKR+UZB+YUG",
+        "start": "1980",
+        "end": "2024"
+      },
+      {
+        "series_id": "INTL.130-2-WP24-TST.A",
+        "name": "Metallurgical coal consumption, Eastern Europe and Eurasia, Annual",
+        "units": "thousand short tons",
+        "geography": "ARM+AZE+BLR+GEO+KAZ+KGZ+MDA+SCG+SUN+TJK+TKM+UKR+UZB+YUG",
+        "start": "1980",
+        "end": "2024"
+      },
+      {
+        "series_id": "INTL.130-2-WP25-MT.A",
+        "name": "Metallurgical coal consumption, Russia, Annual",
+        "units": "1000 metric tons",
+        "geography": "RUS",
+        "start": "1992",
+        "end": "2024"
+      },
+      {
+        "series_id": "INTL.130-2-WP25-MTOE.A",
+        "name": "Metallurgical coal consumption, Russia, Annual",
+        "units": "million metric tons of oil equivalent",
+        "geography": "RUS",
+        "start": "1992",
+        "end": "2024"
+      },
+      {
+        "series_id": "INTL.130-2-ZAF-MT.A",
+        "name": "Metallurgical coal consumption, South Africa, Annual",
+        "units": "1000 metric tons",
+        "geography": "ZAF",
+        "start": "1980",
+        "end": "2024"
+      }
+    ],
+    "natural gas consumption": [
+      {
+        "series_id": "INTL.26-2-SHN-MTOE.A",
+        "name": "Dry natural gas consumption, Saint Helena, Annual",
+        "units": "million metric tons of oil equivalent",
+        "geography": "SHN",
+        "start": "1980",
+        "end": "2024"
+      },
+      {
+        "series_id": "INTL.26-2-SHN-QBTU.A",
+        "name": "Dry natural gas consumption, Saint Helena, Annual",
+        "units": "quadrillion Btu",
+        "geography": "SHN",
+        "start": "1980",
+        "end": "2024"
+      },
+      {
+        "series_id": "INTL.26-2-SHN-TJ.A",
+        "name": "Dry natural gas consumption, Saint Helena, Annual",
+        "units": "terajoules",
+        "geography": "SHN",
+        "start": "1980",
+        "end": "2024"
+      },
+      {
+        "series_id": "INTL.26-2-SLB-BCF.A",
+        "name": "Dry natural gas consumption, Solomon Islands, Annual",
+        "units": "billion cubic feet",
+        "geography": "SLB",
+        "start": "1980",
+        "end": "2024"
+      },
+      {
+        "series_id": "INTL.26-2-SLB-BCM.A",
+        "name": "Dry natural gas consumption, Solomon Islands, Annual",
+        "units": "billion cubic meters",
+        "geography": "SLB",
+        "start": "1980",
+        "end": "2024"
+      },
+      {
+        "series_id": "INTL.26-2-SLB-MTOE.A",
+        "name": "Dry natural gas consumption, Solomon Islands, Annual",
+        "units": "million metric tons of oil equivalent",
+        "geography": "SLB",
+        "start": "1980",
+        "end": "2024"
+      },
+      {
+        "series_id": "INTL.26-2-SLB-QBTU.A",
+        "name": "Dry natural gas consumption, Solomon Islands, Annual",
+        "units": "quadrillion Btu",
+        "geography": "SLB",
+        "start": "1980",
+        "end": "2024"
+      },
+      {
+        "series_id": "INTL.26-2-SLB-TJ.A",
+        "name": "Dry natural gas consumption, Solomon Islands, Annual",
+        "units": "terajoules",
+        "geography": "SLB",
+        "start": "1980",
+        "end": "2024"
+      },
+      {
+        "series_id": "INTL.26-2-SLE-BCF.A",
+        "name": "Dry natural gas consumption, Sierra Leone, Annual",
+        "units": "billion cubic feet",
+        "geography": "SLE",
+        "start": "1980",
+        "end": "2024"
+      },
+      {
+        "series_id": "INTL.26-2-SLE-BCM.A",
+        "name": "Dry natural gas consumption, Sierra Leone, Annual",
+        "units": "billion cubic meters",
+        "geography": "SLE",
+        "start": "1980",
+        "end": "2024"
+      }
+    ]
+  },
+  "selected_country_examples": [
+    {
+      "series_id": "INTL.47-34-WP15-TBTUUSDPP.A",
+      "name": "Energy consumption per GDP, China, Annual",
+      "units": "thousand Btu per USD at purchasing power parities",
+      "frequency": "A",
+      "start": "1980",
+      "end": "2024",
+      "data_points": 45,
+      "geography": "CHN",
+      "last_updated": "2026-08-21T19:06:13-04:00"
+    },
+    {
+      "series_id": "INTL.47-34-IRN-TBTUUSDPP.A",
+      "name": "Energy consumption per GDP, Iran, Annual",
+      "units": "thousand Btu per USD at purchasing power parities",
+      "frequency": "A",
+      "start": "1980",
+      "end": "2024",
+      "data_points": 45,
+      "geography": "IRN",
+      "last_updated": "2026-08-21T19:06:13-04:00"
+    },
+    {
+      "series_id": "INTL.47-34-CHN-TBTUUSDPP.A",
+      "name": "Energy consumption per GDP, China, Annual",
+      "units": "thousand Btu per USD at purchasing power parities",
+      "frequency": "A",
+      "start": "1980",
+      "end": "2024",
+      "data_points": 45,
+      "geography": "CHN",
+      "last_updated": "2026-08-21T19:06:13-04:00"
+    },
+    {
+      "series_id": "INTL.47-34-DEU-TBTUUSDPP.A",
+      "name": "Energy consumption per GDP, Germany, Annual",
+      "units": "thousand Btu per USD at purchasing power parities",
+      "frequency": "A",
+      "start": "1980",
+      "end": "2024",
+      "data_points": 45,
+      "geography": "DEU",
+      "last_updated": "2026-08-21T19:06:13-04:00"
+    },
+    {
+      "series_id": "INTL.47-34-BRA-TBTUUSDPP.A",
+      "name": "Energy consumption per GDP, Brazil, Annual",
+      "units": "thousand Btu per USD at purchasing power parities",
+      "frequency": "A",
+      "start": "1980",
+      "end": "2024",
+      "data_points": 45,
+      "geography": "BRA",
+      "last_updated": "2026-06-24T13:57:47-04:00"
+    },
+    {
+      "series_id": "INTL.47-33-DEU-MBTUPP.A",
+      "name": "Energy consumption per capita, Germany, Annual",
+      "units": "million Btu per person",
+      "frequency": "A",
+      "start": "1980",
+      "end": "2024",
+      "data_points": 45,
+      "geography": "DEU",
+      "last_updated": "2026-06-24T13:57:47-04:00"
+    },
+    {
+      "series_id": "INTL.47-34-WP18-TBTUUSDPP.A",
+      "name": "Energy consumption per GDP, Mexico, Annual",
+      "units": "thousand Btu per USD at purchasing power parities",
+      "frequency": "A",
+      "start": "1980",
+      "end": "2024",
+      "data_points": 45,
+      "geography": "MEX",
+      "last_updated": "2026-06-24T13:57:47-04:00"
+    },
+    {
+      "series_id": "INTL.47-34-WP16-TBTUUSDPP.A",
+      "name": "Energy consumption per GDP, India, Annual",
+      "units": "thousand Btu per USD at purchasing power parities",
+      "frequency": "A",
+      "start": "1980",
+      "end": "2024",
+      "data_points": 45,
+      "geography": "IND",
+      "last_updated": "2026-06-24T13:57:47-04:00"
+    },
+    {
+      "series_id": "INTL.47-34-IND-TBTUUSDPP.A",
+      "name": "Energy consumption per GDP, India, Annual",
+      "units": "thousand Btu per USD at purchasing power parities",
+      "frequency": "A",
+      "start": "1980",
+      "end": "2024",
+      "data_points": 45,
+      "geography": "IND",
+      "last_updated": "2026-06-24T13:57:47-04:00"
+    },
+    {
+      "series_id": "INTL.47-34-MEX-TBTUUSDPP.A",
+      "name": "Energy consumption per GDP, Mexico, Annual",
+      "units": "thousand Btu per USD at purchasing power parities",
+      "frequency": "A",
+      "start": "1980",
+      "end": "2024",
+      "data_points": 45,
+      "geography": "MEX",
+      "last_updated": "2026-06-24T13:57:47-04:00"
+    },
+    {
+      "series_id": "INTL.47-34-SAU-TBTUUSDPP.A",
+      "name": "Energy consumption per GDP, Saudi Arabia, Annual",
+      "units": "thousand Btu per USD at purchasing power parities",
+      "frequency": "A",
+      "start": "1980",
+      "end": "2024",
+      "data_points": 45,
+      "geography": "SAU",
+      "last_updated": "2026-06-24T13:57:47-04:00"
+    },
+    {
+      "series_id": "INTL.47-34-WP13-TBTUUSDPP.A",
+      "name": "Energy consumption per GDP, Brazil, Annual",
+      "units": "thousand Btu per USD at purchasing power parities",
+      "frequency": "A",
+      "start": "1980",
+      "end": "2024",
+      "data_points": 45,
+      "geography": "BRA",
+      "last_updated": "2026-06-24T13:57:47-04:00"
+    },
+    {
+      "series_id": "INTL.47-33-WP27-MBTUPP.A",
+      "name": "Energy consumption per capita, United States, Annual",
+      "units": "million Btu per person",
+      "frequency": "A",
+      "start": "1980",
+      "end": "2024",
+      "data_points": 45,
+      "geography": "USA",
+      "last_updated": "2026-03-25T21:02:29-04:00"
+    },
+    {
+      "series_id": "INTL.47-33-USA-MBTUPP.A",
+      "name": "Energy consumption per capita, United States, Annual",
+      "units": "million Btu per person",
+      "frequency": "A",
+      "start": "1980",
+      "end": "2024",
+      "data_points": 45,
+      "geography": "USA",
+      "last_updated": "2026-03-25T21:02:29-04:00"
+    },
+    {
+      "series_id": "INTL.47-34-ZAF-TBTUUSDPP.A",
+      "name": "Energy consumption per GDP, South Africa, Annual",
+      "units": "thousand Btu per USD at purchasing power parities",
+      "frequency": "A",
+      "start": "1980",
+      "end": "2024",
+      "data_points": 45,
+      "geography": "ZAF",
+      "last_updated": "2026-03-11T15:04:19-04:00"
+    },
+    {
+      "series_id": "INTL.47-34-WP27-TBTUUSDPP.A",
+      "name": "Energy consumption per GDP, United States, Annual",
+      "units": "thousand Btu per USD at purchasing power parities",
+      "frequency": "A",
+      "start": "1980",
+      "end": "2024",
+      "data_points": 45,
+      "geography": "USA",
+      "last_updated": "2026-03-11T15:04:19-04:00"
+    },
+    {
+      "series_id": "INTL.47-33-WP13-MBTUPP.A",
+      "name": "Energy consumption per capita, Brazil, Annual",
+      "units": "million Btu per person",
+      "frequency": "A",
+      "start": "1980",
+      "end": "2024",
+      "data_points": 45,
+      "geography": "BRA",
+      "last_updated": "2026-03-11T15:04:19-04:00"
+    },
+    {
+      "series_id": "INTL.47-33-WP16-MBTUPP.A",
+      "name": "Energy consumption per capita, India, Annual",
+      "units": "million Btu per person",
+      "frequency": "A",
+      "start": "1980",
+      "end": "2024",
+      "data_points": 45,
+      "geography": "IND",
+      "last_updated": "2026-03-11T15:04:19-04:00"
+    },
+    {
+      "series_id": "INTL.47-33-WP18-MBTUPP.A",
+      "name": "Energy consumption per capita, Mexico, Annual",
+      "units": "million Btu per person",
+      "frequency": "A",
+      "start": "1980",
+      "end": "2024",
+      "data_points": 45,
+      "geography": "MEX",
+      "last_updated": "2026-03-11T15:04:19-04:00"
+    },
+    {
+      "series_id": "INTL.47-33-SAU-MBTUPP.A",
+      "name": "Energy consumption per capita, Saudi Arabia, Annual",
+      "units": "million Btu per person",
+      "frequency": "A",
+      "start": "1980",
+      "end": "2024",
+      "data_points": 45,
+      "geography": "SAU",
+      "last_updated": "2026-03-11T15:04:19-04:00"
+    },
+    {
+      "series_id": "INTL.47-33-WP15-MBTUPP.A",
+      "name": "Energy consumption per capita, China, Annual",
+      "units": "million Btu per person",
+      "frequency": "A",
+      "start": "1980",
+      "end": "2024",
+      "data_points": 45,
+      "geography": "CHN",
+      "last_updated": "2026-03-11T15:04:19-04:00"
+    },
+    {
+      "series_id": "INTL.47-33-BRA-MBTUPP.A",
+      "name": "Energy consumption per capita, Brazil, Annual",
+      "units": "million Btu per person",
+      "frequency": "A",
+      "start": "1980",
+      "end": "2024",
+      "data_points": 45,
+      "geography": "BRA",
+      "last_updated": "2026-03-11T15:04:19-04:00"
+    },
+    {
+      "series_id": "INTL.47-33-ZAF-MBTUPP.A",
+      "name": "Energy consumption per capita, South Africa, Annual",
+      "units": "million Btu per person",
+      "frequency": "A",
+      "start": "1980",
+      "end": "2024",
+      "data_points": 45,
+      "geography": "ZAF",
+      "last_updated": "2026-03-11T15:04:19-04:00"
+    },
+    {
+      "series_id": "INTL.47-33-TUR-MBTUPP.A",
+      "name": "Energy consumption per capita, Turkiye, Annual",
+      "units": "million Btu per person",
+      "frequency": "A",
+      "start": "1980",
+      "end": "2024",
+      "data_points": 45,
+      "geography": "TUR",
+      "last_updated": "2026-03-11T15:04:19-04:00"
+    },
+    {
+      "series_id": "INTL.47-33-MEX-MBTUPP.A",
+      "name": "Energy consumption per capita, Mexico, Annual",
+      "units": "million Btu per person",
+      "frequency": "A",
+      "start": "1980",
+      "end": "2024",
+      "data_points": 45,
+      "geography": "MEX",
+      "last_updated": "2026-03-11T15:04:19-04:00"
+    },
+    {
+      "series_id": "INTL.47-33-CHN-MBTUPP.A",
+      "name": "Energy consumption per capita, China, Annual",
+      "units": "million Btu per person",
+      "frequency": "A",
+      "start": "1980",
+      "end": "2024",
+      "data_points": 45,
+      "geography": "CHN",
+      "last_updated": "2026-03-11T15:04:19-04:00"
+    },
+    {
+      "series_id": "INTL.47-33-IND-MBTUPP.A",
+      "name": "Energy consumption per capita, India, Annual",
+      "units": "million Btu per person",
+      "frequency": "A",
+      "start": "1980",
+      "end": "2024",
+      "data_points": 45,
+      "geography": "IND",
+      "last_updated": "2026-03-11T15:04:19-04:00"
+    },
+    {
+      "series_id": "INTL.47-33-IRN-MBTUPP.A",
+      "name": "Energy consumption per capita, Iran, Annual",
+      "units": "million Btu per person",
+      "frequency": "A",
+      "start": "1980",
+      "end": "2024",
+      "data_points": 45,
+      "geography": "IRN",
+      "last_updated": "2026-03-11T15:04:19-04:00"
+    },
+    {
+      "series_id": "INTL.47-34-TUR-TBTUUSDPP.A",
+      "name": "Energy consumption per GDP, Turkiye, Annual",
+      "units": "thousand Btu per USD at purchasing power parities",
+      "frequency": "A",
+      "start": "1980",
+      "end": "2024",
+      "data_points": 45,
+      "geography": "TUR",
+      "last_updated": "2026-03-11T15:04:19-04:00"
+    },
+    {
+      "series_id": "INTL.47-34-USA-TBTUUSDPP.A",
+      "name": "Energy consumption per GDP, United States, Annual",
+      "units": "thousand Btu per USD at purchasing power parities",
+      "frequency": "A",
+      "start": "1980",
+      "end": "2024",
+      "data_points": 45,
+      "geography": "USA",
+      "last_updated": "2026-03-11T15:04:19-04:00"
+    }
+  ]
+}

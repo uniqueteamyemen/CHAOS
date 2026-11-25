@@ -1,0 +1,16 @@
+{
+  "contract_id": "OECD_PMR_WITHIN_DOMAIN_STABILITY_NULL_CONTRACT_V1_1",
+  "parent_contract": "experimental_contracts/OECD_PMR_WITHIN_DOMAIN_TRANSITION_CONTRACT_V1.json",
+  "purpose": "dependency-aware sensitivity controls for the observed source-wave directional concentration",
+  "input": "campaigns/research_rounds/20260827_BROWSER_DEEP_RESEARCH/raw/oecd_pmr_2013/OECD_DF_PMR_UNFILTERED.csv",
+  "complete_series_rule": "exactly one non-null OBS_VALUE at each of 1998, 2003, 2008, 2013",
+  "common_wave_null": "enumerate all 24 permutations of the four wave labels and apply the same permutation to every complete economy-indicator series; retain the maximum directional concentration across three adjacent positions",
+  "cluster_bootstrap": "resample complete economies with replacement, preserving all indicators within each economy; 10000 deterministic replicates; calculate observed directional concentration per interval and max across intervals",
+  "no_multiple_testing": "only the predeclared max across the three adjacent intervals is retained",
+  "native_frequency": "source_defined_wave",
+  "no_oos_claim": true,
+  "causal_claim": false,
+  "random_seed": 20260827,
+  "bootstrap_replicates": 10000,
+  "interpretation_rule": "even a small null p-value remains descriptive source-wave concentration; no predictive or causal promotion without an independent vintage and temporal holdout"
+}

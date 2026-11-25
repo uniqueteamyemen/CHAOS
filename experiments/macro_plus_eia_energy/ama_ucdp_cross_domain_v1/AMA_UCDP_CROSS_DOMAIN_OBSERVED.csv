@@ -1,0 +1,5 @@
+outcome,split,observed_ba,observed_f1,n
+future_state_conflict,validation,0.5832587545829846,0.3684210526315789,651
+future_state_conflict,confirmation,0.6141594977912113,0.42483660130718953,489
+future_high_fatality_25,validation,0.57875281260045,0.3018867924528302,651
+future_high_fatality_25,confirmation,0.6489799737974921,0.37174721189591076,489

@@ -1,0 +1,27 @@
+{
+  "experiment_id": "macro_plus_eia_energy_tft_baseline_v1_1",
+  "scores": [
+    {
+      "n": 556,
+      "MAE": 1.6013786792755127,
+      "RMSE": 2.595536947250366,
+      "R2": 0.18791300058364868,
+      "directional_accuracy": 0.9226618705035972,
+      "split": "validation"
+    },
+    {
+      "n": 695,
+      "MAE": 3.936037302017212,
+      "RMSE": 6.6332173347473145,
+      "R2": 0.032386064529418945,
+      "directional_accuracy": 0.7741007194244605,
+      "split": "test"
+    }
+  ],
+  "comparison_file": "experiments/macro_plus_eia_energy/MODEL_BASELINE_COMPARISON_V1_1.csv",
+  "per_entity_files": [
+    "experiments/macro_plus_eia_energy/TFT_VALIDATION_PER_ENTITY_METRICS.csv",
+    "experiments/macro_plus_eia_energy/TFT_TEST_PER_ENTITY_METRICS.csv"
+  ],
+  "test_locked": true
+}

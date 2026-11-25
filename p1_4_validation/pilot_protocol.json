@@ -1,0 +1,780 @@
+{
+  "protocol_id": "CHAOS_P1_4_CAPABILITY_PILOT_V1",
+  "protocol_version": "1.1.9",
+  "status": "FROZEN_BEFORE_EXECUTION",
+  "must_not_be_changed_after_pilot_start": true,
+  "purpose": "Evaluate declared detector and estimator roles on verified economic-series cohorts with controlled permanent mean-shift injections and independent synthetic null traces. This is not a forecast-accuracy test and does not authorize production use.",
+  "source_and_scope": {
+    "repository": "uniqueteamyemen/CHAOS",
+    "baseline_commit": "86cb8e576dc0bd21044743dd2749f5bf1d8899ff",
+    "p2_2_source_commit": "72edc44b183e0c7c92e1edae362426d189e0c886",
+    "p2_2_workflow_run_id": 45244943216,
+    "prepared_artifact_id": 14857826243,
+    "prepared_artifact_sha256": "c83f6e960296fbbdb687650a798959f08cb8d98db68de8ca713d7be278e824fe",
+    "candidate_registry_sha256": "4c6643acd6ae1ccf30570c103b163340a460e2b7dfbfa9f2a11eee537d0e78f9",
+    "cohort_manifest_path": "p1_4_validation/cohort_manifest.json",
+    "capability_envelope_path": "p1_4_validation/capability_envelope.json",
+    "economic_universe": {
+      "total": 509,
+      "pink_sheet": 51,
+      "gem": 458
+    },
+    "no_raw_values_in_persisted_manifests": true,
+    "integrity_policy": {
+      "revoked_unverified_claims": true,
+      "forbidden_empirical_sources": [
+        "deleted hand-authored calibration_results_all_strata.json",
+        "deleted hand-authored track_b_diagnostics.json"
+      ],
+      "required_evidence": [
+        "github_actions_run_id",
+        "source_commit_sha",
+        "original_artifact_sha256",
+        "replay_command"
+      ],
+      "unrun_values_must_remain": "NOT_RUN"
+    }
+  },
+  "cohort_design": {
+    "C1": {
+      "status": "VERIFIED",
+      "definition": "147 GEM series whose stored production G1 composite screen status is SCREEN_FAIL",
+      "original_count_claimed": 147,
+      "verified_count": 147,
+      "criterion": "ADF p<0.05 AND KPSS p>=0.05 are both required to pass G1",
+      "criterion_breakdown": {
+        "adf_pass_kpss_fail": 106,
+        "adf_fail_kpss_fail": 32,
+        "adf_fail_kpss_pass": 9
+      },
+      "pilot_sample_count": 20,
+      "pilot_selection": "Deterministic stratified selection by G1 failure class, then observation length and pre-break AR1 dependence; minimum sample representation is 6 ADF-pass/KPSS-fail, 6 both-fail, and 2 ADF-fail/KPSS-pass. Exact IDs remain frozen in cohort_manifest.json.",
+      "pilot_failure_class_minimums": {
+        "ADF_PASS_KPSS_FAIL": 6,
+        "ADF_FAIL_KPSS_FAIL": 6,
+        "ADF_FAIL_KPSS_PASS": 2
+      },
+      "pre_registered_power_analysis": {
+        "stratum_106": {
+          "n_series": 12,
+          "findings": "confirmatory"
+        },
+        "stratum_32": {
+          "n_series": 6,
+          "findings": "exploratory_moderate"
+        },
+        "stratum_9": {
+          "n_series": 2,
+          "findings": "anecdotal_must_not_drive_decision"
+        },
+        "interpretation_guard": "Series is the independent unit; 18 nested injections are not 18 independent observations. Stratum 9 cannot independently decide acceptance or rejection."
+      },
+      "grid_extension_stratum_32": {
+        "purpose": "distinguish_grid_limitation_vs_structural_failure",
+        "pre_registered": true,
+        "execution_status": "NOT_RUN",
+        "test_threshold": 200,
+        "target_selection": "After a real threshold-90 calibration artifact identifies the ADF_FAIL_KPSS_FAIL members that fail calibration, apply threshold 200 once to those selected members only.",
+        "planned_stratum": "ADF_FAIL_KPSS_FAIL",
+        "allowed_to_repeat": false,
+        "forbidden": [
+          "threshold 500",
+          "intermediate thresholds",
+          "switching AR order after results",
+          "changing residual bootstrap",
+          "changing P0 target",
+          "dropping a failed series"
+        ]
+      }
+    },
+    "C2": {
+      "status": "VERIFIED",
+      "sampling_frame_count": 362,
+      "sampling_frame_source_counts": {
+        "pink_sheet": 51,
+        "gem": 311
+      },
+      "verified_sample_count": 50,
+      "sample_source_counts": {
+        "pink_sheet": 7,
+        "gem": 43
+      },
+      "pilot_sample_count": 20,
+      "pilot_source_counts": {
+        "pink_sheet": 3,
+        "gem": 17
+      },
+      "sampling": "Deterministic stratified sample by source cohort, domain, length band and pre-break AR dependence band; fixed IDs and seed ledger in cohort_manifest.json",
+      "stratification_dimensions": [
+        "source (Pink Sheet vs GEM)",
+        "domain/sector",
+        "observation length band",
+        "pre-injection AR(1) absolute band",
+        "monthly missingness pattern"
+      ],
+      "stratification_report": "C2_STRATIFICATION_REPORT_V1 must publish distributions for all five dimensions separately for the 50-series sample and its exact 20-series Pilot subset, plus source-by-length, source-by-AR1 and source-by-missingness cross-tabs.",
+      "sampling_frame_explanation": {
+        "frame": "C1 complement only, not the full 509-series universe",
+        "frame_count": 362,
+        "composition": {
+          "gem_g1_pass": 311,
+          "pink_sheet": 51
+        },
+        "construction": "509 verified economic series minus the 147 verified C1 GEM composite-screen failures",
+        "interpretation": "C2 tests generalization on the non-C1 complement. It deliberately does not sample C1 members and must not be described as representative of all 509 series.",
+        "sample_composition": {
+          "gem": 43,
+          "pink_sheet": 7
+        },
+        "pilot_composition": {
+          "gem": 17,
+          "pink_sheet": 3
+        }
+      },
+      "focus_eligibility": {
+        "minimum_n_for_focus": 150,
+        "series_count": 20,
+        "eligible_count": 19,
+        "not_eligible_count": 1,
+        "not_eligible_ids": [
+          "gem:IPTOTSAKD:AZE"
+        ],
+        "rule": "NOT_ELIGIBLE for FOCuS only; not a weak-recall outcome. Other detectors follow their own minimum-observation contract."
+      },
+      "scope_note": "C2 is the stratified complement of C1 (362 = 311 GEM G1-pass + 51 Pink Sheet), not a representative sample of the full 509-series universe. It is retained as a generalization cohort reference, but the reduced FOCuS calibration-focused Track A is restricted to calibrated C1 series. No C2 performance conclusion is claimed by this reduced Pilot."
+    },
+    "C3": {
+      "status": "PENDING_EXTERNAL_EVIDENCE",
+      "included": false,
+      "required_evidence": "Independent known-break event/series mapping plus point-in-time source vintages proving each historical observation was available at decision time",
+      "no_substitute_cohort": true
+    },
+    "pilot_scope": {
+      "candidate_universe_series": 40,
+      "candidate_universe_composition": {
+        "C1": 20,
+        "C2": 20,
+        "C3": 0
+      },
+      "planned_execution_series": 15,
+      "run_cases_per_series": 19,
+      "planned_execution_cases": 285,
+      "execution_cohort": "C1 only until each selected series has artifact-backed per-position calibration; C2 is not inferred to be calibrated from C1.",
+      "selection_rule": "Select at most 15 from the exact verified C1 20-series pilot IDs, using only series with artifact-backed FOCuS calibration for all three injection positions and n>=150. Preserve each G1 failure class. If fewer than 15 qualify, execute only the actual eligible subset without replacements.",
+      "status": "PENDING_ARTIFACT_BACKED_CALIBRATION"
+    },
+    "rule": "Run only the 40 exact series IDs frozen in the cohort manifest. No silent replacements. If a selected series becomes ineligible, record the reason and maintain the planned coverage denominator."
+  },
+  "injection_design": {
+    "baseline": {
+      "calibration_observations": 40,
+      "rule": "The first 40 observations are reserved for initial location/scale calibration and must not generate detection events.",
+      "calibration_slice": "indices 0..39 inclusive"
+    },
+    "permanent_mean_shifts": true,
+    "magnitudes_sigma": [
+      0.5,
+      1,
+      2
+    ],
+    "positions_fraction": [
+      0.3,
+      0.5,
+      0.7
+    ],
+    "directions": [
+      -1,
+      1
+    ],
+    "injected_case_count_per_series": 18,
+    "total_run_count_per_series_including_original": 19,
+    "break_index_rule": "floor(position_fraction * n), zero-based; the shift is applied from break_index through the final observation.",
+    "sigma_reference": "1.4826 * MAD of residuals from the selected AR(p) model fitted only on the complete pre-break prefix.",
+    "injected_delta": "direction * magnitude_sigma * residual_sigma",
+    "minimum_prebreak_observations": 40,
+    "short_prebreak_rule": "NOT_ELIGIBLE with a machine-readable reason for that position; preserve it in the planned-case and coverage denominators. Do not silently drop it or count it as a detector miss.",
+    "direction_correct_detection": "A true positive must have the correct sign and detection_index >= true_break_index. A pre-onset or wrong-direction event cannot be a true positive.",
+    "rearm_exposure_rule": "The first detector invocation reserves 40 initial observations. Following each confirmed FOCuS hit, the adapter reserves the next 20 observations for re-calibration. An injected break in that half-open interval is INVALID_INJECTION, not a detector false negative.",
+    "rearm_overlap_guard": {
+      "initial_calibration_observations": 40,
+      "rearm_calibration_observations": 20,
+      "case_field": "calibration_overlap_with_injection",
+      "overlap_rule": "true_break_index is within [start_inclusive,end_exclusive) of a post-hit 20-observation rearm interval",
+      "overlap_outcome": "INVALID_INJECTION",
+      "recall_accounting": "exclude from recall numerator and denominator; retain in planned and invalid coverage counts",
+      "non_overlap_outcome": "evaluate normally as DETECTED or MISSED",
+      "empirical_overlap_measurement": {
+        "status": "NOT_RUN",
+        "run_id": null,
+        "artifact_sha256": null,
+        "replay_command": null
+      }
+    },
+    "eligibility": {
+      "min_n_for_focus": 150,
+      "reason": "40 initial calibration observations plus at least 110 observations available for detection evaluation",
+      "below_minimum": "FOCUS status NOT_ELIGIBLE with reason FOCUS_MIN_N_150_REQUIRED; do not record a low-recall result",
+      "scope": "FOCuS_RESET_ARL_PILOT only; other tools retain their own declared minimums"
+    },
+    "rearm_quiet_points": 20,
+    "guard_window_policy": {
+      "min_observations_between_last_rearm_and_injection": 20,
+      "on_violation": "mark_as_INVALID_INJECTION_exclude_from_recall",
+      "empirical_rate": {
+        "status": "NOT_RUN",
+        "value": null,
+        "run_id": null,
+        "artifact_sha256": null,
+        "replay_command": null
+      },
+      "note": "The policy is frozen; no empirical overlap rate is established until an artifact-backed run is published."
+    }
+  },
+  "ar_null_and_calibration": {
+    "null_model": "AR(p) with intercept",
+    "candidate_orders": [
+      1,
+      2,
+      3
+    ],
+    "order_selection": "Minimum AIC among p=1,2,3, fitted on the complete pre-break prefix for the relevant injection position; selection is development-only and frozen before holdout.",
+    "fit_scope": "Use all available observations strictly before the injected break. Do not use the post-break suffix to estimate AR coefficients, intercept or residual scale.",
+    "innovation_model": "Parametric AR recursion with centered, independently resampled fitted residual innovations; record residual pool hash and deterministic seed. No injected break or regime transition is included in null traces.",
+    "residual_scale": "1.4826 * MAD of fitted AR residuals",
+    "minimum_prebreak_observations": 40,
+    "stability_gate": "Reject non-finite or singular fits, insufficient residual degrees of freedom, and any fitted AR polynomial with a root not strictly outside the unit circle.",
+    "failed_fit_status": "NOT_ELIGIBLE with reason; no silent AR(1) fallback or model-order substitution.",
+    "traces_per_series_per_position": {
+      "development": 1000,
+      "holdout": 1000,
+      "positions": [
+        0.3,
+        0.5,
+        0.7
+      ],
+      "tool_scope": {
+        "calibrated_online_detector_arms": [
+          "FOCuS_RESET_ARL_PILOT",
+          "POST_QUIET_HUBER_MAD",
+          "POST_QUIET_HUBER_BARTLETT"
+        ],
+        "retrospective_segmenter_arms": [
+          "R-FPOP"
+        ],
+        "feature_generator_excluded_from_independent_P0": [
+          "BOCPD"
+        ],
+        "rationale": "BOCPD is evaluated as a posterior feature generator, not an independent binary detector. Running 2000 AR null traces at every position for every series would create a large quadratic posterior workload without a valid BOCPD alarm threshold."
+      }
+    },
+    "deterministic_seeds": "SHA-256-derived independent streams over protocol version, series ID, position, selected AR order, tool/scale variant, phase and replicate index. Development and holdout seeds must not overlap.",
+    "synthetic_null_fpr": {
+      "definition": "P0 = P(at least one false alarm within the exact original series horizon) estimated from independent parametric AR(p) null traces.",
+      "target": 0.1,
+      "calculation": "alarm traces / valid null traces; report per-series and by cohort with Wilson intervals.",
+      "threshold_selection": "For each series, position and online tool, choose the least sensitive threshold whose one-sided 95% Wilson upper bound on development P0 is <= 0.10. Freeze before holdout or injections.",
+      "holdout": "Evaluate the frozen threshold on 1000 independent holdout traces; no recalibration or threshold selection on holdout.",
+      "minimum_valid_replicates": 950,
+      "invalid_replicates": "Report separately; below 950 valid traces makes that condition INCONCLUSIVE."
+    },
+    "arl0": {
+      "status": "SECONDARY_DIAGNOSTIC_ONLY",
+      "reference_grid": [
+        500,
+        1000,
+        2000
+      ],
+      "method": "Empirical time-to-first-false-alarm with right-censoring at the actual series horizon; report restricted mean run length and censoring fraction.",
+      "rule": "A target beyond the available horizon is NOT_ESTIMABLE. Never infer P0 from 1/ARL0 and never use ARL0 as a substitute for series-horizon P0."
+    },
+    "shuffle_null": {
+      "method": "Within-series permutation of observed values",
+      "replicates_per_series": 250,
+      "purpose": "Negative-control diagnostic; preserves marginal values while destroying temporal order.",
+      "acceptance_role": "Diagnostic only; not a substitute for the fitted AR(p) null."
+    },
+    "null_seed_streams": "SHA-256-derived streams over protocol version, series ID, position, selected AR order, phase and replicate index. The base AR null paths are shared across candidate tools; MAD and Bartlett variants receive identical paths for paired comparison. Development and holdout streams never overlap.",
+    "threshold_grids": {
+      "FOCuS": [
+        15,
+        20,
+        25,
+        30,
+        35,
+        40,
+        45,
+        50,
+        60,
+        75,
+        90
+      ],
+      "POST_QUIET_HUBER_MAD": [
+        4,
+        6,
+        8,
+        10,
+        12,
+        14,
+        16,
+        20,
+        24,
+        32
+      ],
+      "POST_QUIET_HUBER_BARTLETT": [
+        4,
+        6,
+        8,
+        10,
+        12,
+        14,
+        16,
+        20,
+        24,
+        32
+      ]
+    },
+    "threshold_grid_rule": "Evaluate thresholds in ascending numeric order on the same development null traces. Select the lowest threshold whose one-sided 95% Wilson upper bound for P0 is <=0.10. If none qualifies, mark NOT_CALIBRATABLE/INCONCLUSIVE; do not extend the grid after seeing holdout.",
+    "paired_paths_rule": "For each series-position-AR(p)-phase-replicate, generate one deterministic null path and reuse it across FOCuS, Huber MAD, Huber Bartlett, BOCPD and R-FPOP as appropriate. MAD and Bartlett thresholds are estimated independently on these identical paths."
+  },
+  "measurements": {
+    "original_alarm_burden": {
+      "definition": "Count and timing of alarms on the unmodified original series under the frozen detector configuration.",
+      "interpretation": "Descriptive burden only; original real-data events are not independently adjudicated, so these alarms are not labelled false positives."
+    },
+    "original_r_fpop_burden": {
+      "definition": "Number and positions of retrospective breakpoints on the unmodified original series.",
+      "interpretation": "Descriptive segmentation burden only; never an online alarm or false-positive rate."
+    },
+    "alarm_burden_ratio": {
+      "definition": "Original online alarm count divided by the expected alarm count on matched synthetic AR(p) null traces for the same series and horizon.",
+      "zero_denominator": "UNDEFINED",
+      "flag_threshold": 3,
+      "interpretation": "Model-misspecification diagnostic only; not an automatic pass/fail rule."
+    },
+    "synthetic_null_fpr": "Keep separate from original alarm burden; report P0 per series and cohort with Wilson confidence intervals.",
+    "injection_recall": {
+      "definition": "Direction-correct detections at or after the injected break divided by eligible injected cases.",
+      "false_negatives": "Every eligible injected case with no direction-correct detection by series end remains a false negative in the denominator.",
+      "pre_onset": "Record separately; cannot count as a true positive.",
+      "wrong_direction": "Record wrong-sign detections after the injected break separately; do not credit them as recall.",
+      "invalid_injection": {
+        "definition": "Planned injected case whose true break falls inside a FOCuS reset/re-arm calibration interval",
+        "status": "INVALID_INJECTION",
+        "recall_accounting": "Exclude from detector recall numerator and denominator; report separately in coverage and never count as a false negative",
+        "required_case_field": "calibration_overlap_with_injection"
+      }
+    },
+    "detection_delay": {
+      "definition": "detection_index - true_break_index for direction-correct detected injections only.",
+      "report": [
+        "median",
+        "p90",
+        "miss_count",
+        "uncovered_rearm_count"
+      ],
+      "missed_cases": "Report separately; do not hide misses by assigning them a zero delay."
+    },
+    "coverage": {
+      "definition": "Report planned, eligible, NOT_ELIGIBLE, abstained and executed counts by cohort, series, position, magnitude, direction and tool.",
+      "denominator_rule": "Always publish numerator and denominator; do not silently remove short or failed cases.",
+      "required_statuses": [
+        "PLANNED",
+        "EXECUTED",
+        "NOT_ELIGIBLE",
+        "ABSTAIN",
+        "INVALID_INJECTION",
+        "DETECTED",
+        "MISSED"
+      ],
+      "invalid_injection_rule": "Retain invalid injection cases in the planned denominator, report their count separately, and exclude them only from the Injection Recall denominator; never recode as detector misses."
+    },
+    "series_variability": {
+      "required": [
+        "per_series_recall",
+        "median_recall",
+        "iqr_recall",
+        "recall_coefficient_of_variation",
+        "source_strata",
+        "domain_strata",
+        "length_strata",
+        "autocorrelation_strata",
+        "C1_failure_class_strata"
+      ],
+      "cv_rule": "SD(per-series recall) / mean(per-series recall); report UNDEFINED when the mean is zero."
+    },
+    "minimum_detectable_effect": {
+      "definition": "Operational MDE is the smallest tested shift magnitude whose series-clustered 95% lower confidence bound for direction-correct detection probability reaches 0.80 (80% empirical detection power).",
+      "grid_sigma": [
+        0.5,
+        1,
+        2
+      ],
+      "if_unreached": "Report >2.0 sigma; do not extrapolate beyond the tested grid.",
+      "not_classical_claim": "This is empirical detector power on the declared cohorts, not a claim about power for an external scientific hypothesis test."
+    },
+    "cost_weighted_diagnostic": {
+      "formula": "1.0 * synthetic_null_fpr + 1.0 * (1 - recall) + 0.1 * normalized_mean_delay",
+      "weights": {
+        "false_alarm": 1,
+        "miss": 1,
+        "delay": 0.1
+      },
+      "normalized_mean_delay": "Mean correct-detection delay divided by the exact series horizon n; values are within [0,1]. Report UNDEFINED when no injected case was detected.",
+      "role": "Secondary comparison only; cannot override a mandatory safety, coverage, P0 or holdout gate."
+    },
+    "confidence_intervals": {
+      "series_metrics": "Cluster bootstrap by series ID, resampling each series together with all its 19 conditions; 2000 replicates; 95% intervals.",
+      "null_probability": "Wilson score interval, 95%, over valid independent null replicates, then report the distribution across series.",
+      "permutation": "Paired sign-flip permutation at the series level, never at the observation/time-point level."
+    }
+  },
+  "tool_protocols": {
+    "FOCuS": {
+      "role": "online_detector",
+      "variant": "FOCUS_RESET_ARL_PILOT",
+      "first_hit_engine_limitation": "Resolved by the P1.4 reset/rearm adapter: initial invocation uses 40 observations; post-hit invocations recalibrate with the next 20 observations.",
+      "reset_policy": "Use 40 observations for initial calibration. After every confirmed hit, reset functional-pruning state and reserve the next 20 observations as the new calibration/rearm interval. Record its exact half-open start/end and exposure. If an injected break falls inside the interval, mark INVALID_INJECTION and exclude it from Recall numerator and denominator; do not count it as a false negative.",
+      "per_series_threshold": "Use the threshold selected only from development AR(p) null traces for the same series and position.",
+      "primary_success": {
+        "recall_at_1sigma": "Series-clustered 95% lower bound >= 0.60",
+        "synthetic_null_fpr": "Holdout one-sided 95% Wilson upper bound <= 0.10",
+        "wrong_direction_rate": "Series-clustered 95% upper bound <= 0.05"
+      },
+      "minimum_series_length": {
+        "min_n_for_focus": 150,
+        "components": "40 initial calibration observations plus at least 110 detection observations",
+        "below_minimum": "NOT_ELIGIBLE, not a weak detection result"
+      }
+    },
+    "POST_QUIET_HUBER_MAD": {
+      "role": "online_detector",
+      "variant": "Post-Quiet Huber with MAD scale",
+      "calibration": "First 40 observations only; per-series/per-position threshold chosen on development AR(p) null traces.",
+      "primary_success": {
+        "recall_at_1sigma": "Series-clustered 95% lower bound >= 0.60",
+        "synthetic_null_fpr": "Holdout one-sided 95% Wilson upper bound <= 0.10",
+        "wrong_direction_rate": "Series-clustered 95% upper bound <= 0.05"
+      }
+    },
+    "POST_QUIET_HUBER_BARTLETT": {
+      "role": "online_detector_variant",
+      "parent_detector": "Post-Quiet Huber",
+      "comparison": "Same Huber detector, same AR(p) traces, same P0 target, same data positions; MAD and Bartlett scale variants independently calibrate thresholds on development data only.",
+      "primary_success": {
+        "calibration_error_improvement": "Reduce absolute holdout |P0_actual - 0.10| by at least 30% relative to MAD.",
+        "recall_noninferiority": "Recall at 1 sigma may not fall by more than 0.10 absolute versus MAD.",
+        "restriction": "Do not claim a 20% FPR reduction when both variants are calibrated to the same target P0."
+      }
+    },
+    "Bartlett_LRV": {
+      "role": "calibrator_only",
+      "comparison_scope": "Only a scale estimator inside the Huber Bartlett variant (and a separately identified A_FAST_BARTLETT_PILOT if implemented).",
+      "forbidden": "Standalone detector, standalone hit generator, or direct pass/fail role."
+    },
+    "BOCPD": {
+      "role": "feature_generator",
+      "required_output": "Full posterior P(run_length_t | observations through t) for every evaluated prefix; preserve run-length support and normalized posterior mass.",
+      "required_features": [
+        "posterior_run_length_distribution",
+        "expected_run_length",
+        "run_length_variance",
+        "posterior_entropy",
+        "short_run_probability",
+        "change_probability"
+      ],
+      "current_engine_blocker": "Current P2-C runner exposes only posterior summaries/diagnostic tail, not the complete posterior distribution for every prefix. Full PMF export is a pre-Pilot implementation gate.",
+      "comparison_arms": [
+        "FOCUS_ONLY",
+        "FOCUS_PLUS_BOCPD_FEATURES",
+        "BOCPD_POSTERIOR_ONLY_DIAGNOSTIC"
+      ],
+      "posterior_only_decision_rule": "For diagnostic comparison only, short_run_probability >= 0.35 for at least 3 of 5 consecutive prefixes; this is not a production BOCPD binary-detector authorization.",
+      "incremental_value_test": {
+        "method": "Paired, series-level permutation test over the 40 independent series clusters; injection cases are kept nested within their series.",
+        "replicates": 1000,
+        "effect_size": "Cohen's dz on paired per-series differences in direction-correct injection recall and separately in filtered false-alarm P0.",
+        "fusion": "A FOCuS candidate is retained only when BOCPD short-run posterior mass is >=0.35 on at least 3 of 5 evaluated prefixes within +/-3 observations of the FOCuS detection index. Otherwise the candidate is not corroborated.",
+        "comparisons": [
+          "FOCUS_ONLY",
+          "FOCUS_PLUS_BOCPD_CORROBORATION",
+          "BOCPD_POSTERIOR_ONLY_DIAGNOSTIC"
+        ],
+        "success": "Corroboration reduces holdout P0 by >=0.05 absolute on the identical FOCuS null bank while limiting recall loss to <=0.10 absolute, with paired series-level p<0.05. BOCPD-only diagnostic is assessed for feature association with injected changes versus shuffled controls, not FPR.",
+        "feature_diagnostic": "Report posterior-feature separation by per-series injection condition and shuffled control. No online warning, P0, ARL0, or production-detector claim is allowed from BOCPD-only.",
+        "forecast_value": "Not tested in P1.4; predictive value is deferred to Engine 2 rolling-origin validation."
+      },
+      "fixed_parameters": {
+        "hazard": 0.016666666666666666,
+        "max_run_length": 539,
+        "short_run_max": 24,
+        "short_run_mass_threshold": 0.35,
+        "posterior_persistence": 12,
+        "min_regime_shift_sigma": 1,
+        "min_contrast_z": 2,
+        "rearm_long_mass": 0.8,
+        "rearm_persistence": 3
+      },
+      "execution_scope": {
+        "run_on_cases": "All original and 18 injected conditions for each of the 40 selected series (760 traces total).",
+        "shuffle_diagnostic": "250 within-series shuffled controls per selected series; feature diagnostics only, no operational FPR claim.",
+        "p0_calibration": "No independent BOCPD threshold calibration and no standalone P0/ARL0 claim.",
+        "fusion_null_check": "For each calibrated FOCuS development/holdout AR null trace, first run the FOCuS reset/rearm path. Only when FOCuS emits an alarm is BOCPD replayed to the candidate detection prefix to assess the predeclared corroboration rule. The fused false-alarm count is measured on the same complete FOCuS null bank; traces with no FOCuS candidate remain non-alarms.",
+        "feature_pmf_export": "Persist a deterministic hash of the complete per-prefix posterior PMF trace. The artifact stores summary metrics and replay metadata; the PMF is recomputed from the frozen trace during replay, avoiding raw-observation or unbounded per-trace artifact growth.",
+        "no_independent_detector_role": true
+      }
+    },
+    "R-FPOP": {
+      "role": "offline_segmenter",
+      "matching": {
+        "rule": "One-to-one assignment between the single injected break and at most one estimated breakpoint; choose the closest candidate inside the tolerance, with deterministic tie-break by lower index.",
+        "tolerance": "Absolute distance <= 0.03 * n.",
+        "extra_boundaries": "Every non-matched breakpoint is a false breakpoint.",
+        "boundary_precision": "Matched injected boundaries / all estimated boundaries; zero if no estimated boundaries.",
+        "boundary_recall": "Matched injected boundaries / one injected boundary."
+      },
+      "penalty_calibration": {
+        "candidates": [
+          0.5,
+          0.75,
+          1,
+          1.2,
+          1.4,
+          1.6,
+          2,
+          3,
+          4,
+          6,
+          8,
+          12,
+          16
+        ],
+        "rule": "On development AR(p) null traces only, choose the smallest penalty multiplier whose one-sided 95% Wilson upper bound for P(any breakpoint) is <=0.10.",
+        "freeze": "Freeze penalty per series before holdout; never adjust after holdout or injected outcomes are inspected."
+      },
+      "null_control": {
+        "source": "Same independent development and holdout AR(p) parametric null traces used by the detector calibration framework.",
+        "report": [
+          "P(any breakpoint)",
+          "false breakpoints per series",
+          "false breakpoints per 100 observations"
+        ],
+        "rule": "No uncalibrated random number of segmentation boundaries may be used as the null baseline."
+      },
+      "primary_success": {
+        "boundary_precision": ">= 0.50",
+        "median_boundary_distance": "< 0.03 * n among one-to-one matched boundaries",
+        "recall_at_1sigma_and_2sigma": ">= 0.70",
+        "false_breakpoint_burden": "Holdout null upper 95% Wilson bound on P(any breakpoint) <= 0.10",
+        "interpretation": "Retrospective segmentation only; never treat estimated boundary as an online warning."
+      }
+    },
+    "references": {
+      "A_FAST": "Frozen reference control; no code or threshold changes and no tuning on Pilot/holdout.",
+      "A_CONSENSUS": "Frozen reference control; no code or threshold changes and no tuning on Pilot/holdout."
+    }
+  },
+  "decision_rules": {
+    "confidence_intervals": "Use series-cluster bootstrap (2000 replicates) for recall, delay, MDE and variability. Use Wilson intervals for independent null replicates. Use paired series-level permutation for BOCPD feature value.",
+    "pass": "A tool passes only when all mandatory limits for its assigned role are met using the predeclared confidence bound on both C1 and C2 separately.",
+    "fail": "A tool fails only when the corresponding interval lies wholly on the failing side of a predeclared threshold with at least 80% planned series/conditions eligible and >=950 valid null replicates.",
+    "inconclusive": "INCONCLUSIVE when confidence intervals cross a threshold, fewer than 80% of planned conditions are eligible, fewer than 950 valid null traces exist, or a required implementation/trace is missing.",
+    "per_tool_statuses": [
+      "PASS",
+      "FAIL",
+      "INCONCLUSIVE",
+      "NOT_ELIGIBLE"
+    ],
+    "cohort_decisions": {
+      "VALIDATED": "At least one candidate passes its declared role on both C1 and C2, all mandatory integrity/causal gates pass, and the resulting operating envelope is restricted to the tested cohorts and conditions. C3 remains visibly pending.",
+      "LOCKED_REJECTED": "All candidate tools fail their assigned roles on both C1 and C2 with adequate eligible coverage and confidence intervals wholly on the failing side. Preserve negative evidence; do not retune and rerun the same hypothesis.",
+      "INCONCLUSIVE": "Coverage, implementation, null calibration or statistical precision is insufficient for either validation or rejection."
+    },
+    "after_holdout": "No recalibration, threshold changes, penalty changes, model-order reselection or cohort replacement after holdout inspection.",
+    "negative_result_policy": "A valid FAIL or INCONCLUSIVE result is accepted. Never modify criteria to obtain a pass."
+  },
+  "execution": {
+    "heavy_execution_environment": "GitHub Actions only",
+    "matrix": "One matrix job per selected series. Each job executes the original baseline and all 18 injected cases for that series. Each series-position null bank is generated once per development/holdout phase and reused across candidate arms; paired variants never receive different null paths.",
+    "cases_per_series": 19,
+    "raw_values_in_artifacts": false,
+    "required_preflight_gates": "C1 identities and composite G1 breakdown must be bound to the verified cohort-selection artifact.;C2 complement frame and stratification report must be bound to the verified cohort-selection artifact.;Run real threshold-90 calibration on all 20 C1 pilot series and publish P0, Wilson upper bound, actual threshold, seed ledger and source artifact hashes.;Run the one-time threshold-200 extension only on the stratum-106 and stratum-32 series identified as not calibrated by the real threshold-90 artifact; publish separate artifact-backed results.;Track B no-injection diagnostics must be generated from original pinned series and include the pre-registered metrics; no post-hoc parameter changes.;FOCuS runtime enforces min_n_for_focus=150; n<150 returns NOT_ELIGIBLE.;FOCuS rearm contract uses 40 initial and 20 post-hit observations; empirical overlap must be measured and INVALID_INJECTION excluded from Recall, never FN.;Capability/protocol/runtime contract tests pass on the exact source commit.;No Pilot PASS without pilot_run_manifest.json, per-series seed ledger, replay_command, and SHA-256 for every original artifact.;C3 remains pending until independent known-break mappings and point-in-time source-vintage evidence exist.",
+    "required_artifact_fields": "series_id,cohort_id,series_candidate_sha256,injection_magnitude_sigma,injection_position_fraction,injection_direction,true_break_index,tool_outputs,original_alarm_burden,synthetic_null_fpr,ar_model_order,ar_coefficients,residual_sigma,thresholds,penalty,seed_ledger,coverage_denominator,calibration_overlap_with_injection,injection_case_status,invalid_injection_reason,c1_failure_class,length_band,pre_injection_ar1_abs_band,missingness_pattern,pilot_run_manifest.json,replay_command,artifact_sha256,calibration_status,calibration_threshold,calibration_p0,calibration_p0_wilson_upper,track_id,track_b_diagnostic_features,focus_eligibility_status,focus_eligibility_reason,calibration_status,calibration_threshold,calibration_p0,calibration_p0_wilson_upper,track_id,track_b_diagnostic_features,garch_omega,garch_alpha,garch_beta,garch_persistence,focus_null_p50,focus_null_p90,focus_null_p95,focus_null_p99,focus_null_p999,focus_null_max,calibration_status,calibration_threshold,calibration_p0,calibration_p0_wilson_upper,track_id,garch_omega,garch_alpha,garch_beta,garch_persistence,focus_null_p50,focus_null_p90,focus_null_p95,focus_null_p99,focus_null_p999,focus_null_max,calibration_overlap_with_injection",
+    "artifact_integrity": "SHA-256 each per-series artifact and posterior PMF artifact before upload. Aggregate only the exact frozen series IDs and verify all files/hashes.",
+    "replay": "Every per-series output includes deterministic replay command and exact source, model, tool version, protocol SHA and seed identities.",
+    "pilot_start_gate": "Pilot remains blocked until this pipeline produces threshold-90 calibration, one-time threshold-200 extension, Track B, 1000-trace rearm overlap, min_n=150 runtime, immutable scope/seed/hash manifest and contract results. Pilot <=15 artifact-calibrated C1 series /285 cases; fewer eligible means smaller run.",
+    "seed_rule": "Seed identity excludes tool/scale variant so paired arms receive identical stochastic inputs; separate streams are keyed by protocol, series, position, AR order, phase and replicate.",
+    "implementation_time_budget": {
+      "maximum_hours": 24,
+      "deadline_action": "If the full runner/matrix is not ready within 24 hours, use the predeclared partial Pilot; do not expand the runner indefinitely.",
+      "partial_fallback": {
+        "status": "PILOT_PARTIAL",
+        "series_count": 15,
+        "cases_per_series": 19,
+        "total_cases": 285,
+        "selection": "At most 15 artifact-calibrated C1 series with min_n=150 and all required position thresholds. If fewer qualify or budget expires, preserve actual completed subset.",
+        "interpretation": "Engineering/coverage evidence only; C2 generalization and C3 external validation remain pending."
+      }
+    },
+    "diagnostic_tracks": {
+      "track_A": {
+        "name": "CALIBRATABLE_C1_INJECTION_TRACK",
+        "status": "NOT_STARTED_CALIBRATION_ARTIFACT_REQUIRED",
+        "candidate_series_count": 20,
+        "candidate_strata": {
+          "ADF_PASS_KPSS_FAIL": 12,
+          "ADF_FAIL_KPSS_FAIL": 6,
+          "ADF_FAIL_KPSS_PASS": 2
+        },
+        "cases_per_series": 19,
+        "planned_cases_if_all_eligible": 380,
+        "series_ids": "Use the exact 20 C1 IDs in the verified cohort manifest; eligibility is assigned only by the artifact-backed calibration results.",
+        "no_substitutions": true,
+        "rule": "Only series whose real development P0 one-sided Wilson upper bound meets 0.10 at the permitted threshold may enter the FOCuS injection denominator. Preserve all non-calibratable series as explicit statuses."
+      },
+      "track_B": {
+        "name": "NON_CALIBRATABLE_NO_INJECTION_DIAGNOSTIC",
+        "status": "NOT_STARTED",
+        "series_count": null,
+        "injected_cases": 0,
+        "target_selection": "All C1 pilot series still NOT_CALIBRATABLE after real threshold-90 and permitted threshold-200; IDs only from those artifacts.",
+        "diagnostic_artifact": "p1_4_validation/track_b_diagnostics.json",
+        "measurements": [
+          "AR persistence",
+          "GARCH(1,1)",
+          "ARCH-LM",
+          "Lag-12 autocorrelation",
+          "Normalized trend",
+          "Historical-break candidates",
+          "FOCuS null-statistic distribution",
+          "Calibrated comparison"
+        ],
+        "no_injections": true,
+        "no_parameter_changes": true,
+        "no_causal_claim_from_descriptive_comparison": true
+      },
+      "overlap_between_tracks": "A series may have a no-injection diagnostic record and a distinct injected Track A record; do not treat those records as independent series."
+    },
+    "pre_registered_grid_extension": {
+      "purpose": "distinguish_grid_limitation_vs_structural_failure",
+      "execution_status": "NOT_RUN",
+      "threshold": 200,
+      "pre_registered": true,
+      "allowed_to_repeat": false,
+      "threshold_500_tested": false,
+      "threshold_90_baseline": {
+        "status": "NOT_RUN",
+        "series_count": 20,
+        "artifact_sha256": null,
+        "run_id": null,
+        "replay_command": null
+      },
+      "stratum_106": {
+        "expected_failure_count": 7,
+        "target": "Every selected C1 ADF_PASS_KPSS_FAIL series classified NOT_CALIBRATABLE at anchor position 0.30 by the real threshold-90 artifact. Never truncate to force a count of seven.",
+        "threshold_200_test": {
+          "status": "NOT_RUN",
+          "planned_once": true,
+          "series_count": null,
+          "artifact_sha256": null,
+          "run_id": null,
+          "replay_command": null
+        }
+      },
+      "stratum_32": {
+        "target": "Only the pre-registered DJI, ECU and HKG C1 series actually NOT_CALIBRATABLE at threshold <=90 at position 0.30.",
+        "threshold_200_test": {
+          "status": "NOT_RUN",
+          "planned_once": true,
+          "series_count": 3,
+          "artifact_sha256": null,
+          "run_id": null,
+          "replay_command": null
+        }
+      },
+      "decision_rule": {
+        "if_calibrates": "GRID_LIMITED_CALIBRATED_AT_200",
+        "if_not": "STRUCTURAL_NOT_CALIBRATABLE_AT_200",
+        "stop": "No threshold 500, intermediate thresholds, AR-order replacement, residual-bootstrap change, target relaxation or post-holdout retuning."
+      }
+    },
+    "pre_registered_grid_extension_stratum_32": {
+      "purpose": "distinguish_grid_limitation_vs_structural_failure",
+      "pre_registered": true,
+      "test_threshold": 200,
+      "series": [
+        "gem:CPTOTSAXN:DJI",
+        "gem:CPTOTSAXN:ECU",
+        "gem:CPTOTSAXN:HKG"
+      ],
+      "eligibility": "Run only if each listed ID is in frozen C1 pilot and its real threshold-90 status is NOT_CALIBRATABLE at position 0.30.",
+      "method": "Reuse the exact development null max-statistics from threshold-90 artifact. Test threshold 200 once; no new AR fit or null path.",
+      "decision_rule": {
+        "if_calibrates": "GRID_LIMITED_CALIBRATED_AT_200",
+        "if_not": "STRUCTURAL_NOT_CALIBRATABLE_AT_200"
+      },
+      "allowed_to_repeat": false,
+      "forbidden": [
+        "threshold 500",
+        "intermediate thresholds",
+        "AR-order switch after results",
+        "residual-bootstrap change",
+        "P0 change",
+        "drop or replace failed series"
+      ]
+    },
+    "track_b_protocol": {
+      "status": "PRE_REGISTERED_DIAGNOSTIC_ONLY",
+      "no_injections": true,
+      "targets": "All frozen C1 pilot series still NOT_CALIBRATABLE after actual threshold-90 and permitted threshold-200. Include SUR only if it is in frozen C1 selection; otherwise record NOT_IN_PILOT.",
+      "measurements": [
+        {
+          "name": "AR persistence",
+          "definition": "Selected AR(p) and AR(1) coefficient on 0.30 pre-break prefix."
+        },
+        {
+          "name": "GARCH(1,1)",
+          "definition": "Gaussian GARCH(1,1) MLE on the same pre-break AR residuals; record convergence and parameters; NOT_ESTIMABLE on failure."
+        },
+        {
+          "name": "ARCH-LM",
+          "definition": "ARCH-LM statistic and p-value on pre-break AR residuals."
+        },
+        {
+          "name": "Lag-12 autocorrelation",
+          "definition": "Raw-series and pre-break AR-residual autocorrelation at lag 12."
+        },
+        {
+          "name": "Normalized trend",
+          "definition": "OLS slope on the pre-break prefix, multiplied by prefix length and divided by sample standard deviation."
+        },
+        {
+          "name": "Historical-break candidates",
+          "definition": "Unlabelled FOCuS events on original unmodified series at 90 and 200; not adjudicated truth."
+        },
+        {
+          "name": "FOCuS null-statistic distribution",
+          "definition": "P50, P90, P95, P99, P99.9, max and exceedance counts from exact 1000 development null scores."
+        },
+        {
+          "name": "Calibrated comparison",
+          "definition": "Descriptive comparison only against actual calibrated C1 rows from same run; never reuse old hand-authored counts."
+        }
+      ],
+      "no_post_hoc_changes": true,
+      "required_artifact": "p1_4_validation/track_b_diagnostics.json",
+      "conclusion_rule": "Track B descriptive only; cannot change null model, AR order, P0 target, threshold ceiling, cohort or Pilot eligibility."
+    },
+    "pilot_scope_change": {
+      "original": "40_series_760_candidate_universe",
+      "actual": "NOT_STARTED",
+      "source_universe_series": 40,
+      "planned_series": 15,
+      "planned_cases_per_series": 19,
+      "planned_cases": 285,
+      "status": "NOT_RUN",
+      "reason": "The 40-series selection remains the candidate universe. The executable partial Pilot is capped at 15 C1 series and 285 cases, selected only after genuine per-series/per-position calibration.",
+      "selection": "Deterministic selection from the frozen C1 20-series IDs; preserve failure-class labels; no replacements; actual count may be below 15.",
+      "track_b": "No injection cases; diagnostic-only series are not Pilot series."
+    }
+  }
+}

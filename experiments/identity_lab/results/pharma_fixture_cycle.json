@@ -1,0 +1,78 @@
+{
+  "generated_at": "2026-11-13T04:10:11.875Z",
+  "run_id": "fx-2025-10-01-audit",
+  "seeded_events": 5,
+  "violations": [
+    {
+      "requestId": "fx-2025-10-01-audit-req-1",
+      "confirmations": 2,
+      "eventIds": [
+        "fx-2025-10-01-audit-evt-4",
+        "fx-2025-10-01-audit-evt-5"
+      ]
+    }
+  ],
+  "stream_total_after_seed": 6,
+  "visible_to_users_after_seed": 1,
+  "admin_runs": [
+    {
+      "runId": "fx-2025-10-01-audit",
+      "events": 5,
+      "firstAt": "2025-10-01T08:00:00.000Z",
+      "lastAt": "2025-10-01T10:01:00.000Z"
+    }
+  ],
+  "purge": {
+    "removedEvents": 5,
+    "removedKeys": 5
+  },
+  "stream_total_after_purge": 1,
+  "real_event_survived": true,
+  "seeded_events_detail": [
+    {
+      "eventId": "fx-2025-10-01-audit-evt-1",
+      "eventType": "request_created",
+      "entityType": "request",
+      "entityId": "fx-2025-10-01-audit-req-1",
+      "relatedRequestId": null,
+      "occurredAt": "2025-10-01T08:00:00.000Z",
+      "fixtureRun": "fx-2025-10-01-audit"
+    },
+    {
+      "eventId": "fx-2025-10-01-audit-evt-2",
+      "eventType": "offer_created",
+      "entityType": "offer",
+      "entityId": "fx-2025-10-01-audit-off-1",
+      "relatedRequestId": "fx-2025-10-01-audit-req-1",
+      "occurredAt": "2025-10-01T08:45:00.000Z",
+      "fixtureRun": "fx-2025-10-01-audit"
+    },
+    {
+      "eventId": "fx-2025-10-01-audit-evt-3",
+      "eventType": "match_proposed",
+      "entityType": "match",
+      "entityId": "fx-2025-10-01-audit-mat-1",
+      "relatedRequestId": "fx-2025-10-01-audit-req-1",
+      "occurredAt": "2025-10-01T09:30:00.000Z",
+      "fixtureRun": "fx-2025-10-01-audit"
+    },
+    {
+      "eventId": "fx-2025-10-01-audit-evt-4",
+      "eventType": "match_confirmed",
+      "entityType": "match",
+      "entityId": "fx-2025-10-01-audit-mat-1",
+      "relatedRequestId": "fx-2025-10-01-audit-req-1",
+      "occurredAt": "2025-10-01T10:00:00.000Z",
+      "fixtureRun": "fx-2025-10-01-audit"
+    },
+    {
+      "eventId": "fx-2025-10-01-audit-evt-5",
+      "eventType": "match_confirmed",
+      "entityType": "match",
+      "entityId": "fx-2025-10-01-audit-mat-2",
+      "relatedRequestId": "fx-2025-10-01-audit-req-1",
+      "occurredAt": "2025-10-01T10:01:00.000Z",
+      "fixtureRun": "fx-2025-10-01-audit"
+    }
+  ]
+}

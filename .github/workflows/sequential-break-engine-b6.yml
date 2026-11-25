@@ -1,0 +1,36 @@
+name: CHAOS B-v6 Spearman vs Pearson Ablation + Documented Calibration
+
+on:
+  push:
+    branches:
+      - experiment/b6-spearman-ablation-documented
+    paths:
+      - "experiments/identity_lab/exp_sequential_break_b6_spearman_ablation/**"
+      - ".github/workflows/sequential-break-engine-b6.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  paired-correlation-ablation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install pinned numerical dependency
+        run: python -m pip install numpy==2.2.6
+      - name: Run B-v6 correlation and lifecycle unit tests
+        run: python -m unittest experiments.identity_lab.exp_sequential_break_b6_spearman_ablation.test_b6 -v
+      - name: Run paired development sweep and pristine holdout
+        run: python -m experiments.identity_lab.exp_sequential_break_b6_spearman_ablation.benchmark_b6 --dev-trials 500 --holdout-trials 500
+      - name: Upload full B-v5 reference / B-v6 Pearson / B-v6 Spearman report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: chaos-b5-ref-b6-pearson-spearman-pristine-ablation
+          path: experiments/identity_lab/exp_sequential_break_b6_spearman_ablation/results/sequential_break_engine_b5_ref_b6_pearson_spearman_ablation.json
+          if-no-files-found: error
+          retention-days: 90

@@ -1,0 +1,67 @@
+{
+  "manifest_type": "CHAOS_domain_state_path_composition_qa",
+  "counts": {
+    "domain_states": 25192,
+    "economic_states": 10928,
+    "conflict_states": 14264,
+    "transition_records": 8,
+    "supported_edges": 2,
+    "rejected_edges": 5,
+    "unresolved_edges": 1,
+    "energy_paths": 4,
+    "energy_null_replicates": 2000,
+    "composer_metric_rows": 8,
+    "pattern_registry_records": 6
+  },
+  "skills": {
+    "economic_geopolitical_analysis": "validated",
+    "chaos_system_architecture_review": "validated"
+  },
+  "flags": {
+    "domain_state_future_outcome_used": false,
+    "native_frequencies": [
+      "annual"
+    ],
+    "composer_locked_test_used": false,
+    "raw_modified": false,
+    "imputation": false,
+    "normalization": false,
+    "causal_claims_permitted": false
+  },
+  "qa_pass_conditions": {
+    "domain_state_records": true,
+    "two_domains": true,
+    "annual_native_only": true,
+    "transition_statuses_present": true,
+    "energy_four_paths": true,
+    "energy_null_2000": true,
+    "composer_fit_only_weights": true,
+    "no_future_state_leak": true,
+    "raw_unchanged": true,
+    "no_transforms": true,
+    "no_causal_claim": true,
+    "skills_validated": true,
+    "registry_updated": true
+  },
+  "artifacts": [
+    "experiments/macro_plus_eia_energy/domain_state_v1/DOMAIN_STATES_V1.csv",
+    "experiments/macro_plus_eia_energy/domain_state_v1/DOMAIN_STATES_V1.jsonl",
+    "experiments/macro_plus_eia_energy/domain_state_v1/DOMAIN_STATE_BUILD_SUMMARY.json",
+    "experiments/macro_plus_eia_energy/domain_state_v1/domain_state_build.log",
+    "experiments/macro_plus_eia_energy/energy_mediator_v1/ENERGY_MEDIATOR_MAXSTAT_NULL_REPLICATES.csv",
+    "experiments/macro_plus_eia_energy/energy_mediator_v1/ENERGY_MEDIATOR_MAXSTAT_NULL_SUMMARY.csv",
+    "experiments/macro_plus_eia_energy/energy_mediator_v1/ENERGY_MEDIATOR_OBSERVED_BEST.csv",
+    "experiments/macro_plus_eia_energy/energy_mediator_v1/ENERGY_MEDIATOR_PATH_METRICS.csv",
+    "experiments/macro_plus_eia_energy/energy_mediator_v1/ENERGY_MEDIATOR_REPLAY_ROWS.csv",
+    "experiments/macro_plus_eia_energy/energy_mediator_v1/ENERGY_MEDIATOR_RUN_SUMMARY.json",
+    "experiments/macro_plus_eia_energy/energy_mediator_v1/energy_mediator.log",
+    "experiments/macro_plus_eia_energy/path_composer_v1_1/PATH_COMPOSER_V1_1_GRAPH.json",
+    "experiments/macro_plus_eia_energy/path_composer_v1_1/PATH_COMPOSER_V1_1_METRICS.csv",
+    "experiments/macro_plus_eia_energy/path_composer_v1_1/PATH_COMPOSER_V1_1_REPLAY_ROWS.csv",
+    "experiments/macro_plus_eia_energy/path_composer_v1_1/path_composer_v1_1.log",
+    "experiments/macro_plus_eia_energy/transition_evidence_v1/TRANSITION_EVIDENCE_SUMMARY.json",
+    "experiments/macro_plus_eia_energy/transition_evidence_v1/TRANSITION_EVIDENCE_V1.csv",
+    "experiments/macro_plus_eia_energy/transition_evidence_v1/TRANSITION_EVIDENCE_V1.jsonl",
+    "experiments/macro_plus_eia_energy/transition_evidence_v1/transition_build.log"
+  ]
+}

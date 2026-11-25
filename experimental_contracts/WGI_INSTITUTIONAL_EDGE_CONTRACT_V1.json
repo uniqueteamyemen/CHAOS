@@ -1,0 +1,18 @@
+{
+  "contract_id":"CHAOS_WGI_INSTITUTIONAL_EDGES_V1",
+  "purpose":"Test within-domain persistence and deterioration edges in source-defined WGI annual observations",
+  "source":"WORLD_BANK_WGI_2025_UPDATE",
+  "native_frequency":"annual_source_defined_years",
+  "dimensions":["GOV_WGI_VA.EST","GOV_WGI_PS.EST","GOV_WGI_GE.EST","GOV_WGI_RQ.EST","GOV_WGI_RL.EST","GOV_WGI_CC.EST"],
+  "candidate_edges":[
+    {"id":"institutional_decline_to_institutional_decline","source_rule":"estimate[t] <= estimate[previous_source_observation] - 0.5","target_rule":"estimate[next_source_observation] <= estimate[t] - 0.5","lead_steps":[1,2]},
+    {"id":"institutional_continuity_to_institutional_continuity","source_rule":"absolute change from previous source observation <= 0.25","target_rule":"absolute change at next source observation <= 0.25","lead_steps":[1,2]}
+  ],
+  "splits":"chronological by target source year: fit 2006-2015, validation 2016-2019, confirmation 2020-2024 where available",
+  "null":{"method":"within_entity_label_permutation","replicates":2000,"statistic":"max_balanced_accuracy_across_dimensions_edges_leads_splits"},
+  "missing_data":"complete-case on adjacent source observations; no imputation",
+  "policy_shock":"not inferred from WGI estimates",
+  "leader_specific_deviation":"not inferred from WGI estimates",
+  "causal_claims_permitted":false,
+  "promotion_requires":"OOS, null separation, entity stability, methodology review, and supervisor admission"
+}

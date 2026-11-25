@@ -1,0 +1,12 @@
+{
+  "source_id": "WHO_COVID_GLOBAL_DAILY_V2",
+  "source_url": "https://srhdpeuwpubsa.blob.core.windows.net/whdh/COVID/WHO-COVID-19-global-daily-data.csv",
+  "source_page": "https://data.who.int/dashboards/covid19/data",
+  "native_frequency": "daily",
+  "rows": 573360,
+  "sha256": "6063fda90dba3439f551c0bfadce53bb437d9982056cd1a92aeee64963bf2038",
+  "fields": ["Date_reported", "Country_code", "Country", "WHO_region", "New_cases", "Cumulative_cases", "New_deaths", "Cumulative_deaths"],
+  "semantics": "Reported date to WHO; subject to retrospective revisions and country reporting differences.",
+  "downloaded_at": "2026-09-02",
+  "causal_claims_permitted": false
+}

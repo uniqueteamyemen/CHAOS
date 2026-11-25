@@ -1,0 +1,1 @@
+http://data.gdeltproject.org/events/2000/20000101.export.CSV.zip

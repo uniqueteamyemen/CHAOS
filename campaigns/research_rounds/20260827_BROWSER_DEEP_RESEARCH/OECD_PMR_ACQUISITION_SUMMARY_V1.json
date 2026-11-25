@@ -1,0 +1,13 @@
+{
+  "source_id": "OECD_DF_PMR_ARCHIVE_V1",
+  "official_url": "https://sdmx.oecd.org/archive/rest/data/OECD,DF_PMR,/all?dimensionAtObservation=AllDimensions&format=csvfilewithlabels",
+  "retrieved_at_utc": "2026-08-26T22:48:20.561176+00:00",
+  "status_code": 200,
+  "bytes": 554050,
+  "sha256": "e769acf52535a50bbb059de08aca8a73ebcc64c607a4c5d1dfb35ebdc59a467e",
+  "raw_path": "campaigns/research_rounds/20260827_BROWSER_DEEP_RESEARCH/raw/oecd_pmr_2013/OECD_DF_PMR_UNFILTERED.csv",
+  "raw_immutable": true,
+  "transformed": false,
+  "imputed": false,
+  "status": "downloaded_official_sdmx"
+}

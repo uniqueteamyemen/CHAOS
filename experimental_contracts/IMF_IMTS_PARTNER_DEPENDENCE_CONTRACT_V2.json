@@ -1,0 +1,402 @@
+{
+  "contract_id": "IMF_IMTS_PARTNER_DEPENDENCE_CONTRACT_V2",
+  "version": "2.0",
+  "status": "draft_for_review",
+  "supersedes_for_new_runs_only": "IMF_IMTS_DOMINANT_PARTNER_DEPENDENCE_CONTRACT_V1",
+  "baseline_preserved": true,
+  "purpose": "Test whether pre-specified concentration in a reporter's bilateral export composition, combined with a partner-specific flow disruption, precedes material GDP deterioration across a broader reporter universe.",
+  "scientific_scope": {
+    "primary_question": "Does a reporter's pre-period concentration in a small set of named partners, together with a bilateral flow contraction among the active partner set, add predictive information beyond the reporter's target history and beyond random reassignment of active partner identity?",
+    "secondary_questions": [
+      "Does bilateral export value contraction differ from loss of partner share as a source-native composition state?",
+      "Is the result stable across reporters, World Bank regions, and the confirmation period?",
+      "Does partner identity add information when active labels are permuted among a larger candidate pool?"
+    ],
+    "claim_type": "descriptive_predictive_transition_test_only",
+    "causal_claim_permitted": false,
+    "not_claimed": [
+      "A bilateral flow contraction is not itself a production shock, supply shock, geopolitical act, policy act, or causal intervention.",
+      "A partner identity is not treated as a cause, responsible actor, or mechanism.",
+      "The target outcome is not used to select reporters, candidate partners, active partners, thresholds, or holdouts.",
+      "A predictive result is not causal and is not runtime-compatible without a later promotion decision."
+    ]
+  },
+  "source_contract": {
+    "trade_source_id": "IMF.STA:IMTS",
+    "trade_dataset_urn": "IMF.STA:IMTS(1.0.0)",
+    "trade_official_card": "https://data.imf.org/en/datasets/IMF.STA:IMTS",
+    "trade_structure_api": "https://api.imf.org/external/sdmx/3.0/structure/dataflow/IMF.STA/IMTS/1.0.0?detail=full&references=all",
+    "trade_observation_artifact": "experiments/multi_domain_native_adapters_v1/imf_imts_v2/IMF_IMTS_XG_OBSERVED_RECORDS_2000_2024.csv",
+    "trade_acquisition_summary": "campaigns/research_rounds/20260827_BROWSER_DEEP_RESEARCH/IMF_IMTS_WDI_READY_XG_ACQUISITION_SUMMARY_V2.json",
+    "target_source": "World Bank WDI frozen macro panel",
+    "target_artifact": "catalog_first/readiness_gate/macro_plus_eia_energy/MACRO_PLUS_EIA_ENERGY_COMPLETE_139_NUMERIC_RAW_2000_2024_WIDE.csv",
+    "region_source": "World Bank Country API metadata",
+    "region_artifact": "campaigns/research_rounds/20260827_BROWSER_DEEP_RESEARCH/WORLD_BANK_COUNTRY_METADATA_ACQUISITION_V2.json",
+    "region_raw_directory": "campaigns/research_rounds/20260827_BROWSER_DEEP_RESEARCH/raw/worldbank_country_metadata_v2/",
+    "source_separation": "IMTS, WDI, and World Bank region metadata remain separate source observations. Only exact reporter/year keys are joined for the declared test; no source averaging or reconciliation is performed.",
+    "vintage_policy": "Record dataset URN/version, acquisition timestamp, request URL, response headers, raw SHA-256, and adapter input SHA-256. Use observed historical records only; do not use projections or future revisions introduced after contract freeze.",
+    "raw_policy": {
+      "raw_immutable": true,
+      "imputation": false,
+      "normalization": false,
+      "log_transform": false,
+      "smoothing": false,
+      "source_averaging": false,
+      "forced_reconciliation": false,
+      "frequency_conversion": false,
+      "missing_as_zero": false
+    }
+  },
+  "analysis_unit": {
+    "primary_unit": "reporter_year",
+    "source_native_unit": "reporter x counterpart_country x indicator x annual observation",
+    "reporter_universe_rule": "All IMF IMTS reporter codes that are not excluded by the official codelist rules, have at least 20 nonmissing WDI GDP-growth observations in 2000-2024, and pass the IMTS coverage gate. No reporter is chosen by GDP outcome performance.",
+    "target_reporter_universe_artifact": "campaigns/research_rounds/20260827_BROWSER_DEEP_RESEARCH/IMF_IMTS_REPORTER_UNIVERSE_COVERAGE_PROFILE_V2.json",
+    "primary_reporter_scope": "All eligible reporters after the coverage gate, not the prior bounded 15-reporter sample.",
+    "target_deduplication_rule": "At most one target outcome record per reporter-year-horizon. Multiple shocked partners are retained as IDs and counts inside one reporter-year exposure record.",
+    "partner_level_analysis": "Partner-level tables are audit and descriptive layers only; they are never pooled as independent GDP outcomes.",
+    "region_holdout": "World Bank region metadata is used only for pre-specified stability/holdout reporting, never as an exposure feature or selection criterion."
+  },
+  "native_frequency_and_period": {
+    "trade_frequency_required": "A",
+    "target_frequency_required": "annual",
+    "period": [2000, 2024],
+    "selection_window": [2000, 2004],
+    "origin_period": [2005, 2021],
+    "fit": [2005, 2013],
+    "validation": [2014, 2017],
+    "confirmation": [2018, 2021],
+    "late_origins_excluded_for_h3": [2022, 2023, 2024],
+    "no_daily_monthly_event_annualization": true,
+    "exact_consecutive_year_rule": true
+  },
+  "dimension_requirements": {
+    "reporter_dimension": "COUNTRY",
+    "partner_dimension": "COUNTERPART_COUNTRY",
+    "indicator_dimension": "INDICATOR",
+    "frequency_dimension": "FREQUENCY",
+    "required_indicator": "XG_FOB_USD",
+    "required_trade_flow": "XG",
+    "required_valuation": "FOB",
+    "required_unit": "USD",
+    "required_frequency": "A",
+    "raw_value_field": "OBS_VALUE",
+    "raw_scale_field": "SCALE",
+    "scale_rule": "Preserve SCALE as source metadata and use the adapter's raw numeric observation exactly as delivered; no manual scale multiplication or division.",
+    "world_denominator_code": "G001",
+    "world_denominator_rule": "G001 is used only as the same-source total-export denominator for partner-share diagnostics and is never eligible as a named partner."
+  },
+  "reporter_coverage_gate": {
+    "minimum_wdi_nonmissing_gdp_years": 20,
+    "minimum_imts_years_for_world_exports": 20,
+    "minimum_candidate_pool_complete_partners": 10,
+    "minimum_selection_window_complete_years": 5,
+    "minimum_confirmation_reporters": 50,
+    "minimum_confirmation_regions": 3,
+    "failure_status": "not_testable",
+    "failure_register_required": true,
+    "no_fallback_reporter_selection": true,
+    "coverage_profile_before_test_required": true
+  },
+  "partner_exclusion_policy": {
+    "purpose": "Prevent aggregates, unknown categories, self-links, and non-comparable codes from being treated as named bilateral partners.",
+    "always_exclude_codes": ["G001"],
+    "exclude_if_source_name_matches_case_insensitive": [
+      "world",
+      "not specified",
+      "unspecified",
+      "special categories",
+      "countries & areas",
+      "other countries",
+      "all countries",
+      "regional aggregate",
+      "region",
+      "group",
+      "union",
+      "area not elsewhere included",
+      "oil related aggregate",
+      "services aggregate"
+    ],
+    "exclude_if_codebook_marks_as": [
+      "world aggregate",
+      "regional aggregate",
+      "economic group aggregate",
+      "special category",
+      "unknown or not specified",
+      "non-country reporting area"
+    ],
+    "exclude_self_reporter": true,
+    "exclude_missing_partner_code": true,
+    "exclude_unmapped_partner_code": true,
+    "exclude_non_numeric_observation": true,
+    "exclude_non_annual_observation": true,
+    "exclude_non_XG_FOB_USD_observation": true,
+    "exclude_missing_observation": true,
+    "excluded_code_register_required": true,
+    "excluded_code_register_artifact": "experiments/multi_domain_native_edges_v2/imf_partner_dependence_v2/IMF_IMTS_PARTNER_EXCLUSION_REGISTER_V2.json",
+    "manual_exclusion_rule": "No post-outcome manual exclusion is permitted. A code that cannot be classified from the official codelist is quarantined and recorded."
+  },
+  "partner_selection": {
+    "candidate_pool_size": 10,
+    "active_set_size": 5,
+    "selection_is_frozen_before_outcome_test": true,
+    "selection_uses_target_gdp": false,
+    "selection_uses_confirmation": false,
+    "selection_basis": "For each reporter, rank eligible partner codes by mean bilateral export share over 2000-2004, using raw XG_FOB_USD(r,p,t) divided by same-source raw XG_FOB_USD(r,G001,t), requiring five complete bilateral and World observations. Candidate pool is the top 10; active set is the top 5.",
+    "candidate_pool_formula": "candidate_share(r,p)=mean_t(raw_XG(r,p,t)/raw_XG(r,G001,t)) for t=2000..2004",
+    "active_set_rule": "The five highest candidate_share partner codes, descending share then ascending source code.",
+    "complete_window_required": true,
+    "minimum_candidate_pool": 10,
+    "selection_register_required": true,
+    "selection_register_artifact": "experiments/multi_domain_native_edges_v2/imf_partner_dependence_v2/IMF_IMTS_PARTNER_SELECTION_REGISTER_V2.csv",
+    "selection_failure": "A reporter with fewer than 10 eligible partner codes with complete 2000-2004 observations is excluded from the primary test and marked not_testable_selection_coverage; no replacement or fallback is allowed."
+  },
+  "dependence_family": {
+    "primary": {
+      "id": "top3_share_50pct",
+      "definition": "The sum of baseline shares of the three highest-share candidate-pool partners is at least 0.50; the candidate pool is fixed before the null and outcome stages.",
+      "threshold": 0.50,
+      "promotable": true
+    },
+    "diagnostic_variants": [
+      {
+        "id": "top1_share_20pct",
+        "definition": "The highest baseline share among the fixed candidate-pool partners is at least 0.20.",
+        "threshold": 0.20,
+        "promotable": false
+      },
+      {
+        "id": "top5_share_70pct",
+        "definition": "The sum of baseline shares of the five highest-share fixed candidate-pool partners is at least 0.70.",
+        "threshold": 0.70,
+        "promotable": false
+      }
+    ],
+    "variant_policy": "All variants are declared before the run. Diagnostic variants are reported separately and cannot be promoted merely because they outperform the primary variant.",
+    "no_post_outcome_threshold_choice": true
+  },
+  "flow_state_family": {
+    "primary": {
+      "id": "bilateral_value_contraction",
+      "definition": "At least one active partner p has raw XG_FOB_USD(r,p,t) < 0.70 * raw XG_FOB_USD(r,p,t-1), with exact consecutive annual observations and positive present and prior values.",
+      "threshold": 0.70,
+      "promotable": true
+    },
+    "diagnostic_variants": [
+      {
+        "id": "partner_share_loss",
+        "definition": "At least one active partner's same-source share of World exports falls below 0.70 of its previous-year share, requiring valid bilateral and World denominators at t and t-1.",
+        "threshold": 0.70,
+        "promotable": false
+      }
+    ],
+    "missing_policy": "Missing, duplicated, nonpositive, or nonconsecutive observations produce missing state for that partner-year; they are not false and not zero.",
+    "semantics": "Source-specific bilateral flow candidate state only; no causal or production-shock interpretation."
+  },
+  "primary_interaction": {
+    "id": "top3_share_50pct_and_bilateral_value_contraction",
+    "formula": "fixed_candidate_pool_dependence_state(top3_share_50pct,r) AND any_active_partner_bilateral_value_contraction(r,t)",
+    "analysis_unit": "reporter_year",
+    "multiple_shocked_partners_rule": "One reporter-year record with shocked partner IDs and count retained; no duplicate GDP outcomes.",
+    "required_fields": [
+      "reporter_id",
+      "origin_year",
+      "candidate_partner_ids",
+      "active_partner_ids",
+      "baseline_partner_shares",
+      "active_partner_count",
+      "shocked_active_partner_ids",
+      "shocked_active_partner_count",
+      "raw_partner_values_t",
+      "raw_partner_values_t_minus_1",
+      "raw_world_exports_t",
+      "raw_world_exports_t_minus_1",
+      "dependence_state",
+      "flow_state",
+      "interaction_state"
+    ]
+  },
+  "target_definition": {
+    "target_variable": "wdi__NY.GDP.MKTP.KD.ZG",
+    "target_definition": "Annual GDP growth percentage as stored in the frozen CHAOS macro panel.",
+    "outcome_family": "material_drop_2pp",
+    "outcome_formula": "GDP_growth(r,t+h) <= GDP_growth(r,t) - 2.0",
+    "horizons_years": [1, 2, 3],
+    "future_data_usage": "Future GDP is used only for outcome labels after exposure construction is frozen; it cannot influence reporter or partner selection."
+  },
+  "null_controls": {
+    "partner_identity_null": {
+      "id": "fixed_within_reporter_active_label_permutation_across_candidate_pool",
+      "replicates": 10000,
+      "rng_seed": 20260827,
+      "procedure": [
+        "For each reporter, retain the ten selected candidate partner series, all raw values, missingness, and partner-specific flow-state flags.",
+        "Retain the active-set size of five and the dependence-state threshold result defined before outcomes.",
+        "Randomly reassign five active labels among the ten candidate partner series within each reporter.",
+        "Use one fixed assignment per reporter across all years, never a separate assignment per year.",
+        "Recompute only the active-partner bilateral value-contraction and partner-share-loss states under the permuted labels; retain the reporter-level dependence-state result computed from the fixed candidate pool.",
+        "Keep GDP outcomes unchanged and compute the same max statistic across the declared horizons."
+      ],
+      "preserves": [
+        "reporter identity",
+        "candidate pool membership",
+        "active slot count",
+        "raw bilateral values",
+        "missingness pattern",
+        "partner-specific shock timing",
+        "annual frequency",
+        "GDP outcome labels"
+      ],
+      "breaks_only": "The mapping between active labels and candidate partner identity.",
+      "minimum_unique_permutations": 10,
+      "degenerate_rule": "If the null statistic has fewer than 10 unique values or SD=0 in the relevant confirmation family, mark partner_identity_null_degenerate and do not use its p-value for promotion."
+    },
+    "outcome_null": {
+      "id": "within_reporter_outcome_label_permutation",
+      "replicates": 10000,
+      "rng_seed": 20260828,
+      "procedure": "Within each reporter and horizon, permute complete-case GDP outcome labels across eligible origin years while preserving exposure and reporter membership.",
+      "preserves": ["reporter", "exposure", "outcome prevalence per reporter", "horizon"],
+      "statistic": "max_statistic_across_declared_primary_horizons"
+    },
+    "time_placebo": {
+      "id": "within_reporter_partner_circular_shock_shift",
+      "replicates": 5000,
+      "rng_seed": 20260829,
+      "procedure": "For each reporter-partner series, apply a nonzero circular shift to the precomputed annual flow-state sequence within the available origin window, preserving each series' state count and order cyclically; recompute reporter-year exposure while keeping GDP labels unchanged.",
+      "preserves": ["reporter", "partner series", "annual state prevalence", "number of shocks", "GDP labels"],
+      "purpose": "Test whether the observed temporal ordering contributes beyond the existence and prevalence of partner-flow states.",
+      "promotion_required": true
+    },
+    "cluster_bootstrap": {
+      "id": "reporter_cluster_bootstrap",
+      "replicates": 5000,
+      "rng_seed": 20260830,
+      "resampling_unit": "reporter",
+      "purpose": "Describe uncertainty under within-reporter dependence; diagnostic only and not a replacement for null or OOS tests."
+    }
+  },
+  "chronological_design": {
+    "selection": [2000, 2004],
+    "fit": [2005, 2013],
+    "validation": [2014, 2017],
+    "confirmation": [2018, 2021],
+    "no_random_row_split": true,
+    "no_entity_year_leakage": true,
+    "configuration_rule": "Partner rules and thresholds are fixed from the selection window and contract; fit and validation are not used to choose among declared primary variants after results are inspected.",
+    "confirmation_rule": "Confirmation is read once for final status; it cannot be used to change partner pool, thresholds, horizon, reporter scope, or null procedure.",
+    "outcome_availability": "For horizon h, include only origins with observed target at t+h; no missing outcome is converted to False."
+  },
+  "holdout_design": {
+    "region_source_field": "World Bank country.region.id",
+    "region_holdout": "Leave-one-World-Bank-region-out descriptive confirmation stability. For each region with at least 10 eligible reporters, compute the primary confirmation statistic on all other regions and report the held-out region separately.",
+    "minimum_regions": 3,
+    "minimum_reporters_per_holdout_region": 10,
+    "entity_holdout_required_for_promotion": true,
+    "holdout_selection_frozen": true,
+    "region_not_used_as_feature": true,
+    "failure_rule": "If fewer than three regions or fewer than ten reporters in a holdout region are available, holdout status is not_testable and primary promotion is blocked."
+  },
+  "metrics": {
+    "primary": "risk_difference",
+    "formula": "P(material GDP deterioration | primary interaction exposure=1) - P(material GDP deterioration | primary interaction exposure=0)",
+    "report_by": ["fit", "validation", "confirmation", "horizon", "reporter", "region"],
+    "required_counts": ["rows", "reporters", "regions", "positive_exposures", "positive_outcomes", "exposed_outcomes", "event_rate_exposed", "event_rate_unexposed"],
+    "secondary_descriptives": ["per-reporter risk difference", "positive reporter fraction", "exposure prevalence", "outcome prevalence", "concentration by reporter", "concentration by partner"],
+    "no_gdp_weighting": true,
+    "no_partner_row_pooling": true,
+    "max_statistic_family": "Declared primary and diagnostic dependence/flow variants across h=1,2,3; all family-level exploratory claims require max-statistic correction."
+  },
+  "coverage_stability_concentration": {
+    "confirmation_min_positive_interaction_exposures": 10,
+    "confirmation_min_positive_interaction_reporters": 5,
+    "confirmation_min_positive_outcomes": 10,
+    "confirmation_min_reporters": 50,
+    "confirmation_min_regions": 3,
+    "max_share_of_exposures_one_reporter": 0.40,
+    "max_share_of_shocked_partner_events_one_partner": 0.50,
+    "minimum_defined_reporter_level_directions": 20,
+    "minimum_positive_reporter_direction_fraction": 0.60,
+    "failure_status": "not_testable",
+    "concentration_failure_status": "rejected_or_unresolved",
+    "no_threshold_relaxation_after_failure": true
+  },
+  "multiple_testing_and_promotion": {
+    "primary_variant": "top3_share_50pct_and_bilateral_value_contraction",
+    "diagnostic_variants_not_promotable": true,
+    "max_statistic_across_horizons": true,
+    "familywise_alpha": 0.05,
+    "identity_null_alpha": 0.025,
+    "outcome_null_alpha": 0.025,
+    "time_placebo_alpha": 0.025,
+    "supported_predictive_requires_all": [
+      "positive confirmation primary risk difference",
+      "validation direction not materially contradicted",
+      "partner_identity null nondegenerate and p < 0.025",
+      "outcome null p < 0.025",
+      "time placebo p < 0.025",
+      "region holdout requirement passes",
+      "coverage requirements pass",
+      "reporter stability requirement passes",
+      "concentration limits pass",
+      "schema, provenance, missingness, and frequency checks pass"
+    ],
+    "if_confirmation_exposure_shortage": "not_testable",
+    "if_null_degenerate": "not_testable_null_degenerate",
+    "if_primary_confirmation_risk_difference_nonpositive": "rejected",
+    "if_any_required_null_fails": "rejected",
+    "if_holdout_or_stability_fails": "rejected_or_unresolved",
+    "positive_composer_weight_allowed_only_after_gate": true,
+    "causal_claim_allowed": false,
+    "runtime_eligible_without_gate": false
+  },
+  "audit_artifacts_required": [
+    "IMF_IMTS_REPORTER_UNIVERSE_COVERAGE_PROFILE_V2.json",
+    "IMF_IMTS_WDI_READY_XG_ACQUISITION_SUMMARY_V2.json",
+    "IMF_IMTS_PARTNER_EXCLUSION_REGISTER_V2.json",
+    "IMF_IMTS_PARTNER_SELECTION_REGISTER_V2.csv",
+    "IMF_IMTS_PARTNER_DEPENDENCE_REPORTER_YEAR_PANEL_V2.csv",
+    "IMF_IMTS_PARTNER_DEPENDENCE_METRICS_V2.csv",
+    "IMF_IMTS_PARTNER_IDENTITY_NULL_SUMMARY_V2.json",
+    "IMF_IMTS_OUTCOME_NULL_SUMMARY_V2.json",
+    "IMF_IMTS_TIME_PLACEBO_SUMMARY_V2.json",
+    "IMF_IMTS_REGION_HOLDOUT_SUMMARY_V2.json",
+    "IMF_IMTS_PARTNER_DEPENDENCE_TRANSITION_EVIDENCE_V2.jsonl",
+    "IMF_IMTS_PARTNER_DEPENDENCE_RUN_MANIFEST_V2.json"
+  ],
+  "governance": {
+    "required_validators": [
+      "validate_domain_state_schema_v1.py",
+      "validate_transition_evidence_schema_v1.py",
+      "run_supervisor_admission_gate_v1.py",
+      "build_evidence_graph_v1.py",
+      "compile_patterns_v1.py",
+      "run_campaign_supervisor_final_gate_v1.py"
+    ],
+    "new_transition_status_must_be_one_of": ["candidate", "supported_predictive", "rejected", "unresolved", "not_testable"],
+    "rejected_or_unresolved_or_not_testable_positive_weight": false,
+    "runtime_eligible_without_gate": false,
+    "causal_claims_permitted": false,
+    "old_baselines_immutable": true,
+    "research_ledger_append_only": true,
+    "market_intelligence_engine_modified": false
+  },
+  "reproducibility": {
+    "contract_freeze_required_before_authoritative_run": true,
+    "explicit_user_authorization_for_this_run": true,
+    "contract_sha256_required": true,
+    "input_sha256_required": true,
+    "random_seeds_fixed": true,
+    "software_manifest_required": true,
+    "request_urls_and_headers_required": true,
+    "failure_log_required": true,
+    "rerun_policy": "Any change to reporter universe, candidate pool size, active set size, selection window, dependence threshold, flow threshold, target definition, split, horizon, null procedure, or holdout is a new versioned contract and cannot overwrite V2 artifacts."
+  },
+  "decision_states": {
+    "candidate": "Declared and run, but not yet admitted by the required confirmation and null gates.",
+    "supported_predictive": "Primary confirmation, all required nulls, holdout, stability, coverage, concentration, and governance checks pass; still not causal.",
+    "rejected": "Primary direction or a required statistical/control condition fails with adequate coverage.",
+    "unresolved": "Evidence is contradictory or concentrated and cannot be adjudicated by this contract.",
+    "not_testable": "Coverage, complete-case, holdout, or nondegenerate-null requirements are insufficient."
+  }
+}

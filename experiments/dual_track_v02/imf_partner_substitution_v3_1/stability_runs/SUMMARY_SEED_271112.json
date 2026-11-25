@@ -1,0 +1,322 @@
+{
+  "contract_id": "IMF_IMTS_PARTNER_SUBSTITUTION_V3_1",
+  "contract_sha256": "bd07afbe45ee58e79a604c8b718e2fc0906d23a8142c5d4ba3ac0de448ce53c0",
+  "selection_sha256": "936dcf922c3470e0966efe2f1bfc56cc10c7fb42396bf09562f7a92808ab9a1e",
+  "observation_sha256": "a5fdda798b44806eb7a97c461888d516b44b54bc7de763a4f9b6a5b6cebd6906",
+  "seed": 271112,
+  "reporters": 135,
+  "fit_metrics": {
+    "1": {
+      "split": "fit",
+      "horizon": 1,
+      "events": 40,
+      "reporters": 35,
+      "candidate_success_rate": 0.525,
+      "rank_success_rate": 0.525,
+      "previous_success_rate": 0.0,
+      "any_replacement_persistence_rate": 0.75,
+      "candidate_coverage": 0.975,
+      "candidate_lift_vs_rank": 0.0
+    },
+    "2": {
+      "split": "fit",
+      "horizon": 2,
+      "events": 40,
+      "reporters": 35,
+      "candidate_success_rate": 0.45,
+      "rank_success_rate": 0.45,
+      "previous_success_rate": 0.0,
+      "any_replacement_persistence_rate": 0.625,
+      "candidate_coverage": 0.975,
+      "candidate_lift_vs_rank": 0.0
+    },
+    "3": {
+      "split": "fit",
+      "horizon": 3,
+      "events": 40,
+      "reporters": 35,
+      "candidate_success_rate": 0.375,
+      "rank_success_rate": 0.375,
+      "previous_success_rate": 0.0,
+      "any_replacement_persistence_rate": 0.475,
+      "candidate_coverage": 0.975,
+      "candidate_lift_vs_rank": 0.0
+    }
+  },
+  "confirmation_scores": {
+    "1": {
+      "horizon": 1,
+      "events": 42,
+      "reporters": 34,
+      "candidate_rate": 0.5238095238095238,
+      "rank_rate": 0.5476190476190477,
+      "previous_rate": 0.0,
+      "any_target_rate": 0.6190476190476191,
+      "candidate_lift_vs_rank": -0.023809523809523836,
+      "brier_candidate": 0.21662202380952383,
+      "brier_rank": 0.24824404761904764,
+      "brier_previous": 0.0,
+      "brier_target_history": 0.25297619047619047,
+      "fit_probabilities": {
+        "candidate": 0.525,
+        "rank": 0.525,
+        "previous": 0.0,
+        "target_history": 0.75
+      },
+      "candidate_predicted_probability": 0.525,
+      "candidate_issued_rate": 0.8809523809523809
+    },
+    "2": {
+      "horizon": 2,
+      "events": 42,
+      "reporters": 34,
+      "candidate_rate": 0.35714285714285715,
+      "rank_rate": 0.38095238095238093,
+      "previous_rate": 0.0,
+      "any_target_rate": 0.4523809523809524,
+      "candidate_lift_vs_rank": -0.02380952380952378,
+      "brier_candidate": 0.21410714285714294,
+      "brier_rank": 0.2405952380952382,
+      "brier_previous": 0.0,
+      "brier_target_history": 0.2775297619047619,
+      "fit_probabilities": {
+        "candidate": 0.45,
+        "rank": 0.45,
+        "previous": 0.0,
+        "target_history": 0.625
+      },
+      "candidate_predicted_probability": 0.45,
+      "candidate_issued_rate": 0.8809523809523809
+    },
+    "3": {
+      "horizon": 3,
+      "events": 42,
+      "reporters": 34,
+      "candidate_rate": 0.2857142857142857,
+      "rank_rate": 0.30952380952380953,
+      "previous_rate": 0.0,
+      "any_target_rate": 0.38095238095238093,
+      "candidate_lift_vs_rank": -0.023809523809523836,
+      "brier_candidate": 0.1953125,
+      "brier_rank": 0.21800595238095238,
+      "brier_previous": 0.0,
+      "brier_target_history": 0.24467261904761908,
+      "fit_probabilities": {
+        "candidate": 0.375,
+        "rank": 0.375,
+        "previous": 0.0,
+        "target_history": 0.475
+      },
+      "candidate_predicted_probability": 0.375,
+      "candidate_issued_rate": 0.8809523809523809
+    }
+  },
+  "influential_reporters_fit_top3": [
+    "ETH",
+    "MDV",
+    "MWI"
+  ],
+  "influential_exclusion_confirmation": {
+    "1": {
+      "horizon": 1,
+      "events": 39,
+      "reporters": 31,
+      "candidate_rate": 0.5384615384615384,
+      "rank_rate": 0.5641025641025641,
+      "previous_rate": 0.0,
+      "any_target_rate": 0.6410256410256411,
+      "candidate_lift_vs_rank": -0.02564102564102566,
+      "brier_candidate": 0.2133653846153846,
+      "brier_rank": 0.24741987179487182,
+      "brier_previous": 0.0,
+      "brier_target_history": 0.2419871794871795,
+      "fit_probabilities": {
+        "candidate": 0.525,
+        "rank": 0.525,
+        "previous": 0.0,
+        "target_history": 0.75
+      },
+      "candidate_predicted_probability": 0.525,
+      "candidate_issued_rate": 0.8717948717948718
+    },
+    "2": {
+      "horizon": 2,
+      "events": 39,
+      "reporters": 31,
+      "candidate_rate": 0.38461538461538464,
+      "rank_rate": 0.41025641025641024,
+      "previous_rate": 0.0,
+      "any_target_rate": 0.48717948717948717,
+      "candidate_lift_vs_rank": -0.025641025641025605,
+      "brier_candidate": 0.215,
+      "brier_rank": 0.24352564102564117,
+      "brier_previous": 0.0,
+      "brier_target_history": 0.2688301282051282,
+      "fit_probabilities": {
+        "candidate": 0.45,
+        "rank": 0.45,
+        "previous": 0.0,
+        "target_history": 0.625
+      },
+      "candidate_predicted_probability": 0.45,
+      "candidate_issued_rate": 0.8717948717948718
+    },
+    "3": {
+      "horizon": 3,
+      "events": 39,
+      "reporters": 31,
+      "candidate_rate": 0.3076923076923077,
+      "rank_rate": 0.3333333333333333,
+      "previous_rate": 0.0,
+      "any_target_rate": 0.41025641025641024,
+      "candidate_lift_vs_rank": -0.025641025641025605,
+      "brier_candidate": 0.19951923076923078,
+      "brier_rank": 0.22395833333333334,
+      "brier_previous": 0.0,
+      "brier_target_history": 0.24613782051282065,
+      "fit_probabilities": {
+        "candidate": 0.375,
+        "rank": 0.375,
+        "previous": 0.0,
+        "target_history": 0.475
+      },
+      "candidate_predicted_probability": 0.375,
+      "candidate_issued_rate": 0.8717948717948718
+    }
+  },
+  "nulls": [
+    {
+      "split": "confirmation",
+      "horizon": 1,
+      "variant": "block_permutation",
+      "replicates": 10000,
+      "observed_lift": -0.023809523809523836,
+      "null_mean": -0.06539858959628725,
+      "null_sd": 0.04098584802294704,
+      "p_value": 0.18798120187981202,
+      "unique_statistics": 161,
+      "status": "non_degenerate"
+    },
+    {
+      "split": "confirmation",
+      "horizon": 2,
+      "variant": "block_permutation",
+      "replicates": 10000,
+      "observed_lift": -0.02380952380952378,
+      "null_mean": -0.04443313435425007,
+      "null_sd": 0.03479999108639974,
+      "p_value": 0.3144685531446855,
+      "unique_statistics": 139,
+      "status": "non_degenerate",
+      "holm_adjusted_p_value": 0.9434056594340565
+    },
+    {
+      "split": "confirmation",
+      "horizon": 3,
+      "variant": "block_permutation",
+      "replicates": 10000,
+      "observed_lift": -0.023809523809523836,
+      "null_mean": -0.03560301088813406,
+      "null_sd": 0.029836800924627194,
+      "p_value": 0.42705729427057293,
+      "unique_statistics": 113,
+      "status": "non_degenerate"
+    },
+    {
+      "split": "confirmation",
+      "horizon": 1,
+      "variant": "rank_permutation",
+      "replicates": 10000,
+      "observed_lift": -0.023809523809523836,
+      "null_mean": -0.004598950271210253,
+      "null_sd": 0.009669390903171496,
+      "p_value": 0.9735026497350265,
+      "unique_statistics": 247,
+      "status": "non_degenerate"
+    },
+    {
+      "split": "confirmation",
+      "horizon": 2,
+      "variant": "rank_permutation",
+      "replicates": 10000,
+      "observed_lift": -0.02380952380952378,
+      "null_mean": -0.0004400189590824879,
+      "null_sd": 0.002898796920110617,
+      "p_value": 1.0,
+      "unique_statistics": 93,
+      "status": "non_degenerate",
+      "holm_adjusted_p_value": 1.0
+    },
+    {
+      "split": "confirmation",
+      "horizon": 3,
+      "variant": "rank_permutation",
+      "replicates": 10000,
+      "observed_lift": -0.023809523809523836,
+      "null_mean": -3.751738218233025e-05,
+      "null_sd": 0.0008547825294942297,
+      "p_value": 1.0,
+      "unique_statistics": 36,
+      "status": "non_degenerate"
+    },
+    {
+      "split": "confirmation",
+      "horizon": 1,
+      "variant": "restricted_time_placebo",
+      "replicates": 5000,
+      "observed_lift": -0.023809523809523836,
+      "null_mean": 0.3272926829268292,
+      "null_sd": 0.07197717909601217,
+      "p_value": 1.0,
+      "unique_statistics": 22,
+      "status": "non_degenerate"
+    },
+    {
+      "split": "confirmation",
+      "horizon": 2,
+      "variant": "restricted_time_placebo",
+      "replicates": 5000,
+      "observed_lift": -0.02380952380952378,
+      "null_mean": 0.2500195121951219,
+      "null_sd": 0.06360973595287346,
+      "p_value": 1.0,
+      "unique_statistics": 20,
+      "status": "non_degenerate",
+      "holm_adjusted_p_value": 1.0
+    },
+    {
+      "split": "confirmation",
+      "horizon": 3,
+      "variant": "restricted_time_placebo",
+      "replicates": 5000,
+      "observed_lift": -0.023809523809523836,
+      "null_mean": 0.15605853658536584,
+      "null_sd": 0.049976301007186474,
+      "p_value": 1.0,
+      "unique_statistics": 15,
+      "status": "non_degenerate"
+    }
+  ],
+  "admission_checks": {
+    "coverage": true,
+    "effect_vs_rank": false,
+    "brier_vs_rank": false,
+    "concentration": true,
+    "subwindow_coverage": false,
+    "subwindow_lift": false,
+    "influential_direction": false,
+    "nulls_non_degenerate": true,
+    "nulls_corrected": false
+  },
+  "predictive_evidence_status": "not_testable",
+  "causal_validation_status": "not_run",
+  "runtime_status": "not_eligible",
+  "causal_claim": false,
+  "notes": [
+    "V3.1 executed only after frozen contract hash verification.",
+    "The previous-partner baseline is structurally weak on an exit-conditioned event universe because the previous baseline top-1 is defined to have exited; it is reported, not hidden.",
+    "Brier scores are strategy-success Brier scores; exact replacement-and-persistence rates are reported alongside them.",
+    "No imputation, normalization, log, differencing, smoothing, source averaging, or frequency conversion.",
+    "No CVT activation: the event is endogenous network substitution, not an exogenous assignment."
+  ]
+}

@@ -1,0 +1,168 @@
+{
+  "source_id": "IMF.STA:IMTS",
+  "official_dataset_url": "https://data.imf.org/en/datasets/IMF.STA:IMTS",
+  "retrieved_at_utc": "2026-08-26T23:39:46.882609+00:00",
+  "countries": [
+    "USA",
+    "CHN",
+    "DEU",
+    "JPN",
+    "IND",
+    "GBR",
+    "FRA",
+    "ITA",
+    "CAN",
+    "KOR",
+    "BRA",
+    "MEX",
+    "SAU",
+    "TUR",
+    "ZAF"
+  ],
+  "indicators": [
+    "XG_FOB_USD",
+    "MG_FOB_USD"
+  ],
+  "frequency": "A",
+  "period": "2000-2024",
+  "counterpart_country": "*",
+  "limit": 5000,
+  "responses": [
+    {
+      "country": "USA",
+      "status_code": 200,
+      "bytes": 3372586,
+      "sha256": "eb93eebd98b89c403273f11cd8ddc1e946a8747c0313dd1de66d1fd600a9ff0c",
+      "raw_path": "campaigns/research_rounds/20260827_BROWSER_DEEP_RESEARCH/raw/imf_imts_15_per_reporter/IMF_IMTS_USA_XG_MG_ALL_PARTNERS_2000_2024.csv",
+      "lines": 5562,
+      "status": "downloaded_response"
+    },
+    {
+      "country": "CHN",
+      "status_code": 200,
+      "bytes": 3365882,
+      "sha256": "b7cba60efa755490a83dc0b41e15fcf93662b806481df7800178ba3212100eec",
+      "raw_path": "campaigns/research_rounds/20260827_BROWSER_DEEP_RESEARCH/raw/imf_imts_15_per_reporter/IMF_IMTS_CHN_XG_MG_ALL_PARTNERS_2000_2024.csv",
+      "lines": 5549,
+      "status": "downloaded_response"
+    },
+    {
+      "country": "DEU",
+      "status_code": 200,
+      "bytes": 3421716,
+      "sha256": "babb545d378fe435c821d6dd8460c65275550f0ae8063e9ed3b9b20aa34bd42b",
+      "raw_path": "campaigns/research_rounds/20260827_BROWSER_DEEP_RESEARCH/raw/imf_imts_15_per_reporter/IMF_IMTS_DEU_XG_MG_ALL_PARTNERS_2000_2024.csv",
+      "lines": 5646,
+      "status": "downloaded_response"
+    },
+    {
+      "country": "JPN",
+      "status_code": 200,
+      "bytes": 3346227,
+      "sha256": "540b9585eaa7745dc2c47f97212b62d3204593ff7a332c47ec4e0984d4fcb6ce",
+      "raw_path": "campaigns/research_rounds/20260827_BROWSER_DEEP_RESEARCH/raw/imf_imts_15_per_reporter/IMF_IMTS_JPN_XG_MG_ALL_PARTNERS_2000_2024.csv",
+      "lines": 5523,
+      "status": "downloaded_response"
+    },
+    {
+      "country": "IND",
+      "status_code": 200,
+      "bytes": 3353848,
+      "sha256": "c7233ddcfcc881527bc4c23384432b16d8d9ac205a114c962bbb5ee1e4fce0f2",
+      "raw_path": "campaigns/research_rounds/20260827_BROWSER_DEEP_RESEARCH/raw/imf_imts_15_per_reporter/IMF_IMTS_IND_XG_MG_ALL_PARTNERS_2000_2024.csv",
+      "lines": 5537,
+      "status": "downloaded_response"
+    },
+    {
+      "country": "GBR",
+      "status_code": 200,
+      "bytes": 3405953,
+      "sha256": "f4aa999088019411faffbd46d0968f112cb6fe039cdc4086e0775aa5336a891b",
+      "raw_path": "campaigns/research_rounds/20260827_BROWSER_DEEP_RESEARCH/raw/imf_imts_15_per_reporter/IMF_IMTS_GBR_XG_MG_ALL_PARTNERS_2000_2024.csv",
+      "lines": 5622,
+      "status": "downloaded_response"
+    },
+    {
+      "country": "FRA",
+      "status_code": 200,
+      "bytes": 3412658,
+      "sha256": "5bc4ea176cb51e142bd5d260c7cf32b3642b032eb8e1198419913b69960841e0",
+      "raw_path": "campaigns/research_rounds/20260827_BROWSER_DEEP_RESEARCH/raw/imf_imts_15_per_reporter/IMF_IMTS_FRA_XG_MG_ALL_PARTNERS_2000_2024.csv",
+      "lines": 5633,
+      "status": "downloaded_response"
+    },
+    {
+      "country": "ITA",
+      "status_code": 200,
+      "bytes": 3403963,
+      "sha256": "02254381b1d98640d2518174f071993aabbac3bf479a1597ab293486bbfce99b",
+      "raw_path": "campaigns/research_rounds/20260827_BROWSER_DEEP_RESEARCH/raw/imf_imts_15_per_reporter/IMF_IMTS_ITA_XG_MG_ALL_PARTNERS_2000_2024.csv",
+      "lines": 5618,
+      "status": "downloaded_response"
+    },
+    {
+      "country": "CAN",
+      "status_code": 200,
+      "bytes": 6672246,
+      "sha256": "a8da1f3e8e008a45e92d46c328512bcf251742f8f6ca9b92e6f6f6bb2e4ed64e",
+      "raw_path": "campaigns/research_rounds/20260827_BROWSER_DEEP_RESEARCH/raw/imf_imts_15_per_reporter/IMF_IMTS_CAN_XG_MG_ALL_PARTNERS_2000_2024.csv",
+      "lines": 11024,
+      "status": "downloaded_response"
+    },
+    {
+      "country": "KOR",
+      "status_code": 200,
+      "bytes": 3374057,
+      "sha256": "27383f3283cd6c45fe6a16195c8ef1f86d8ba8674b07da35b23262005262b4bc",
+      "raw_path": "campaigns/research_rounds/20260827_BROWSER_DEEP_RESEARCH/raw/imf_imts_15_per_reporter/IMF_IMTS_KOR_XG_MG_ALL_PARTNERS_2000_2024.csv",
+      "lines": 5570,
+      "status": "downloaded_response"
+    },
+    {
+      "country": "BRA",
+      "status_code": 200,
+      "bytes": 6448488,
+      "sha256": "4c5cd8619edd7991adae8b79b8c3eb4f6de9442d22c0ed7208d8224cbb4ac4f9",
+      "raw_path": "campaigns/research_rounds/20260827_BROWSER_DEEP_RESEARCH/raw/imf_imts_15_per_reporter/IMF_IMTS_BRA_XG_MG_ALL_PARTNERS_2000_2024.csv",
+      "lines": 10657,
+      "status": "downloaded_response"
+    },
+    {
+      "country": "MEX",
+      "status_code": 200,
+      "bytes": 6403618,
+      "sha256": "09ae86544db64185d3662478f481de19f3a0c9cec4d6467704bab5c331557bc1",
+      "raw_path": "campaigns/research_rounds/20260827_BROWSER_DEEP_RESEARCH/raw/imf_imts_15_per_reporter/IMF_IMTS_MEX_XG_MG_ALL_PARTNERS_2000_2024.csv",
+      "lines": 10588,
+      "status": "downloaded_response"
+    },
+    {
+      "country": "SAU",
+      "status_code": 200,
+      "bytes": 2473476,
+      "sha256": "f35f891d1b6a45b013b6e7a5db3e72c5f26988215aa0ff22777312e817b1f636",
+      "raw_path": "campaigns/research_rounds/20260827_BROWSER_DEEP_RESEARCH/raw/imf_imts_15_per_reporter/IMF_IMTS_SAU_XG_MG_ALL_PARTNERS_2000_2024.csv",
+      "lines": 4085,
+      "status": "downloaded_response"
+    },
+    {
+      "country": "TUR",
+      "status_code": 200,
+      "bytes": 3327704,
+      "sha256": "ffebfdce653257dced85eaceec26428f3c685cb4361a8891d8bf3733162621da",
+      "raw_path": "campaigns/research_rounds/20260827_BROWSER_DEEP_RESEARCH/raw/imf_imts_15_per_reporter/IMF_IMTS_TUR_XG_MG_ALL_PARTNERS_2000_2024.csv",
+      "lines": 5496,
+      "status": "downloaded_response"
+    },
+    {
+      "country": "ZAF",
+      "status_code": 200,
+      "bytes": 6292327,
+      "sha256": "8ad646ef2262bcc7de975f82d9d7820bbab6feedb0c6ce610c33bb2bc2e9e81c",
+      "raw_path": "campaigns/research_rounds/20260827_BROWSER_DEEP_RESEARCH/raw/imf_imts_15_per_reporter/IMF_IMTS_ZAF_XG_MG_ALL_PARTNERS_2000_2024.csv",
+      "lines": 10402,
+      "status": "downloaded_response"
+    }
+  ],
+  "status": "per_reporter_bounded_acquisition_complete"
+}

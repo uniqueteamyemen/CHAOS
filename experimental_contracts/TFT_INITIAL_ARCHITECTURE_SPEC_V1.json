@@ -1,0 +1,87 @@
+{
+  "architecture_id": "tft_initial_macro_plus_eia_energy_v1",
+  "status": "design_only_review_required",
+  "build_model_now": false,
+  "forward_pass_now": false,
+  "train_now": false,
+  "matrix_id": "macro_plus_eia_energy",
+  "data_contract_ref": "DATASET_CONFIGURATION_MACRO_PLUS_EIA_ENERGY_REVIEW_V1.json",
+  "group_ids": ["entity_code"],
+  "static_categoricals": ["entity_code"],
+  "static_reals": [],
+  "time_idx": "year",
+  "target": "wdi__NY.GDP.MKTP.KD.ZG",
+  "observed_past_reals": [
+    "wdi__NY.GDP.MKTP.KD.ZG",
+    "wdi__NY.GDP.PCAP.KD",
+    "wdi__FP.CPI.TOTL.ZG",
+    "wdi__SP.POP.TOTL",
+    "wdi__PA.NUS.PPP",
+    "imf__NGDP_RPCH",
+    "imf__PCPI",
+    "imf__PPPEX",
+    "imf__BCA_NGDPD",
+    "eia__energy_consumption_per_capita",
+    "eia__energy_consumption_per_gdp"
+  ],
+  "known_future_reals": [],
+  "encoder_length": 5,
+  "prediction_length": 1,
+  "forecast_expression": "target(entity,t+1) from observed history through t",
+  "initial_model_defaults": {
+    "model": "TemporalFusionTransformer",
+    "hidden_size": 16,
+    "lstm_layers": 1,
+    "attention_heads": 2,
+    "hidden_continuous_size": 8,
+    "dropout": 0.1,
+    "output_mode": "single_point_forecast",
+    "loss": "MAE-compatible point loss",
+    "optimizer": "Adam",
+    "learning_rate": 0.001,
+    "batch_size": 64,
+    "gradient_clip_val": 0.1,
+    "early_stopping_monitor": "val_MAE",
+    "early_stopping_mode": "min"
+  },
+  "scaling": {
+    "current_mode": "raw_value_mode",
+    "normalizer_approved": false,
+    "future_scaling_requires_new_contract": true,
+    "train_only_fit_if_later_approved": true
+  },
+  "planned_seed_policy": {
+    "primary_seed": 17,
+    "stability_seeds": [17, 43, 101],
+    "stability_grid_not_authorized_now": true
+  },
+  "split_ref": "DATASET_CONFIGURATION_MACRO_PLUS_EIA_ENERGY_REVIEW_V1.json",
+  "checkpoint_rule": "select by validation MAE only; test is locked until configuration is frozen",
+  "required_preflight_artifacts": [
+    "window_manifest.csv",
+    "environment_versions.json",
+    "experiment_registry.jsonl",
+    "dataset_hash.txt",
+    "config_hash.txt",
+    "leakage_audit.json"
+  ],
+  "interpretation_limits": {
+    "attention_is_causal": false,
+    "variable_selection_is_causal": false,
+    "lag_importance_is_causal": false,
+    "reverse_extraction_requires_separate_event_contract": true
+  },
+  "prohibited_now": [
+    "model construction",
+    "forward pass",
+    "training",
+    "validation execution",
+    "test execution",
+    "stability grid",
+    "ablation experiments",
+    "reverse extraction",
+    "surrogate validation",
+    "architecture change",
+    "market-intelligence-engine modification"
+  ]
+}

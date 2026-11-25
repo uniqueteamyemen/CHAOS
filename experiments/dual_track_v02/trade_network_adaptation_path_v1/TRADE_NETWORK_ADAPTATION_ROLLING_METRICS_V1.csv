@@ -1,0 +1,13 @@
+train_events,eval_events,reporters,candidate_brier,target_history_brier,state_persistence_brier,previous_state_brier,candidate_accuracy,origin,horizon
+0,0,0,,,,,,2013,1
+0,0,0,,,,,,2013,2
+0,0,0,,,,,,2013,3
+0,0,0,,,,,,2015,1
+0,0,0,,,,,,2015,2
+0,0,0,,,,,,2015,3
+0,0,0,,,,,,2017,1
+0,0,0,,,,,,2017,2
+0,0,0,,,,,,2017,3
+0,0,0,,,,,,2019,1
+0,0,0,,,,,,2019,2
+0,0,0,,,,,,2019,3

@@ -1,0 +1,74 @@
+{
+  "tft_test": {
+    "model": "TFT",
+    "split": "test",
+    "n": 695,
+    "MAE": 3.936037302017212,
+    "RMSE": 6.6332173347473145,
+    "R2": 0.0323860645294189,
+    "directional_accuracy": 0.7741007194244605
+  },
+  "best_baseline_test": {
+    "model": "global_train_mean",
+    "split": "test",
+    "n": 695,
+    "MAE": 4.067903760179092,
+    "RMSE": 6.814184146016942,
+    "R2": -0.021130864861885,
+    "directional_accuracy": 0.7755395683453238
+  },
+  "improvement_vs_best_baseline": {
+    "MAE_abs": 0.13186645816188047,
+    "MAE_pct": 3.241631708516009,
+    "RMSE_abs": 0.18096681126962721,
+    "RMSE_pct": 2.655737024298159,
+    "R2_delta": 0.0535169293913039,
+    "directional_accuracy_delta": -0.0014388489208633226
+  },
+  "tft_per_entity_test_mae": {
+    "median": 3.03953218460083,
+    "q25": 2.1740981340408325,
+    "q75": 4.664482116699219,
+    "min": 0.8029357194900513,
+    "max": 35.60331726074219,
+    "entities_below_1": 3,
+    "entities_above_5": 25
+  },
+  "test_model_order_by_mae": [
+    {
+      "model": "TFT",
+      "MAE": 3.936037302017212,
+      "RMSE": 6.6332173347473145,
+      "R2": 0.0323860645294189,
+      "directional_accuracy": 0.7741007194244605
+    },
+    {
+      "model": "global_train_mean",
+      "MAE": 4.067903760179092,
+      "RMSE": 6.814184146016942,
+      "R2": -0.021130864861885,
+      "directional_accuracy": 0.7755395683453238
+    },
+    {
+      "model": "entity_train_mean",
+      "MAE": 4.296228093415341,
+      "RMSE": 6.951170581175421,
+      "R2": -0.0625993951433354,
+      "directional_accuracy": 0.7597122302158273
+    },
+    {
+      "model": "persistence_one_step",
+      "MAE": 5.701223835103699,
+      "RMSE": 9.11052092869735,
+      "R2": -0.8253245385251557,
+      "directional_accuracy": 0.6345323741007194
+    },
+    {
+      "model": "linear_ar5_entity_train",
+      "MAE": 6.032702661770179,
+      "RMSE": 9.432784775747423,
+      "R2": -0.9567418013262174,
+      "directional_accuracy": 0.6906474820143885
+    }
+  ]
+}

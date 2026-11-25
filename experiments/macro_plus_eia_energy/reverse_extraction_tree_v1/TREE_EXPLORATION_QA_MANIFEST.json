@@ -1,0 +1,64 @@
+{
+  "manifest_type": "CHAOS_tree_path_exploration_qa",
+  "run_id": "reverse_extraction_tree_v1_exploratory",
+  "counts": {
+    "grid_models": 72,
+    "maxstat_replicates": 2000,
+    "suite_summary_rows": 3,
+    "rolling_rows": 108
+  },
+  "best_observed": {
+    "model_id": "h3|material_drop_2pp|with_target_history|d2|s17",
+    "balanced_accuracy": 0.6354010494752623,
+    "f1": 0.3877551020408163
+  },
+  "raw_integrity": {
+    "panel_sha256": "015736245ac4010aa1c97055930c69ca3c7da5fdd5970f5da34456b67a3172ad",
+    "panel_head_sha256": "015736245ac4010aa1c97055930c69ca3c7da5fdd5970f5da34456b67a3172ad",
+    "raw_sha256": "89a17937187a340947cb000fba1892fbe5c4c99fffd51edc3d4d1124dbea19e8",
+    "raw_head_sha256": "89a17937187a340947cb000fba1892fbe5c4c99fffd51edc3d4d1124dbea19e8",
+    "panel_matches_head": true,
+    "raw_matches_head": true
+  },
+  "execution_flags": {
+    "locked_test_executed": false,
+    "raw_data_modified": false,
+    "imputation": false,
+    "normalization": false
+  },
+  "qa_pass_conditions": {
+    "grid_72_models": true,
+    "maxstat_2000": true,
+    "suite_three_nulls": true,
+    "rolling_has_three_folds": true,
+    "locked_test_closed": true,
+    "raw_unchanged": true,
+    "panel_matches_head": true,
+    "raw_matches_head": true,
+    "no_imputation_or_normalization": true
+  },
+  "artifacts": [
+    "experiments/macro_plus_eia_energy/reverse_extraction_tree_v1/EXPLORATION_CHANGELOG_AR.md",
+    "experiments/macro_plus_eia_energy/reverse_extraction_tree_v1/TREE_EXTRACTED_PATHS.csv",
+    "experiments/macro_plus_eia_energy/reverse_extraction_tree_v1/TREE_GRID_MAXSTAT_NULL_REPLICATES.csv",
+    "experiments/macro_plus_eia_energy/reverse_extraction_tree_v1/TREE_GRID_MAXSTAT_NULL_SUMMARY.json",
+    "experiments/macro_plus_eia_energy/reverse_extraction_tree_v1/TREE_GRID_NULL_SUITE_REPLICATES.csv",
+    "experiments/macro_plus_eia_energy/reverse_extraction_tree_v1/TREE_GRID_NULL_SUITE_SUMMARY.csv",
+    "experiments/macro_plus_eia_energy/reverse_extraction_tree_v1/TREE_GRID_OBSERVED_VALIDATION.csv",
+    "experiments/macro_plus_eia_energy/reverse_extraction_tree_v1/TREE_PATH_EXPLORATION_REPORT_AR.md",
+    "experiments/macro_plus_eia_energy/reverse_extraction_tree_v1/TREE_PATH_METRICS_BY_SPLIT.csv",
+    "experiments/macro_plus_eia_energy/reverse_extraction_tree_v1/TREE_ROLLING_SELECTED_PATHS.csv",
+    "experiments/macro_plus_eia_energy/reverse_extraction_tree_v1/TREE_ROLLING_STABILITY_METRICS.csv",
+    "experiments/macro_plus_eia_energy/reverse_extraction_tree_v1/TREE_ROLLING_STABILITY_SUMMARY.json",
+    "experiments/macro_plus_eia_energy/reverse_extraction_tree_v1/TREE_RUN_SUMMARY.json",
+    "experiments/macro_plus_eia_energy/reverse_extraction_tree_v1/TREE_SELECTED_PATHS.csv",
+    "experiments/macro_plus_eia_energy/reverse_extraction_tree_v1/TREE_TARGET_HISTORY_BASELINES.csv",
+    "experiments/macro_plus_eia_energy/reverse_extraction_tree_v1/TREE_VALIDATION_BEST_BY_FAMILY.csv",
+    "experiments/macro_plus_eia_energy/reverse_extraction_tree_v1/tree_exploration.log",
+    "experiments/macro_plus_eia_energy/reverse_extraction_tree_v1/tree_grid_null_suite.log",
+    "experiments/macro_plus_eia_energy/reverse_extraction_tree_v1/tree_maxstat_null.log",
+    "experiments/macro_plus_eia_energy/reverse_extraction_tree_v1/tree_rolling_stability.log",
+    "experiments/macro_plus_eia_energy/reverse_extraction_tree_v1/tree_summary.log",
+    "experiments/macro_plus_eia_energy/reverse_extraction_tree_v1/tree_target_baselines.log"
+  ]
+}

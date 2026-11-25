@@ -1,0 +1,34 @@
+{
+  "source": {
+    "source_id": "annual-panel:ama_gdp_growth_pct",
+    "source_ref": "/home/ubuntu/CHAOS/experiments/macro_plus_eia_energy/ama_ucdp_cross_domain_v1/AMA_UCDP_CROSS_DOMAIN_REPLAY_ROWS.csv",
+    "source_sha256": "cdb4d8566f07aa3d0c47b87ee11aa09549258b5db12c3d759a4d699a125c227b"
+  },
+  "counts": {
+    "events": 5474,
+    "states": 5474,
+    "transitions": 5311,
+    "predictions": 3194
+  },
+  "metrics": {
+    "path_model": {
+      "n": 877.0,
+      "accuracy": 0.887115165336374,
+      "coverage": 0.2745773324984346
+    },
+    "majority_baseline": {
+      "n": 877.0,
+      "accuracy": 0.8893956670467503,
+      "coverage": 0.2745773324984346
+    },
+    "abstention": {
+      "n": 2317.0,
+      "rate": 0.7254226675015655
+    },
+    "target": {
+      "horizon_years": 3.0,
+      "n": 3194.0
+    }
+  },
+  "status": "provisional"
+}

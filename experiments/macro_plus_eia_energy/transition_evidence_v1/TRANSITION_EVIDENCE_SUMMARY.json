@@ -1,0 +1,13 @@
+{
+  "records": 8,
+  "supported_predictive": 2,
+  "rejected": 5,
+  "unresolved": 1,
+  "causal_claims": 0,
+  "native_lag_unit": "years",
+  "sources": [
+    "UN AMA 2026",
+    "UCDP Country-Year 26.1"
+  ],
+  "raw_modified": false
+}

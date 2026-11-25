@@ -1,0 +1,27 @@
+{
+  "columns": [
+    "reporter_id",
+    "event_year",
+    "subtype",
+    "regime_t2",
+    "regime_t1",
+    "regime_t",
+    "pre_top1_share",
+    "outcome_h1",
+    "outcome_h2",
+    "outcome_h3"
+  ],
+  "expected_frequency": "annual",
+  "failures": [],
+  "null_counts": {
+    "outcome_h1": 18,
+    "outcome_h2": 21,
+    "outcome_h3": 26
+  },
+  "path": "experiments/dual_track_v02/trade_regime_transition_discovery_v1/TRADE_REGIME_TRANSITION_EVENTS_V1.csv",
+  "required_columns_present": true,
+  "row_count": 180,
+  "status": "pass",
+  "year_max": 2024,
+  "year_min": 2005
+}

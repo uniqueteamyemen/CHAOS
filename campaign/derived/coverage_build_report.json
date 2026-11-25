@@ -1,0 +1,18 @@
+{
+  "built_at": "2026-08-25T20:15:59.669783+00:00",
+  "raw_runs": [
+    "/home/ubuntu/market_intelligence_workspace/campaign/raw/20260825T200543Z",
+    "/home/ubuntu/market_intelligence_workspace/campaign/raw/20260825T200702Z",
+    "/home/ubuntu/market_intelligence_workspace/campaign/raw/20260825T200726Z",
+    "/home/ubuntu/market_intelligence_workspace/campaign/raw/20260825T200757Z",
+    "/home/ubuntu/market_intelligence_workspace/campaign/raw/20260825T200819Z",
+    "/home/ubuntu/market_intelligence_workspace/campaign/raw/20260825T201050Z",
+    "/home/ubuntu/market_intelligence_workspace/campaign/raw/20260825T201223Z"
+  ],
+  "rows": 12,
+  "policy": {
+    "raw_immutable": true,
+    "imputation_performed": false,
+    "source_reconciliation_performed": false
+  }
+}

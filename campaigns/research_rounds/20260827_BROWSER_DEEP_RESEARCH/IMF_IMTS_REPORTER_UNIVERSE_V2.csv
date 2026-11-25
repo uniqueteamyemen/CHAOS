@@ -1,0 +1,360 @@
+reporter_id,reporter_name,codelist_id,excluded_from_reporter_requests,exclusion_reasons,wdi_years_2000_2024,wdi_gdp_nonmissing_2000_2024,wdi_target_ready_20y
+TX799,Africa not specified,CL_IMTS_COUNTRY,True,['aggregate_or_unspecified_name'],0,0,False
+TX598,Asia not specified,CL_IMTS_COUNTRY,True,['aggregate_or_unspecified_name'],0,0,False
+TX126,Belgium-Luxembourg,CL_IMTS_COUNTRY,False,[],0,0,False
+TX898,Countries & Areas not specified,CL_IMTS_COUNTRY,True,['aggregate_or_unspecified_name'],0,0,False
+TX884,Europe not specified,CL_IMTS_COUNTRY,True,['aggregate_or_unspecified_name'],0,0,False
+TX554,"Malaysia, West",CL_IMTS_COUNTRY,False,[],0,0,False
+TX489,Middle East and Central Asia not specified,CL_IMTS_COUNTRY,True,['aggregate_or_unspecified_name'],0,0,False
+TX198,South African Common Customs Area (SACCA),CL_IMTS_COUNTRY,False,[],0,0,False
+TX899,Special Categories,CL_IMTS_COUNTRY,True,['aggregate_or_unspecified_name'],0,0,False
+TX399,Western Hemisphere not specified,CL_IMTS_COUNTRY,True,['aggregate_or_unspecified_name'],0,0,False
+GX605,Africa,CL_IMTS_COUNTRY,False,[],0,0,False
+GX901,CIS,CL_IMTS_COUNTRY,False,[],0,0,False
+GX170,Europe,CL_IMTS_COUNTRY,False,[],0,0,False
+GX405,Middle East,CL_IMTS_COUNTRY,False,[],0,0,False
+GX440,"Middle East, North Africa, Afghanistan, and Pakistan",CL_IMTS_COUNTRY,False,[],0,0,False
+TX910,Other Countries n.i.e.,CL_IMTS_COUNTRY,True,['aggregate_or_unspecified_name'],0,0,False
+AFG,"Afghanistan, Islamic Republic of",CL_IMTS_COUNTRY,False,[],0,0,False
+ALB,Albania,CL_IMTS_COUNTRY,False,[],25,25,True
+DZA,Algeria,CL_IMTS_COUNTRY,False,[],25,25,True
+ASM,American Samoa,CL_IMTS_COUNTRY,False,[],0,0,False
+AND,"Andorra, Principality of",CL_IMTS_COUNTRY,False,[],0,0,False
+AGO,Angola,CL_IMTS_COUNTRY,False,[],25,25,True
+AIA,"Anguilla, United Kingdom-British Overseas Territory",CL_IMTS_COUNTRY,False,[],0,0,False
+ATG,Antigua and Barbuda,CL_IMTS_COUNTRY,False,[],0,0,False
+ARG,Argentina,CL_IMTS_COUNTRY,False,[],0,0,False
+ARM,"Armenia, Republic of",CL_IMTS_COUNTRY,False,[],25,25,True
+ABW,"Aruba, Kingdom of the Netherlands",CL_IMTS_COUNTRY,False,[],0,0,False
+AUS,Australia,CL_IMTS_COUNTRY,False,[],25,25,True
+AUT,Austria,CL_IMTS_COUNTRY,False,[],25,25,True
+AZE,"Azerbaijan, Republic of",CL_IMTS_COUNTRY,False,[],25,25,True
+BHS,"Bahamas, The",CL_IMTS_COUNTRY,False,[],25,25,True
+BHR,"Bahrain, Kingdom of",CL_IMTS_COUNTRY,False,[],25,25,True
+BGD,Bangladesh,CL_IMTS_COUNTRY,False,[],25,25,True
+BRB,Barbados,CL_IMTS_COUNTRY,False,[],0,0,False
+BLR,"Belarus, Republic of",CL_IMTS_COUNTRY,False,[],25,25,True
+BEL,Belgium,CL_IMTS_COUNTRY,False,[],25,25,True
+BLZ,Belize,CL_IMTS_COUNTRY,False,[],25,25,True
+BEN,Benin,CL_IMTS_COUNTRY,False,[],25,25,True
+BMU,Bermuda,CL_IMTS_COUNTRY,False,[],0,0,False
+BTN,Bhutan,CL_IMTS_COUNTRY,False,[],25,25,True
+BOL,Bolivia,CL_IMTS_COUNTRY,False,[],25,25,True
+BIH,Bosnia and Herzegovina,CL_IMTS_COUNTRY,False,[],0,0,False
+BWA,Botswana,CL_IMTS_COUNTRY,False,[],25,25,True
+BRA,Brazil,CL_IMTS_COUNTRY,False,[],25,25,True
+VGB,British Virgin Islands,CL_IMTS_COUNTRY,False,[],0,0,False
+BRN,Brunei Darussalam,CL_IMTS_COUNTRY,False,[],25,25,True
+BGR,Bulgaria,CL_IMTS_COUNTRY,False,[],25,25,True
+BFA,Burkina Faso,CL_IMTS_COUNTRY,False,[],25,25,True
+BDI,Burundi,CL_IMTS_COUNTRY,False,[],25,25,True
+CPV,Cabo Verde,CL_IMTS_COUNTRY,False,[],25,25,True
+KHM,Cambodia,CL_IMTS_COUNTRY,False,[],25,25,True
+CMR,Cameroon,CL_IMTS_COUNTRY,False,[],25,25,True
+CAN,Canada,CL_IMTS_COUNTRY,False,[],25,25,True
+CYM,Cayman Islands,CL_IMTS_COUNTRY,False,[],0,0,False
+CAF,Central African Republic,CL_IMTS_COUNTRY,False,[],25,25,True
+TCD,Chad,CL_IMTS_COUNTRY,False,[],25,25,True
+CHL,Chile,CL_IMTS_COUNTRY,False,[],25,25,True
+CHN,"China, People's Republic of",CL_IMTS_COUNTRY,False,[],25,25,True
+COL,Colombia,CL_IMTS_COUNTRY,False,[],25,25,True
+COM,"Comoros, Union of the",CL_IMTS_COUNTRY,True,['aggregate_or_unspecified_name'],0,0,False
+COD,"Congo, Democratic Republic of the",CL_IMTS_COUNTRY,False,[],0,0,False
+COG,"Congo, Republic of",CL_IMTS_COUNTRY,False,[],25,25,True
+COK,Cook Islands,CL_IMTS_COUNTRY,False,[],0,0,False
+CRI,Costa Rica,CL_IMTS_COUNTRY,False,[],25,25,True
+HRV,"Croatia, Republic of",CL_IMTS_COUNTRY,False,[],25,25,True
+CUB,Cuba,CL_IMTS_COUNTRY,False,[],0,0,False
+CUW,"Curaçao, Kingdom of the Netherlands",CL_IMTS_COUNTRY,False,[],0,0,False
+CYP,Cyprus,CL_IMTS_COUNTRY,False,[],25,25,True
+CZE,Czech Republic,CL_IMTS_COUNTRY,False,[],25,25,True
+CIV,Côte d'Ivoire,CL_IMTS_COUNTRY,False,[],25,25,True
+DNK,Denmark,CL_IMTS_COUNTRY,False,[],25,25,True
+DJI,Djibouti,CL_IMTS_COUNTRY,False,[],0,0,False
+DMA,Dominica,CL_IMTS_COUNTRY,False,[],25,25,True
+DOM,Dominican Republic,CL_IMTS_COUNTRY,False,[],25,25,True
+ECU,Ecuador,CL_IMTS_COUNTRY,False,[],25,25,True
+EGY,"Egypt, Arab Republic of",CL_IMTS_COUNTRY,False,[],25,25,True
+SLV,El Salvador,CL_IMTS_COUNTRY,False,[],25,25,True
+GNQ,"Equatorial Guinea, Republic of",CL_IMTS_COUNTRY,False,[],0,0,False
+ERI,"Eritrea, The State of",CL_IMTS_COUNTRY,False,[],0,0,False
+EST,"Estonia, Republic of",CL_IMTS_COUNTRY,False,[],25,25,True
+SWZ,"Eswatini, Kingdom of",CL_IMTS_COUNTRY,False,[],0,0,False
+ETH,"Ethiopia, The Federal Democratic Republic of",CL_IMTS_COUNTRY,False,[],25,25,True
+FLK,Falkland Islands (Malvinas),CL_IMTS_COUNTRY,False,[],0,0,False
+FRO,Faroe Islands,CL_IMTS_COUNTRY,False,[],0,0,False
+FJI,"Fiji, Republic of",CL_IMTS_COUNTRY,False,[],25,25,True
+FIN,Finland,CL_IMTS_COUNTRY,False,[],25,25,True
+FRA,France,CL_IMTS_COUNTRY,False,[],25,25,True
+GUF,French Guiana,CL_IMTS_COUNTRY,False,[],0,0,False
+PYF,French Polynesia,CL_IMTS_COUNTRY,False,[],0,0,False
+GAB,Gabon,CL_IMTS_COUNTRY,False,[],25,25,True
+GMB,"Gambia, The",CL_IMTS_COUNTRY,False,[],25,25,True
+GEO,Georgia,CL_IMTS_COUNTRY,False,[],25,25,True
+DEU,Germany,CL_IMTS_COUNTRY,False,[],25,25,True
+GHA,Ghana,CL_IMTS_COUNTRY,False,[],25,25,True
+GIB,Gibraltar,CL_IMTS_COUNTRY,False,[],0,0,False
+GRC,Greece,CL_IMTS_COUNTRY,False,[],25,25,True
+GRL,Greenland,CL_IMTS_COUNTRY,False,[],0,0,False
+GRD,Grenada,CL_IMTS_COUNTRY,False,[],0,0,False
+GLP,Guadeloupe,CL_IMTS_COUNTRY,False,[],0,0,False
+GUM,Guam,CL_IMTS_COUNTRY,False,[],0,0,False
+GTM,Guatemala,CL_IMTS_COUNTRY,False,[],25,25,True
+GGY,Guernsey,CL_IMTS_COUNTRY,False,[],0,0,False
+GIN,Guinea,CL_IMTS_COUNTRY,False,[],0,0,False
+GNB,Guinea-Bissau,CL_IMTS_COUNTRY,False,[],25,25,True
+GUY,Guyana,CL_IMTS_COUNTRY,False,[],25,25,True
+HTI,Haiti,CL_IMTS_COUNTRY,False,[],25,25,True
+VAT,Holy See,CL_IMTS_COUNTRY,False,[],0,0,False
+HND,Honduras,CL_IMTS_COUNTRY,False,[],25,25,True
+HKG,"Hong Kong Special Administrative Region, People's Republic of China",CL_IMTS_COUNTRY,True,['aggregate_or_unspecified_name'],25,25,True
+HUN,Hungary,CL_IMTS_COUNTRY,False,[],25,25,True
+ISL,Iceland,CL_IMTS_COUNTRY,False,[],0,0,False
+IND,India,CL_IMTS_COUNTRY,False,[],25,25,True
+IDN,Indonesia,CL_IMTS_COUNTRY,False,[],25,25,True
+IRN,"Iran, Islamic Republic of",CL_IMTS_COUNTRY,False,[],25,25,True
+IRQ,Iraq,CL_IMTS_COUNTRY,False,[],0,0,False
+IRL,Ireland,CL_IMTS_COUNTRY,False,[],25,25,True
+IMN,Isle of Man,CL_IMTS_COUNTRY,False,[],0,0,False
+ISR,Israel,CL_IMTS_COUNTRY,False,[],25,25,True
+ITA,Italy,CL_IMTS_COUNTRY,False,[],25,25,True
+JAM,Jamaica,CL_IMTS_COUNTRY,False,[],25,25,True
+JPN,Japan,CL_IMTS_COUNTRY,False,[],25,25,True
+JEY,Jersey,CL_IMTS_COUNTRY,False,[],0,0,False
+JOR,Jordan,CL_IMTS_COUNTRY,False,[],25,25,True
+KAZ,"Kazakhstan, Republic of",CL_IMTS_COUNTRY,False,[],25,25,True
+KEN,Kenya,CL_IMTS_COUNTRY,False,[],25,25,True
+KIR,Kiribati,CL_IMTS_COUNTRY,False,[],0,0,False
+PRK,"Korea, Democratic People's Republic of",CL_IMTS_COUNTRY,False,[],0,0,False
+KOR,"Korea, Republic of",CL_IMTS_COUNTRY,False,[],25,25,True
+KOS,"Kosovo, Republic of",CL_IMTS_COUNTRY,False,[],0,0,False
+KWT,Kuwait,CL_IMTS_COUNTRY,False,[],0,0,False
+KGZ,Kyrgyz Republic,CL_IMTS_COUNTRY,False,[],25,25,True
+LAO,Lao People's Democratic Republic,CL_IMTS_COUNTRY,False,[],25,25,True
+LVA,"Latvia, Republic of",CL_IMTS_COUNTRY,False,[],25,25,True
+LBN,Lebanon,CL_IMTS_COUNTRY,False,[],0,0,False
+LSO,"Lesotho, Kingdom of",CL_IMTS_COUNTRY,False,[],25,25,True
+LBR,Liberia,CL_IMTS_COUNTRY,False,[],0,0,False
+LBY,Libya,CL_IMTS_COUNTRY,False,[],25,25,True
+LIE,"Liechtenstein, Principality of",CL_IMTS_COUNTRY,False,[],0,0,False
+LTU,"Lithuania, Republic of",CL_IMTS_COUNTRY,False,[],25,25,True
+LUX,Luxembourg,CL_IMTS_COUNTRY,False,[],25,25,True
+MAC,"Macao Special Administrative Region, People's Republic of China",CL_IMTS_COUNTRY,True,['aggregate_or_unspecified_name'],0,0,False
+MDG,"Madagascar, Republic of",CL_IMTS_COUNTRY,False,[],25,25,True
+MWI,Malawi,CL_IMTS_COUNTRY,False,[],25,25,True
+MYS,Malaysia,CL_IMTS_COUNTRY,False,[],25,25,True
+MDV,Maldives,CL_IMTS_COUNTRY,False,[],25,25,True
+MLI,Mali,CL_IMTS_COUNTRY,False,[],25,25,True
+MLT,Malta,CL_IMTS_COUNTRY,False,[],0,0,False
+MHL,"Marshall Islands, Republic of the",CL_IMTS_COUNTRY,False,[],0,0,False
+MTQ,Martinique,CL_IMTS_COUNTRY,False,[],0,0,False
+MRT,"Mauritania, Islamic Republic of",CL_IMTS_COUNTRY,False,[],25,25,True
+MUS,Mauritius,CL_IMTS_COUNTRY,False,[],25,25,True
+MYT,Mayotte,CL_IMTS_COUNTRY,False,[],0,0,False
+MEX,Mexico,CL_IMTS_COUNTRY,False,[],25,25,True
+FSM,"Micronesia, Federated States of",CL_IMTS_COUNTRY,False,[],0,0,False
+MDA,"Moldova, Republic of",CL_IMTS_COUNTRY,False,[],25,25,True
+MCO,Monaco,CL_IMTS_COUNTRY,False,[],0,0,False
+MNG,Mongolia,CL_IMTS_COUNTRY,False,[],25,25,True
+MNE,Montenegro,CL_IMTS_COUNTRY,False,[],0,0,False
+MSR,"Montserrat, United Kingdom-British Overseas Territory",CL_IMTS_COUNTRY,False,[],0,0,False
+MAR,Morocco,CL_IMTS_COUNTRY,False,[],25,25,True
+MOZ,"Mozambique, Republic of",CL_IMTS_COUNTRY,False,[],0,0,False
+MMR,Myanmar,CL_IMTS_COUNTRY,False,[],0,0,False
+NAM,Namibia,CL_IMTS_COUNTRY,False,[],0,0,False
+NRU,"Naoero, Republic of",CL_IMTS_COUNTRY,False,[],0,0,False
+NPL,Nepal,CL_IMTS_COUNTRY,False,[],25,25,True
+NLD,"Netherlands, The",CL_IMTS_COUNTRY,False,[],25,25,True
+NCL,New Caledonia,CL_IMTS_COUNTRY,False,[],0,0,False
+NZL,New Zealand,CL_IMTS_COUNTRY,False,[],25,25,True
+NIC,Nicaragua,CL_IMTS_COUNTRY,False,[],25,25,True
+NER,Niger,CL_IMTS_COUNTRY,False,[],25,25,True
+NGA,Nigeria,CL_IMTS_COUNTRY,False,[],25,25,True
+NIU,Niue,CL_IMTS_COUNTRY,False,[],0,0,False
+NFK,Norfolk Island,CL_IMTS_COUNTRY,False,[],0,0,False
+MKD,"North Macedonia, Republic of",CL_IMTS_COUNTRY,False,[],25,25,True
+MNP,Northern Mariana Islands,CL_IMTS_COUNTRY,False,[],0,0,False
+NOR,Norway,CL_IMTS_COUNTRY,False,[],25,25,True
+OMN,Oman,CL_IMTS_COUNTRY,False,[],0,0,False
+PAK,Pakistan,CL_IMTS_COUNTRY,False,[],25,25,True
+PLW,"Palau, Republic of",CL_IMTS_COUNTRY,False,[],0,0,False
+PAN,Panama,CL_IMTS_COUNTRY,False,[],25,25,True
+PNG,Papua New Guinea,CL_IMTS_COUNTRY,False,[],25,25,True
+PRY,Paraguay,CL_IMTS_COUNTRY,False,[],25,25,True
+PER,Peru,CL_IMTS_COUNTRY,False,[],25,25,True
+PHL,Philippines,CL_IMTS_COUNTRY,False,[],25,25,True
+PCN,Pitcairn Islands,CL_IMTS_COUNTRY,False,[],0,0,False
+POL,"Poland, Republic of",CL_IMTS_COUNTRY,False,[],25,25,True
+PRT,Portugal,CL_IMTS_COUNTRY,False,[],25,25,True
+PRI,Puerto Rico,CL_IMTS_COUNTRY,False,[],0,0,False
+QAT,Qatar,CL_IMTS_COUNTRY,False,[],25,25,True
+ROU,Romania,CL_IMTS_COUNTRY,False,[],25,25,True
+RUS,Russian Federation,CL_IMTS_COUNTRY,False,[],25,25,True
+RWA,Rwanda,CL_IMTS_COUNTRY,False,[],25,25,True
+REU,Réunion,CL_IMTS_COUNTRY,True,['aggregate_or_unspecified_name'],0,0,False
+WSM,Samoa,CL_IMTS_COUNTRY,False,[],25,25,True
+SMR,"San Marino, Republic of",CL_IMTS_COUNTRY,False,[],0,0,False
+SAU,Saudi Arabia,CL_IMTS_COUNTRY,False,[],25,25,True
+SEN,Senegal,CL_IMTS_COUNTRY,False,[],25,25,True
+SRB,"Serbia, Republic of",CL_IMTS_COUNTRY,False,[],0,0,False
+SYC,Seychelles,CL_IMTS_COUNTRY,False,[],25,25,True
+SLE,Sierra Leone,CL_IMTS_COUNTRY,False,[],0,0,False
+SGP,Singapore,CL_IMTS_COUNTRY,False,[],25,25,True
+SXM,"Sint Maarten, Kingdom of the Netherlands",CL_IMTS_COUNTRY,False,[],0,0,False
+SVK,Slovak Republic,CL_IMTS_COUNTRY,False,[],25,25,True
+SVN,"Slovenia, Republic of",CL_IMTS_COUNTRY,False,[],25,25,True
+SLB,Solomon Islands,CL_IMTS_COUNTRY,False,[],25,25,True
+SOM,Somalia,CL_IMTS_COUNTRY,False,[],0,0,False
+ZAF,South Africa,CL_IMTS_COUNTRY,False,[],25,25,True
+SSD,"South Sudan, Republic of",CL_IMTS_COUNTRY,False,[],0,0,False
+ESP,Spain,CL_IMTS_COUNTRY,False,[],25,25,True
+LKA,Sri Lanka,CL_IMTS_COUNTRY,False,[],25,25,True
+SHN,St. Helena,CL_IMTS_COUNTRY,False,[],0,0,False
+KNA,St. Kitts and Nevis,CL_IMTS_COUNTRY,False,[],0,0,False
+LCA,St. Lucia,CL_IMTS_COUNTRY,False,[],25,25,True
+SPM,St. Pierre and Miquelon,CL_IMTS_COUNTRY,False,[],0,0,False
+VCT,St. Vincent and the Grenadines,CL_IMTS_COUNTRY,False,[],0,0,False
+SDN,Sudan,CL_IMTS_COUNTRY,False,[],0,0,False
+SUR,Suriname,CL_IMTS_COUNTRY,False,[],0,0,False
+SJM,Svalbard and Jan Mayen Islands,CL_IMTS_COUNTRY,False,[],0,0,False
+SWE,Sweden,CL_IMTS_COUNTRY,False,[],25,25,True
+CHE,Switzerland,CL_IMTS_COUNTRY,False,[],25,25,True
+SYR,Syrian Arab Republic,CL_IMTS_COUNTRY,False,[],0,0,False
+STP,"São Tomé and Príncipe, Democratic Republic of",CL_IMTS_COUNTRY,False,[],25,25,True
+TWN,Taiwan Province of China,CL_IMTS_COUNTRY,False,[],0,0,False
+TJK,"Tajikistan, Republic of",CL_IMTS_COUNTRY,False,[],0,0,False
+TZA,"Tanzania, United Republic of",CL_IMTS_COUNTRY,False,[],25,25,True
+THA,Thailand,CL_IMTS_COUNTRY,False,[],25,25,True
+TLS,"Timor-Leste, Democratic Republic of",CL_IMTS_COUNTRY,False,[],0,0,False
+TGO,Togo,CL_IMTS_COUNTRY,False,[],25,25,True
+TKL,Tokelau,CL_IMTS_COUNTRY,False,[],0,0,False
+TON,Tonga,CL_IMTS_COUNTRY,False,[],25,25,True
+TTO,Trinidad and Tobago,CL_IMTS_COUNTRY,False,[],0,0,False
+TUN,Tunisia,CL_IMTS_COUNTRY,False,[],25,25,True
+TKM,Turkmenistan,CL_IMTS_COUNTRY,False,[],0,0,False
+TCA,Turks and Caicos Islands,CL_IMTS_COUNTRY,False,[],0,0,False
+TUV,Tuvalu,CL_IMTS_COUNTRY,False,[],0,0,False
+TUR,"Türkiye, Republic of",CL_IMTS_COUNTRY,False,[],25,25,True
+UGA,Uganda,CL_IMTS_COUNTRY,False,[],25,25,True
+UKR,Ukraine,CL_IMTS_COUNTRY,False,[],25,25,True
+ARE,United Arab Emirates,CL_IMTS_COUNTRY,False,[],0,0,False
+GBR,United Kingdom,CL_IMTS_COUNTRY,False,[],25,25,True
+USA,United States,CL_IMTS_COUNTRY,False,[],25,25,True
+VIR,United States Virgin Islands,CL_IMTS_COUNTRY,False,[],0,0,False
+URY,Uruguay,CL_IMTS_COUNTRY,False,[],0,0,False
+UZB,"Uzbekistan, Republic of",CL_IMTS_COUNTRY,False,[],0,0,False
+VUT,Vanuatu,CL_IMTS_COUNTRY,False,[],25,25,True
+VEN,"Venezuela, República Bolivariana de",CL_IMTS_COUNTRY,False,[],0,0,False
+VNM,Vietnam,CL_IMTS_COUNTRY,False,[],25,25,True
+WLF,Wallis and Futuna Islands,CL_IMTS_COUNTRY,False,[],0,0,False
+WBG,West Bank and Gaza,CL_IMTS_COUNTRY,False,[],0,0,False
+YEM,"Yemen, Republic of",CL_IMTS_COUNTRY,False,[],0,0,False
+ZMB,Zambia,CL_IMTS_COUNTRY,False,[],25,25,True
+ZWE,Zimbabwe,CL_IMTS_COUNTRY,False,[],0,0,False
+ALA,Åland Islands,CL_IMTS_COUNTRY,False,[],0,0,False
+BES,"Bonaire, Saint Eustatius and Saba",CL_IMTS_COUNTRY,False,[],0,0,False
+ATF,French Southern Territories,CL_IMTS_COUNTRY,False,[],0,0,False
+CWX,Curaçao and Sint Maarten,CL_IMTS_COUNTRY,False,[],0,0,False
+CSK,Czechoslovakia,CL_IMTS_COUNTRY,False,[],0,0,False
+DDR,German Democratic Republic,CL_IMTS_COUNTRY,False,[],0,0,False
+ANT,Netherlands Antilles,CL_IMTS_COUNTRY,False,[],0,0,False
+VDR,"Vietnam, Democratic Republic of",CL_IMTS_COUNTRY,False,[],0,0,False
+SCG,Serbia and Montenegro,CL_IMTS_COUNTRY,False,[],0,0,False
+SUN,Union of Soviet Socialist Republics (USSR),CL_IMTS_COUNTRY,True,['aggregate_or_unspecified_name'],0,0,False
+YAR,Yemen Arab Republic,CL_IMTS_COUNTRY,False,[],0,0,False
+YMD,"Yemen, People's Democratic Republic of",CL_IMTS_COUNTRY,False,[],0,0,False
+YUG,"Yugoslavia, Socialist Federal Republic of",CL_IMTS_COUNTRY,False,[],0,0,False
+U019,Americas,CL_IMTS_COUNTRY,False,[],0,0,False
+U015,Northern Africa,CL_IMTS_COUNTRY,False,[],0,0,False
+U202,Sub-Saharan Africa,CL_IMTS_COUNTRY,False,[],0,0,False
+U002,Africa,CL_IMTS_COUNTRY,False,[],0,0,False
+U142,Asia,CL_IMTS_COUNTRY,False,[],0,0,False
+U053,Australia and New Zealand,CL_IMTS_COUNTRY,False,[],0,0,False
+U029,Caribbean,CL_IMTS_COUNTRY,False,[],0,0,False
+U013,Central America,CL_IMTS_COUNTRY,False,[],0,0,False
+U143,Central Asia,CL_IMTS_COUNTRY,False,[],0,0,False
+U014,Eastern Africa,CL_IMTS_COUNTRY,False,[],0,0,False
+U030,Eastern Asia,CL_IMTS_COUNTRY,False,[],0,0,False
+U151,Eastern Europe,CL_IMTS_COUNTRY,False,[],0,0,False
+U150,Europe,CL_IMTS_COUNTRY,False,[],0,0,False
+U054,Melanesia,CL_IMTS_COUNTRY,False,[],0,0,False
+U057,Micronesia,CL_IMTS_COUNTRY,False,[],0,0,False
+U017,Middle Africa,CL_IMTS_COUNTRY,False,[],0,0,False
+U154,Northern Europe,CL_IMTS_COUNTRY,False,[],0,0,False
+U009,Oceania,CL_IMTS_COUNTRY,False,[],0,0,False
+U061,Polynesia,CL_IMTS_COUNTRY,False,[],0,0,False
+U005,South America,CL_IMTS_COUNTRY,False,[],0,0,False
+U035,South-eastern Asia,CL_IMTS_COUNTRY,False,[],0,0,False
+U018,Southern Africa,CL_IMTS_COUNTRY,False,[],0,0,False
+U034,Southern Asia,CL_IMTS_COUNTRY,False,[],0,0,False
+U039,Southern Europe,CL_IMTS_COUNTRY,False,[],0,0,False
+U011,Western Africa,CL_IMTS_COUNTRY,False,[],0,0,False
+U145,Western Asia,CL_IMTS_COUNTRY,False,[],0,0,False
+U155,Western Europe,CL_IMTS_COUNTRY,False,[],0,0,False
+G202,Advanced Asia,CL_IMTS_COUNTRY,False,[],0,0,False
+G110,Advanced Economies,CL_IMTS_COUNTRY,False,[],0,0,False
+G906,Advanced Europe,CL_IMTS_COUNTRY,False,[],0,0,False
+G510,ASEAN-5,CL_IMTS_COUNTRY,False,[],0,0,False
+G940,Caucasus and Central Asia (CCA),CL_IMTS_COUNTRY,False,[],0,0,False
+G758,Central African Economic and Monetary Community (CEMAC),CL_IMTS_COUNTRY,False,[],0,0,False
+G609,CFA franc zone,CL_IMTS_COUNTRY,False,[],0,0,False
+G619,East African Community (EAC),CL_IMTS_COUNTRY,False,[],0,0,False
+G309,Eastern Caribbean Currency Union (ECCU),CL_IMTS_COUNTRY,True,['aggregate_or_unspecified_name'],0,0,False
+G776,Economic Community of West African States (ECOWAS),CL_IMTS_COUNTRY,False,[],0,0,False
+G209,EMDEs by External Financing: Net Creditors,CL_IMTS_COUNTRY,False,[],0,0,False
+G606,EMDEs by External Financing: Net Debtors,CL_IMTS_COUNTRY,False,[],0,0,False
+G087,EMDEs by External Financing: Net Debtors with Arrears and/or Reschedulings,CL_IMTS_COUNTRY,False,[],0,0,False
+G216,EMDEs by Source of Export Earnings: Diversified,CL_IMTS_COUNTRY,False,[],0,0,False
+G080,EMDEs by Source of Export Earnings: Fuel,CL_IMTS_COUNTRY,False,[],0,0,False
+G083,EMDEs by Source of Export Earnings: Manufactures,CL_IMTS_COUNTRY,False,[],0,0,False
+G092,EMDEs by Source of Export Earnings: Nonfuel,CL_IMTS_COUNTRY,False,[],0,0,False
+G089,EMDEs by Source of Export Earnings: Primary Products (excluding Fuel),CL_IMTS_COUNTRY,False,[],0,0,False
+G084,"EMDEs by Source of Export Earnings: Services (including Income, Transfers)",CL_IMTS_COUNTRY,False,[],0,0,False
+G505,Emerging and Developing Asia,CL_IMTS_COUNTRY,False,[],0,0,False
+G903,Emerging and Developing Europe,CL_IMTS_COUNTRY,False,[],0,0,False
+G1515,Emerging Asia,CL_IMTS_COUNTRY,False,[],0,0,False
+G200,Emerging Market and Developing Economies,CL_IMTS_COUNTRY,False,[],0,0,False
+G1201,Emerging Market and Middle-Income Economies,CL_IMTS_COUNTRY,False,[],0,0,False
+G995,Euro Area (EA) – aggregate of member states,CL_IMTS_COUNTRY,False,[],0,0,False
+G998,European Union (EU),CL_IMTS_COUNTRY,True,['aggregate_or_unspecified_name'],0,0,False
+G715,Fragile and Conflict-affected States (FCS),CL_IMTS_COUNTRY,False,[],0,0,False
+G120,G20,CL_IMTS_COUNTRY,False,[],0,0,False
+G119,G7,CL_IMTS_COUNTRY,False,[],0,0,False
+G450,Gulf Cooperation Council (GCC),CL_IMTS_COUNTRY,False,[],0,0,False
+G711,Heavily Indebted Poor Countries (HIPC),CL_IMTS_COUNTRY,False,[],0,0,False
+G205,Latin America and the Caribbean (LAC),CL_IMTS_COUNTRY,False,[],0,0,False
+G201,Low-Income Developing Countries (LIDC),CL_IMTS_COUNTRY,False,[],0,0,False
+G400,Middle East and Central Asia,CL_IMTS_COUNTRY,False,[],0,0,False
+G401,Middle East and Central Asia: Oil Exporters,CL_IMTS_COUNTRY,False,[],0,0,False
+G402,Middle East and Central Asia: Oil Importers,CL_IMTS_COUNTRY,False,[],0,0,False
+G406,Middle East and North Africa (MENA),CL_IMTS_COUNTRY,False,[],0,0,False
+G92031,North America,CL_IMTS_COUNTRY,False,[],0,0,False
+G757,Southern African Customs Union (SACU),CL_IMTS_COUNTRY,True,['aggregate_or_unspecified_name'],0,0,False
+G603,Sub-Saharan Africa (SSA),CL_IMTS_COUNTRY,False,[],0,0,False
+G1627,Sub-Saharan Africa (SSA): Low-Income,CL_IMTS_COUNTRY,False,[],0,0,False
+G1626,Sub-Saharan Africa (SSA): Middle-Income,CL_IMTS_COUNTRY,False,[],0,0,False
+G1614,Sub-Saharan Africa (SSA): Oil Exporters,CL_IMTS_COUNTRY,False,[],0,0,False
+G759,West African Economic and Monetary Union (WAEMU),CL_IMTS_COUNTRY,True,['aggregate_or_unspecified_name'],0,0,False
+G001,World,CL_IMTS_COUNTRY,True,"['G001_world_not_reporter', 'aggregate_or_unspecified_name']",0,0,False
+G163,Euro Area (EA),CL_IMTS_COUNTRY,False,[],0,0,False
+GASEAN,ASEAN,CL_IMTS_COUNTRY,False,[],0,0,False
+G765,Southern African Development Community (SADC),CL_IMTS_COUNTRY,False,[],0,0,False
+G760,Common Market for Eastern and Southern Africa (COMESA),CL_IMTS_COUNTRY,False,[],0,0,False
+G129,Benelux,CL_IMTS_COUNTRY,False,[],0,0,False
+BLM,Saint Barthelemy,CL_IMTS_COUNTRY,False,[],0,0,False
+MAF,Saint Martin,CL_IMTS_COUNTRY,False,[],0,0,False
+SGS,South Georgia and the South Sandwich Islands,CL_IMTS_COUNTRY,False,[],0,0,False
+CXR,Christmas Island,CL_IMTS_COUNTRY,False,[],0,0,False
+CCK,Cocos Islands,CL_IMTS_COUNTRY,False,[],0,0,False
+ESH,Western Sahara,CL_IMTS_COUNTRY,False,[],0,0,False
+BVT,Bouvet Island,CL_IMTS_COUNTRY,False,[],0,0,False
+IOT,British Indian Ocean Territory,CL_IMTS_COUNTRY,False,[],0,0,False
+HMD,Heard Island and McDonald Islands,CL_IMTS_COUNTRY,False,[],0,0,False
+UMI,United States Minor Outlying Islands,CL_IMTS_COUNTRY,False,[],0,0,False
+GSAC,Southern African Customs Union (SACU),CL_IMTS_COUNTRY,True,['aggregate_or_unspecified_name'],0,0,False
+AFR,Africa (AFR),CL_IMTS_COUNTRY,False,[],0,0,False
+APD,Asia and Pacific (APD),CL_IMTS_COUNTRY,False,[],0,0,False
+EUR,Europe (EUR),CL_IMTS_COUNTRY,False,[],0,0,False
+MCD,Middle East and Central Asia (MCD),CL_IMTS_COUNTRY,False,[],0,0,False
+WHD,Western Hemisphere (WHD),CL_IMTS_COUNTRY,False,[],0,0,False
+SDS,Small Developing States (SDS),CL_IMTS_COUNTRY,False,[],0,0,False

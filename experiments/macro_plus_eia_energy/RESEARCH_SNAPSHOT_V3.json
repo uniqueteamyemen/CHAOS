@@ -1,0 +1,18 @@
+{
+  "snapshot_id":"CHAOS_RESEARCH_SNAPSHOT_V3",
+  "parent_snapshot":"CHAOS_RESEARCH_SNAPSHOT_V2",
+  "scope":"parallel evidence expansion with minimal research infrastructure",
+  "status":"research_only",
+  "patterns":{
+    "HG_MATERIAL_DETERIORATION_3Y_V1":"provisionally_supported_descriptive",
+    "HIGH_INFLATION_TO_MATERIAL_DETERIORATION_WITHIN_DOMAIN_V1":"rejected_by_current_maxstat_null",
+    "CURRENT_ACCOUNT_STRESS_TO_MATERIAL_DETERIORATION_WITHIN_DOMAIN_V1":"rejected_by_current_maxstat_null",
+    "ENERGY_INTENSITY_INCREASE_TO_MATERIAL_DETERIORATION_WITHIN_DOMAIN_V1":"rejected_as_additive_within_domain_edge",
+    "ECONOMIC_DETERIORATION_TO_UCDP_CONFLICT_V1":"rejected_by_current_maxstat_null",
+    "WHO_COVID_DAILY_TO_ANNUAL_MATERIAL_DETERIORATION_V1":"not_testable",
+    "USGS_EARTHQUAKE_EVENT_TO_ANNUAL_MATERIAL_DETERIORATION_V1":"not_testable"
+  },
+  "infrastructure":{"research_ledger":"active_minimal","temporal_alignment":"active_annual_to_annual_only","evidence_graph":"23_nodes_23_edges","pattern_compiler":"active_research_only","runtime_eligible_patterns":0},
+  "new_data":{"who_covid":"daily_native_573360_raw_rows_215751_reported_rows_239_entities","usgs_earthquake":"event_native_1141_events_magnitude_ge_6_5"},
+  "policies":{"raw_immutable":true,"no_imputation":true,"no_annualization_of_event_or_daily":true,"no_causal_claims":true,"no_host_engine_changes":true,"rejected_edges_positive_weight":false}
+}

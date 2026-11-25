@@ -1,0 +1,64 @@
+{
+  "matrix_sha256": "0271662489f529ee2e328190647c55115fd5c2a8eb1d6e34494cba1fd195953a",
+  "contract_sha256": "7ebc0fd313beb6047b911649a6022ac1834cdb5615e1a6172e02741830a795c6",
+  "window_manifest": "experimental_contracts/WINDOW_MANIFEST_PRE_TRAIN.csv",
+  "checks": {
+    "matrix_rows": {
+      "expected": 3500,
+      "observed": 3500,
+      "pass": true
+    },
+    "entity_count": {
+      "expected": 140,
+      "observed": 140,
+      "pass": true
+    },
+    "variable_count": {
+      "expected": 11,
+      "observed": 11,
+      "pass": true
+    },
+    "missing_cells": {
+      "observed": 0,
+      "pass": true
+    },
+    "duplicate_entity_year": {
+      "observed": 0,
+      "pass": true
+    },
+    "duplicate_windows": {
+      "observed": 0,
+      "pass": true
+    },
+    "encoder_target_firewall": {
+      "violations": 0,
+      "pass": true
+    },
+    "encoder_presence": {
+      "violations": 0,
+      "pass": true
+    },
+    "target_presence": {
+      "violations": 0,
+      "pass": true
+    },
+    "chronological_split": {
+      "pass": true
+    },
+    "split_counts": {
+      "observed": {
+        "test": 700,
+        "train": 1400,
+        "validation": 560
+      },
+      "expected": {
+        "train": 1400,
+        "validation": 560,
+        "test": 700
+      },
+      "pass": true
+    }
+  },
+  "all_pass": true,
+  "training_run": false
+}

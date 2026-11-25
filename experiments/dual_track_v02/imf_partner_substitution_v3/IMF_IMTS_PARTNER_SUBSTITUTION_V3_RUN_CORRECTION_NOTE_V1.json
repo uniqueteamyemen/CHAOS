@@ -1,0 +1,13 @@
+{
+  "note_id": "IMF_IMTS_PARTNER_SUBSTITUTION_V3_RUN_CORRECTION_NOTE_V1",
+  "contract_ref": "experimental_contracts/dual_track_v02/IMF_IMTS_PARTNER_SUBSTITUTION_CONTRACT_V3.json",
+  "superseded_execution": "The first exploratory execution was not treated as a result because it included two implementation defects detected before interpretation: one incomplete reporter (WSM) was not filtered from the V2 selection register, and the diagnostic top-3 variant duplicated the primary top-1 logic.",
+  "corrections": ["Filter reporters to candidate_pool_size=10, yielding 135 reporters as required by the frozen contract.", "Represent annual top-1 and top-3 identities explicitly and compute the diagnostic top-3 identity-change variant separately."],
+  "raw_data_changed": false,
+  "contract_changed": false,
+  "baseline_changed": false,
+  "authoritative_status_of_superseded_execution": "not_a_result",
+  "replacement_execution": "IMF_IMTS_PARTNER_SUBSTITUTION_V3_DISCOVERY_RUN",
+  "replacement_summary_ref": "experiments/dual_track_v02/imf_partner_substitution_v3/IMF_IMTS_PARTNER_SUBSTITUTION_SUMMARY_V3.json",
+  "interpretation_rule": "Only the corrected execution and its linked artifacts are eligible for review; the correction is recorded as part of the audit trail."
+}

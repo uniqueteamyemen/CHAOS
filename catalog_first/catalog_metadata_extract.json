@@ -1,0 +1,193 @@
+{
+  "worldbank_wdi": {
+    "license_type_counts": {
+      "CC BY-4.0": 1495,
+      "CC BY 3.0 IGO": 3
+    },
+    "sample_series": [
+      {
+        "Series Code": "AG.CON.FERT.PT.ZS",
+        "Indicator Name": "Fertilizer consumption (% of fertilizer production)",
+        "Periodicity": "Annual",
+        "Unit of measure": "% (ratio)",
+        "Source": "FAO electronic files and web site, Food and Agriculture Organization of the United Nations (FAO), publisher: Food and Agriculture Organization of the United Nations (FAO)",
+        "License Type": "CC BY-4.0"
+      },
+      {
+        "Series Code": "AG.CON.FERT.ZS",
+        "Indicator Name": "Fertilizer consumption (kilograms per hectare of arable land)",
+        "Periodicity": "Annual",
+        "Unit of measure": "kg per hectare of arable land",
+        "Source": "FAO electronic files and web site, Food and Agriculture Organization of the United Nations (FAO), publisher: Food and Agriculture Organization of the United Nations (FAO)",
+        "License Type": "CC BY-4.0"
+      },
+      {
+        "Series Code": "AG.LND.AGRI.K2",
+        "Indicator Name": "Agricultural land (sq. km)",
+        "Periodicity": "Annual",
+        "Unit of measure": "square kilometers (sq. km)",
+        "Source": "FAO electronic files and web site, Food and Agriculture Organization of the United Nations (FAO), publisher: Food and Agriculture Organization of the United Nations (FAO)",
+        "License Type": "CC BY-4.0"
+      },
+      {
+        "Series Code": "AG.LND.AGRI.ZS",
+        "Indicator Name": "Agricultural land (% of land area)",
+        "Periodicity": "Annual",
+        "Unit of measure": "% (share) of land area",
+        "Source": "FAO electronic files and web site, Food and Agriculture Organization of the United Nations (FAO), publisher: Food and Agriculture Organization of the United Nations (FAO)",
+        "License Type": "CC BY-4.0"
+      },
+      {
+        "Series Code": "AG.LND.ARBL.HA",
+        "Indicator Name": "Arable land (hectares)",
+        "Periodicity": "Annual",
+        "Unit of measure": "hectares",
+        "Source": "FAO electronic files and web site, Food and Agriculture Organization of the United Nations (FAO), publisher: Food and Agriculture Organization of the United Nations (FAO)",
+        "License Type": "CC BY-4.0"
+      },
+      {
+        "Series Code": "AG.LND.ARBL.HA.PC",
+        "Indicator Name": "Arable land (hectares per person)",
+        "Periodicity": "Annual",
+        "Unit of measure": "hectares per person",
+        "Source": "FAO electronic files and web site, Food and Agriculture Organization of the United Nations (FAO), publisher: Food and Agriculture Organization of the United Nations (FAO)",
+        "License Type": "CC BY-4.0"
+      },
+      {
+        "Series Code": "AG.LND.ARBL.ZS",
+        "Indicator Name": "Arable land (% of land area)",
+        "Periodicity": "Annual",
+        "Unit of measure": "% (share) of land area",
+        "Source": "FAO electronic files and website, Food and Agriculture Organization of the United Nations (FAO), publisher: Food and Agriculture Organization of the United Nations (FAO)",
+        "License Type": "CC BY-4.0"
+      },
+      {
+        "Series Code": "AG.LND.CREL.HA",
+        "Indicator Name": "Land under cereal production (hectares)",
+        "Periodicity": "Annual",
+        "Unit of measure": "hectares",
+        "Source": "FAO electronic files and web site, Food and Agriculture Organization of the United Nations (FAO), uri: https://www.fao.org/faostat/en/#data/QCL, note: Item code F1717, publisher: Food and Agriculture Organization of the United Nations (FAO)",
+        "License Type": "CC BY-4.0"
+      },
+      {
+        "Series Code": "AG.LND.CROP.ZS",
+        "Indicator Name": "Permanent cropland (% of land area)",
+        "Periodicity": "Annual",
+        "Unit of measure": "% (share) of land area",
+        "Source": "FAO electronic files and web site, Food and Agriculture Organization of the United Nations (FAO), publisher: Food and Agriculture Organization of the United Nations (FAO)",
+        "License Type": "CC BY-4.0"
+      },
+      {
+        "Series Code": "AG.LND.EL5M.RU.K2",
+        "Indicator Name": "Rural land area where elevation is below 5 meters (sq. km)",
+        "Periodicity": "Annual",
+        "Unit of measure": "square kilometers",
+        "Source": "Low Elevation Coastal Zone (LECZ) Urban-Rural Population and Land Area Estimates, Version 3, Center For International Earth Science Information Network (CIESIN) - Columbia University, uri: https://www.earthdata.nasa.gov/data/catalog/sedac-ciesin-sedac-lecz-urplaev3-3.00, publisher: NASA Socioeconomic Data and Applications Center (SEDAC), date published: 2021",
+        "License Type": "CC BY-4.0"
+      },
+      {
+        "Series Code": "AG.LND.EL5M.RU.ZS",
+        "Indicator Name": "Rural land area where elevation is below 5 meters (% of total land area)",
+        "Periodicity": "Annual",
+        "Unit of measure": "% (share) of land area",
+        "Source": "Low Elevation Coastal Zone (LECZ) Urban-Rural Population and Land Area Estimates, Version 3, Center For International Earth Science Information Network (CIESIN) - Columbia University, uri: https://www.earthdata.nasa.gov/data/catalog/sedac-ciesin-sedac-lecz-urplaev3-3.00, publisher: NASA Socioeconomic Data and Applications Center (SEDAC), date published: 2021",
+        "License Type": "CC BY-4.0"
+      },
+      {
+        "Series Code": "AG.LND.EL5M.UR.K2",
+        "Indicator Name": "Urban land area where elevation is below 5 meters (sq. km)",
+        "Periodicity": "Annual",
+        "Unit of measure": "square kilometers",
+        "Source": "Low Elevation Coastal Zone (LECZ) Urban-Rural Population and Land Area Estimates, Version 3, Center For International Earth Science Information Network (CIESIN) - Columbia University, uri: https://www.earthdata.nasa.gov/data/catalog/sedac-ciesin-sedac-lecz-urplaev3-3.00, publisher: NASA Socioeconomic Data and Applications Center (SEDAC), date published: 2021",
+        "License Type": "CC BY-4.0"
+      },
+      {
+        "Series Code": "AG.LND.EL5M.UR.ZS",
+        "Indicator Name": "Urban land area where elevation is below 5 meters (% of total land area)",
+        "Periodicity": "Annual",
+        "Unit of measure": "% (share) of land area",
+        "Source": "Low Elevation Coastal Zone (LECZ) Urban-Rural Population and Land Area Estimates, Version 3, Center For International Earth Science Information Network (CIESIN) - Columbia University, uri: https://www.earthdata.nasa.gov/data/catalog/sedac-ciesin-sedac-lecz-urplaev3-3.00, publisher: NASA Socioeconomic Data and Applications Center (SEDAC), date published: 2021",
+        "License Type": "CC BY-4.0"
+      },
+      {
+        "Series Code": "AG.LND.EL5M.ZS",
+        "Indicator Name": "Land area where elevation is below 5 meters (% of total land area)",
+        "Periodicity": "Annual",
+        "Unit of measure": "% (share) of land area",
+        "Source": "Low Elevation Coastal Zone (LECZ) Urban-Rural Population and Land Area Estimates, Version 3, Center For International Earth Science Information Network (CIESIN) - Columbia University, uri: https://www.earthdata.nasa.gov/data/catalog/sedac-ciesin-sedac-lecz-urplaev3-3.00, publisher: NASA Socioeconomic Data and Applications Center (SEDAC), date published: 2021",
+        "License Type": "CC BY-4.0"
+      },
+      {
+        "Series Code": "AG.LND.FRST.K2",
+        "Indicator Name": "Forest area (sq. km)",
+        "Periodicity": "Annual",
+        "Unit of measure": "square kilometers",
+        "Source": "FAOSTAT, Food and Agriculture Organization of the United Nations (FAO), uri: https://www.fao.org/faostat/en/#data/RL, publisher: Food and Agriculture Organization of the United Nations (FAO)",
+        "License Type": "CC BY-4.0"
+      },
+      {
+        "Series Code": "AG.LND.FRST.ZS",
+        "Indicator Name": "Forest area (% of land area)",
+        "Periodicity": "Annual",
+        "Unit of measure": "% (share) of land area",
+        "Source": "FAOSTAT, Food and Agriculture Organization of the United Nations (FAO), uri: https://www.fao.org/faostat/en/#data/RL, publisher: Food and Agriculture Organization of the United Nations (FAO)",
+        "License Type": "CC BY-4.0"
+      },
+      {
+        "Series Code": "AG.LND.IRIG.AG.ZS",
+        "Indicator Name": "Agricultural irrigated land (% of total agricultural land)",
+        "Periodicity": "Annual",
+        "Unit of measure": "% (share) of total agricultural land",
+        "Source": "FAO electronic files and web site, Food and Agriculture Organization of the United Nations (FAO), uri: https://www.fao.org/faostat/en/#data/RL, publisher: Food and Agriculture Organization of the United Nations (FAO)",
+        "License Type": "CC BY-4.0"
+      },
+      {
+        "Series Code": "AG.LND.PRCP.MM",
+        "Indicator Name": "Average precipitation in depth (mm per year)",
+        "Periodicity": "Annual",
+        "Unit of measure": "millimeter (mm) per year",
+        "Source": "FAOSTAT, Food and Agriculture Organization of the United Nations (FAO), publisher: Food and Agriculture Organization of the United Nations (FAO)",
+        "License Type": "CC BY-4.0"
+      },
+      {
+        "Series Code": "AG.LND.TOTL.K2",
+        "Indicator Name": "Land area (sq. km)",
+        "Periodicity": "Annual",
+        "Unit of measure": "square kilometers",
+        "Source": "FAOSTAT, Food and Agriculture Organization of the United Nations (FAO), uri: https://www.fao.org/faostat/en/#data/RL, publisher: Food and Agriculture Organization of the United Nations (FAO)",
+        "License Type": "CC BY-4.0"
+      },
+      {
+        "Series Code": "AG.LND.TOTL.RU.K2",
+        "Indicator Name": "Rural land area (sq. km)",
+        "Periodicity": "Annual",
+        "Unit of measure": "square kilometers",
+        "Source": "Low Elevation Coastal Zone (LECZ) Urban-Rural Population and Land Area Estimates, Version 2, Center For International Earth Science Information Network (CIESIN) - Columbia University, uri: https://www.earthdata.nasa.gov/data/catalog/sedac-ciesin-sedac-lecz-urplaev2-2.00, publisher: NASA Socioeconomic Data and Applications Center (SEDAC), date published: 2013",
+        "License Type": "CC BY-4.0"
+      }
+    ]
+  },
+  "WEOApr2026all": {
+    "info_rows": [],
+    "sheet_names": [
+      "April 2026 WEO",
+      "Countries",
+      "Country Groups",
+      "Commodity Prices",
+      "Country Group Composition"
+    ],
+    "note": "No Info sheet in this vintage workbook"
+  },
+  "WEOhistorical": {
+    "info_rows": [
+      [
+        "",
+        ""
+      ],
+      [
+        "",
+        "As part of efforts to enhance transparency, the World Economic Outlook (WEO) is making the historical forecasts' data easily accessible to the authorities in member countries and other users. \n\nThis file contains:\n1. 2-years of historical data and 6-years of forecast data\n2. for 3 variables\n    a. real GDP growth (ngdp_rpch)\n    b. CPI inflation (pcpi_pch)\n     c. and current account balance in percent of GDP (bca_gdp_bp6)\n3. from each World Economic Outlook (WEO) publication since 1990 (\"S\" for the Spring WEO and \"F\" for the Fall WEO)\n4. for all currently existing economies plus the aggregates for the World, Advanced Economies, and the Emerging Market and Developing Economies groups. The aggregate for euro area began in the spring 2000 vintage. The country composition of the groups are as they were at the time of the publication. \n\nData appearing in the WEO are compiled by the IMF staff at the time of the WEO exercises. The historical data and projections are based on the information gathered by the IMF country desk officers in the context of their missions to IMF member countries and through their ongoing analysis of the evolving situation in each country. Historical data are updated on a continual basis, as more information becomes available, and structural breaks in data are often adjusted to produce smooth series with the use of splicing and other techniques. IMF staff estimates continue to serve as proxies for historical series when complete information is unavailable. As a result, WEO data can differ from other sources with official data, including the IMF’s International Financial Statistics. \n\nThe WEO data and metadata provided are \"as is\" and \"as available,\" and every effort is made to ensure, but not guarantee, their timeliness, accuracy, and completeness. When errors are discovered, there is a concerted effort to correct them as appropriate and feasible. For details on the terms and conditions for usage of the WEO database, please refer to the IMF Copyright and Usage website (http://www.imf.org/external/terms.htm). For questions, check our FAQs (https://data.imf.org/en/Datasets/WEO/Frequently-Asked-Questions) or submit them through the WEO Data Question Form (forums.imf.org).\n\nUpdated: April 14th, 2026\n"
+      ]
+    ]
+  }
+}

@@ -1,0 +1,3 @@
+split,observed_best_path,observed_best_ba,observed_best_f1
+validation,energy_gdp_down_at_t_plus_2,0.6254390483772772,0.4645161290322581
+confirmation,energy_gdp_down_at_t_plus_2,0.6346516007532956,0.3660130718954248

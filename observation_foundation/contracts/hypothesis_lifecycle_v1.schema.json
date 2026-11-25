@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "CHAOS_HYPOTHESIS_LIFECYCLE_V1",
+  "title": "CHAOS Hypothesis Lifecycle V1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["hypothesis_id", "hypothesis_version", "status", "contract_sha256", "epoch_id", "evidence_refs"],
+  "properties": {
+    "hypothesis_id": {"type": "string", "minLength": 1},
+    "hypothesis_version": {"type": "integer", "minimum": 1},
+    "status": {"enum": ["CANDIDATE", "UNDER_TEST", "DISCOVERED", "VALIDATION_PENDING", "VALIDATED", "REJECTED", "LOCKED_REJECTED", "UNRESOLVED"]},
+    "contract_sha256": {"type": "string", "pattern": "^[a-fA-F0-9]{64}$"},
+    "epoch_id": {"type": "string", "minLength": 1},
+    "evidence_refs": {"type": "array", "items": {"type": "string"}},
+    "supersedes": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["hypothesis_id", "hypothesis_version", "previous_status"],
+      "properties": {
+        "hypothesis_id": {"type": "string"},
+        "hypothesis_version": {"type": "integer", "minimum": 1},
+        "previous_status": {"enum": ["CANDIDATE", "UNDER_TEST", "DISCOVERED", "VALIDATION_PENDING", "VALIDATED", "REJECTED", "LOCKED_REJECTED", "UNRESOLVED"]}
+      }
+    },
+    "trigger_shift": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "observed_at", "evidence_ref", "description"],
+      "properties": {
+        "kind": {"enum": ["source_vintage_changed", "source_schema_changed", "source_namespace_changed", "dataset_scope_changed", "domain_definition_changed", "observation_contract_changed", "external_system_changed", "catalog_completeness_changed", "measurement_regime_changed", "independent_evidence_added"]},
+        "observed_at": {"type": "string", "format": "date-time"},
+        "evidence_ref": {"type": "string", "minLength": 1},
+        "description": {"type": "string", "minLength": 1}
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {"required": ["supersedes"]},
+      "then": {"required": ["trigger_shift"]}
+    }
+  ]
+}

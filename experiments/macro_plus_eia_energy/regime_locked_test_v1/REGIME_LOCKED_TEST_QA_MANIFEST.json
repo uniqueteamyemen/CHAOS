@@ -1,0 +1,52 @@
+{
+  "manifest_type": "CHAOS_regime_locked_test_v1_qa",
+  "run_id": "regime_locked_test_v1",
+  "counts": {
+    "origins": 695,
+    "entities": 139,
+    "target_years": 5,
+    "models": 7,
+    "metric_rows": 7,
+    "year_rows": 35,
+    "entity_rows": 973,
+    "replay_rows": 695
+  },
+  "frozen_contract": "experimental_contracts/REGIME_LOCKED_TEST_CONTRACT_V1.json",
+  "flags": {
+    "locked_test_executed": true,
+    "test_used_for_selection": false,
+    "path_or_threshold_changed_after_test": false,
+    "raw_data_modified": false,
+    "imputation": false,
+    "normalization": false,
+    "causal_claims_permitted": false
+  },
+  "raw_integrity": {
+    "panel_sha256": "015736245ac4010aa1c97055930c69ca3c7da5fdd5970f5da34456b67a3172ad",
+    "panel_head_sha256": "015736245ac4010aa1c97055930c69ca3c7da5fdd5970f5da34456b67a3172ad",
+    "raw_sha256": "89a17937187a340947cb000fba1892fbe5c4c99fffd51edc3d4d1124dbea19e8",
+    "raw_head_sha256": "89a17937187a340947cb000fba1892fbe5c4c99fffd51edc3d4d1124dbea19e8",
+    "panel_matches_head": true,
+    "raw_matches_head": true
+  },
+  "qa_pass_conditions": {
+    "695_origins": true,
+    "139_entities": true,
+    "five_target_years": true,
+    "two_frozen_paths_present": true,
+    "test_not_used_for_selection": true,
+    "no_post_test_change": true,
+    "raw_unchanged": true,
+    "no_transformations": true,
+    "no_causal_claim": true
+  },
+  "artifacts": [
+    "experiments/macro_plus_eia_energy/regime_locked_test_v1/LOCKED_TEST_METRICS.csv",
+    "experiments/macro_plus_eia_energy/regime_locked_test_v1/LOCKED_TEST_METRICS_BY_ENTITY.csv",
+    "experiments/macro_plus_eia_energy/regime_locked_test_v1/LOCKED_TEST_METRICS_BY_YEAR.csv",
+    "experiments/macro_plus_eia_energy/regime_locked_test_v1/LOCKED_TEST_REPLAY_ROWS.csv",
+    "experiments/macro_plus_eia_energy/regime_locked_test_v1/LOCKED_TEST_RUN_SUMMARY.json",
+    "experiments/macro_plus_eia_energy/regime_locked_test_v1/REGIME_LOCKED_TEST_REPORT_AR.md",
+    "experiments/macro_plus_eia_energy/regime_locked_test_v1/locked_test.log"
+  ]
+}

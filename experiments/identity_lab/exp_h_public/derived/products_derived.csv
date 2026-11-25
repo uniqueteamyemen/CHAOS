@@ -1,0 +1,21 @@
+product_id,sku,opening,units_in,units_out,implied_closing,counted_closing,injected_loss,synthetic,derived_from,derivation_rule
+1,Wood screws 4x40 box,59,221.0,191.0,89.0,83.5,6.0,1,experiment_H,counted = implied - injected_loss + declared_jitter
+2,Wall plugs 8 mm pack,36,241.0,122.0,155.0,154.5,0.0,1,experiment_H,counted = implied - injected_loss + declared_jitter
+3,Hex bolts M8 box,22,251.0,129.0,144.0,144.5,0.0,1,experiment_H,counted = implied - injected_loss + declared_jitter
+4,Washers M8 pack,45,383.0,116.0,312.0,311.5,0.0,1,experiment_H,counted = implied - injected_loss + declared_jitter
+5,Cable ties 200 mm bag,57,634.0,67.0,624.0,615.5,9.0,1,experiment_H,counted = implied - injected_loss + declared_jitter
+6,Silicone sealant tube,5,135.0,141.0,-1.0,-1.5,0.0,1,experiment_H,counted = implied - injected_loss + declared_jitter
+7,Wood glue 500 ml,33,602.0,91.0,544.0,544.5,0.0,1,experiment_H,counted = implied - injected_loss + declared_jitter
+8,Sandpaper assorted pack,48,322.0,112.0,258.0,257.5,0.0,1,experiment_H,counted = implied - injected_loss + declared_jitter
+9,Masking tape 50 m,36,443.0,111.0,368.0,356.5,12.0,1,experiment_H,counted = implied - injected_loss + declared_jitter
+10,Paint roller 230 mm,46,596.0,87.0,555.0,554.5,0.0,1,experiment_H,counted = implied - injected_loss + declared_jitter
+11,Paint tray,43,408.0,64.0,387.0,387.5,0.0,1,experiment_H,counted = implied - injected_loss + declared_jitter
+12,Extension lead 5 m,12,363.0,155.0,220.0,219.5,0.0,1,experiment_H,counted = implied - injected_loss + declared_jitter
+13,LED bulb E27 pack,41,323.0,130.0,234.0,234.5,0.0,1,experiment_H,counted = implied - injected_loss + declared_jitter
+14,Door hinge pair,43,584.0,147.0,480.0,479.5,0.0,1,experiment_H,counted = implied - injected_loss + declared_jitter
+15,Padlock 40 mm,43,163.0,155.0,51.0,51.5,0.0,1,experiment_H,counted = implied - injected_loss + declared_jitter
+16,Spirit level 60 cm,45,333.0,117.0,261.0,260.5,0.0,1,experiment_H,counted = implied - injected_loss + declared_jitter
+17,Tape measure 5 m,37,76.0,197.0,-84.0,-83.5,0.0,1,experiment_H,counted = implied - injected_loss + declared_jitter
+18,Utility knife,38,361.0,150.0,249.0,248.5,0.0,1,experiment_H,counted = implied - injected_loss + declared_jitter
+19,Work gloves pair,24,386.0,155.0,255.0,255.5,0.0,1,experiment_H,counted = implied - injected_loss + declared_jitter
+20,Safety glasses,40,482.0,85.0,437.0,436.5,0.0,1,experiment_H,counted = implied - injected_loss + declared_jitter

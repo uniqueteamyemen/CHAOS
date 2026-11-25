@@ -1,0 +1,4 @@
+{"step": 1, "action": "create", "h0": "H0", "code": 200, "provenance": "stated", "note": "payment_intent.created -> H0", "state": null, "signal": null}
+{"step": 2, "action": "ack", "h0": "H0", "code": 200, "provenance": "stated", "note": "payment_intent.succeeded -> provider_ack", "state": null, "signal": null}
+{"step": 3, "action": "unlock", "h0": "H0", "code": 200, "provenance": "stated", "note": "explicit user_unlock signal", "state": null, "signal": null}
+{"step": 4, "action": "resolve", "h0": "H0", "code": 200, "provenance": "stated", "note": "EXECUTION_PROVEN", "state": null, "signal": null}

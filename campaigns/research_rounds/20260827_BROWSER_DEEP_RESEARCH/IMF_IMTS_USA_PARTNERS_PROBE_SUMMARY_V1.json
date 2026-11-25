@@ -1,0 +1,21 @@
+{
+  "source_id": "IMF.STA:IMTS",
+  "official_dataset_url": "https://data.imf.org/en/datasets/IMF.STA:IMTS",
+  "api_url": "https://api.imf.org/external/sdmx/3.0/data/dataflow/IMF.STA/IMTS/1.0.0/USA.XG_FOB_USD.*.A?c[TIME_PERIOD]=ge:2000+le:2024&attributes=all&detail=full&includeHistory=true&limit=100",
+  "retrieved_at_utc": "2026-08-26T23:34:25.219898+00:00",
+  "status_code": 200,
+  "content_type": "application/vnd.sdmx.data+csv;version=2.0",
+  "bytes": 10663,
+  "sha256": "717f38ae7a5c44adb1c7c40b20f8a312f545e46bf07f27c3afdc5e20deaa1be0",
+  "raw_path": "campaigns/research_rounds/20260827_BROWSER_DEEP_RESEARCH/raw/imf_imts_usa_partners_probe/IMF_IMTS_USA_EXPORTS_ALL_PARTNERS_2000_2024_RESPONSE.csv",
+  "raw_immutable": true,
+  "query_scope": {
+    "country": "USA",
+    "counterpart_country": "*",
+    "indicator": "XG_FOB_USD",
+    "frequency": "A",
+    "period": "2000-2024",
+    "limit": 100
+  },
+  "status": "downloaded_response"
+}

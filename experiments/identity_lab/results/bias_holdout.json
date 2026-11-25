@@ -1,0 +1,26 @@
+{
+  "stats": {
+    "edges": 12,
+    "holdout_observations": 72,
+    "median_abs_before": 0.0649,
+    "median_abs_after": 0.0333,
+    "share_above_tolerance_before": 0.597,
+    "share_above_tolerance_after": 0.375,
+    "bias_median": 0.0636,
+    "bias_spread": 0.3615
+  },
+  "bias": {
+    "DE->FR": 0.0542,
+    "FR->DE": 0.0033,
+    "DE->NL": -0.0518,
+    "NL->DE": 0.1,
+    "FR->IT": 0.2811,
+    "IT->FR": 0.0963,
+    "ES->FR": 0.1163,
+    "FR->ES": 0.0238,
+    "PL->DE": -0.0781,
+    "DE->PL": 0.0731,
+    "NL->BE": -0.0804,
+    "BE->NL": 0.1656
+  }
+}

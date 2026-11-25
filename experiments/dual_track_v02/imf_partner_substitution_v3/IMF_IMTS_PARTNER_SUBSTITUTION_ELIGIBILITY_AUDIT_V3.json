@@ -1,0 +1,92 @@
+{
+  "audit_id": "IMF_IMTS_PARTNER_SUBSTITUTION_V3_ELIGIBILITY_AUDIT",
+  "contract_ref": "experimental_contracts/dual_track_v02/IMF_IMTS_PARTNER_SUBSTITUTION_CONTRACT_V3.json",
+  "summary_ref": "experiments/dual_track_v02/imf_partner_substitution_v3/IMF_IMTS_PARTNER_SUBSTITUTION_SUMMARY_V3.json",
+  "stability_ref": "experiments/dual_track_v02/imf_partner_substitution_v3/IMF_IMTS_PARTNER_SUBSTITUTION_STABILITY_SUMMARY_V3.json",
+  "checks": [
+    {
+      "split": "fit",
+      "horizon": 1,
+      "events": 200,
+      "reporters": 40,
+      "persistence_rate": 0.855,
+      "max_event_share": 0.05,
+      "top_reporter": "HKG",
+      "top_reporter_events": 10,
+      "leave_one_reporter_count": 40
+    },
+    {
+      "split": "fit",
+      "horizon": 2,
+      "events": 200,
+      "reporters": 40,
+      "persistence_rate": 0.775,
+      "max_event_share": 0.05,
+      "top_reporter": "HKG",
+      "top_reporter_events": 10,
+      "leave_one_reporter_count": 40
+    },
+    {
+      "split": "fit",
+      "horizon": 3,
+      "events": 200,
+      "reporters": 40,
+      "persistence_rate": 0.715,
+      "max_event_share": 0.05,
+      "top_reporter": "HKG",
+      "top_reporter_events": 10,
+      "leave_one_reporter_count": 40
+    },
+    {
+      "split": "confirmation",
+      "horizon": 1,
+      "events": 310,
+      "reporters": 49,
+      "persistence_rate": 0.8612903225806452,
+      "max_event_share": 0.02903225806451613,
+      "top_reporter": "ARM",
+      "top_reporter_events": 9,
+      "leave_one_reporter_count": 49
+    },
+    {
+      "split": "confirmation",
+      "horizon": 2,
+      "events": 271,
+      "reporters": 49,
+      "persistence_rate": 0.7712177121771218,
+      "max_event_share": 0.02952029520295203,
+      "top_reporter": "ARM",
+      "top_reporter_events": 8,
+      "leave_one_reporter_count": 49
+    },
+    {
+      "split": "confirmation",
+      "horizon": 3,
+      "events": 235,
+      "reporters": 49,
+      "persistence_rate": 0.6978723404255319,
+      "max_event_share": 0.029787234042553193,
+      "top_reporter": "ARM",
+      "top_reporter_events": 7,
+      "leave_one_reporter_count": 49
+    }
+  ],
+  "contract_adequacy": {
+    "explicit_alpha_in_frozen_contract": false,
+    "explicit_fdr_rule_for_this_family": false,
+    "explicit_persistence_null_pass_rule": false,
+    "causal_assignment_defined": false,
+    "decision": "do_not_promote_until a new frozen contract or erratum pre-registers these rules; do not rewrite V3 contract."
+  },
+  "observed_interpretation": {
+    "fit_confirmation_direction_consistent": true,
+    "confirmation_identity_null_non_degenerate": true,
+    "time_placebo_recorded": true,
+    "causal_claim": false,
+    "causal_validation_status": "not_run",
+    "predictive_evidence_status": "candidate",
+    "runtime_status": "not_eligible"
+  },
+  "decision": "candidate_promising_but_not_admitted",
+  "reason": "The locked confirmation persistence contrast is positive and stable across seeds, but the frozen contract omitted explicit alpha/FDR/pass rules and the null tests primarily challenge identity order rather than a full temporal network model. Record as a promising descriptive/predictive candidate and require a new frozen contract before support admission or CVT."
+}

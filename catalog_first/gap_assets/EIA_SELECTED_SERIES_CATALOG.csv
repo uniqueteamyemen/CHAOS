@@ -1,0 +1,379 @@
+concept,series_id,name,units,frequency,geography,start,end,last_updated,data_points,copyright
+energy_consumption_per_capita,INTL.47-33-ABW-MBTUPP.A,"Energy consumption per capita, Aruba, Annual",million Btu per person,A,ABW,1980,2024,2026-03-11T15:04:19-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-AFG-MBTUPP.A,"Energy consumption per capita, Afghanistan, Annual",million Btu per person,A,AFG,1980,2024,2026-03-11T15:04:19-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-AGO-MBTUPP.A,"Energy consumption per capita, Angola, Annual",million Btu per person,A,AGO,1980,2024,2026-03-11T15:04:19-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-ALB-MBTUPP.A,"Energy consumption per capita, Albania, Annual",million Btu per person,A,ALB,1980,2024,2026-03-11T15:04:19-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-ARE-MBTUPP.A,"Energy consumption per capita, United Arab Emirates, Annual",million Btu per person,A,ARE,1980,2024,2026-03-11T15:04:19-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-ARG-MBTUPP.A,"Energy consumption per capita, Argentina, Annual",million Btu per person,A,ARG,1980,2024,2026-03-11T15:04:19-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-ARM-MBTUPP.A,"Energy consumption per capita, Armenia, Annual",million Btu per person,A,ARM,1980,2024,2026-03-11T15:04:19-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-ATG-MBTUPP.A,"Energy consumption per capita, Antigua and Barbuda, Annual",million Btu per person,A,ATG,1980,2024,2026-03-11T15:04:19-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-AUS-MBTUPP.A,"Energy consumption per capita, Australia, Annual",million Btu per person,A,AUS,1980,2024,2026-06-24T13:57:47-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-AUT-MBTUPP.A,"Energy consumption per capita, Austria, Annual",million Btu per person,A,AUT,1980,2024,2026-06-24T13:57:47-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-AZE-MBTUPP.A,"Energy consumption per capita, Azerbaijan, Annual",million Btu per person,A,AZE,1980,2024,2026-03-11T15:04:19-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-BDI-MBTUPP.A,"Energy consumption per capita, Burundi, Annual",million Btu per person,A,BDI,1980,2024,2026-03-11T15:04:19-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-BEL-MBTUPP.A,"Energy consumption per capita, Belgium, Annual",million Btu per person,A,BEL,1980,2024,2026-06-24T13:57:47-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-BEN-MBTUPP.A,"Energy consumption per capita, Benin, Annual",million Btu per person,A,BEN,1980,2024,2026-03-11T15:04:19-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-BFA-MBTUPP.A,"Energy consumption per capita, Burkina Faso, Annual",million Btu per person,A,BFA,1980,2024,2026-03-11T15:04:19-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-BGD-MBTUPP.A,"Energy consumption per capita, Bangladesh, Annual",million Btu per person,A,BGD,1980,2024,2026-03-25T21:02:29-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-BGR-MBTUPP.A,"Energy consumption per capita, Bulgaria, Annual",million Btu per person,A,BGR,1980,2024,2026-06-24T13:57:47-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-BHR-MBTUPP.A,"Energy consumption per capita, Bahrain, Annual",million Btu per person,A,BHR,1980,2024,2026-03-11T15:04:19-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-BHS-MBTUPP.A,"Energy consumption per capita, The Bahamas, Annual",million Btu per person,A,BHS,1980,2024,2026-03-11T15:04:19-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-BIH-MBTUPP.A,"Energy consumption per capita, Bosnia and Herzegovina, Annual",million Btu per person,A,BIH,1980,2024,2026-03-11T15:04:19-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-BLR-MBTUPP.A,"Energy consumption per capita, Belarus, Annual",million Btu per person,A,BLR,1980,2024,2026-03-11T15:04:19-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-BLZ-MBTUPP.A,"Energy consumption per capita, Belize, Annual",million Btu per person,A,BLZ,1980,2024,2026-03-11T15:04:19-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-BOL-MBTUPP.A,"Energy consumption per capita, Bolivia, Annual",million Btu per person,A,BOL,1980,2024,2026-03-11T15:04:19-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-WP13-MBTUPP.A,"Energy consumption per capita, Brazil, Annual",million Btu per person,A,BRA,1980,2024,2026-03-11T15:04:19-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-BRB-MBTUPP.A,"Energy consumption per capita, Barbados, Annual",million Btu per person,A,BRB,1980,2024,2026-03-11T15:04:19-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-BRN-MBTUPP.A,"Energy consumption per capita, Brunei, Annual",million Btu per person,A,BRN,1980,2024,2026-03-11T15:04:19-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-BTN-MBTUPP.A,"Energy consumption per capita, Bhutan, Annual",million Btu per person,A,BTN,1980,2024,2026-03-11T15:04:19-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-BWA-MBTUPP.A,"Energy consumption per capita, Botswana, Annual",million Btu per person,A,BWA,1980,2024,2026-03-11T15:04:19-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-CAF-MBTUPP.A,"Energy consumption per capita, Central African Republic, Annual",million Btu per person,A,CAF,1980,2024,2026-03-11T15:04:19-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-WP14-MBTUPP.A,"Energy consumption per capita, Canada, Annual",million Btu per person,A,CAN,1980,2024,2026-03-11T15:04:19-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-CHE-MBTUPP.A,"Energy consumption per capita, Switzerland, Annual",million Btu per person,A,CHE,1980,2024,2026-08-21T19:06:13-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-CHL-MBTUPP.A,"Energy consumption per capita, Chile, Annual",million Btu per person,A,CHL,1980,2024,2026-03-11T15:04:19-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-WP15-MBTUPP.A,"Energy consumption per capita, China, Annual",million Btu per person,A,CHN,1980,2024,2026-03-11T15:04:19-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-CIV-MBTUPP.A,"Energy consumption per capita, Ivory Coast, Annual",million Btu per person,A,CIV,1980,2024,2026-03-11T15:04:19-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-CMR-MBTUPP.A,"Energy consumption per capita, Cameroon, Annual",million Btu per person,A,CMR,1980,2024,2026-03-11T15:04:19-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-COD-MBTUPP.A,"Energy consumption per capita, Congo-Kinshasa, Annual",million Btu per person,A,COD,1980,2024,2026-03-11T15:04:19-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-COG-MBTUPP.A,"Energy consumption per capita, Congo-Brazzaville, Annual",million Btu per person,A,COG,1980,2024,2026-03-11T15:04:19-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-COL-MBTUPP.A,"Energy consumption per capita, Colombia, Annual",million Btu per person,A,COL,1980,2024,2026-03-11T15:04:19-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-COM-MBTUPP.A,"Energy consumption per capita, Comoros, Annual",million Btu per person,A,COM,1980,2024,2026-03-11T15:04:19-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-CPV-MBTUPP.A,"Energy consumption per capita, Cabo Verde, Annual",million Btu per person,A,CPV,1980,2024,2026-03-11T15:04:19-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-CRI-MBTUPP.A,"Energy consumption per capita, Costa Rica, Annual",million Btu per person,A,CRI,1980,2024,2026-03-11T15:04:19-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-CYP-MBTUPP.A,"Energy consumption per capita, Cyprus, Annual",million Btu per person,A,CYP,1980,2024,2026-06-24T13:57:47-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-CZE-MBTUPP.A,"Energy consumption per capita, Czechia, Annual",million Btu per person,A,CZE,1980,2024,2026-06-24T13:57:47-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-DEU-MBTUPP.A,"Energy consumption per capita, Germany, Annual",million Btu per person,A,DEU,1980,2024,2026-06-24T13:57:47-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-DJI-MBTUPP.A,"Energy consumption per capita, Djibouti, Annual",million Btu per person,A,DJI,1980,2024,2026-03-11T15:04:19-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-DMA-MBTUPP.A,"Energy consumption per capita, Dominica, Annual",million Btu per person,A,DMA,1980,2024,2026-03-11T15:04:19-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-DNK-MBTUPP.A,"Energy consumption per capita, Denmark, Annual",million Btu per person,A,DNK,1980,2024,2026-06-24T13:57:47-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-DOM-MBTUPP.A,"Energy consumption per capita, Dominican Republic, Annual",million Btu per person,A,DOM,1980,2024,2026-03-11T15:04:19-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-DZA-MBTUPP.A,"Energy consumption per capita, Algeria, Annual",million Btu per person,A,DZA,1980,2024,2026-03-11T15:04:19-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-ECU-MBTUPP.A,"Energy consumption per capita, Ecuador, Annual",million Btu per person,A,ECU,1980,2024,2026-03-11T15:04:19-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-EGY-MBTUPP.A,"Energy consumption per capita, Egypt, Annual",million Btu per person,A,EGY,1980,2024,2026-03-11T15:04:19-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-ERI-MBTUPP.A,"Energy consumption per capita, Eritrea, Annual",million Btu per person,A,ERI,1980,2024,2026-03-11T15:04:19-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-ESP-MBTUPP.A,"Energy consumption per capita, Spain, Annual",million Btu per person,A,ESP,1980,2024,2026-03-25T21:02:29-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-EST-MBTUPP.A,"Energy consumption per capita, Estonia, Annual",million Btu per person,A,EST,1980,2024,2026-07-27T15:59:23-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-ETH-MBTUPP.A,"Energy consumption per capita, Ethiopia, Annual",million Btu per person,A,ETH,1980,2024,2026-03-11T15:04:19-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-FIN-MBTUPP.A,"Energy consumption per capita, Finland, Annual",million Btu per person,A,FIN,1980,2024,2026-03-11T15:04:19-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-FJI-MBTUPP.A,"Energy consumption per capita, Fiji, Annual",million Btu per person,A,FJI,1980,2024,2026-03-11T15:04:19-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-FRA-MBTUPP.A,"Energy consumption per capita, France, Annual",million Btu per person,A,FRA,1980,2024,2026-06-24T13:57:47-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-FSM-MBTUPP.A,"Energy consumption per capita, Micronesia, Annual",million Btu per person,A,FSM,1980,2024,2026-03-11T15:04:19-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-GAB-MBTUPP.A,"Energy consumption per capita, Gabon, Annual",million Btu per person,A,GAB,1980,2024,2026-03-11T15:04:19-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-GBR-MBTUPP.A,"Energy consumption per capita, United Kingdom, Annual",million Btu per person,A,GBR,1980,2024,2026-03-11T15:04:19-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-GEO-MBTUPP.A,"Energy consumption per capita, Georgia, Annual",million Btu per person,A,GEO,1980,2024,2026-03-11T15:04:19-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-GHA-MBTUPP.A,"Energy consumption per capita, Ghana, Annual",million Btu per person,A,GHA,1980,2024,2026-03-11T15:04:19-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-GIN-MBTUPP.A,"Energy consumption per capita, Guinea, Annual",million Btu per person,A,GIN,1980,2024,2026-03-11T15:04:19-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-GMB-MBTUPP.A,"Energy consumption per capita, Gambia, The, Annual",million Btu per person,A,GMB,1980,2024,2026-03-11T15:04:19-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-GNB-MBTUPP.A,"Energy consumption per capita, Guinea-Bissau, Annual",million Btu per person,A,GNB,1980,2024,2026-03-11T15:04:19-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-GNQ-MBTUPP.A,"Energy consumption per capita, Equatorial Guinea, Annual",million Btu per person,A,GNQ,1980,2024,2026-03-11T15:04:19-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-GRC-MBTUPP.A,"Energy consumption per capita, Greece, Annual",million Btu per person,A,GRC,1980,2024,2026-06-24T13:57:47-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-GRD-MBTUPP.A,"Energy consumption per capita, Grenada, Annual",million Btu per person,A,GRD,1980,2024,2026-03-11T15:04:19-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-GTM-MBTUPP.A,"Energy consumption per capita, Guatemala, Annual",million Btu per person,A,GTM,1980,2024,2026-03-11T15:04:19-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-GUY-MBTUPP.A,"Energy consumption per capita, Guyana, Annual",million Btu per person,A,GUY,1980,2024,2026-03-11T15:04:19-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-HKG-MBTUPP.A,"Energy consumption per capita, Hong Kong, Annual",million Btu per person,A,HKG,1980,2024,2026-03-11T15:04:19-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-HND-MBTUPP.A,"Energy consumption per capita, Honduras, Annual",million Btu per person,A,HND,1980,2024,2026-03-11T15:04:19-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-HRV-MBTUPP.A,"Energy consumption per capita, Croatia, Annual",million Btu per person,A,HRV,1980,2024,2026-06-24T13:57:47-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-HTI-MBTUPP.A,"Energy consumption per capita, Haiti, Annual",million Btu per person,A,HTI,1980,2024,2026-03-11T15:04:19-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-HUN-MBTUPP.A,"Energy consumption per capita, Hungary, Annual",million Btu per person,A,HUN,1980,2024,2026-06-24T13:57:47-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-IDN-MBTUPP.A,"Energy consumption per capita, Indonesia, Annual",million Btu per person,A,IDN,1980,2024,2026-03-11T15:04:19-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-WP16-MBTUPP.A,"Energy consumption per capita, India, Annual",million Btu per person,A,IND,1980,2024,2026-03-11T15:04:19-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-IRL-MBTUPP.A,"Energy consumption per capita, Ireland, Annual",million Btu per person,A,IRL,1980,2024,2026-06-24T13:57:47-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-IRN-MBTUPP.A,"Energy consumption per capita, Iran, Annual",million Btu per person,A,IRN,1980,2024,2026-03-11T15:04:19-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-IRQ-MBTUPP.A,"Energy consumption per capita, Iraq, Annual",million Btu per person,A,IRQ,1980,2024,2026-03-11T15:04:19-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-ISL-MBTUPP.A,"Energy consumption per capita, Iceland, Annual",million Btu per person,A,ISL,1980,2024,2026-03-11T15:04:19-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-ISR-MBTUPP.A,"Energy consumption per capita, Israel, Annual",million Btu per person,A,ISR,1980,2024,2026-03-11T15:04:19-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-ITA-MBTUPP.A,"Energy consumption per capita, Italy, Annual",million Btu per person,A,ITA,1980,2024,2026-06-24T13:57:47-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-JAM-MBTUPP.A,"Energy consumption per capita, Jamaica, Annual",million Btu per person,A,JAM,1980,2024,2026-03-11T15:04:19-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-JOR-MBTUPP.A,"Energy consumption per capita, Jordan, Annual",million Btu per person,A,JOR,1980,2024,2026-03-11T15:04:19-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-WP17-MBTUPP.A,"Energy consumption per capita, Japan, Annual",million Btu per person,A,JPN,1980,2024,2026-03-11T15:04:19-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-KAZ-MBTUPP.A,"Energy consumption per capita, Kazakhstan, Annual",million Btu per person,A,KAZ,1980,2024,2026-03-11T15:04:19-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-KEN-MBTUPP.A,"Energy consumption per capita, Kenya, Annual",million Btu per person,A,KEN,1980,2024,2026-03-11T15:04:19-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-KGZ-MBTUPP.A,"Energy consumption per capita, Kyrgyzstan, Annual",million Btu per person,A,KGZ,1980,2024,2026-03-11T15:04:19-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-KHM-MBTUPP.A,"Energy consumption per capita, Cambodia, Annual",million Btu per person,A,KHM,1980,2024,2026-03-11T15:04:19-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-KIR-MBTUPP.A,"Energy consumption per capita, Kiribati, Annual",million Btu per person,A,KIR,1980,2024,2026-03-11T15:04:19-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-KNA-MBTUPP.A,"Energy consumption per capita, Saint Kitts and Nevis, Annual",million Btu per person,A,KNA,1980,2024,2026-03-11T15:04:19-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-KOR-MBTUPP.A,"Energy consumption per capita, South Korea, Annual",million Btu per person,A,KOR,1980,2024,2026-03-11T15:04:19-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-KWT-MBTUPP.A,"Energy consumption per capita, Kuwait, Annual",million Btu per person,A,KWT,1980,2024,2026-03-11T15:04:19-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-LAO-MBTUPP.A,"Energy consumption per capita, Laos, Annual",million Btu per person,A,LAO,1980,2024,2026-03-11T15:04:19-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-LBN-MBTUPP.A,"Energy consumption per capita, Lebanon, Annual",million Btu per person,A,LBN,1980,2024,2026-03-11T15:04:19-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-LBR-MBTUPP.A,"Energy consumption per capita, Liberia, Annual",million Btu per person,A,LBR,1980,2024,2026-03-11T15:04:19-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-LBY-MBTUPP.A,"Energy consumption per capita, Libya, Annual",million Btu per person,A,LBY,1980,2024,2026-03-11T15:04:19-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-LCA-MBTUPP.A,"Energy consumption per capita, Saint Lucia, Annual",million Btu per person,A,LCA,1980,2024,2026-03-11T15:04:19-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-LKA-MBTUPP.A,"Energy consumption per capita, Sri Lanka, Annual",million Btu per person,A,LKA,1980,2024,2026-03-11T15:04:19-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-LSO-MBTUPP.A,"Energy consumption per capita, Lesotho, Annual",million Btu per person,A,LSO,1980,2024,2026-03-11T15:04:19-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-LTU-MBTUPP.A,"Energy consumption per capita, Lithuania, Annual",million Btu per person,A,LTU,1980,2024,2026-03-11T15:04:19-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-LUX-MBTUPP.A,"Energy consumption per capita, Luxembourg, Annual",million Btu per person,A,LUX,1980,2024,2026-06-24T13:57:47-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-LVA-MBTUPP.A,"Energy consumption per capita, Latvia, Annual",million Btu per person,A,LVA,1980,2024,2026-06-24T13:57:47-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-MAC-MBTUPP.A,"Energy consumption per capita, Macau, Annual",million Btu per person,A,MAC,1980,2024,2026-03-11T15:04:19-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-MAR-MBTUPP.A,"Energy consumption per capita, Morocco, Annual",million Btu per person,A,MAR,1980,2024,2026-03-11T15:04:19-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-MDA-MBTUPP.A,"Energy consumption per capita, Moldova, Annual",million Btu per person,A,MDA,1980,2024,2026-03-11T15:04:19-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-MDG-MBTUPP.A,"Energy consumption per capita, Madagascar, Annual",million Btu per person,A,MDG,1980,2024,2026-03-11T15:04:19-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-MDV-MBTUPP.A,"Energy consumption per capita, Maldives, Annual",million Btu per person,A,MDV,1980,2024,2026-03-11T15:04:19-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-WP18-MBTUPP.A,"Energy consumption per capita, Mexico, Annual",million Btu per person,A,MEX,1980,2024,2026-03-11T15:04:19-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-MKD-MBTUPP.A,"Energy consumption per capita, North Macedonia, Annual",million Btu per person,A,MKD,1980,2024,2026-03-11T15:04:19-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-MLI-MBTUPP.A,"Energy consumption per capita, Mali, Annual",million Btu per person,A,MLI,1980,2024,2026-03-11T15:04:19-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-MLT-MBTUPP.A,"Energy consumption per capita, Malta, Annual",million Btu per person,A,MLT,1980,2024,2026-06-24T13:57:47-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-MMR-MBTUPP.A,"Energy consumption per capita, Burma, Annual",million Btu per person,A,MMR,1980,2024,2026-03-11T15:04:19-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-MNE-MBTUPP.A,"Energy consumption per capita, Montenegro, Annual",million Btu per person,A,MNE,1980,2024,2026-03-11T15:04:19-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-MNG-MBTUPP.A,"Energy consumption per capita, Mongolia, Annual",million Btu per person,A,MNG,1980,2024,2026-03-11T15:04:19-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-MOZ-MBTUPP.A,"Energy consumption per capita, Mozambique, Annual",million Btu per person,A,MOZ,1980,2024,2026-03-11T15:04:19-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-MRT-MBTUPP.A,"Energy consumption per capita, Mauritania, Annual",million Btu per person,A,MRT,1980,2024,2026-03-11T15:04:19-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-MUS-MBTUPP.A,"Energy consumption per capita, Mauritius, Annual",million Btu per person,A,MUS,1980,2024,2026-03-11T15:04:19-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-MWI-MBTUPP.A,"Energy consumption per capita, Malawi, Annual",million Btu per person,A,MWI,1980,2024,2026-03-11T15:04:19-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-MYS-MBTUPP.A,"Energy consumption per capita, Malaysia, Annual",million Btu per person,A,MYS,1980,2024,2026-03-11T15:04:19-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-NAM-MBTUPP.A,"Energy consumption per capita, Namibia, Annual",million Btu per person,A,NAM,1980,2024,2026-03-11T15:04:19-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-NER-MBTUPP.A,"Energy consumption per capita, Niger, Annual",million Btu per person,A,NER,1980,2024,2026-03-11T15:04:19-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-NGA-MBTUPP.A,"Energy consumption per capita, Nigeria, Annual",million Btu per person,A,NGA,1980,2024,2026-03-11T15:04:19-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-NIC-MBTUPP.A,"Energy consumption per capita, Nicaragua, Annual",million Btu per person,A,NIC,1980,2024,2026-03-11T15:04:19-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-NLD-MBTUPP.A,"Energy consumption per capita, Netherlands, Annual",million Btu per person,A,NLD,1980,2024,2026-06-24T13:57:47-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-NOR-MBTUPP.A,"Energy consumption per capita, Norway, Annual",million Btu per person,A,NOR,1980,2024,2026-06-24T13:57:47-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-NPL-MBTUPP.A,"Energy consumption per capita, Nepal, Annual",million Btu per person,A,NPL,1980,2024,2026-03-11T15:04:19-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-NRU-MBTUPP.A,"Energy consumption per capita, Nauru, Annual",million Btu per person,A,NRU,1980,2024,2026-03-11T15:04:19-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-NZL-MBTUPP.A,"Energy consumption per capita, New Zealand, Annual",million Btu per person,A,NZL,1980,2024,2026-03-11T15:04:19-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-OMN-MBTUPP.A,"Energy consumption per capita, Oman, Annual",million Btu per person,A,OMN,1980,2024,2026-03-11T15:04:19-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-PAK-MBTUPP.A,"Energy consumption per capita, Pakistan, Annual",million Btu per person,A,PAK,1980,2024,2026-03-11T15:04:19-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-PAN-MBTUPP.A,"Energy consumption per capita, Panama, Annual",million Btu per person,A,PAN,1980,2024,2026-03-11T15:04:19-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-PER-MBTUPP.A,"Energy consumption per capita, Peru, Annual",million Btu per person,A,PER,1980,2024,2026-03-11T15:04:19-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-PHL-MBTUPP.A,"Energy consumption per capita, Philippines, Annual",million Btu per person,A,PHL,1980,2024,2026-03-11T15:04:19-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-PNG-MBTUPP.A,"Energy consumption per capita, Papua New Guinea, Annual",million Btu per person,A,PNG,1980,2024,2026-03-11T15:04:19-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-POL-MBTUPP.A,"Energy consumption per capita, Poland, Annual",million Btu per person,A,POL,1980,2024,2026-06-24T13:57:47-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-PRI-MBTUPP.A,"Energy consumption per capita, Puerto Rico, Annual",million Btu per person,A,PRI,1980,2024,2026-03-11T15:04:19-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-PRT-MBTUPP.A,"Energy consumption per capita, Portugal, Annual",million Btu per person,A,PRT,1980,2024,2026-06-24T13:57:47-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-PRY-MBTUPP.A,"Energy consumption per capita, Paraguay, Annual",million Btu per person,A,PRY,1980,2024,2026-03-11T15:04:19-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-QAT-MBTUPP.A,"Energy consumption per capita, Qatar, Annual",million Btu per person,A,QAT,1980,2024,2026-03-11T15:04:19-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-ROU-MBTUPP.A,"Energy consumption per capita, Romania, Annual",million Btu per person,A,ROU,1980,2024,2026-06-24T13:57:47-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-RUS-MBTUPP.A,"Energy consumption per capita, Russia, Annual",million Btu per person,A,RUS,1980,2024,2026-03-11T15:04:19-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-RWA-MBTUPP.A,"Energy consumption per capita, Rwanda, Annual",million Btu per person,A,RWA,1980,2024,2026-03-11T15:04:19-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-SAU-MBTUPP.A,"Energy consumption per capita, Saudi Arabia, Annual",million Btu per person,A,SAU,1980,2024,2026-03-11T15:04:19-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-SDN-MBTUPP.A,"Energy consumption per capita, Sudan, Annual",million Btu per person,A,SDN,1980,2024,2026-03-11T15:04:19-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-SEN-MBTUPP.A,"Energy consumption per capita, Senegal, Annual",million Btu per person,A,SEN,1980,2024,2026-03-11T15:04:19-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-SGP-MBTUPP.A,"Energy consumption per capita, Singapore, Annual",million Btu per person,A,SGP,1980,2024,2026-03-11T15:04:19-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-SLB-MBTUPP.A,"Energy consumption per capita, Solomon Islands, Annual",million Btu per person,A,SLB,1980,2024,2026-03-11T15:04:19-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-SLE-MBTUPP.A,"Energy consumption per capita, Sierra Leone, Annual",million Btu per person,A,SLE,1980,2024,2026-03-11T15:04:19-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-SLV-MBTUPP.A,"Energy consumption per capita, El Salvador, Annual",million Btu per person,A,SLV,1980,2024,2026-03-11T15:04:19-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-SOM-MBTUPP.A,"Energy consumption per capita, Somalia, Annual",million Btu per person,A,SOM,1980,2024,2026-03-11T15:04:19-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-SRB-MBTUPP.A,"Energy consumption per capita, Serbia, Annual",million Btu per person,A,SRB,1980,2024,2026-03-11T15:04:19-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-SSD-MBTUPP.A,"Energy consumption per capita, South Sudan, Annual",million Btu per person,A,SSD,1980,2024,2026-03-11T15:04:19-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-STP-MBTUPP.A,"Energy consumption per capita, Sao Tome and Principe, Annual",million Btu per person,A,STP,1980,2024,2026-03-11T15:04:19-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-SUR-MBTUPP.A,"Energy consumption per capita, Suriname, Annual",million Btu per person,A,SUR,1980,2024,2026-03-11T15:04:19-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-SVK-MBTUPP.A,"Energy consumption per capita, Slovakia, Annual",million Btu per person,A,SVK,1980,2024,2026-06-24T13:57:47-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-SVN-MBTUPP.A,"Energy consumption per capita, Slovenia, Annual",million Btu per person,A,SVN,1980,2024,2026-06-24T13:57:47-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-SWE-MBTUPP.A,"Energy consumption per capita, Sweden, Annual",million Btu per person,A,SWE,1980,2024,2026-06-24T13:57:47-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-SWZ-MBTUPP.A,"Energy consumption per capita, Eswatini, Annual",million Btu per person,A,SWZ,1980,2024,2026-03-11T15:04:19-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-SYC-MBTUPP.A,"Energy consumption per capita, Seychelles, Annual",million Btu per person,A,SYC,1980,2024,2026-03-11T15:04:19-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-SYR-MBTUPP.A,"Energy consumption per capita, Syria, Annual",million Btu per person,A,SYR,1980,2024,2026-03-11T15:04:19-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-TCD-MBTUPP.A,"Energy consumption per capita, Chad, Annual",million Btu per person,A,TCD,1980,2024,2026-03-11T15:04:19-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-TGO-MBTUPP.A,"Energy consumption per capita, Togo, Annual",million Btu per person,A,TGO,1980,2024,2026-03-11T15:04:19-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-THA-MBTUPP.A,"Energy consumption per capita, Thailand, Annual",million Btu per person,A,THA,1980,2024,2026-03-11T15:04:19-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-TJK-MBTUPP.A,"Energy consumption per capita, Tajikistan, Annual",million Btu per person,A,TJK,1980,2024,2026-03-11T15:04:19-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-TKM-MBTUPP.A,"Energy consumption per capita, Turkmenistan, Annual",million Btu per person,A,TKM,1980,2024,2026-03-11T15:04:19-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-TLS-MBTUPP.A,"Energy consumption per capita, Timor-Leste, Annual",million Btu per person,A,TLS,1980,2024,2026-03-11T15:04:19-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-TON-MBTUPP.A,"Energy consumption per capita, Tonga, Annual",million Btu per person,A,TON,1980,2024,2026-03-11T15:04:19-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-TTO-MBTUPP.A,"Energy consumption per capita, Trinidad and Tobago, Annual",million Btu per person,A,TTO,1980,2024,2026-03-11T15:04:19-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-TUN-MBTUPP.A,"Energy consumption per capita, Tunisia, Annual",million Btu per person,A,TUN,1980,2024,2026-03-11T15:04:19-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-TUR-MBTUPP.A,"Energy consumption per capita, Turkiye, Annual",million Btu per person,A,TUR,1980,2024,2026-03-11T15:04:19-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-TUV-MBTUPP.A,"Energy consumption per capita, Tuvalu, Annual",million Btu per person,A,TUV,1980,2024,2026-03-11T15:04:19-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-TZA-MBTUPP.A,"Energy consumption per capita, Tanzania, Annual",million Btu per person,A,TZA,1980,2024,2026-03-11T15:04:19-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-UGA-MBTUPP.A,"Energy consumption per capita, Uganda, Annual",million Btu per person,A,UGA,1980,2024,2026-03-11T15:04:19-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-UKR-MBTUPP.A,"Energy consumption per capita, Ukraine, Annual",million Btu per person,A,UKR,1980,2024,2026-03-11T15:04:19-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-URY-MBTUPP.A,"Energy consumption per capita, Uruguay, Annual",million Btu per person,A,URY,1980,2024,2026-03-11T15:04:19-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-WP27-MBTUPP.A,"Energy consumption per capita, United States, Annual",million Btu per person,A,USA,1980,2024,2026-03-25T21:02:29-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-UZB-MBTUPP.A,"Energy consumption per capita, Uzbekistan, Annual",million Btu per person,A,UZB,1980,2024,2026-03-11T15:04:19-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-VCT-MBTUPP.A,"Energy consumption per capita, Saint Vincent/Grenadines, Annual",million Btu per person,A,VCT,1980,2024,2026-03-11T15:04:19-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-VEN-MBTUPP.A,"Energy consumption per capita, Venezuela, Annual",million Btu per person,A,VEN,1980,2024,2026-03-11T15:04:19-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-VNM-MBTUPP.A,"Energy consumption per capita, Vietnam, Annual",million Btu per person,A,VNM,1980,2024,2026-03-11T15:04:19-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-VUT-MBTUPP.A,"Energy consumption per capita, Vanuatu, Annual",million Btu per person,A,VUT,1980,2024,2026-03-11T15:04:19-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-WSM-MBTUPP.A,"Energy consumption per capita, Samoa, Annual",million Btu per person,A,WSM,1980,2024,2026-03-11T15:04:19-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-YEM-MBTUPP.A,"Energy consumption per capita, Yemen, Annual",million Btu per person,A,YEM,1980,2024,2026-03-11T15:04:19-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-ZAF-MBTUPP.A,"Energy consumption per capita, South Africa, Annual",million Btu per person,A,ZAF,1980,2024,2026-03-11T15:04:19-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-ZMB-MBTUPP.A,"Energy consumption per capita, Zambia, Annual",million Btu per person,A,ZMB,1980,2024,2026-03-11T15:04:19-04:00,45,None
+energy_consumption_per_capita,INTL.47-33-ZWE-MBTUPP.A,"Energy consumption per capita, Zimbabwe, Annual",million Btu per person,A,ZWE,1980,2024,2026-03-11T15:04:19-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-ABW-TBTUUSDPP.A,"Energy consumption per GDP, Aruba, Annual",thousand Btu per USD at purchasing power parities,A,ABW,1980,2024,2026-06-24T13:57:47-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-AFG-TBTUUSDPP.A,"Energy consumption per GDP, Afghanistan, Annual",thousand Btu per USD at purchasing power parities,A,AFG,1980,2024,2026-06-24T13:57:47-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-AGO-TBTUUSDPP.A,"Energy consumption per GDP, Angola, Annual",thousand Btu per USD at purchasing power parities,A,AGO,1980,2024,2026-04-28T15:19:27-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-ALB-TBTUUSDPP.A,"Energy consumption per GDP, Albania, Annual",thousand Btu per USD at purchasing power parities,A,ALB,1980,2024,2026-06-24T13:57:47-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-ARE-TBTUUSDPP.A,"Energy consumption per GDP, United Arab Emirates, Annual",thousand Btu per USD at purchasing power parities,A,ARE,1980,2024,2026-06-24T13:57:47-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-ARG-TBTUUSDPP.A,"Energy consumption per GDP, Argentina, Annual",thousand Btu per USD at purchasing power parities,A,ARG,1980,2024,2026-07-27T15:59:23-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-ARM-TBTUUSDPP.A,"Energy consumption per GDP, Armenia, Annual",thousand Btu per USD at purchasing power parities,A,ARM,1980,2024,2026-03-11T15:04:19-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-ATG-TBTUUSDPP.A,"Energy consumption per GDP, Antigua and Barbuda, Annual",thousand Btu per USD at purchasing power parities,A,ATG,1980,2024,2026-06-24T13:57:47-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-AUS-TBTUUSDPP.A,"Energy consumption per GDP, Australia, Annual",thousand Btu per USD at purchasing power parities,A,AUS,1980,2024,2026-06-24T13:57:47-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-AUT-TBTUUSDPP.A,"Energy consumption per GDP, Austria, Annual",thousand Btu per USD at purchasing power parities,A,AUT,1980,2024,2026-06-24T13:57:47-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-AZE-TBTUUSDPP.A,"Energy consumption per GDP, Azerbaijan, Annual",thousand Btu per USD at purchasing power parities,A,AZE,1980,2024,2026-06-24T13:57:47-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-BDI-TBTUUSDPP.A,"Energy consumption per GDP, Burundi, Annual",thousand Btu per USD at purchasing power parities,A,BDI,1980,2024,2026-04-28T15:19:27-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-BEL-TBTUUSDPP.A,"Energy consumption per GDP, Belgium, Annual",thousand Btu per USD at purchasing power parities,A,BEL,1980,2024,2026-06-24T13:57:47-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-BEN-TBTUUSDPP.A,"Energy consumption per GDP, Benin, Annual",thousand Btu per USD at purchasing power parities,A,BEN,1980,2024,2026-06-24T13:57:47-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-BFA-TBTUUSDPP.A,"Energy consumption per GDP, Burkina Faso, Annual",thousand Btu per USD at purchasing power parities,A,BFA,1980,2024,2026-04-28T15:19:27-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-BGD-TBTUUSDPP.A,"Energy consumption per GDP, Bangladesh, Annual",thousand Btu per USD at purchasing power parities,A,BGD,1980,2024,2026-06-24T13:57:47-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-BGR-TBTUUSDPP.A,"Energy consumption per GDP, Bulgaria, Annual",thousand Btu per USD at purchasing power parities,A,BGR,1980,2024,2026-06-24T13:57:47-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-BHR-TBTUUSDPP.A,"Energy consumption per GDP, Bahrain, Annual",thousand Btu per USD at purchasing power parities,A,BHR,1980,2024,2026-06-24T13:57:47-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-BHS-TBTUUSDPP.A,"Energy consumption per GDP, The Bahamas, Annual",thousand Btu per USD at purchasing power parities,A,BHS,1980,2024,2026-06-24T13:57:47-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-BIH-TBTUUSDPP.A,"Energy consumption per GDP, Bosnia and Herzegovina, Annual",thousand Btu per USD at purchasing power parities,A,BIH,1980,2024,2026-06-24T13:57:47-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-BLR-TBTUUSDPP.A,"Energy consumption per GDP, Belarus, Annual",thousand Btu per USD at purchasing power parities,A,BLR,1980,2024,2026-06-24T13:57:47-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-BLZ-TBTUUSDPP.A,"Energy consumption per GDP, Belize, Annual",thousand Btu per USD at purchasing power parities,A,BLZ,1980,2024,2026-06-24T13:57:47-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-BOL-TBTUUSDPP.A,"Energy consumption per GDP, Bolivia, Annual",thousand Btu per USD at purchasing power parities,A,BOL,1980,2024,2026-06-24T13:57:47-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-BRA-TBTUUSDPP.A,"Energy consumption per GDP, Brazil, Annual",thousand Btu per USD at purchasing power parities,A,BRA,1980,2024,2026-06-24T13:57:47-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-BRB-TBTUUSDPP.A,"Energy consumption per GDP, Barbados, Annual",thousand Btu per USD at purchasing power parities,A,BRB,1980,2024,2026-06-24T13:57:47-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-BRN-TBTUUSDPP.A,"Energy consumption per GDP, Brunei, Annual",thousand Btu per USD at purchasing power parities,A,BRN,1980,2024,2026-06-24T13:57:47-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-BTN-TBTUUSDPP.A,"Energy consumption per GDP, Bhutan, Annual",thousand Btu per USD at purchasing power parities,A,BTN,1980,2024,2026-06-24T13:57:47-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-BWA-TBTUUSDPP.A,"Energy consumption per GDP, Botswana, Annual",thousand Btu per USD at purchasing power parities,A,BWA,1980,2024,2026-08-21T19:06:13-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-CAF-TBTUUSDPP.A,"Energy consumption per GDP, Central African Republic, Annual",thousand Btu per USD at purchasing power parities,A,CAF,1980,2024,2026-06-24T13:57:47-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-CAN-TBTUUSDPP.A,"Energy consumption per GDP, Canada, Annual",thousand Btu per USD at purchasing power parities,A,CAN,1980,2024,2026-03-11T15:04:19-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-CHE-TBTUUSDPP.A,"Energy consumption per GDP, Switzerland, Annual",thousand Btu per USD at purchasing power parities,A,CHE,1980,2024,2026-06-24T13:57:47-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-CHL-TBTUUSDPP.A,"Energy consumption per GDP, Chile, Annual",thousand Btu per USD at purchasing power parities,A,CHL,1980,2024,2026-06-24T13:57:47-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-WP15-TBTUUSDPP.A,"Energy consumption per GDP, China, Annual",thousand Btu per USD at purchasing power parities,A,CHN,1980,2024,2026-08-21T19:06:13-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-CIV-TBTUUSDPP.A,"Energy consumption per GDP, Ivory Coast, Annual",thousand Btu per USD at purchasing power parities,A,CIV,1980,2024,2026-06-24T13:57:47-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-CMR-TBTUUSDPP.A,"Energy consumption per GDP, Cameroon, Annual",thousand Btu per USD at purchasing power parities,A,CMR,1980,2024,2026-07-27T15:59:23-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-COD-TBTUUSDPP.A,"Energy consumption per GDP, Congo-Kinshasa, Annual",thousand Btu per USD at purchasing power parities,A,COD,1980,2024,2026-06-24T13:57:47-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-COG-TBTUUSDPP.A,"Energy consumption per GDP, Congo-Brazzaville, Annual",thousand Btu per USD at purchasing power parities,A,COG,1980,2024,2026-06-24T13:57:47-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-COL-TBTUUSDPP.A,"Energy consumption per GDP, Colombia, Annual",thousand Btu per USD at purchasing power parities,A,COL,1980,2024,2026-06-24T13:57:47-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-COM-TBTUUSDPP.A,"Energy consumption per GDP, Comoros, Annual",thousand Btu per USD at purchasing power parities,A,COM,1980,2024,2026-03-25T21:02:29-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-CPV-TBTUUSDPP.A,"Energy consumption per GDP, Cabo Verde, Annual",thousand Btu per USD at purchasing power parities,A,CPV,1980,2024,2026-04-28T15:19:27-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-CRI-TBTUUSDPP.A,"Energy consumption per GDP, Costa Rica, Annual",thousand Btu per USD at purchasing power parities,A,CRI,1980,2024,2026-06-24T13:57:47-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-CYP-TBTUUSDPP.A,"Energy consumption per GDP, Cyprus, Annual",thousand Btu per USD at purchasing power parities,A,CYP,1980,2024,2026-06-24T13:57:47-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-CZE-TBTUUSDPP.A,"Energy consumption per GDP, Czechia, Annual",thousand Btu per USD at purchasing power parities,A,CZE,1980,2024,2026-07-27T15:59:23-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-DEU-TBTUUSDPP.A,"Energy consumption per GDP, Germany, Annual",thousand Btu per USD at purchasing power parities,A,DEU,1980,2024,2026-08-21T19:06:13-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-DJI-TBTUUSDPP.A,"Energy consumption per GDP, Djibouti, Annual",thousand Btu per USD at purchasing power parities,A,DJI,1980,2024,2026-06-24T13:57:47-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-DMA-TBTUUSDPP.A,"Energy consumption per GDP, Dominica, Annual",thousand Btu per USD at purchasing power parities,A,DMA,1980,2024,2026-06-24T13:57:47-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-DNK-TBTUUSDPP.A,"Energy consumption per GDP, Denmark, Annual",thousand Btu per USD at purchasing power parities,A,DNK,1980,2024,2026-07-27T15:59:23-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-DOM-TBTUUSDPP.A,"Energy consumption per GDP, Dominican Republic, Annual",thousand Btu per USD at purchasing power parities,A,DOM,1980,2024,2026-06-24T13:57:47-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-DZA-TBTUUSDPP.A,"Energy consumption per GDP, Algeria, Annual",thousand Btu per USD at purchasing power parities,A,DZA,1980,2024,2026-03-11T15:04:19-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-ECU-TBTUUSDPP.A,"Energy consumption per GDP, Ecuador, Annual",thousand Btu per USD at purchasing power parities,A,ECU,1980,2024,2026-06-24T13:57:47-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-EGY-TBTUUSDPP.A,"Energy consumption per GDP, Egypt, Annual",thousand Btu per USD at purchasing power parities,A,EGY,1980,2024,2026-07-27T15:59:23-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-ERI-TBTUUSDPP.A,"Energy consumption per GDP, Eritrea, Annual",thousand Btu per USD at purchasing power parities,A,ERI,1980,2024,2026-03-11T15:04:19-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-ESP-TBTUUSDPP.A,"Energy consumption per GDP, Spain, Annual",thousand Btu per USD at purchasing power parities,A,ESP,1980,2024,2026-03-11T15:04:19-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-EST-TBTUUSDPP.A,"Energy consumption per GDP, Estonia, Annual",thousand Btu per USD at purchasing power parities,A,EST,1980,2024,2026-07-27T15:59:23-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-ETH-TBTUUSDPP.A,"Energy consumption per GDP, Ethiopia, Annual",thousand Btu per USD at purchasing power parities,A,ETH,1980,2024,2026-03-25T21:02:29-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-FIN-TBTUUSDPP.A,"Energy consumption per GDP, Finland, Annual",thousand Btu per USD at purchasing power parities,A,FIN,1980,2024,2026-07-27T15:59:23-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-FJI-TBTUUSDPP.A,"Energy consumption per GDP, Fiji, Annual",thousand Btu per USD at purchasing power parities,A,FJI,1980,2024,2026-06-24T13:57:47-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-FRA-TBTUUSDPP.A,"Energy consumption per GDP, France, Annual",thousand Btu per USD at purchasing power parities,A,FRA,1980,2024,2026-08-21T19:06:13-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-FSM-TBTUUSDPP.A,"Energy consumption per GDP, Micronesia, Annual",thousand Btu per USD at purchasing power parities,A,FSM,1980,2024,2026-03-11T15:04:19-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-GAB-TBTUUSDPP.A,"Energy consumption per GDP, Gabon, Annual",thousand Btu per USD at purchasing power parities,A,GAB,1980,2024,2026-06-24T13:57:47-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-GBR-TBTUUSDPP.A,"Energy consumption per GDP, United Kingdom, Annual",thousand Btu per USD at purchasing power parities,A,GBR,1980,2024,2026-07-27T15:59:23-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-GEO-TBTUUSDPP.A,"Energy consumption per GDP, Georgia, Annual",thousand Btu per USD at purchasing power parities,A,GEO,1980,2024,2026-06-24T13:57:47-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-GHA-TBTUUSDPP.A,"Energy consumption per GDP, Ghana, Annual",thousand Btu per USD at purchasing power parities,A,GHA,1980,2024,2026-07-27T15:59:23-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-GIN-TBTUUSDPP.A,"Energy consumption per GDP, Guinea, Annual",thousand Btu per USD at purchasing power parities,A,GIN,1980,2024,2026-04-28T15:19:27-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-GMB-TBTUUSDPP.A,"Energy consumption per GDP, Gambia, The, Annual",thousand Btu per USD at purchasing power parities,A,GMB,1980,2024,2026-03-25T21:02:29-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-GNB-TBTUUSDPP.A,"Energy consumption per GDP, Guinea-Bissau, Annual",thousand Btu per USD at purchasing power parities,A,GNB,1980,2024,2026-06-24T13:57:47-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-GNQ-TBTUUSDPP.A,"Energy consumption per GDP, Equatorial Guinea, Annual",thousand Btu per USD at purchasing power parities,A,GNQ,1980,2024,2026-03-11T15:04:19-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-GRC-TBTUUSDPP.A,"Energy consumption per GDP, Greece, Annual",thousand Btu per USD at purchasing power parities,A,GRC,1980,2024,2026-06-24T13:57:47-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-GRD-TBTUUSDPP.A,"Energy consumption per GDP, Grenada, Annual",thousand Btu per USD at purchasing power parities,A,GRD,1980,2024,2026-06-24T13:57:47-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-GTM-TBTUUSDPP.A,"Energy consumption per GDP, Guatemala, Annual",thousand Btu per USD at purchasing power parities,A,GTM,1980,2024,2026-06-24T13:57:47-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-GUY-TBTUUSDPP.A,"Energy consumption per GDP, Guyana, Annual",thousand Btu per USD at purchasing power parities,A,GUY,1980,2024,2026-06-24T13:57:47-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-HKG-TBTUUSDPP.A,"Energy consumption per GDP, Hong Kong, Annual",thousand Btu per USD at purchasing power parities,A,HKG,1980,2024,2026-06-24T13:57:47-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-HND-TBTUUSDPP.A,"Energy consumption per GDP, Honduras, Annual",thousand Btu per USD at purchasing power parities,A,HND,1980,2024,2026-06-24T13:57:47-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-HRV-TBTUUSDPP.A,"Energy consumption per GDP, Croatia, Annual",thousand Btu per USD at purchasing power parities,A,HRV,1980,2024,2026-07-27T15:59:23-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-HTI-TBTUUSDPP.A,"Energy consumption per GDP, Haiti, Annual",thousand Btu per USD at purchasing power parities,A,HTI,1980,2024,2026-06-24T13:57:47-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-HUN-TBTUUSDPP.A,"Energy consumption per GDP, Hungary, Annual",thousand Btu per USD at purchasing power parities,A,HUN,1980,2024,2026-08-21T19:06:13-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-IDN-TBTUUSDPP.A,"Energy consumption per GDP, Indonesia, Annual",thousand Btu per USD at purchasing power parities,A,IDN,1980,2024,2026-03-25T21:02:29-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-WP16-TBTUUSDPP.A,"Energy consumption per GDP, India, Annual",thousand Btu per USD at purchasing power parities,A,IND,1980,2024,2026-06-24T13:57:47-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-IRL-TBTUUSDPP.A,"Energy consumption per GDP, Ireland, Annual",thousand Btu per USD at purchasing power parities,A,IRL,1980,2024,2026-07-27T15:59:23-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-IRN-TBTUUSDPP.A,"Energy consumption per GDP, Iran, Annual",thousand Btu per USD at purchasing power parities,A,IRN,1980,2024,2026-08-21T19:06:13-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-IRQ-TBTUUSDPP.A,"Energy consumption per GDP, Iraq, Annual",thousand Btu per USD at purchasing power parities,A,IRQ,1980,2024,2026-03-11T15:04:19-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-ISL-TBTUUSDPP.A,"Energy consumption per GDP, Iceland, Annual",thousand Btu per USD at purchasing power parities,A,ISL,1980,2024,2026-03-11T15:04:19-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-ISR-TBTUUSDPP.A,"Energy consumption per GDP, Israel, Annual",thousand Btu per USD at purchasing power parities,A,ISR,1980,2024,2026-07-27T15:59:23-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-ITA-TBTUUSDPP.A,"Energy consumption per GDP, Italy, Annual",thousand Btu per USD at purchasing power parities,A,ITA,1980,2024,2026-07-27T15:59:23-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-JAM-TBTUUSDPP.A,"Energy consumption per GDP, Jamaica, Annual",thousand Btu per USD at purchasing power parities,A,JAM,1980,2024,2026-06-24T13:57:47-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-JOR-TBTUUSDPP.A,"Energy consumption per GDP, Jordan, Annual",thousand Btu per USD at purchasing power parities,A,JOR,1980,2024,2026-06-24T13:57:47-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-JPN-TBTUUSDPP.A,"Energy consumption per GDP, Japan, Annual",thousand Btu per USD at purchasing power parities,A,JPN,1980,2024,2026-07-27T15:59:23-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-KAZ-TBTUUSDPP.A,"Energy consumption per GDP, Kazakhstan, Annual",thousand Btu per USD at purchasing power parities,A,KAZ,1980,2024,2026-06-24T13:57:47-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-KEN-TBTUUSDPP.A,"Energy consumption per GDP, Kenya, Annual",thousand Btu per USD at purchasing power parities,A,KEN,1980,2024,2026-07-27T15:59:23-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-KGZ-TBTUUSDPP.A,"Energy consumption per GDP, Kyrgyzstan, Annual",thousand Btu per USD at purchasing power parities,A,KGZ,1980,2024,2026-06-24T13:57:47-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-KHM-TBTUUSDPP.A,"Energy consumption per GDP, Cambodia, Annual",thousand Btu per USD at purchasing power parities,A,KHM,1980,2024,2026-06-24T13:57:47-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-KIR-TBTUUSDPP.A,"Energy consumption per GDP, Kiribati, Annual",thousand Btu per USD at purchasing power parities,A,KIR,1980,2024,2026-06-24T13:57:47-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-KNA-TBTUUSDPP.A,"Energy consumption per GDP, Saint Kitts and Nevis, Annual",thousand Btu per USD at purchasing power parities,A,KNA,1980,2024,2026-06-24T13:57:47-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-KOR-TBTUUSDPP.A,"Energy consumption per GDP, South Korea, Annual",thousand Btu per USD at purchasing power parities,A,KOR,1980,2024,2026-06-24T13:57:47-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-KWT-TBTUUSDPP.A,"Energy consumption per GDP, Kuwait, Annual",thousand Btu per USD at purchasing power parities,A,KWT,1980,2024,2026-03-25T21:02:29-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-LAO-TBTUUSDPP.A,"Energy consumption per GDP, Laos, Annual",thousand Btu per USD at purchasing power parities,A,LAO,1980,2024,2026-03-11T15:04:19-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-LBN-TBTUUSDPP.A,"Energy consumption per GDP, Lebanon, Annual",thousand Btu per USD at purchasing power parities,A,LBN,1980,2024,2026-06-24T13:57:47-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-LBR-TBTUUSDPP.A,"Energy consumption per GDP, Liberia, Annual",thousand Btu per USD at purchasing power parities,A,LBR,1980,2024,2026-04-28T15:19:27-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-LBY-TBTUUSDPP.A,"Energy consumption per GDP, Libya, Annual",thousand Btu per USD at purchasing power parities,A,LBY,1980,2024,2026-06-24T13:57:47-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-LCA-TBTUUSDPP.A,"Energy consumption per GDP, Saint Lucia, Annual",thousand Btu per USD at purchasing power parities,A,LCA,1980,2024,2026-06-24T13:57:47-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-LKA-TBTUUSDPP.A,"Energy consumption per GDP, Sri Lanka, Annual",thousand Btu per USD at purchasing power parities,A,LKA,1980,2024,2026-04-28T15:19:27-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-LSO-TBTUUSDPP.A,"Energy consumption per GDP, Lesotho, Annual",thousand Btu per USD at purchasing power parities,A,LSO,1980,2024,2026-06-24T13:57:47-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-LTU-TBTUUSDPP.A,"Energy consumption per GDP, Lithuania, Annual",thousand Btu per USD at purchasing power parities,A,LTU,1980,2024,2026-06-24T13:57:47-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-LUX-TBTUUSDPP.A,"Energy consumption per GDP, Luxembourg, Annual",thousand Btu per USD at purchasing power parities,A,LUX,1980,2024,2026-06-24T13:57:47-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-LVA-TBTUUSDPP.A,"Energy consumption per GDP, Latvia, Annual",thousand Btu per USD at purchasing power parities,A,LVA,1980,2024,2026-06-24T13:57:47-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-MAC-TBTUUSDPP.A,"Energy consumption per GDP, Macau, Annual",thousand Btu per USD at purchasing power parities,A,MAC,1980,2024,2026-06-24T13:57:47-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-MAR-TBTUUSDPP.A,"Energy consumption per GDP, Morocco, Annual",thousand Btu per USD at purchasing power parities,A,MAR,1980,2024,2026-03-11T15:04:19-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-MDA-TBTUUSDPP.A,"Energy consumption per GDP, Moldova, Annual",thousand Btu per USD at purchasing power parities,A,MDA,1980,2024,2026-06-24T13:57:47-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-MDG-TBTUUSDPP.A,"Energy consumption per GDP, Madagascar, Annual",thousand Btu per USD at purchasing power parities,A,MDG,1980,2024,2026-03-11T15:04:19-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-MDV-TBTUUSDPP.A,"Energy consumption per GDP, Maldives, Annual",thousand Btu per USD at purchasing power parities,A,MDV,1980,2024,2026-06-24T13:57:47-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-WP18-TBTUUSDPP.A,"Energy consumption per GDP, Mexico, Annual",thousand Btu per USD at purchasing power parities,A,MEX,1980,2024,2026-06-24T13:57:47-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-MKD-TBTUUSDPP.A,"Energy consumption per GDP, North Macedonia, Annual",thousand Btu per USD at purchasing power parities,A,MKD,1980,2024,2026-06-24T13:57:47-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-MLI-TBTUUSDPP.A,"Energy consumption per GDP, Mali, Annual",thousand Btu per USD at purchasing power parities,A,MLI,1980,2024,2026-04-28T15:19:27-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-MLT-TBTUUSDPP.A,"Energy consumption per GDP, Malta, Annual",thousand Btu per USD at purchasing power parities,A,MLT,1980,2024,2026-06-24T13:57:47-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-MMR-TBTUUSDPP.A,"Energy consumption per GDP, Burma, Annual",thousand Btu per USD at purchasing power parities,A,MMR,1980,2024,2026-06-24T13:57:47-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-MNE-TBTUUSDPP.A,"Energy consumption per GDP, Montenegro, Annual",thousand Btu per USD at purchasing power parities,A,MNE,1980,2024,2026-06-24T13:57:47-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-MNG-TBTUUSDPP.A,"Energy consumption per GDP, Mongolia, Annual",thousand Btu per USD at purchasing power parities,A,MNG,1980,2024,2026-03-11T15:04:19-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-MOZ-TBTUUSDPP.A,"Energy consumption per GDP, Mozambique, Annual",thousand Btu per USD at purchasing power parities,A,MOZ,1980,2024,2026-04-28T15:19:27-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-MRT-TBTUUSDPP.A,"Energy consumption per GDP, Mauritania, Annual",thousand Btu per USD at purchasing power parities,A,MRT,1980,2024,2026-03-25T21:02:29-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-MUS-TBTUUSDPP.A,"Energy consumption per GDP, Mauritius, Annual",thousand Btu per USD at purchasing power parities,A,MUS,1980,2024,2026-08-21T19:06:13-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-MWI-TBTUUSDPP.A,"Energy consumption per GDP, Malawi, Annual",thousand Btu per USD at purchasing power parities,A,MWI,1980,2024,2026-07-27T15:59:23-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-MYS-TBTUUSDPP.A,"Energy consumption per GDP, Malaysia, Annual",thousand Btu per USD at purchasing power parities,A,MYS,1980,2024,2026-06-24T13:57:47-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-NAM-TBTUUSDPP.A,"Energy consumption per GDP, Namibia, Annual",thousand Btu per USD at purchasing power parities,A,NAM,1980,2024,2026-06-24T13:57:47-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-NER-TBTUUSDPP.A,"Energy consumption per GDP, Niger, Annual",thousand Btu per USD at purchasing power parities,A,NER,1980,2024,2026-06-24T13:57:47-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-NGA-TBTUUSDPP.A,"Energy consumption per GDP, Nigeria, Annual",thousand Btu per USD at purchasing power parities,A,NGA,1980,2024,2026-06-24T13:57:47-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-NIC-TBTUUSDPP.A,"Energy consumption per GDP, Nicaragua, Annual",thousand Btu per USD at purchasing power parities,A,NIC,1980,2024,2026-06-24T13:57:47-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-NLD-TBTUUSDPP.A,"Energy consumption per GDP, Netherlands, Annual",thousand Btu per USD at purchasing power parities,A,NLD,1980,2024,2026-08-21T19:06:13-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-NOR-TBTUUSDPP.A,"Energy consumption per GDP, Norway, Annual",thousand Btu per USD at purchasing power parities,A,NOR,1980,2024,2026-06-24T13:57:47-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-NPL-TBTUUSDPP.A,"Energy consumption per GDP, Nepal, Annual",thousand Btu per USD at purchasing power parities,A,NPL,1980,2024,2026-06-24T13:57:47-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-NRU-TBTUUSDPP.A,"Energy consumption per GDP, Nauru, Annual",thousand Btu per USD at purchasing power parities,A,NRU,1980,2024,2026-03-11T15:04:19-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-NZL-TBTUUSDPP.A,"Energy consumption per GDP, New Zealand, Annual",thousand Btu per USD at purchasing power parities,A,NZL,1980,2024,2026-07-27T15:59:23-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-OMN-TBTUUSDPP.A,"Energy consumption per GDP, Oman, Annual",thousand Btu per USD at purchasing power parities,A,OMN,1980,2024,2026-04-28T15:19:27-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-PAK-TBTUUSDPP.A,"Energy consumption per GDP, Pakistan, Annual",thousand Btu per USD at purchasing power parities,A,PAK,1980,2024,2026-06-24T13:57:47-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-PAN-TBTUUSDPP.A,"Energy consumption per GDP, Panama, Annual",thousand Btu per USD at purchasing power parities,A,PAN,1980,2024,2026-06-24T13:57:47-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-PER-TBTUUSDPP.A,"Energy consumption per GDP, Peru, Annual",thousand Btu per USD at purchasing power parities,A,PER,1980,2024,2026-06-24T13:57:47-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-PHL-TBTUUSDPP.A,"Energy consumption per GDP, Philippines, Annual",thousand Btu per USD at purchasing power parities,A,PHL,1980,2024,2026-06-24T13:57:47-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-PNG-TBTUUSDPP.A,"Energy consumption per GDP, Papua New Guinea, Annual",thousand Btu per USD at purchasing power parities,A,PNG,1980,2024,2026-06-24T13:57:47-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-POL-TBTUUSDPP.A,"Energy consumption per GDP, Poland, Annual",thousand Btu per USD at purchasing power parities,A,POL,1980,2024,2026-06-24T13:57:47-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-PRI-TBTUUSDPP.A,"Energy consumption per GDP, Puerto Rico, Annual",thousand Btu per USD at purchasing power parities,A,PRI,1980,2024,2026-06-24T13:57:47-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-PRT-TBTUUSDPP.A,"Energy consumption per GDP, Portugal, Annual",thousand Btu per USD at purchasing power parities,A,PRT,1980,2024,2026-06-24T13:57:47-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-PRY-TBTUUSDPP.A,"Energy consumption per GDP, Paraguay, Annual",thousand Btu per USD at purchasing power parities,A,PRY,1980,2024,2026-06-24T13:57:47-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-QAT-TBTUUSDPP.A,"Energy consumption per GDP, Qatar, Annual",thousand Btu per USD at purchasing power parities,A,QAT,1980,2024,2026-08-21T19:06:13-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-ROU-TBTUUSDPP.A,"Energy consumption per GDP, Romania, Annual",thousand Btu per USD at purchasing power parities,A,ROU,1980,2024,2026-08-21T19:06:13-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-WP25-TBTUUSDPP.A,"Energy consumption per GDP, Russia, Annual",thousand Btu per USD at purchasing power parities,A,RUS,1980,2024,2026-06-24T13:57:47-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-RWA-TBTUUSDPP.A,"Energy consumption per GDP, Rwanda, Annual",thousand Btu per USD at purchasing power parities,A,RWA,1980,2024,2026-07-27T15:59:23-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-SAU-TBTUUSDPP.A,"Energy consumption per GDP, Saudi Arabia, Annual",thousand Btu per USD at purchasing power parities,A,SAU,1980,2024,2026-06-24T13:57:47-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-SDN-TBTUUSDPP.A,"Energy consumption per GDP, Sudan, Annual",thousand Btu per USD at purchasing power parities,A,SDN,1980,2024,2026-08-21T19:06:13-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-SEN-TBTUUSDPP.A,"Energy consumption per GDP, Senegal, Annual",thousand Btu per USD at purchasing power parities,A,SEN,1980,2024,2026-03-11T15:04:19-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-SGP-TBTUUSDPP.A,"Energy consumption per GDP, Singapore, Annual",thousand Btu per USD at purchasing power parities,A,SGP,1980,2024,2026-06-24T13:57:47-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-SLB-TBTUUSDPP.A,"Energy consumption per GDP, Solomon Islands, Annual",thousand Btu per USD at purchasing power parities,A,SLB,1980,2024,2026-06-24T13:57:47-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-SLE-TBTUUSDPP.A,"Energy consumption per GDP, Sierra Leone, Annual",thousand Btu per USD at purchasing power parities,A,SLE,1980,2024,2026-04-28T15:19:27-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-SLV-TBTUUSDPP.A,"Energy consumption per GDP, El Salvador, Annual",thousand Btu per USD at purchasing power parities,A,SLV,1980,2024,2026-06-24T13:57:47-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-SOM-TBTUUSDPP.A,"Energy consumption per GDP, Somalia, Annual",thousand Btu per USD at purchasing power parities,A,SOM,1980,2024,2026-06-24T13:57:47-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-SRB-TBTUUSDPP.A,"Energy consumption per GDP, Serbia, Annual",thousand Btu per USD at purchasing power parities,A,SRB,1980,2024,2026-04-28T15:19:27-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-SSD-TBTUUSDPP.A,"Energy consumption per GDP, South Sudan, Annual",thousand Btu per USD at purchasing power parities,A,SSD,1980,2024,2026-04-28T15:19:27-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-STP-TBTUUSDPP.A,"Energy consumption per GDP, Sao Tome and Principe, Annual",thousand Btu per USD at purchasing power parities,A,STP,1980,2024,2026-04-28T15:19:27-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-SUR-TBTUUSDPP.A,"Energy consumption per GDP, Suriname, Annual",thousand Btu per USD at purchasing power parities,A,SUR,1980,2024,2026-06-24T13:57:47-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-SVK-TBTUUSDPP.A,"Energy consumption per GDP, Slovakia, Annual",thousand Btu per USD at purchasing power parities,A,SVK,1980,2024,2026-08-21T19:06:13-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-SVN-TBTUUSDPP.A,"Energy consumption per GDP, Slovenia, Annual",thousand Btu per USD at purchasing power parities,A,SVN,1980,2024,2026-06-24T13:57:47-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-SWE-TBTUUSDPP.A,"Energy consumption per GDP, Sweden, Annual",thousand Btu per USD at purchasing power parities,A,SWE,1980,2024,2026-06-24T13:57:47-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-SWZ-TBTUUSDPP.A,"Energy consumption per GDP, Eswatini, Annual",thousand Btu per USD at purchasing power parities,A,SWZ,1980,2024,2026-07-27T15:59:23-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-SYC-TBTUUSDPP.A,"Energy consumption per GDP, Seychelles, Annual",thousand Btu per USD at purchasing power parities,A,SYC,1980,2024,2026-06-24T13:57:47-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-SYR-TBTUUSDPP.A,"Energy consumption per GDP, Syria, Annual",thousand Btu per USD at purchasing power parities,A,SYR,1980,2024,2026-06-24T13:57:47-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-TCD-TBTUUSDPP.A,"Energy consumption per GDP, Chad, Annual",thousand Btu per USD at purchasing power parities,A,TCD,1980,2024,2026-06-24T13:57:47-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-TGO-TBTUUSDPP.A,"Energy consumption per GDP, Togo, Annual",thousand Btu per USD at purchasing power parities,A,TGO,1980,2024,2026-03-11T15:04:19-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-THA-TBTUUSDPP.A,"Energy consumption per GDP, Thailand, Annual",thousand Btu per USD at purchasing power parities,A,THA,1980,2024,2026-03-25T21:02:29-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-TJK-TBTUUSDPP.A,"Energy consumption per GDP, Tajikistan, Annual",thousand Btu per USD at purchasing power parities,A,TJK,1980,2024,2026-06-24T13:57:47-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-TKM-TBTUUSDPP.A,"Energy consumption per GDP, Turkmenistan, Annual",thousand Btu per USD at purchasing power parities,A,TKM,1980,2024,2026-06-24T13:57:47-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-TLS-TBTUUSDPP.A,"Energy consumption per GDP, Timor-Leste, Annual",thousand Btu per USD at purchasing power parities,A,TLS,1980,2024,2026-06-24T13:57:47-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-TON-TBTUUSDPP.A,"Energy consumption per GDP, Tonga, Annual",thousand Btu per USD at purchasing power parities,A,TON,1980,2024,2026-06-24T13:57:47-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-TTO-TBTUUSDPP.A,"Energy consumption per GDP, Trinidad and Tobago, Annual",thousand Btu per USD at purchasing power parities,A,TTO,1980,2024,2026-03-11T15:04:19-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-TUN-TBTUUSDPP.A,"Energy consumption per GDP, Tunisia, Annual",thousand Btu per USD at purchasing power parities,A,TUN,1980,2024,2026-03-25T21:02:29-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-TUR-TBTUUSDPP.A,"Energy consumption per GDP, Turkiye, Annual",thousand Btu per USD at purchasing power parities,A,TUR,1980,2024,2026-03-11T15:04:19-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-TUV-TBTUUSDPP.A,"Energy consumption per GDP, Tuvalu, Annual",thousand Btu per USD at purchasing power parities,A,TUV,1980,2024,2026-03-11T15:04:19-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-TZA-TBTUUSDPP.A,"Energy consumption per GDP, Tanzania, Annual",thousand Btu per USD at purchasing power parities,A,TZA,1980,2024,2026-03-11T15:04:19-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-UGA-TBTUUSDPP.A,"Energy consumption per GDP, Uganda, Annual",thousand Btu per USD at purchasing power parities,A,UGA,1980,2024,2026-03-11T15:04:19-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-UKR-TBTUUSDPP.A,"Energy consumption per GDP, Ukraine, Annual",thousand Btu per USD at purchasing power parities,A,UKR,1980,2024,2026-04-28T15:19:27-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-URY-TBTUUSDPP.A,"Energy consumption per GDP, Uruguay, Annual",thousand Btu per USD at purchasing power parities,A,URY,1980,2024,2026-07-27T15:59:23-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-WP27-TBTUUSDPP.A,"Energy consumption per GDP, United States, Annual",thousand Btu per USD at purchasing power parities,A,USA,1980,2024,2026-03-11T15:04:19-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-UZB-TBTUUSDPP.A,"Energy consumption per GDP, Uzbekistan, Annual",thousand Btu per USD at purchasing power parities,A,UZB,1980,2024,2026-06-24T13:57:47-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-VCT-TBTUUSDPP.A,"Energy consumption per GDP, Saint Vincent/Grenadines, Annual",thousand Btu per USD at purchasing power parities,A,VCT,1980,2024,2026-06-24T13:57:47-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-OPSA-TBTUUSDPP.A,"Energy consumption per GDP, OPEC - South America, Annual",thousand Btu per USD at purchasing power parities,A,VEN,1980,2024,2026-03-11T15:04:19-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-VNM-TBTUUSDPP.A,"Energy consumption per GDP, Vietnam, Annual",thousand Btu per USD at purchasing power parities,A,VNM,1980,2024,2026-04-28T15:19:27-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-VUT-TBTUUSDPP.A,"Energy consumption per GDP, Vanuatu, Annual",thousand Btu per USD at purchasing power parities,A,VUT,1980,2024,2026-06-24T13:57:47-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-WSM-TBTUUSDPP.A,"Energy consumption per GDP, Samoa, Annual",thousand Btu per USD at purchasing power parities,A,WSM,1980,2024,2026-06-24T13:57:47-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-YEM-TBTUUSDPP.A,"Energy consumption per GDP, Yemen, Annual",thousand Btu per USD at purchasing power parities,A,YEM,1980,2024,2026-06-24T13:57:47-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-ZAF-TBTUUSDPP.A,"Energy consumption per GDP, South Africa, Annual",thousand Btu per USD at purchasing power parities,A,ZAF,1980,2024,2026-03-11T15:04:19-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-ZMB-TBTUUSDPP.A,"Energy consumption per GDP, Zambia, Annual",thousand Btu per USD at purchasing power parities,A,ZMB,1980,2024,2026-06-24T13:57:47-04:00,45,None
+energy_consumption_per_gdp,INTL.47-34-ZWE-TBTUUSDPP.A,"Energy consumption per GDP, Zimbabwe, Annual",thousand Btu per USD at purchasing power parities,A,ZWE,1980,2024,2026-08-21T19:06:13-04:00,45,None

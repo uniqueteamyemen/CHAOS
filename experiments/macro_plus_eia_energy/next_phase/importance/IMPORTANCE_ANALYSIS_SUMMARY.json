@@ -1,0 +1,14 @@
+{
+  "stability_checkpoints_requested": 9,
+  "runs_with_errors": 0,
+  "interpretation_runs_completed": 9,
+  "variable_rows": 891,
+  "attention_rows": 405,
+  "step_variable_rows": 55044,
+  "candidate_pattern_count": 3,
+  "errors": [],
+  "selection_rule": "descriptive stability summaries across seeds/encoders; no TEST selection",
+  "causal_claims": false,
+  "raw_data_modified": false,
+  "training_repeated": false
+}

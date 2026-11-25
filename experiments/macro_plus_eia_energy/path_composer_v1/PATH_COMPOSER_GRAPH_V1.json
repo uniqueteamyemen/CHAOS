@@ -1,0 +1,48 @@
+{
+  "composer_id": "PATH_COMPOSER_V1",
+  "formula": "score = alpha_economic*I(high_growth) + alpha_energy_mediator*I(high_growth AND energy_intensity_down_at_t_plus_2); prediction if score >= 0.5",
+  "weights_fitted_on": "fit 2006-2009 only",
+  "weights": {
+    "economic_core": 0.6,
+    "energy_mediator": 0.6740331491712708,
+    "conflict_edge": 0.0
+  },
+  "nodes": [
+    "AMA_HIGH_GROWTH_STATE_V1",
+    "AMA_MATERIAL_DROP_2PP_T_PLUS_3_V1",
+    "ENERGY_INTENSITY_DOWN_T_PLUS_2_V1",
+    "UCDP_STATE_CONFLICT_T_PLUS_3_V1"
+  ],
+  "edges": [
+    {
+      "source": "AMA_HIGH_GROWTH_STATE_V1",
+      "target": "AMA_MATERIAL_DROP_2PP_T_PLUS_3_V1",
+      "status": "supported_predictive",
+      "enabled": true
+    },
+    {
+      "source": "AMA_HIGH_GROWTH_STATE_V1",
+      "target": "ENERGY_INTENSITY_DOWN_T_PLUS_2_V1",
+      "status": "candidate_mediator",
+      "enabled": true
+    },
+    {
+      "source": "ENERGY_INTENSITY_DOWN_T_PLUS_2_V1",
+      "target": "AMA_MATERIAL_DROP_2PP_T_PLUS_3_V1",
+      "status": "rejected_as_additive_in_current_evidence",
+      "enabled": false
+    },
+    {
+      "source": "AMA_HIGH_GROWTH_STATE_V1",
+      "target": "UCDP_STATE_CONFLICT_T_PLUS_3_V1",
+      "status": "rejected_or_unresolved",
+      "enabled": false
+    }
+  ],
+  "interpretation": "scores are predictive composition weights, not causal coefficients",
+  "native_frequency": "annual",
+  "locked_test_used": false,
+  "raw_modified": false,
+  "imputation": false,
+  "normalization": false
+}

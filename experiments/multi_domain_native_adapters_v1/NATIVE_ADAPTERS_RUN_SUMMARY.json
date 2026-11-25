@@ -1,0 +1,27 @@
+{
+  "adapter_run_id": "CHAOS_NATIVE_HEALTH_DISASTER_ADAPTERS_V1",
+  "who": {
+    "raw": "catalog_first/readiness_gate/independent_sources/who_covid_2026/raw/WHO_COVID_GLOBAL_DAILY_RAW.csv",
+    "sha256": "6063fda90dba3439f551c0bfadce53bb437d9982056cd1a92aeee64963bf2038",
+    "raw_rows": 573360,
+    "rows_with_reported_case_or_death": 215751,
+    "entities": 239,
+    "start": "2020-01-04",
+    "end": "2026-07-19",
+    "native_frequency": "daily",
+    "imputation": false
+  },
+  "usgs": {
+    "raw": "catalog_first/readiness_gate/independent_sources/usgs_earthquake_2026/raw/USGS_EARTHQUAKE_M6_5_2000_2024_RAW.csv",
+    "sha256": "bd17af21e62c440caa8777e4a1656e8ff2316d507ac5d387d1089ced2f626916",
+    "events": 1141,
+    "start": "2000-01-08T16:47:20.580Z",
+    "end": "2024-12-27T12:47:37.696Z",
+    "native_frequency": "event",
+    "country_matching": false
+  },
+  "annualization": false,
+  "production_shock_inferred": false,
+  "event_to_annual_edge_status": "not_testable",
+  "causal_claims_permitted": false
+}

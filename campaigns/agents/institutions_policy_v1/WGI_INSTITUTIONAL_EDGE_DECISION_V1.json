@@ -1,0 +1,102 @@
+{
+  "evaluation_id": "CHAOS_WGI_EDGE_SUPPORT_GATE_V1",
+  "support_rule": "at least 10 positive and 10 negative targets per split",
+  "trivial_ba_reference": 0.5,
+  "rows": [
+    {
+      "dimension": "GOV_WGI_CC.EST",
+      "edge_id": "institutional_continuity_persistence",
+      "validation_confirmation_rows": 4,
+      "valid_oos_rows": 4,
+      "degenerate_rows": 0,
+      "max_oos_ba_excess_over_trivial": 0.02379161181117173,
+      "decision": "rejected_as_trivial_prevalence_persistence"
+    },
+    {
+      "dimension": "GOV_WGI_CC.EST",
+      "edge_id": "institutional_decline_persistence",
+      "validation_confirmation_rows": 4,
+      "valid_oos_rows": 1,
+      "degenerate_rows": 4,
+      "max_oos_ba_excess_over_trivial": -0.0023764258555132867,
+      "decision": "not_testable_due_rare_target_or_split_support"
+    },
+    {
+      "dimension": "GOV_WGI_GE.EST",
+      "edge_id": "institutional_continuity_persistence",
+      "validation_confirmation_rows": 4,
+      "valid_oos_rows": 4,
+      "degenerate_rows": 0,
+      "max_oos_ba_excess_over_trivial": 0.06656898656898658,
+      "decision": "rejected_as_trivial_prevalence_persistence"
+    },
+    {
+      "dimension": "GOV_WGI_GE.EST",
+      "edge_id": "institutional_decline_persistence",
+      "validation_confirmation_rows": 4,
+      "valid_oos_rows": 1,
+      "degenerate_rows": 4,
+      "max_oos_ba_excess_over_trivial": -0.006024096385542188,
+      "decision": "not_testable_due_rare_target_or_split_support"
+    },
+    {
+      "dimension": "GOV_WGI_RL.EST",
+      "edge_id": "institutional_continuity_persistence",
+      "validation_confirmation_rows": 4,
+      "valid_oos_rows": 4,
+      "degenerate_rows": 0,
+      "max_oos_ba_excess_over_trivial": 0.09935502228967086,
+      "decision": "rejected_as_trivial_prevalence_persistence"
+    },
+    {
+      "dimension": "GOV_WGI_RL.EST",
+      "edge_id": "institutional_decline_persistence",
+      "validation_confirmation_rows": 4,
+      "valid_oos_rows": 0,
+      "degenerate_rows": 5,
+      "max_oos_ba_excess_over_trivial": null,
+      "decision": "not_testable_due_rare_target_or_split_support"
+    },
+    {
+      "dimension": "GOV_WGI_RQ.EST",
+      "edge_id": "institutional_continuity_persistence",
+      "validation_confirmation_rows": 4,
+      "valid_oos_rows": 4,
+      "degenerate_rows": 0,
+      "max_oos_ba_excess_over_trivial": 0.07614253755193356,
+      "decision": "rejected_as_trivial_prevalence_persistence"
+    },
+    {
+      "dimension": "GOV_WGI_RQ.EST",
+      "edge_id": "institutional_decline_persistence",
+      "validation_confirmation_rows": 4,
+      "valid_oos_rows": 0,
+      "degenerate_rows": 5,
+      "max_oos_ba_excess_over_trivial": null,
+      "decision": "not_testable_due_rare_target_or_split_support"
+    },
+    {
+      "dimension": "GOV_WGI_VA.EST",
+      "edge_id": "institutional_continuity_persistence",
+      "validation_confirmation_rows": 4,
+      "valid_oos_rows": 4,
+      "degenerate_rows": 0,
+      "max_oos_ba_excess_over_trivial": 0.06568163019775919,
+      "decision": "rejected_as_trivial_prevalence_persistence"
+    },
+    {
+      "dimension": "GOV_WGI_VA.EST",
+      "edge_id": "institutional_decline_persistence",
+      "validation_confirmation_rows": 4,
+      "valid_oos_rows": 0,
+      "degenerate_rows": 6,
+      "max_oos_ba_excess_over_trivial": null,
+      "decision": "not_testable_due_rare_target_or_split_support"
+    }
+  ],
+  "null_summary_reference": "WGI_INSTITUTIONAL_EDGE_MAXSTAT_NULL_SUMMARY.json",
+  "interpretation": "The raw WGI max-stat result is not promoted when the observed maximum is driven by degenerate target support or trivial prevalence persistence.",
+  "causal_claims_permitted": false,
+  "positive_composer_edges": 0,
+  "status": "research_evidence_only"
+}

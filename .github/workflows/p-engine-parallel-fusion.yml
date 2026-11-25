@@ -1,0 +1,43 @@
+name: CHAOS P-engine parallel fusion
+
+on:
+  push:
+    branches:
+      - experiment/p-engine-parallel-fusion-v1
+    paths:
+      - "experiments/identity_lab/exp_p_engine/**"
+      - ".github/workflows/p-engine-parallel-fusion.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  p-engine:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Run production P-engine regression tests
+        run: python -m unittest experiments.identity_lab.exp_p_engine.test_engine -v
+      - name: Run isolated A/B/C/D/E/F parallel-fusion unit tests
+        run: python -m unittest experiments.identity_lab.exp_p_engine.test_parallel_fusion -v
+      - name: Run paired 500-seed A/B/C/D/E/F benchmark
+        run: python -m experiments.identity_lab.exp_p_engine.benchmark_parallel_fusion
+      - name: Run paired CUSUM k/h threshold sweep on seven targeted conditions
+        run: |
+          python -m unittest experiments.identity_lab.exp_p_engine.test_cusum_parameter_sweep -v
+          python -m experiments.identity_lab.exp_p_engine.cusum_parameter_sweep
+      - name: Upload P-engine benchmark report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: chaos-p-engine-parallel-fusion
+          path: |
+            experiments/identity_lab/exp_p_engine/results/parallel_fusion_500_seed_benchmark.json
+            experiments/identity_lab/exp_p_engine/results/cusum_parameter_sweep.json
+          if-no-files-found: warn
+          retention-days: 90

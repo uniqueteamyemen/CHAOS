@@ -1,0 +1,51 @@
+{
+  "wdi_codes": [
+    "AG.LND.PRCP.MM",
+    "EG.USE.PCAP.KG.OE",
+    "FP.CPI.TOTL.ZG",
+    "NE.EXP.GNFS.KD.ZG",
+    "NE.IMP.GNFS.KD.ZG",
+    "NY.GDP.MKTP.CD",
+    "NY.GDP.MKTP.KD",
+    "NY.GDP.MKTP.KD.ZG",
+    "NY.GDP.PCAP.KD",
+    "PA.NUS.PPP",
+    "SL.UEM.TOTL.ZS",
+    "SP.POP.TOTL"
+  ],
+  "weo_codes": [
+    "NGDP_RPCH",
+    "PCPI",
+    "BCA_NGDPD",
+    "GGXWDG_NGDP",
+    "TM_RPCH",
+    "TX_RPCH",
+    "LUR",
+    "PPPEX"
+  ],
+  "source_specific_columns": [
+    "wdi__AG.LND.PRCP.MM",
+    "wdi__EG.USE.PCAP.KG.OE",
+    "wdi__FP.CPI.TOTL.ZG",
+    "wdi__NE.EXP.GNFS.KD.ZG",
+    "wdi__NE.IMP.GNFS.KD.ZG",
+    "wdi__NY.GDP.MKTP.CD",
+    "wdi__NY.GDP.MKTP.KD",
+    "wdi__NY.GDP.MKTP.KD.ZG",
+    "wdi__NY.GDP.PCAP.KD",
+    "wdi__PA.NUS.PPP",
+    "wdi__SL.UEM.TOTL.ZS",
+    "wdi__SP.POP.TOTL",
+    "imf__NGDP_RPCH",
+    "imf__PCPI",
+    "imf__BCA_NGDPD",
+    "imf__GGXWDG_NGDP",
+    "imf__TM_RPCH",
+    "imf__TX_RPCH",
+    "imf__LUR",
+    "imf__PPPEX"
+  ],
+  "selection_rule": "Catalog candidates only; explicit definitions/units and actual 2000–2024 coverage must be reviewed before any experiment.",
+  "no_transformation": true,
+  "no_experiment": true
+}

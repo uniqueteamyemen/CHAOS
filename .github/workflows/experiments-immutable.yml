@@ -1,0 +1,51 @@
+name: experiments-immutable
+
+on:
+  pull_request:
+    branches:
+      - main-phase2
+  push:
+    branches:
+      - main-phase2
+    paths:
+      - 'experiments/**'
+      - 'structural_engine/isolated_break_detector_v1/**'
+      - 'scripts/guards/check_experiments_immutable.py'
+      - 'scripts/guards/test_check_experiments_immutable.py'
+      - '.github/workflows/experiments-immutable.yml'
+      - 'AGENTS.md'
+      - '.github/CODEOWNERS'
+
+permissions:
+  contents: read
+
+jobs:
+  experiments-immutable:
+    name: experiments-immutable
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout complete history
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Test immutable path guard
+        run: python -m unittest discover -s scripts/guards -p 'test_*.py' -v
+      - name: Reject any change to frozen archive paths
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          PUSH_BASE_SHA: ${{ github.event.before }}
+          PUSH_HEAD_SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          if [[ "$EVENT_NAME" == "pull_request" ]]; then
+            python scripts/guards/check_experiments_immutable.py --base "$PR_BASE_SHA" --head "$PR_HEAD_SHA" --triple-dot
+          else
+            if [[ "$PUSH_BASE_SHA" =~ ^0+$ ]]; then
+              echo "Cannot verify the initial push diff; failing closed."
+              exit 2
+            fi
+            python scripts/guards/check_experiments_immutable.py --base "$PUSH_BASE_SHA" --head "$PUSH_HEAD_SHA"
+          fi

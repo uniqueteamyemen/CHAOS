@@ -1,0 +1,86 @@
+{
+  "run_id": "threshold_grid_stability_v1",
+  "horizon": 3,
+  "family": "material_drop_2pp",
+  "target_thresholds": [
+    3.0,
+    4.0,
+    5.0,
+    6.0,
+    7.0,
+    8.0
+  ],
+  "population_thresholds": [
+    25000000,
+    50000000,
+    75000000,
+    100000000,
+    150000000,
+    250000000
+  ],
+  "grid_cells": 36,
+  "population_strata_fit_q33": 4501515.56,
+  "population_strata_fit_q67": 16412295.760000002,
+  "folds": [
+    [
+      "fold_A",
+      [
+        2006,
+        2010
+      ],
+      [
+        2011,
+        2013
+      ],
+      [
+        2014,
+        2016
+      ]
+    ],
+    [
+      "fold_B",
+      [
+        2006,
+        2012
+      ],
+      [
+        2013,
+        2015
+      ],
+      [
+        2016,
+        2019
+      ]
+    ],
+    [
+      "fold_C",
+      [
+        2007,
+        2011
+      ],
+      [
+        2012,
+        2014
+      ],
+      [
+        2015,
+        2018
+      ]
+    ]
+  ],
+  "best_cell_by_validation_mean_ba": {
+    "threshold_target": 4.0,
+    "threshold_population": 75000000.0,
+    "validation_ba_mean": 0.7276399174497001,
+    "validation_ba_sd": 0.04573037937326262,
+    "validation_f1_mean": 0.513766608520894,
+    "validation_support_mean": 171.33333333333334,
+    "folds_with_support": 3.0,
+    "folds_ba_above_055": 3.0
+  },
+  "selection_note": "best cell is descriptive grid summary; no locked test or operational promotion",
+  "locked_test_executed": false,
+  "raw_data_modified": false,
+  "imputation": false,
+  "normalization": false
+}

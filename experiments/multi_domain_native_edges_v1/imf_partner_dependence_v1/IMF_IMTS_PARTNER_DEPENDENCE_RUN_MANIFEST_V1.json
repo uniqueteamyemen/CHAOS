@@ -1,0 +1,13 @@
+{
+  "run_id": "IMF_IMTS_DOMINANT_PARTNER_DEPENDENCE_RUN_V1",
+  "executed_at_utc": "2026-08-27T00:38:37.445378+00:00",
+  "contract_path": "experimental_contracts/IMF_IMTS_DOMINANT_PARTNER_DEPENDENCE_CONTRACT_V1.json",
+  "contract_sha256": "754d462d4fab1c9d4b1174334af075986350923d8b463c6b5d940171495907a1",
+  "tool": "tooling/run_imf_partner_dependence_test_v1.py",
+  "python": "3.12.3",
+  "numpy": "2.3.5",
+  "pandas": "2.3.3",
+  "rng_seed": 20260827,
+  "raw_modified": false,
+  "status": "not_testable"
+}

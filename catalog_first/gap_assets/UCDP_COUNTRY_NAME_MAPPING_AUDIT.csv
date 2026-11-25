@@ -1,0 +1,200 @@
+ucdp_country,normalized_name,wdi_code,match_status
+Afghanistan,afghanistan,AFG,exact-normalized-unique
+Albania,albania,ALB,exact-normalized-unique
+Algeria,algeria,DZA,exact-normalized-unique
+Andorra,andorra,AND,exact-normalized-unique
+Angola,angola,AGO,exact-normalized-unique
+Antigua & Barbuda,antigua barbuda,,unmatched
+Argentina,argentina,ARG,exact-normalized-unique
+Armenia,armenia,ARM,exact-normalized-unique
+Australia,australia,AUS,exact-normalized-unique
+Austria,austria,AUT,exact-normalized-unique
+Azerbaijan,azerbaijan,AZE,exact-normalized-unique
+Bahamas,bahamas,,unmatched
+Bahrain,bahrain,BHR,exact-normalized-unique
+Bangladesh,bangladesh,BGD,exact-normalized-unique
+Barbados,barbados,BRB,exact-normalized-unique
+Belarus,belarus,BLR,exact-normalized-unique
+Belgium,belgium,BEL,exact-normalized-unique
+Belize,belize,BLZ,exact-normalized-unique
+Benin,benin,BEN,exact-normalized-unique
+Bhutan,bhutan,BTN,exact-normalized-unique
+Bolivia,bolivia,,unmatched
+Bosnia-Herzegovina,bosnia herzegovina,,unmatched
+Botswana,botswana,BWA,exact-normalized-unique
+Brazil,brazil,BRA,exact-normalized-unique
+Brunei,brunei,,unmatched
+Bulgaria,bulgaria,BGR,exact-normalized-unique
+Burkina Faso,burkina faso,BFA,exact-normalized-unique
+Burundi,burundi,BDI,exact-normalized-unique
+Cambodia (Kampuchea),cambodia kampuchea,,unmatched
+Cameroon,cameroon,CMR,exact-normalized-unique
+Canada,canada,CAN,exact-normalized-unique
+Cape Verde,cape verde,,unmatched
+Central African Republic,central african republic,CAF,exact-normalized-unique
+Chad,chad,TCD,exact-normalized-unique
+Chile,chile,CHL,exact-normalized-unique
+China,china,CHN,exact-normalized-unique
+Colombia,colombia,COL,exact-normalized-unique
+Comoros,comoros,COM,exact-normalized-unique
+Congo,congo,,unmatched
+Costa Rica,costa rica,CRI,exact-normalized-unique
+Croatia,croatia,HRV,exact-normalized-unique
+Cuba,cuba,CUB,exact-normalized-unique
+Cyprus,cyprus,CYP,exact-normalized-unique
+Czech Republic,czech republic,,unmatched
+Czechoslovakia,czechoslovakia,,unmatched
+DR Congo (Zaire),dr congo zaire,,unmatched
+Denmark,denmark,DNK,exact-normalized-unique
+Djibouti,djibouti,DJI,exact-normalized-unique
+Dominica,dominica,DMA,exact-normalized-unique
+Dominican Republic,dominican republic,DOM,exact-normalized-unique
+East Timor,east timor,,unmatched
+Ecuador,ecuador,ECU,exact-normalized-unique
+Egypt,egypt,,unmatched
+El Salvador,el salvador,SLV,exact-normalized-unique
+Equatorial Guinea,equatorial guinea,GNQ,exact-normalized-unique
+Eritrea,eritrea,ERI,exact-normalized-unique
+Estonia,estonia,EST,exact-normalized-unique
+Ethiopia,ethiopia,ETH,exact-normalized-unique
+Federated States of Micronesia,federated states of micronesia,,unmatched
+Fiji,fiji,FJI,exact-normalized-unique
+Finland,finland,FIN,exact-normalized-unique
+France,france,FRA,exact-normalized-unique
+Gabon,gabon,GAB,exact-normalized-unique
+Gambia,gambia,,unmatched
+Georgia,georgia,GEO,exact-normalized-unique
+German Democratic Republic,german democratic republic,,unmatched
+Germany,germany,DEU,exact-normalized-unique
+Ghana,ghana,GHA,exact-normalized-unique
+Greece,greece,GRC,exact-normalized-unique
+Grenada,grenada,GRD,exact-normalized-unique
+Guatemala,guatemala,GTM,exact-normalized-unique
+Guinea,guinea,GIN,exact-normalized-unique
+Guinea-Bissau,guinea bissau,GNB,exact-normalized-unique
+Guyana,guyana,GUY,exact-normalized-unique
+Haiti,haiti,HTI,exact-normalized-unique
+Honduras,honduras,HND,exact-normalized-unique
+Hungary,hungary,HUN,exact-normalized-unique
+Iceland,iceland,ISL,exact-normalized-unique
+India,india,IND,exact-normalized-unique
+Indonesia,indonesia,IDN,exact-normalized-unique
+Iran,iran,,unmatched
+Iraq,iraq,IRQ,exact-normalized-unique
+Ireland,ireland,IRL,exact-normalized-unique
+Israel,israel,ISR,exact-normalized-unique
+Italy,italy,ITA,exact-normalized-unique
+Ivory Coast,ivory coast,,unmatched
+Jamaica,jamaica,JAM,exact-normalized-unique
+Japan,japan,JPN,exact-normalized-unique
+Jordan,jordan,JOR,exact-normalized-unique
+Kazakhstan,kazakhstan,KAZ,exact-normalized-unique
+Kenya,kenya,KEN,exact-normalized-unique
+Kingdom of eSwatini (Swaziland),kingdom of eswatini swaziland,,unmatched
+Kiribati,kiribati,KIR,exact-normalized-unique
+Kosovo,kosovo,XKX,exact-normalized-unique
+Kuwait,kuwait,KWT,exact-normalized-unique
+Kyrgyzstan,kyrgyzstan,,unmatched
+Laos,laos,,unmatched
+Latvia,latvia,LVA,exact-normalized-unique
+Lebanon,lebanon,LBN,exact-normalized-unique
+Lesotho,lesotho,LSO,exact-normalized-unique
+Liberia,liberia,LBR,exact-normalized-unique
+Libya,libya,LBY,exact-normalized-unique
+Liechtenstein,liechtenstein,LIE,exact-normalized-unique
+Lithuania,lithuania,LTU,exact-normalized-unique
+Luxembourg,luxembourg,LUX,exact-normalized-unique
+Madagascar (Malagasy),madagascar malagasy,,unmatched
+Malawi,malawi,MWI,exact-normalized-unique
+Malaysia,malaysia,MYS,exact-normalized-unique
+Maldives,maldives,MDV,exact-normalized-unique
+Mali,mali,MLI,exact-normalized-unique
+Malta,malta,MLT,exact-normalized-unique
+Marshall Islands,marshall islands,MHL,exact-normalized-unique
+Mauritania,mauritania,MRT,exact-normalized-unique
+Mauritius,mauritius,MUS,exact-normalized-unique
+Mexico,mexico,MEX,exact-normalized-unique
+Moldova,moldova,MDA,exact-normalized-unique
+Monaco,monaco,MCO,exact-normalized-unique
+Mongolia,mongolia,MNG,exact-normalized-unique
+Montenegro,montenegro,MNE,exact-normalized-unique
+Morocco,morocco,MAR,exact-normalized-unique
+Mozambique,mozambique,MOZ,exact-normalized-unique
+Myanmar (Burma),myanmar burma,,unmatched
+Namibia,namibia,NAM,exact-normalized-unique
+Nauru,nauru,,unmatched
+Nepal,nepal,NPL,exact-normalized-unique
+Netherlands,netherlands,NLD,exact-normalized-unique
+New Zealand,new zealand,NZL,exact-normalized-unique
+Nicaragua,nicaragua,NIC,exact-normalized-unique
+Niger,niger,NER,exact-normalized-unique
+Nigeria,nigeria,NGA,exact-normalized-unique
+North Korea,north korea,,unmatched
+North Macedonia,north macedonia,MKD,exact-normalized-unique
+Norway,norway,NOR,exact-normalized-unique
+Oman,oman,OMN,exact-normalized-unique
+Pakistan,pakistan,PAK,exact-normalized-unique
+Palau,palau,PLW,exact-normalized-unique
+Panama,panama,PAN,exact-normalized-unique
+Papua New Guinea,papua new guinea,PNG,exact-normalized-unique
+Paraguay,paraguay,PRY,exact-normalized-unique
+Peru,peru,PER,exact-normalized-unique
+Philippines,philippines,PHL,exact-normalized-unique
+Poland,poland,POL,exact-normalized-unique
+Portugal,portugal,PRT,exact-normalized-unique
+Qatar,qatar,QAT,exact-normalized-unique
+Romania,romania,ROU,exact-normalized-unique
+Russia (Soviet Union),russia soviet union,,unmatched
+Rwanda,rwanda,RWA,exact-normalized-unique
+Saint Kitts and Nevis,saint kitts and nevis,,unmatched
+Saint Lucia,saint lucia,,unmatched
+Saint Vincent and the Grenadines,saint vincent and the grenadines,,unmatched
+Samoa (Western Samoa),samoa western samoa,,unmatched
+San Marino,san marino,SMR,exact-normalized-unique
+Sao Tome and Principe,sao tome and principe,STP,exact-normalized-unique
+Saudi Arabia,saudi arabia,SAU,exact-normalized-unique
+Senegal,senegal,SEN,exact-normalized-unique
+Serbia (Yugoslavia),serbia yugoslavia,,unmatched
+Seychelles,seychelles,SYC,exact-normalized-unique
+Sierra Leone,sierra leone,SLE,exact-normalized-unique
+Singapore,singapore,SGP,exact-normalized-unique
+Slovakia,slovakia,,unmatched
+Slovenia,slovenia,SVN,exact-normalized-unique
+Solomon Islands,solomon islands,SLB,exact-normalized-unique
+Somalia,somalia,,unmatched
+South Africa,south africa,ZAF,exact-normalized-unique
+South Korea,south korea,,unmatched
+South Sudan,south sudan,SSD,exact-normalized-unique
+Spain,spain,ESP,exact-normalized-unique
+Sri Lanka,sri lanka,LKA,exact-normalized-unique
+Sudan,sudan,SDN,exact-normalized-unique
+Suriname,suriname,SUR,exact-normalized-unique
+Sweden,sweden,SWE,exact-normalized-unique
+Switzerland,switzerland,CHE,exact-normalized-unique
+Syria,syria,,unmatched
+Taiwan,taiwan,,unmatched
+Tajikistan,tajikistan,TJK,exact-normalized-unique
+Tanzania,tanzania,TZA,exact-normalized-unique
+Thailand,thailand,THA,exact-normalized-unique
+Togo,togo,TGO,exact-normalized-unique
+Tonga,tonga,TON,exact-normalized-unique
+Trinidad and Tobago,trinidad and tobago,TTO,exact-normalized-unique
+Tunisia,tunisia,TUN,exact-normalized-unique
+Turkey,turkey,,unmatched
+Turkmenistan,turkmenistan,TKM,exact-normalized-unique
+Tuvalu,tuvalu,TUV,exact-normalized-unique
+Uganda,uganda,UGA,exact-normalized-unique
+Ukraine,ukraine,UKR,exact-normalized-unique
+United Arab Emirates,united arab emirates,ARE,exact-normalized-unique
+United Kingdom,united kingdom,GBR,exact-normalized-unique
+United States of America,united states of america,,unmatched
+Uruguay,uruguay,URY,exact-normalized-unique
+Uzbekistan,uzbekistan,UZB,exact-normalized-unique
+Vanuatu,vanuatu,VUT,exact-normalized-unique
+Vatican City State,vatican city state,,unmatched
+Venezuela,venezuela,,unmatched
+Vietnam (North Vietnam),vietnam north vietnam,,unmatched
+Yemen (North Yemen),yemen north yemen,,unmatched
+Yemen (South Yemen),yemen south yemen,,unmatched
+Zambia,zambia,ZMB,exact-normalized-unique
+Zimbabwe (Rhodesia),zimbabwe rhodesia,,unmatched

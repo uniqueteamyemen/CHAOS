@@ -1,0 +1,59 @@
+{
+  "config_version": "1.1",
+  "provider": "USGS ComCat FDSN Event Web Service",
+  "api_base": "https://earthquake.usgs.gov/fdsnws/event/1/query",
+  "format": "geojson",
+  "start_year": 1980,
+  "end_year": 2024,
+  "minimum_magnitude": 4.5,
+  "query_limit": 20000,
+  "orderby": "time-asc",
+  "note": "These rectangular query windows are reproducible spatial proxies, not exact tectonic plate-boundary polygons. The five spatial windows are kept separate and queried independently.",
+  "belts": [
+    {
+      "id": "japan_kuril_kamchatka",
+      "name": "Japan–Kuril–Kamchatka",
+      "label_ar": "اليابان–الكوريل–كامتشاتكا",
+      "minlatitude": 35,
+      "maxlatitude": 60,
+      "minlongitude": 140,
+      "maxlongitude": 180
+    },
+    {
+      "id": "sunda_andaman",
+      "name": "Sunda–Andaman",
+      "label_ar": "سوندا–أندامان",
+      "minlatitude": -15,
+      "maxlatitude": 20,
+      "minlongitude": 90,
+      "maxlongitude": 130
+    },
+    {
+      "id": "andes_subduction",
+      "name": "Andes subduction",
+      "label_ar": "اندساس الأنديز",
+      "minlatitude": -45,
+      "maxlatitude": 10,
+      "minlongitude": -82,
+      "maxlongitude": -65
+    },
+    {
+      "id": "alaska_aleutian",
+      "name": "Alaska–Aleutian",
+      "label_ar": "ألاسكا–الألوشيان",
+      "minlatitude": 50,
+      "maxlatitude": 65,
+      "minlongitude": -180,
+      "maxlongitude": -130
+    },
+    {
+      "id": "hellenic_anatolian",
+      "name": "Hellenic–Anatolian",
+      "label_ar": "اليونان–الأناضول",
+      "minlatitude": 30,
+      "maxlatitude": 42,
+      "minlongitude": 18,
+      "maxlongitude": 35
+    }
+  ]
+}

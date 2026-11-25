@@ -1,0 +1,5 @@
+source=GDELT event archive
+attempted_dates=2000-01-01,2010-01-01,2020-01-01,2025-01-01
+result=HTTP 404 for the attempted daily archive paths; no event payload captured
+policy=do not infer, synthesize, or replace missing archive paths
+next_action=resolve current GDELT archive naming/catalog path before bounded extraction

@@ -1,0 +1,166 @@
+{
+  "run_count": 5,
+  "seeds": [
+    271108,
+    271109,
+    271110,
+    271111,
+    271112
+  ],
+  "rows": 60,
+  "ranges": [
+    {
+      "split": "confirmation",
+      "variant": "identity_sequence_null",
+      "horizon": 1,
+      "observed_rate_min": 0.8612903225806452,
+      "observed_rate_max": 0.8612903225806452,
+      "null_mean_min": 0.7767897322884207,
+      "null_mean_max": 0.7769341243418728,
+      "p_value_min": 9.999000099990002e-05,
+      "p_value_max": 9.999000099990002e-05,
+      "unique_statistics_min": 304
+    },
+    {
+      "split": "confirmation",
+      "variant": "identity_sequence_null",
+      "horizon": 2,
+      "observed_rate_min": 0.7712177121771218,
+      "observed_rate_max": 0.7712177121771218,
+      "null_mean_min": 0.6457486961201397,
+      "null_mean_max": 0.6461824254975478,
+      "p_value_min": 9.999000099990002e-05,
+      "p_value_max": 9.999000099990002e-05,
+      "unique_statistics_min": 474
+    },
+    {
+      "split": "confirmation",
+      "variant": "identity_sequence_null",
+      "horizon": 3,
+      "observed_rate_min": 0.6978723404255319,
+      "observed_rate_max": 0.6978723404255319,
+      "null_mean_min": 0.5659108850298714,
+      "null_mean_max": 0.5662842050030606,
+      "p_value_min": 9.999000099990002e-05,
+      "p_value_max": 9.999000099990002e-05,
+      "unique_statistics_min": 557
+    },
+    {
+      "split": "confirmation",
+      "variant": "time_placebo_sequence_shift_proxy",
+      "horizon": 1,
+      "observed_rate_min": 0.8612903225806452,
+      "observed_rate_max": 0.8612903225806452,
+      "null_mean_min": 0.8248238738834412,
+      "null_mean_max": 0.8251158852687372,
+      "p_value_min": 0.0001999600079984003,
+      "p_value_max": 0.0001999600079984003,
+      "unique_statistics_min": 156
+    },
+    {
+      "split": "confirmation",
+      "variant": "time_placebo_sequence_shift_proxy",
+      "horizon": 2,
+      "observed_rate_min": 0.7712177121771218,
+      "observed_rate_max": 0.7712177121771218,
+      "null_mean_min": 0.7034349813544206,
+      "null_mean_max": 0.7040369652494817,
+      "p_value_min": 0.0001999600079984003,
+      "p_value_max": 0.0001999600079984003,
+      "unique_statistics_min": 355
+    },
+    {
+      "split": "confirmation",
+      "variant": "time_placebo_sequence_shift_proxy",
+      "horizon": 3,
+      "observed_rate_min": 0.6978723404255319,
+      "observed_rate_max": 0.6978723404255319,
+      "null_mean_min": 0.6187656484066516,
+      "null_mean_max": 0.6194715379390453,
+      "p_value_min": 0.0001999600079984003,
+      "p_value_max": 0.0001999600079984003,
+      "unique_statistics_min": 505
+    },
+    {
+      "split": "fit",
+      "variant": "identity_sequence_null",
+      "horizon": 1,
+      "observed_rate_min": 0.855,
+      "observed_rate_max": 0.855,
+      "null_mean_min": 0.572602,
+      "null_mean_max": 0.5729860000000001,
+      "p_value_min": 9.999000099990002e-05,
+      "p_value_max": 9.999000099990002e-05,
+      "unique_statistics_min": 26
+    },
+    {
+      "split": "fit",
+      "variant": "identity_sequence_null",
+      "horizon": 2,
+      "observed_rate_min": 0.775,
+      "observed_rate_max": 0.775,
+      "null_mean_min": 0.39224849999999994,
+      "null_mean_max": 0.39294650000000003,
+      "p_value_min": 9.999000099990002e-05,
+      "p_value_max": 9.999000099990002e-05,
+      "unique_statistics_min": 26
+    },
+    {
+      "split": "fit",
+      "variant": "identity_sequence_null",
+      "horizon": 3,
+      "observed_rate_min": 0.715,
+      "observed_rate_max": 0.715,
+      "null_mean_min": 0.29364250000000003,
+      "null_mean_max": 0.29398199999999997,
+      "p_value_min": 9.999000099990002e-05,
+      "p_value_max": 9.999000099990002e-05,
+      "unique_statistics_min": 24
+    },
+    {
+      "split": "fit",
+      "variant": "time_placebo_sequence_shift_proxy",
+      "horizon": 1,
+      "observed_rate_min": 0.855,
+      "observed_rate_max": 0.855,
+      "null_mean_min": 0.6853610000000001,
+      "null_mean_max": 0.685735,
+      "p_value_min": 0.0001999600079984003,
+      "p_value_max": 0.0001999600079984003,
+      "unique_statistics_min": 16
+    },
+    {
+      "split": "fit",
+      "variant": "time_placebo_sequence_shift_proxy",
+      "horizon": 2,
+      "observed_rate_min": 0.775,
+      "observed_rate_max": 0.775,
+      "null_mean_min": 0.480925,
+      "null_mean_max": 0.481455,
+      "p_value_min": 0.0001999600079984003,
+      "p_value_max": 0.0001999600079984003,
+      "unique_statistics_min": 20
+    },
+    {
+      "split": "fit",
+      "variant": "time_placebo_sequence_shift_proxy",
+      "horizon": 3,
+      "observed_rate_min": 0.715,
+      "observed_rate_max": 0.715,
+      "null_mean_min": 0.342838,
+      "null_mean_max": 0.34361400000000003,
+      "p_value_min": 0.0001999600079984003,
+      "p_value_max": 0.0001999600079984003,
+      "unique_statistics_min": 24
+    }
+  ],
+  "source_sha256": {
+    "experiments/dual_track_v02/imf_partner_substitution_v3/stability_runs/SUMMARY_SEED_271108.json": "40323f687db6e904c16377d91361eb98a873f76cf38da39ec0c6fe2b6f2f419b",
+    "experiments/dual_track_v02/imf_partner_substitution_v3/stability_runs/SUMMARY_SEED_271109.json": "b501300f96ec93438cde85cd6dfe42ecf898170a96764773d4cc2c0c16ef0ffa",
+    "experiments/dual_track_v02/imf_partner_substitution_v3/stability_runs/SUMMARY_SEED_271110.json": "64c4d71b275b5ee297239f25fbfaf4536c3c61ade57a40708358870cd4d9cdab",
+    "experiments/dual_track_v02/imf_partner_substitution_v3/stability_runs/SUMMARY_SEED_271111.json": "4f14ea70a90e1825f7d820dcf39c19c2f9bc5174ff1aad9664c5366c233ed5ab",
+    "experiments/dual_track_v02/imf_partner_substitution_v3/stability_runs/SUMMARY_SEED_271112.json": "719e5e6704cf8a28e8ce93ccb890f9cea90df6898950cc4a911a263394b5def3"
+  },
+  "status": "recorded_stability",
+  "contract_ref": "experimental_contracts/dual_track_v02/IMF_IMTS_PARTNER_SUBSTITUTION_CONTRACT_V3.json"
+}

@@ -1,0 +1,58 @@
+name: CHAOS — DomainState Integrity
+
+on:
+  pull_request:
+    branches:
+      - main-phase2
+    paths:
+      - 'chaos_governance_kernel/domain_state.py'
+      - 'scripts/governance/validate_domain_state_registry.py'
+      - 'campaigns/CAMPAIGN_SHARED_GATE_V1/DOMAIN_STATE_SCHEMA_VALIDATION_V1.json'
+      - 'campaigns/agents/**'
+      - 'campaigns/research_rounds/**'
+      - 'experiments/**'
+      - 'tests/governance/**'
+      - '.github/workflows/discovery-domain-state-integrity.yml'
+  push:
+    branches:
+      - main-phase2
+      - discovery/d1-domainstate-integrity-v1
+    paths:
+      - 'chaos_governance_kernel/domain_state.py'
+      - 'scripts/governance/validate_domain_state_registry.py'
+      - 'campaigns/CAMPAIGN_SHARED_GATE_V1/DOMAIN_STATE_SCHEMA_VALIDATION_V1.json'
+      - 'campaigns/agents/**'
+      - 'campaigns/research_rounds/**'
+      - 'experiments/**'
+      - 'tests/governance/**'
+      - '.github/workflows/discovery-domain-state-integrity.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  domain-state-integrity:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout triggering commit
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Run focused validator unit tests
+        run: python -m unittest discover -s tests/governance -p 'test_domain_state_integrity.py' -v
+      - name: Audit all registered DomainState assets without modifying them
+        run: python scripts/governance/validate_domain_state_registry.py
+      - name: Publish DomainState integrity report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: chaos-domain-state-integrity-${{ github.sha }}
+          path: governance/artifacts/DOMAIN_STATE_INTEGRITY_REPORT_V2.json
+          if-no-files-found: error
+          retention-days: 90

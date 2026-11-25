@@ -1,0 +1,17 @@
+{
+  "round_id":"CHAOS_BROWSER_DEEP_RESEARCH_ROUND_2026_08_27_V1",
+  "parent_baseline":"campaigns/CAMPAIGN_BASELINE_V1.json",
+  "parent_run":"campaigns/CAMPAIGN_RUN_MANIFEST_V2.json",
+  "purpose":"Re-examine official multi-source availability and evidence above the existing CHAOS campaign without replacing prior artifacts or rerunning prior locked experiments",
+  "browser_context":"My Browser connected; pages and official URLs reviewed for provenance and current access paths",
+  "source_tracks":[
+    {"track":"trade","sources":["World Bank WDI","UN Comtrade","WTO Stats","IMF Data","UNCTAD Data Hub"],"requirement":"series/dataset/version/coverage/frequency/export path before adapter or edge"},
+    {"track":"institutions_policy","sources":["World Bank WGI","OECD Government at a Glance","OECD Product Market Regulation"],"requirement":"source-defined institutional or regulatory observations; no leader/party causal labels"}
+  ],
+  "reuse_policy":"Previous baseline, schemas, ledgers, evidence, rejected edges and raw provenance remain immutable references; new artifacts are versioned under this round",
+  "admission_policy":"Only supported_predictive TransitionEvidence can enter positive composition; descriptive, rejected, unresolved and not_testable remain quarantined",
+  "frequency_policy":"Preserve native annual/monthly/daily/event frequencies; no implicit annualization",
+  "transformation_policy":"No imputation, source averaging, forced reconciliation, log, normalization or hidden differencing in source extraction",
+  "causal_claims_permitted":false,
+  "status":"active_research_round"
+}

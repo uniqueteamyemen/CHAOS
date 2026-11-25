@@ -1,0 +1,14 @@
+{
+  "run_id": "IMF_IMTS_PARTNER_DEPENDENCE_RUN_V2",
+  "executed_at_utc": "2026-08-27T01:54:38.127678+00:00",
+  "contract_status": "draft_for_review",
+  "contract_sha256": "95c15b08aad41212e5cba2a2128a958c4bfcf3ceaf592aeafb6d167aae09d5e6",
+  "tool": "tooling/run_imf_partner_dependence_v2_fast.py",
+  "python": "3.12.3",
+  "numpy": "2.3.5",
+  "pandas": "2.3.3",
+  "rng_seed": 20260827,
+  "status": "rejected",
+  "raw_modified": false,
+  "runtime_eligible": false
+}

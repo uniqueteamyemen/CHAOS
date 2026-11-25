@@ -1,0 +1,31 @@
+{
+  "method": "within_entity_suffix_backoff",
+  "registered_widths": [
+    3,
+    2,
+    1
+  ],
+  "min_support": 2,
+  "metrics": {
+    "path_model": {
+      "n": 768.0,
+      "accuracy": 0.5598958333333334,
+      "coverage": 0.7335243553008596
+    },
+    "majority_baseline": {
+      "n": 768.0,
+      "accuracy": 0.5598958333333334,
+      "coverage": 0.7335243553008596
+    },
+    "abstention": {
+      "n": 279.0,
+      "rate": 0.2664756446991404
+    },
+    "target": {
+      "horizon_years": 3.0,
+      "n": 1047.0,
+      "backoff_widths": "3..1"
+    }
+  },
+  "status": "diagnostic; no threshold tuning"
+}

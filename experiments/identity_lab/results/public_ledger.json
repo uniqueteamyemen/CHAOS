@@ -1,0 +1,34 @@
+{
+  "movements": 600,
+  "products": 20,
+  "types": {
+    "sale": 373,
+    "write_off": 39,
+    "transfer_out": 68,
+    "receipt": 86,
+    "transfer_in": 34
+  },
+  "transfer_records": 102,
+  "patterns": [
+    {
+      "product": "5",
+      "sku": "Cable ties 200 mm bag",
+      "start": "2025-09-12",
+      "ops": 5,
+      "units": 12.0,
+      "monthly": 0.4
+    },
+    {
+      "product": "7",
+      "sku": "Wood glue 500 ml",
+      "start": "2025-09-11",
+      "ops": 6,
+      "units": 11.0,
+      "monthly": 0.37
+    }
+  ],
+  "closure": {
+    "products": 20,
+    "products_with_counted_closing": 0
+  }
+}

@@ -1,0 +1,16 @@
+reporter_id,confirmation_max_risk_difference,defined,positive
+BRA,,False,False
+CAN,,False,False
+CHN,,False,False
+DEU,,False,False
+FRA,,False,False
+GBR,,False,False
+IND,,False,False
+ITA,,False,False
+JPN,,False,False
+KOR,,False,False
+MEX,,False,False
+SAU,-0.5,True,False
+TUR,,False,False
+USA,,False,False
+ZAF,,False,False

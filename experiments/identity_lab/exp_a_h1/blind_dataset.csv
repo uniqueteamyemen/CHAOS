@@ -1,0 +1,5 @@
+case_id,split,A,B,C,D,Y
+T1,train,1,0,0,0,0
+T2,train,1,1,1,0,1
+T3,train,1,1,0,1,0
+H1,holdout,1,1,1,0,1

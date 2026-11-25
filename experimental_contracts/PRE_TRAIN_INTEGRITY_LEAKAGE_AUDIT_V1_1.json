@@ -1,0 +1,64 @@
+{
+  "matrix_sha256": "015736245ac4010aa1c97055930c69ca3c7da5fdd5970f5da34456b67a3172ad",
+  "contract_sha256": "1cf846f77c8de9fbefd1497e72bcc3c9202d4a05c6e703e02e843d88e0c1aaed",
+  "window_manifest": "experimental_contracts/WINDOW_MANIFEST_PRE_TRAIN_V1_1.csv",
+  "checks": {
+    "matrix_rows": {
+      "expected": 3475,
+      "observed": 3475,
+      "pass": true
+    },
+    "entity_count": {
+      "expected": 139,
+      "observed": 139,
+      "pass": true
+    },
+    "variable_count": {
+      "expected": 11,
+      "observed": 11,
+      "pass": true
+    },
+    "missing_cells": {
+      "observed": 0,
+      "pass": true
+    },
+    "duplicate_entity_year": {
+      "observed": 0,
+      "pass": true
+    },
+    "duplicate_windows": {
+      "observed": 0,
+      "pass": true
+    },
+    "encoder_target_firewall": {
+      "violations": 0,
+      "pass": true
+    },
+    "encoder_presence": {
+      "violations": 0,
+      "pass": true
+    },
+    "target_presence": {
+      "violations": 0,
+      "pass": true
+    },
+    "chronological_split": {
+      "pass": true
+    },
+    "split_counts": {
+      "observed": {
+        "test": 695,
+        "train": 1390,
+        "validation": 556
+      },
+      "expected": {
+        "train": 1390,
+        "validation": 556,
+        "test": 695
+      },
+      "pass": true
+    }
+  },
+  "all_pass": true,
+  "training_run": false
+}

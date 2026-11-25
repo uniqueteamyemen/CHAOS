@@ -1,0 +1,14 @@
+{
+  "stability_runs": 9,
+  "ablation_runs_new": 6,
+  "full_reference_not_retrained": true,
+  "target_history_runs": 2,
+  "importance_runs": 9,
+  "best_validation_run": "stability_seed17_enc7",
+  "candidate_pattern_count": 3,
+  "stable_lag_candidate_count": 0,
+  "reverse_extraction_run": false,
+  "surrogate_run": false,
+  "raw_data_modified": false,
+  "test_used_for_selection": false
+}

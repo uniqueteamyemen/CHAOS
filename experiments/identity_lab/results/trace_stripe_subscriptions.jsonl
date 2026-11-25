@@ -1,0 +1,9 @@
+{"step": 1, "action": "create", "h0": "H0", "code": 200, "provenance": "stated", "note": "session created", "state": null, "signal": null}
+{"step": 2, "action": "ack", "h0": "H0", "code": 200, "provenance": "stated", "note": "provider_ack synchronized", "state": null, "signal": null}
+{"step": 3, "action": "unlock", "h0": "H0", "code": 200, "provenance": "stated", "note": "unlock succeeded after provider acknowledgement", "state": null, "signal": null}
+{"step": 4, "action": "unlock", "h0": "H0", "code": 409, "provenance": "observed", "note": "duplicate unlock rejected", "state": null, "signal": null}
+{"step": 5, "action": "create", "h0": "H0", "code": 409, "provenance": "observed", "note": "duplicate receipt rejected", "state": null, "signal": null}
+{"step": 6, "action": "resolve", "h0": "H0", "code": 200, "provenance": "observed", "note": "repeated resolve returned identical H1", "state": null, "signal": null}
+{"step": 7, "action": "cancel", "h0": "H0", "code": 200, "provenance": "stated", "note": "cancellation webhook", "state": null, "signal": null}
+{"step": 8, "action": "unlock", "h0": "H0", "code": 409, "provenance": "stated", "note": "unlock rejected after cancellation", "state": null, "signal": null}
+{"step": 9, "action": "resolve", "h0": "H0", "code": 409, "provenance": "stated", "note": "resolve rejected after cancellation", "state": null, "signal": null}

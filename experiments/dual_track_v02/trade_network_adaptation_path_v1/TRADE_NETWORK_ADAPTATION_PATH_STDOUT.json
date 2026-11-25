@@ -1,0 +1,25 @@
+{
+  "status": "not_testable",
+  "reporters": 135,
+  "states": 3375,
+  "events": 1,
+  "final_h2": {
+    "train_events": 0,
+    "eval_events": 0,
+    "reporters": 0,
+    "candidate_brier": null,
+    "target_history_brier": null,
+    "state_persistence_brier": null,
+    "previous_state_brier": null,
+    "candidate_accuracy": null,
+    "rows": []
+  },
+  "checks": {
+    "final_events_h2": 0,
+    "coverage": false,
+    "candidate_beats_rank_h2": false,
+    "final_block_available": false,
+    "nulls_non_degenerate": false,
+    "rolling_rows": 12
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "contract_id": "CHAOS_HEALTH_NATIVE_EVENT_PATH_V1",
+  "source": "data/raw/who_covid_global_v2/WHO-COVID-19-global-daily-data.csv",
+  "native_frequency": "daily",
+  "unit": "country-day",
+  "feature_at_t": "reported new cases and new deaths available at date t",
+  "target_at_t_plus_7": "reported activity state at t+7 defined from raw daily counts",
+  "horizon_days": 7,
+  "path_window_days": 7,
+  "min_support": 2,
+  "unsupported_paths": "abstain",
+  "target_semantics": "reported surveillance outcome, not true incidence",
+  "retrospective_revision_policy": "freeze downloaded vintage and record checksum",
+  "annual_alignment": false,
+  "production_or_supply_outcome": false,
+  "causal_claims_permitted": false,
+  "promotion_requires": ["native OOS evaluation", "appropriate temporal null", "coverage and stability", "independent vintage or source"]
+}

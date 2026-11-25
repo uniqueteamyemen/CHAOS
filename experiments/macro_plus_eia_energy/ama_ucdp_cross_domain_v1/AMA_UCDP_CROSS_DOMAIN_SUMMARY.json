@@ -1,0 +1,41 @@
+{
+  "run_id": "ama_ucdp_cross_domain_replication_v1",
+  "ama_source": "UN AMA January 2026",
+  "ucdp_source": "UCDP Organized Violence Country-Year 26.1",
+  "ama_rows": 12100,
+  "ucdp_rows": 7132,
+  "matched_rows": 5762,
+  "matched_countries": 163,
+  "outcomes": [
+    "future_state_conflict",
+    "future_high_fatality_25"
+  ],
+  "rule": "ama_gdp_growth_pct[t] > 4.0",
+  "horizon": 3,
+  "splits": {
+    "fit": [
+      2003,
+      2009
+    ],
+    "inner": [
+      2010,
+      2012
+    ],
+    "validation": [
+      2013,
+      2016
+    ],
+    "confirmation": [
+      2017,
+      2019
+    ]
+  },
+  "ged_daily_aggregated": false,
+  "ucdp_country_year_native": true,
+  "previous_ama_replication_test_reopened": false,
+  "raw_modified": false,
+  "imputation": false,
+  "normalization": false,
+  "causal_claims_permitted": false,
+  "decision": "cross-domain exploratory replication; no operational promotion"
+}

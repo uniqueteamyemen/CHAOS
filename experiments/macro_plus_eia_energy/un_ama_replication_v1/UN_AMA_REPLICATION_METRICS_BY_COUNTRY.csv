@@ -1,0 +1,851 @@
+split,CountryID,Country,model,n_origins,support,positive_outcomes,precision,recall,f1,balanced_accuracy,false_alarm_rate,entity_coverage,year_coverage
+discovery_fit,4,Afghanistan,high_growth_rule,7,4,2,0.5,1.0,0.6666666666666666,0.8,0.4,1,4
+discovery_fit,8,Albania,high_growth_rule,7,7,3,0.42857142857142855,1.0,0.6,0.5,1.0,1,7
+discovery_fit,12,Algeria,high_growth_rule,7,6,2,0.3333333333333333,1.0,0.5,0.6,0.8,1,6
+discovery_fit,20,Andorra,high_growth_rule,7,6,4,0.6666666666666666,1.0,0.8,0.6666666666666666,0.6666666666666666,1,6
+discovery_fit,24,Angola,high_growth_rule,7,4,2,0.5,1.0,0.6666666666666666,0.8,0.4,1,4
+discovery_fit,28,Antigua and Barbuda,high_growth_rule,7,4,2,0.5,1.0,0.6666666666666666,0.8,0.4,1,4
+discovery_fit,31,Azerbaijan,high_growth_rule,7,7,2,0.2857142857142857,1.0,0.4444444444444444,0.5,1.0,1,7
+discovery_fit,32,Argentina,high_growth_rule,7,4,2,0.5,1.0,0.6666666666666666,0.8,0.4,1,4
+discovery_fit,36,Australia,high_growth_rule,7,1,0,0.0,0.0,0.0,0.5,0.14285714285714285,1,1
+discovery_fit,40,Austria,high_growth_rule,7,0,2,0.0,0.0,0.0,0.5,0.0,0,0
+discovery_fit,44,Bahamas,high_growth_rule,7,1,3,1.0,0.3333333333333333,0.5,0.6666666666666666,0.0,1,1
+discovery_fit,48,Bahrain,high_growth_rule,7,5,1,0.2,1.0,0.3333333333333333,0.6666666666666666,0.6666666666666666,1,5
+discovery_fit,50,Bangladesh,high_growth_rule,7,7,0,0.0,0.0,0.0,0.5,1.0,1,7
+discovery_fit,51,Armenia,high_growth_rule,7,7,2,0.2857142857142857,1.0,0.4444444444444444,0.5,1.0,1,7
+discovery_fit,52,Barbados,high_growth_rule,7,2,2,1.0,1.0,1.0,1.0,0.0,1,2
+discovery_fit,56,Belgium,high_growth_rule,7,0,2,0.0,0.0,0.0,0.5,0.0,0,0
+discovery_fit,60,Bermuda,high_growth_rule,7,2,2,1.0,1.0,1.0,1.0,0.0,1,2
+discovery_fit,64,Bhutan,high_growth_rule,7,7,5,0.7142857142857143,1.0,0.8333333333333334,0.5,1.0,1,7
+discovery_fit,68,Bolivia (Plurinational State of),high_growth_rule,7,3,0,0.0,0.0,0.0,0.5,0.42857142857142855,1,3
+discovery_fit,70,Bosnia and Herzegovina,high_growth_rule,7,4,1,0.25,1.0,0.4,0.75,0.5,1,4
+discovery_fit,72,Botswana,high_growth_rule,7,4,1,0.25,1.0,0.4,0.75,0.5,1,4
+discovery_fit,76,Brazil,high_growth_rule,7,2,2,0.5,0.5,0.5,0.65,0.2,1,2
+discovery_fit,84,Belize,high_growth_rule,7,6,5,0.6666666666666666,0.8,0.7272727272727273,0.4,1.0,1,6
+discovery_fit,90,Solomon Islands,high_growth_rule,7,4,2,0.5,1.0,0.6666666666666666,0.8,0.4,1,4
+discovery_fit,92,British Virgin Islands,high_growth_rule,7,3,3,0.6666666666666666,0.6666666666666666,0.6666666666666666,0.7083333333333333,0.25,1,3
+discovery_fit,96,Brunei Darussalam,high_growth_rule,7,1,4,1.0,0.25,0.4,0.625,0.0,1,1
+discovery_fit,100,Bulgaria,high_growth_rule,7,6,1,0.16666666666666666,1.0,0.2857142857142857,0.5833333333333334,0.8333333333333334,1,6
+discovery_fit,104,Myanmar,high_growth_rule,7,7,2,0.2857142857142857,1.0,0.4444444444444444,0.5,1.0,1,7
+discovery_fit,108,Burundi,high_growth_rule,7,3,1,0.3333333333333333,1.0,0.5,0.8333333333333333,0.3333333333333333,1,3
+discovery_fit,112,Belarus,high_growth_rule,7,7,2,0.2857142857142857,1.0,0.4444444444444444,0.5,1.0,1,7
+discovery_fit,116,Cambodia,high_growth_rule,7,7,2,0.2857142857142857,1.0,0.4444444444444444,0.5,1.0,1,7
+discovery_fit,120,Cameroon,high_growth_rule,7,4,2,0.5,1.0,0.6666666666666666,0.8,0.4,1,4
+discovery_fit,124,Canada,high_growth_rule,7,1,3,1.0,0.3333333333333333,0.5,0.6666666666666666,0.0,1,1
+discovery_fit,132,Cabo Verde,high_growth_rule,7,7,1,0.14285714285714285,1.0,0.25,0.5,1.0,1,7
+discovery_fit,136,Cayman Islands,high_growth_rule,7,2,2,1.0,1.0,1.0,1.0,0.0,1,2
+discovery_fit,140,Central African Republic,high_growth_rule,7,1,1,0.0,0.0,0.0,0.4166666666666667,0.16666666666666666,1,1
+discovery_fit,144,Sri Lanka,high_growth_rule,7,6,1,0.16666666666666666,1.0,0.2857142857142857,0.5833333333333334,0.8333333333333334,1,6
+discovery_fit,148,Chad,high_growth_rule,7,5,3,0.6,1.0,0.75,0.75,0.5,1,5
+discovery_fit,152,Chile,high_growth_rule,7,5,2,0.4,1.0,0.5714285714285714,0.7,0.6,1,5
+discovery_fit,156,China,high_growth_rule,7,7,1,0.14285714285714285,1.0,0.25,0.5,1.0,1,7
+discovery_fit,170,Colombia,high_growth_rule,7,3,1,0.3333333333333333,1.0,0.5,0.8333333333333333,0.3333333333333333,1,3
+discovery_fit,174,Comoros,high_growth_rule,7,0,1,0.0,0.0,0.0,0.5,0.0,0,0
+discovery_fit,178,Congo,high_growth_rule,7,3,3,0.6666666666666666,0.6666666666666666,0.6666666666666666,0.7083333333333333,0.25,1,3
+discovery_fit,180,D.R. of the Congo,high_growth_rule,7,4,1,0.25,1.0,0.4,0.75,0.5,1,4
+discovery_fit,184,Cook Islands,high_growth_rule,7,5,3,0.6,1.0,0.75,0.75,0.5,1,5
+discovery_fit,188,Costa Rica,high_growth_rule,7,3,1,0.3333333333333333,1.0,0.5,0.8333333333333333,0.3333333333333333,1,3
+discovery_fit,191,Croatia,high_growth_rule,7,5,2,0.4,1.0,0.5714285714285714,0.7,0.6,1,5
+discovery_fit,192,Cuba,high_growth_rule,7,4,3,0.75,1.0,0.8571428571428571,0.875,0.25,1,4
+discovery_fit,196,Cyprus,high_growth_rule,7,4,2,0.5,1.0,0.6666666666666666,0.8,0.4,1,4
+discovery_fit,203,Czechia,high_growth_rule,7,4,2,0.5,1.0,0.6666666666666666,0.8,0.4,1,4
+discovery_fit,204,Benin,high_growth_rule,7,4,2,0.5,1.0,0.6666666666666666,0.8,0.4,1,4
+discovery_fit,208,Denmark,high_growth_rule,7,0,3,0.0,0.0,0.0,0.5,0.0,0,0
+discovery_fit,212,Dominica,high_growth_rule,7,4,1,0.25,1.0,0.4,0.75,0.5,1,4
+discovery_fit,214,Dominican Republic,high_growth_rule,7,4,3,0.75,1.0,0.8571428571428571,0.875,0.25,1,4
+discovery_fit,218,Ecuador,high_growth_rule,7,6,3,0.5,1.0,0.6666666666666666,0.625,0.75,1,6
+discovery_fit,222,El Salvador,high_growth_rule,7,1,1,1.0,1.0,1.0,1.0,0.0,1,1
+discovery_fit,226,Equatorial Guinea,high_growth_rule,7,7,5,0.7142857142857143,1.0,0.8333333333333334,0.5,1.0,1,7
+discovery_fit,231,Ethiopia,high_growth_rule,7,5,3,0.6,1.0,0.75,0.75,0.5,1,5
+discovery_fit,232,Eritrea,high_growth_rule,7,1,3,1.0,0.3333333333333333,0.5,0.6666666666666666,0.0,1,1
+discovery_fit,233,Estonia,high_growth_rule,7,7,3,0.42857142857142855,1.0,0.6,0.5,1.0,1,7
+discovery_fit,242,Fiji,high_growth_rule,7,1,3,1.0,0.3333333333333333,0.5,0.6666666666666666,0.0,1,1
+discovery_fit,246,Finland,high_growth_rule,7,3,2,0.6666666666666666,1.0,0.8,0.9,0.2,1,3
+discovery_fit,250,France,high_growth_rule,7,1,2,1.0,0.5,0.6666666666666666,0.75,0.0,1,1
+discovery_fit,258,French Polynesia,high_growth_rule,7,1,2,0.0,0.0,0.0,0.4,0.2,1,1
+discovery_fit,262,Djibouti,high_growth_rule,7,1,0,0.0,0.0,0.0,0.5,0.14285714285714285,1,1
+discovery_fit,266,Gabon,high_growth_rule,7,0,2,0.0,0.0,0.0,0.5,0.0,0,0
+discovery_fit,268,Georgia,high_growth_rule,7,6,2,0.3333333333333333,1.0,0.5,0.6,0.8,1,6
+discovery_fit,270,Gambia,high_growth_rule,7,3,4,0.6666666666666666,0.5,0.5714285714285714,0.5833333333333333,0.3333333333333333,1,3
+discovery_fit,275,State of Palestine,high_growth_rule,7,3,3,1.0,1.0,1.0,1.0,0.0,1,3
+discovery_fit,276,Germany,high_growth_rule,7,0,2,0.0,0.0,0.0,0.5,0.0,0,0
+discovery_fit,288,Ghana,high_growth_rule,7,7,0,0.0,0.0,0.0,0.5,1.0,1,7
+discovery_fit,296,Kiribati,high_growth_rule,7,2,3,1.0,0.6666666666666666,0.8,0.8333333333333333,0.0,1,2
+discovery_fit,300,Greece,high_growth_rule,7,6,2,0.3333333333333333,1.0,0.5,0.6,0.8,1,6
+discovery_fit,304,Greenland,high_growth_rule,7,4,3,0.75,1.0,0.8571428571428571,0.875,0.25,1,4
+discovery_fit,308,Grenada,high_growth_rule,7,3,3,0.6666666666666666,0.6666666666666666,0.6666666666666666,0.7083333333333333,0.25,1,3
+discovery_fit,320,Guatemala,high_growth_rule,7,1,1,1.0,1.0,1.0,1.0,0.0,1,1
+discovery_fit,324,Guinea,high_growth_rule,7,1,1,1.0,1.0,1.0,1.0,0.0,1,1
+discovery_fit,328,Guyana,high_growth_rule,7,6,4,0.6666666666666666,1.0,0.8,0.6666666666666666,0.6666666666666666,1,6
+discovery_fit,332,Haiti,high_growth_rule,7,1,0,0.0,0.0,0.0,0.5,0.14285714285714285,1,1
+discovery_fit,340,Honduras,high_growth_rule,7,5,1,0.2,1.0,0.3333333333333333,0.6666666666666666,0.6666666666666666,1,5
+discovery_fit,344,"China, Hong Kong SAR",high_growth_rule,7,4,4,1.0,1.0,1.0,1.0,0.0,1,4
+discovery_fit,348,Hungary,high_growth_rule,7,5,3,0.4,0.6666666666666666,0.5,0.4583333333333333,0.75,1,5
+discovery_fit,352,Iceland,high_growth_rule,7,4,3,0.75,1.0,0.8571428571428571,0.875,0.25,1,4
+discovery_fit,356,India,high_growth_rule,7,5,1,0.2,1.0,0.3333333333333333,0.6666666666666666,0.6666666666666666,1,5
+discovery_fit,360,Indonesia,high_growth_rule,7,6,0,0.0,0.0,0.0,0.5,0.8571428571428571,1,6
+discovery_fit,364,Iran (Islamic Republic of),high_growth_rule,7,5,4,0.8,1.0,0.8888888888888888,0.8333333333333333,0.3333333333333333,1,5
+discovery_fit,368,Iraq,high_growth_rule,7,2,3,1.0,0.6666666666666666,0.8,0.8333333333333333,0.0,1,2
+discovery_fit,372,Ireland,high_growth_rule,7,6,3,0.5,1.0,0.6666666666666666,0.625,0.75,1,6
+discovery_fit,376,Israel,high_growth_rule,7,4,2,0.5,1.0,0.6666666666666666,0.8,0.4,1,4
+discovery_fit,380,Italy,high_growth_rule,7,0,2,0.0,0.0,0.0,0.5,0.0,0,0
+discovery_fit,384,Côte d'Ivoire,high_growth_rule,7,0,0,0.0,0.0,0.0,0.5,0.0,0,0
+discovery_fit,388,Jamaica,high_growth_rule,7,0,1,0.0,0.0,0.0,0.5,0.0,0,0
+discovery_fit,392,Japan,high_growth_rule,7,0,2,0.0,0.0,0.0,0.5,0.0,0,0
+discovery_fit,398,Kazakhstan,high_growth_rule,7,7,3,0.42857142857142855,1.0,0.6,0.5,1.0,1,7
+discovery_fit,400,Jordan,high_growth_rule,7,7,1,0.14285714285714285,1.0,0.25,0.5,1.0,1,7
+discovery_fit,404,Kenya,high_growth_rule,7,4,1,0.25,1.0,0.4,0.75,0.5,1,4
+discovery_fit,408,D.P.R. of Korea,high_growth_rule,7,0,2,0.0,0.0,0.0,0.5,0.0,0,0
+discovery_fit,410,Republic of Korea,high_growth_rule,7,6,3,0.5,1.0,0.6666666666666666,0.625,0.75,1,6
+discovery_fit,412,Kosovo,high_growth_rule,7,2,2,1.0,1.0,1.0,1.0,0.0,1,2
+discovery_fit,414,Kuwait,high_growth_rule,7,5,4,0.8,1.0,0.8888888888888888,0.8333333333333333,0.3333333333333333,1,5
+discovery_fit,417,Kyrgyzstan,high_growth_rule,7,4,1,0.25,1.0,0.4,0.75,0.5,1,4
+discovery_fit,418,Lao People's DR,high_growth_rule,7,6,1,0.16666666666666666,1.0,0.2857142857142857,0.5833333333333334,0.8333333333333334,1,6
+discovery_fit,422,Lebanon,high_growth_rule,7,1,0,0.0,0.0,0.0,0.5,0.14285714285714285,1,1
+discovery_fit,426,Lesotho,high_growth_rule,7,4,1,0.25,1.0,0.4,0.75,0.5,1,4
+discovery_fit,428,Latvia,high_growth_rule,7,7,2,0.2857142857142857,1.0,0.4444444444444444,0.5,1.0,1,7
+discovery_fit,430,Liberia,high_growth_rule,7,3,2,0.6666666666666666,1.0,0.8,0.9,0.2,1,3
+discovery_fit,434,Libya,high_growth_rule,7,4,3,0.75,1.0,0.8571428571428571,0.875,0.25,1,4
+discovery_fit,438,Liechtenstein,high_growth_rule,7,2,3,1.0,0.6666666666666666,0.8,0.8333333333333333,0.0,1,2
+discovery_fit,440,Lithuania,high_growth_rule,7,6,3,0.5,1.0,0.6666666666666666,0.625,0.75,1,6
+discovery_fit,442,Luxembourg,high_growth_rule,7,3,3,0.6666666666666666,0.6666666666666666,0.6666666666666666,0.7083333333333333,0.25,1,3
+discovery_fit,446,"China, Macao SAR",high_growth_rule,7,6,3,0.5,1.0,0.6666666666666666,0.625,0.75,1,6
+discovery_fit,450,Madagascar,high_growth_rule,7,6,2,0.3333333333333333,1.0,0.5,0.6,0.8,1,6
+discovery_fit,454,Malawi,high_growth_rule,7,3,0,0.0,0.0,0.0,0.5,0.42857142857142855,1,3
+discovery_fit,458,Malaysia,high_growth_rule,7,6,2,0.3333333333333333,1.0,0.5,0.6,0.8,1,6
+discovery_fit,462,Maldives,high_growth_rule,7,4,2,0.5,1.0,0.6666666666666666,0.8,0.4,1,4
+discovery_fit,466,Mali,high_growth_rule,7,2,2,1.0,1.0,1.0,1.0,0.0,1,2
+discovery_fit,470,Malta,high_growth_rule,7,1,2,1.0,0.5,0.6666666666666666,0.75,0.0,1,1
+discovery_fit,478,Mauritania,high_growth_rule,7,4,3,0.75,1.0,0.8571428571428571,0.875,0.25,1,4
+discovery_fit,480,Mauritius,high_growth_rule,7,4,1,0.25,1.0,0.4,0.75,0.5,1,4
+discovery_fit,484,Mexico,high_growth_rule,7,2,2,1.0,1.0,1.0,1.0,0.0,1,2
+discovery_fit,492,Monaco,high_growth_rule,7,1,2,1.0,0.5,0.6666666666666666,0.75,0.0,1,1
+discovery_fit,496,Mongolia,high_growth_rule,7,5,1,0.2,1.0,0.3333333333333333,0.6666666666666666,0.6666666666666666,1,5
+discovery_fit,498,Republic of Moldova,high_growth_rule,7,6,2,0.3333333333333333,1.0,0.5,0.6,0.8,1,6
+discovery_fit,499,Montenegro,high_growth_rule,7,4,2,0.5,1.0,0.6666666666666666,0.8,0.4,1,4
+discovery_fit,500,Montserrat,high_growth_rule,7,2,2,0.0,0.0,0.0,0.3,0.4,1,2
+discovery_fit,504,Morocco,high_growth_rule,7,4,2,0.5,1.0,0.6666666666666666,0.8,0.4,1,4
+discovery_fit,508,Mozambique,high_growth_rule,7,6,3,0.5,1.0,0.6666666666666666,0.625,0.75,1,6
+discovery_fit,512,Oman,high_growth_rule,7,3,2,0.6666666666666666,1.0,0.8,0.9,0.2,1,3
+discovery_fit,516,Namibia,high_growth_rule,7,4,3,0.75,1.0,0.8571428571428571,0.875,0.25,1,4
+discovery_fit,520,Nauru,high_growth_rule,7,0,2,0.0,0.0,0.0,0.5,0.0,0,0
+discovery_fit,524,Nepal,high_growth_rule,7,6,0,0.0,0.0,0.0,0.5,0.8571428571428571,1,6
+discovery_fit,528,Netherlands,high_growth_rule,7,1,2,1.0,0.5,0.6666666666666666,0.75,0.0,1,1
+discovery_fit,530,Former Netherlands Antilles,high_growth_rule,7,0,1,0.0,0.0,0.0,0.5,0.0,0,0
+discovery_fit,531,Curaçao,high_growth_rule,1,0,1,0.0,0.0,0.0,0.5,,0,0
+discovery_fit,533,Aruba,high_growth_rule,7,2,4,1.0,0.5,0.6666666666666666,0.75,0.0,1,2
+discovery_fit,534,Sint Maarten (Dutch part),high_growth_rule,1,1,1,1.0,1.0,1.0,0.5,,1,1
+discovery_fit,540,New Caledonia,high_growth_rule,7,2,2,0.5,0.5,0.5,0.65,0.2,1,2
+discovery_fit,548,Vanuatu,high_growth_rule,7,3,3,1.0,1.0,1.0,1.0,0.0,1,3
+discovery_fit,554,New Zealand,high_growth_rule,7,2,2,0.5,0.5,0.5,0.65,0.2,1,2
+discovery_fit,558,Nicaragua,high_growth_rule,7,4,1,0.25,1.0,0.4,0.75,0.5,1,4
+discovery_fit,562,Niger,high_growth_rule,7,4,2,0.5,1.0,0.6666666666666666,0.8,0.4,1,4
+discovery_fit,566,Nigeria,high_growth_rule,7,7,2,0.2857142857142857,1.0,0.4444444444444444,0.5,1.0,1,7
+discovery_fit,578,Norway,high_growth_rule,7,1,3,0.0,0.0,0.0,0.375,0.25,1,1
+discovery_fit,583,Micronesia (FS of),high_growth_rule,7,1,4,1.0,0.25,0.4,0.625,0.0,1,1
+discovery_fit,584,Marshall Islands,high_growth_rule,7,1,3,1.0,0.3333333333333333,0.5,0.6666666666666666,0.0,1,1
+discovery_fit,585,Palau,high_growth_rule,7,1,3,1.0,0.3333333333333333,0.5,0.6666666666666666,0.0,1,1
+discovery_fit,586,Pakistan,high_growth_rule,7,5,4,0.8,1.0,0.8888888888888888,0.8333333333333333,0.3333333333333333,1,5
+discovery_fit,591,Panama,high_growth_rule,7,4,1,0.25,1.0,0.4,0.75,0.5,1,4
+discovery_fit,598,Papua New Guinea,high_growth_rule,7,1,2,1.0,0.5,0.6666666666666666,0.75,0.0,1,1
+discovery_fit,600,Paraguay,high_growth_rule,7,4,2,0.5,1.0,0.6666666666666666,0.8,0.4,1,4
+discovery_fit,604,Peru,high_growth_rule,7,5,1,0.2,1.0,0.3333333333333333,0.6666666666666666,0.6666666666666666,1,5
+discovery_fit,608,Philippines,high_growth_rule,7,5,1,0.2,1.0,0.3333333333333333,0.6666666666666666,0.6666666666666666,1,5
+discovery_fit,616,Poland,high_growth_rule,7,3,1,0.3333333333333333,1.0,0.5,0.8333333333333333,0.3333333333333333,1,3
+discovery_fit,620,Portugal,high_growth_rule,7,0,2,0.0,0.0,0.0,0.5,0.0,0,0
+discovery_fit,624,Guinea-Bissau,high_growth_rule,7,1,0,0.0,0.0,0.0,0.5,0.14285714285714285,1,1
+discovery_fit,626,Timor-Leste,high_growth_rule,7,2,2,1.0,1.0,1.0,1.0,0.0,1,2
+discovery_fit,630,Puerto Rico,high_growth_rule,7,1,4,1.0,0.25,0.4,0.625,0.0,1,1
+discovery_fit,634,Qatar,high_growth_rule,7,5,2,0.4,1.0,0.5714285714285714,0.7,0.6,1,5
+discovery_fit,642,Romania,high_growth_rule,7,5,2,0.4,1.0,0.5714285714285714,0.7,0.6,1,5
+discovery_fit,643,Russian Federation,high_growth_rule,7,7,2,0.2857142857142857,1.0,0.4444444444444444,0.5,1.0,1,7
+discovery_fit,646,Rwanda,high_growth_rule,7,6,3,0.5,1.0,0.6666666666666666,0.625,0.75,1,6
+discovery_fit,659,Saint Kitts and Nevis,high_growth_rule,7,3,4,0.6666666666666666,0.5,0.5714285714285714,0.5833333333333333,0.3333333333333333,1,3
+discovery_fit,660,Anguilla,high_growth_rule,7,4,2,0.5,1.0,0.6666666666666666,0.8,0.4,1,4
+discovery_fit,662,Saint Lucia,high_growth_rule,7,3,2,0.6666666666666666,1.0,0.8,0.9,0.2,1,3
+discovery_fit,670,St. Vincent and the Grenadines,high_growth_rule,7,4,3,0.5,0.6666666666666666,0.5714285714285714,0.5833333333333333,0.5,1,4
+discovery_fit,674,San Marino,high_growth_rule,7,2,1,0.0,0.0,0.0,0.3333333333333333,0.3333333333333333,1,2
+discovery_fit,678,Sao Tome and Principe,high_growth_rule,7,3,1,0.3333333333333333,1.0,0.5,0.8333333333333333,0.3333333333333333,1,3
+discovery_fit,682,Saudi Arabia,high_growth_rule,7,4,3,0.5,0.6666666666666666,0.5714285714285714,0.5833333333333333,0.5,1,4
+discovery_fit,686,Senegal,high_growth_rule,7,4,1,0.25,1.0,0.4,0.75,0.5,1,4
+discovery_fit,688,Serbia,high_growth_rule,7,6,1,0.0,0.0,0.0,0.0,1.0,1,6
+discovery_fit,690,Seychelles,high_growth_rule,7,2,3,1.0,0.6666666666666666,0.8,0.8333333333333333,0.0,1,2
+discovery_fit,694,Sierra Leone,high_growth_rule,7,6,5,0.8333333333333334,1.0,0.9090909090909091,0.75,0.5,1,6
+discovery_fit,702,Singapore,high_growth_rule,7,5,3,0.6,1.0,0.75,0.75,0.5,1,5
+discovery_fit,703,Slovakia,high_growth_rule,7,5,1,0.2,1.0,0.3333333333333333,0.6666666666666666,0.6666666666666666,1,5
+discovery_fit,704,Viet Nam,high_growth_rule,7,7,0,0.0,0.0,0.0,0.5,1.0,1,7
+discovery_fit,705,Slovenia,high_growth_rule,7,2,1,0.5,1.0,0.6666666666666666,0.9166666666666667,0.16666666666666666,1,2
+discovery_fit,706,Somalia,high_growth_rule,7,7,0,0.0,0.0,0.0,0.5,1.0,1,7
+discovery_fit,710,South Africa,high_growth_rule,7,4,2,0.5,1.0,0.6666666666666666,0.8,0.4,1,4
+discovery_fit,716,Zimbabwe,high_growth_rule,7,0,1,0.0,0.0,0.0,0.5,0.0,0,0
+discovery_fit,724,Spain,high_growth_rule,7,2,3,1.0,0.6666666666666666,0.8,0.8333333333333333,0.0,1,2
+discovery_fit,736,Sudan (Former),high_growth_rule,7,7,2,0.2857142857142857,1.0,0.4444444444444444,0.5,1.0,1,7
+discovery_fit,740,Suriname,high_growth_rule,7,4,1,0.25,1.0,0.4,0.75,0.5,1,4
+discovery_fit,748,Eswatini,high_growth_rule,7,3,2,0.6666666666666666,1.0,0.8,0.9,0.2,1,3
+discovery_fit,752,Sweden,high_growth_rule,7,3,3,0.6666666666666666,0.6666666666666666,0.6666666666666666,0.7083333333333333,0.25,1,3
+discovery_fit,756,Switzerland,high_growth_rule,7,1,2,1.0,0.5,0.6666666666666666,0.75,0.0,1,1
+discovery_fit,760,Syrian Arab Republic,high_growth_rule,7,4,0,0.0,0.0,0.0,0.5,0.5714285714285714,1,4
+discovery_fit,762,Tajikistan,high_growth_rule,7,7,4,0.5714285714285714,1.0,0.7272727272727273,0.5,1.0,1,7
+discovery_fit,764,Thailand,high_growth_rule,7,6,3,0.5,1.0,0.6666666666666666,0.625,0.75,1,6
+discovery_fit,768,Togo,high_growth_rule,7,3,2,0.6666666666666666,1.0,0.8,0.9,0.2,1,3
+discovery_fit,776,Tonga,high_growth_rule,7,1,5,1.0,0.2,0.3333333333333333,0.6,0.0,1,1
+discovery_fit,780,Trinidad and Tobago,high_growth_rule,7,7,3,0.42857142857142855,1.0,0.6,0.5,1.0,1,7
+discovery_fit,784,United Arab Emirates,high_growth_rule,7,5,3,0.6,1.0,0.75,0.75,0.5,1,5
+discovery_fit,788,Tunisia,high_growth_rule,7,4,1,0.25,1.0,0.4,0.75,0.5,1,4
+discovery_fit,792,Türkiye,high_growth_rule,7,6,3,0.5,1.0,0.6666666666666666,0.625,0.75,1,6
+discovery_fit,795,Turkmenistan,high_growth_rule,7,5,2,0.4,1.0,0.5714285714285714,0.7,0.6,1,5
+discovery_fit,796,Turks and Caicos Islands,high_growth_rule,7,6,3,0.5,1.0,0.6666666666666666,0.625,0.75,1,6
+discovery_fit,798,Tuvalu,high_growth_rule,7,2,4,1.0,0.5,0.6666666666666666,0.75,0.0,1,2
+discovery_fit,800,Uganda,high_growth_rule,7,7,1,0.14285714285714285,1.0,0.25,0.5,1.0,1,7
+discovery_fit,804,Ukraine,high_growth_rule,7,6,4,0.6666666666666666,1.0,0.8,0.6666666666666666,0.6666666666666666,1,6
+discovery_fit,807,North Macedonia,high_growth_rule,7,4,2,0.5,1.0,0.6666666666666666,0.8,0.4,1,4
+discovery_fit,818,Egypt,high_growth_rule,7,4,2,0.5,1.0,0.6666666666666666,0.8,0.4,1,4
+discovery_fit,826,United Kingdom,high_growth_rule,7,1,2,0.0,0.0,0.0,0.4,0.2,1,1
+discovery_fit,835,U.R. of Tanzania: Mainland,high_growth_rule,7,7,1,0.14285714285714285,1.0,0.25,0.5,1.0,1,7
+discovery_fit,836,Zanzibar,high_growth_rule,7,6,2,0.3333333333333333,1.0,0.5,0.6,0.8,1,6
+discovery_fit,840,United States,high_growth_rule,7,1,2,0.0,0.0,0.0,0.4,0.2,1,1
+discovery_fit,854,Burkina Faso,high_growth_rule,7,6,3,0.5,1.0,0.6666666666666666,0.625,0.75,1,6
+discovery_fit,858,Uruguay,high_growth_rule,7,3,0,0.0,0.0,0.0,0.5,0.42857142857142855,1,3
+discovery_fit,860,Uzbekistan,high_growth_rule,7,7,0,0.0,0.0,0.0,0.5,1.0,1,7
+discovery_fit,862,Venezuela (Bolivarian Republic of),high_growth_rule,7,3,4,1.0,0.75,0.8571428571428571,0.875,0.0,1,3
+discovery_fit,882,Samoa,high_growth_rule,7,5,4,0.6,0.75,0.6666666666666666,0.5416666666666666,0.6666666666666666,1,5
+discovery_fit,887,Yemen,high_growth_rule,7,7,1,0.14285714285714285,1.0,0.25,0.5,1.0,1,7
+discovery_fit,894,Zambia,high_growth_rule,7,6,0,0.0,0.0,0.0,0.5,0.8571428571428571,1,6
+discovery_inner,4,Afghanistan,high_growth_rule,3,2,2,1.0,1.0,1.0,1.0,0.0,1,2
+discovery_inner,8,Albania,high_growth_rule,3,2,2,1.0,1.0,1.0,1.0,0.0,1,2
+discovery_inner,12,Algeria,high_growth_rule,3,0,0,0.0,0.0,0.0,0.5,0.0,0,0
+discovery_inner,20,Andorra,high_growth_rule,3,0,1,0.0,0.0,0.0,0.5,0.0,0,0
+discovery_inner,24,Angola,high_growth_rule,3,2,2,1.0,1.0,1.0,1.0,0.0,1,2
+discovery_inner,28,Antigua and Barbuda,high_growth_rule,3,1,2,1.0,0.5,0.6666666666666666,0.75,0.0,1,1
+discovery_inner,31,Azerbaijan,high_growth_rule,3,3,3,1.0,1.0,1.0,0.5,,1,3
+discovery_inner,32,Argentina,high_growth_rule,3,2,0,0.0,0.0,0.0,0.5,0.6666666666666666,1,2
+discovery_inner,36,Australia,high_growth_rule,3,0,0,0.0,0.0,0.0,0.5,0.0,0,0
+discovery_inner,40,Austria,high_growth_rule,3,0,0,0.0,0.0,0.0,0.5,0.0,0,0
+discovery_inner,44,Bahamas,high_growth_rule,3,0,0,0.0,0.0,0.0,0.5,0.0,0,0
+discovery_inner,48,Bahrain,high_growth_rule,3,2,2,1.0,1.0,1.0,1.0,0.0,1,2
+discovery_inner,50,Bangladesh,high_growth_rule,3,3,0,0.0,0.0,0.0,0.5,1.0,1,3
+discovery_inner,51,Armenia,high_growth_rule,3,2,2,1.0,1.0,1.0,1.0,0.0,1,2
+discovery_inner,52,Barbados,high_growth_rule,3,2,3,1.0,0.6666666666666666,0.8,0.5,,1,2
+discovery_inner,56,Belgium,high_growth_rule,3,0,0,0.0,0.0,0.0,0.5,0.0,0,0
+discovery_inner,60,Bermuda,high_growth_rule,3,2,3,1.0,0.6666666666666666,0.8,0.5,,1,2
+discovery_inner,64,Bhutan,high_growth_rule,3,3,2,0.6666666666666666,1.0,0.8,0.5,1.0,1,3
+discovery_inner,68,Bolivia (Plurinational State of),high_growth_rule,3,2,0,0.0,0.0,0.0,0.5,0.6666666666666666,1,2
+discovery_inner,70,Bosnia and Herzegovina,high_growth_rule,3,2,2,1.0,1.0,1.0,1.0,0.0,1,2
+discovery_inner,72,Botswana,high_growth_rule,3,1,0,0.0,0.0,0.0,0.5,0.3333333333333333,1,1
+discovery_inner,76,Brazil,high_growth_rule,3,2,0,0.0,0.0,0.0,0.5,0.6666666666666666,1,2
+discovery_inner,84,Belize,high_growth_rule,3,0,0,0.0,0.0,0.0,0.5,0.0,0,0
+discovery_inner,90,Solomon Islands,high_growth_rule,3,1,0,0.0,0.0,0.0,0.5,0.3333333333333333,1,1
+discovery_inner,92,British Virgin Islands,high_growth_rule,3,0,1,0.0,0.0,0.0,0.5,0.0,0,0
+discovery_inner,96,Brunei Darussalam,high_growth_rule,3,0,0,0.0,0.0,0.0,0.5,0.0,0,0
+discovery_inner,100,Bulgaria,high_growth_rule,3,2,2,1.0,1.0,1.0,1.0,0.0,1,2
+discovery_inner,104,Myanmar,high_growth_rule,3,3,2,0.6666666666666666,1.0,0.8,0.5,1.0,1,3
+discovery_inner,108,Burundi,high_growth_rule,3,1,0,0.0,0.0,0.0,0.5,0.3333333333333333,1,1
+discovery_inner,112,Belarus,high_growth_rule,3,2,1,0.5,1.0,0.6666666666666666,0.75,0.5,1,2
+discovery_inner,116,Cambodia,high_growth_rule,3,3,1,0.3333333333333333,1.0,0.5,0.5,1.0,1,3
+discovery_inner,120,Cameroon,high_growth_rule,3,1,0,0.0,0.0,0.0,0.5,0.3333333333333333,1,1
+discovery_inner,124,Canada,high_growth_rule,3,0,0,0.0,0.0,0.0,0.5,0.0,0,0
+discovery_inner,132,Cabo Verde,high_growth_rule,3,2,2,1.0,1.0,1.0,1.0,0.0,1,2
+discovery_inner,136,Cayman Islands,high_growth_rule,3,0,1,0.0,0.0,0.0,0.5,0.0,0,0
+discovery_inner,140,Central African Republic,high_growth_rule,3,1,0,0.0,0.0,0.0,0.5,0.3333333333333333,1,1
+discovery_inner,144,Sri Lanka,high_growth_rule,3,3,0,0.0,0.0,0.0,0.5,1.0,1,3
+discovery_inner,148,Chad,high_growth_rule,3,2,1,0.5,1.0,0.6666666666666666,0.75,0.5,1,2
+discovery_inner,152,Chile,high_growth_rule,3,1,0,0.0,0.0,0.0,0.5,0.3333333333333333,1,1
+discovery_inner,156,China,high_growth_rule,3,3,1,0.3333333333333333,1.0,0.5,0.5,1.0,1,3
+discovery_inner,170,Colombia,high_growth_rule,3,1,1,1.0,1.0,1.0,1.0,0.0,1,1
+discovery_inner,174,Comoros,high_growth_rule,3,1,0,0.0,0.0,0.0,0.5,0.3333333333333333,1,1
+discovery_inner,178,Congo,high_growth_rule,3,2,1,0.5,1.0,0.6666666666666666,0.75,0.5,1,2
+discovery_inner,180,D.R. of the Congo,high_growth_rule,3,2,0,0.0,0.0,0.0,0.5,0.6666666666666666,1,2
+discovery_inner,184,Cook Islands,high_growth_rule,3,1,3,1.0,0.3333333333333333,0.5,0.5,,1,1
+discovery_inner,188,Costa Rica,high_growth_rule,3,2,1,0.5,1.0,0.6666666666666666,0.75,0.5,1,2
+discovery_inner,191,Croatia,high_growth_rule,3,1,2,1.0,0.5,0.6666666666666666,0.75,0.0,1,1
+discovery_inner,192,Cuba,high_growth_rule,3,2,1,0.5,1.0,0.6666666666666666,0.75,0.5,1,2
+discovery_inner,196,Cyprus,high_growth_rule,3,1,2,1.0,0.5,0.6666666666666666,0.75,0.0,1,1
+discovery_inner,203,Czechia,high_growth_rule,3,1,1,1.0,1.0,1.0,1.0,0.0,1,1
+discovery_inner,204,Benin,high_growth_rule,3,2,1,0.5,1.0,0.6666666666666666,0.75,0.5,1,2
+discovery_inner,208,Denmark,high_growth_rule,3,0,0,0.0,0.0,0.0,0.5,0.0,0,0
+discovery_inner,212,Dominica,high_growth_rule,3,2,2,1.0,1.0,1.0,1.0,0.0,1,2
+discovery_inner,214,Dominican Republic,high_growth_rule,3,1,0,0.0,0.0,0.0,0.5,0.3333333333333333,1,1
+discovery_inner,218,Ecuador,high_growth_rule,3,1,0,0.0,0.0,0.0,0.5,0.3333333333333333,1,1
+discovery_inner,222,El Salvador,high_growth_rule,3,0,0,0.0,0.0,0.0,0.5,0.0,0,0
+discovery_inner,226,Equatorial Guinea,high_growth_rule,3,2,2,1.0,1.0,1.0,1.0,0.0,1,2
+discovery_inner,231,Ethiopia,high_growth_rule,3,3,0,0.0,0.0,0.0,0.5,1.0,1,3
+discovery_inner,232,Eritrea,high_growth_rule,3,1,1,1.0,1.0,1.0,1.0,0.0,1,1
+discovery_inner,233,Estonia,high_growth_rule,3,1,1,1.0,1.0,1.0,1.0,0.0,1,1
+discovery_inner,242,Fiji,high_growth_rule,3,0,0,0.0,0.0,0.0,0.5,0.0,0,0
+discovery_inner,246,Finland,high_growth_rule,3,1,1,1.0,1.0,1.0,1.0,0.0,1,1
+discovery_inner,250,France,high_growth_rule,3,0,0,0.0,0.0,0.0,0.5,0.0,0,0
+discovery_inner,258,French Polynesia,high_growth_rule,3,0,2,0.0,0.0,0.0,0.5,0.0,0,0
+discovery_inner,262,Djibouti,high_growth_rule,3,3,0,0.0,0.0,0.0,0.5,1.0,1,3
+discovery_inner,266,Gabon,high_growth_rule,3,1,0,0.0,0.0,0.0,0.5,0.3333333333333333,1,1
+discovery_inner,268,Georgia,high_growth_rule,3,1,1,1.0,1.0,1.0,1.0,0.0,1,1
+discovery_inner,270,Gambia,high_growth_rule,3,2,1,0.5,1.0,0.6666666666666666,0.75,0.5,1,2
+discovery_inner,275,State of Palestine,high_growth_rule,3,2,1,0.5,1.0,0.6666666666666666,0.75,0.5,1,2
+discovery_inner,276,Germany,high_growth_rule,3,0,0,0.0,0.0,0.0,0.5,0.0,0,0
+discovery_inner,288,Ghana,high_growth_rule,3,3,0,0.0,0.0,0.0,0.5,1.0,1,3
+discovery_inner,296,Kiribati,high_growth_rule,3,0,0,0.0,0.0,0.0,0.5,0.0,0,0
+discovery_inner,300,Greece,high_growth_rule,3,0,3,0.0,0.0,0.0,0.5,,0,0
+discovery_inner,304,Greenland,high_growth_rule,3,1,1,1.0,1.0,1.0,1.0,0.0,1,1
+discovery_inner,308,Grenada,high_growth_rule,3,1,1,1.0,1.0,1.0,1.0,0.0,1,1
+discovery_inner,320,Guatemala,high_growth_rule,3,1,1,1.0,1.0,1.0,1.0,0.0,1,1
+discovery_inner,324,Guinea,high_growth_rule,3,2,1,0.5,1.0,0.6666666666666666,0.75,0.5,1,2
+discovery_inner,328,Guyana,high_growth_rule,3,1,1,1.0,1.0,1.0,1.0,0.0,1,1
+discovery_inner,332,Haiti,high_growth_rule,3,2,2,1.0,1.0,1.0,1.0,0.0,1,2
+discovery_inner,340,Honduras,high_growth_rule,3,2,1,0.5,1.0,0.6666666666666666,0.75,0.5,1,2
+discovery_inner,344,"China, Hong Kong SAR",high_growth_rule,3,1,0,0.0,0.0,0.0,0.5,0.3333333333333333,1,1
+discovery_inner,348,Hungary,high_growth_rule,3,0,0,0.0,0.0,0.0,0.5,0.0,0,0
+discovery_inner,352,Iceland,high_growth_rule,3,1,1,1.0,1.0,1.0,1.0,0.0,1,1
+discovery_inner,356,India,high_growth_rule,3,2,1,0.5,1.0,0.6666666666666666,0.75,0.5,1,2
+discovery_inner,360,Indonesia,high_growth_rule,3,3,0,0.0,0.0,0.0,0.5,1.0,1,3
+discovery_inner,364,Iran (Islamic Republic of),high_growth_rule,3,1,2,1.0,0.5,0.6666666666666666,0.75,0.0,1,1
+discovery_inner,368,Iraq,high_growth_rule,3,1,0,0.0,0.0,0.0,0.5,0.3333333333333333,1,1
+discovery_inner,372,Ireland,high_growth_rule,3,1,1,1.0,1.0,1.0,1.0,0.0,1,1
+discovery_inner,376,Israel,high_growth_rule,3,1,0,0.0,0.0,0.0,0.5,0.3333333333333333,1,1
+discovery_inner,380,Italy,high_growth_rule,3,0,0,0.0,0.0,0.0,0.5,0.0,0,0
+discovery_inner,384,Côte d'Ivoire,high_growth_rule,3,0,0,0.0,0.0,0.0,0.5,0.0,0,0
+discovery_inner,388,Jamaica,high_growth_rule,3,0,1,0.0,0.0,0.0,0.5,0.0,0,0
+discovery_inner,392,Japan,high_growth_rule,3,0,0,0.0,0.0,0.0,0.5,0.0,0,0
+discovery_inner,398,Kazakhstan,high_growth_rule,3,1,0,0.0,0.0,0.0,0.5,0.3333333333333333,1,1
+discovery_inner,400,Jordan,high_growth_rule,3,3,3,1.0,1.0,1.0,0.5,,1,3
+discovery_inner,404,Kenya,high_growth_rule,3,2,1,0.5,1.0,0.6666666666666666,0.75,0.5,1,2
+discovery_inner,408,D.P.R. of Korea,high_growth_rule,3,0,1,0.0,0.0,0.0,0.5,0.0,0,0
+discovery_inner,410,Republic of Korea,high_growth_rule,3,1,0,0.0,0.0,0.0,0.5,0.3333333333333333,1,1
+discovery_inner,412,Kosovo,high_growth_rule,3,3,1,0.3333333333333333,1.0,0.5,0.5,1.0,1,3
+discovery_inner,414,Kuwait,high_growth_rule,3,1,1,1.0,1.0,1.0,1.0,0.0,1,1
+discovery_inner,417,Kyrgyzstan,high_growth_rule,3,2,3,1.0,0.6666666666666666,0.8,0.5,,1,2
+discovery_inner,418,Lao People's DR,high_growth_rule,3,3,1,0.3333333333333333,1.0,0.5,0.5,1.0,1,3
+discovery_inner,422,Lebanon,high_growth_rule,3,3,2,0.6666666666666666,1.0,0.8,0.5,1.0,1,3
+discovery_inner,426,Lesotho,high_growth_rule,3,2,1,0.5,1.0,0.6666666666666666,0.75,0.5,1,2
+discovery_inner,428,Latvia,high_growth_rule,3,1,1,1.0,1.0,1.0,1.0,0.0,1,1
+discovery_inner,430,Liberia,high_growth_rule,3,3,1,0.3333333333333333,1.0,0.5,0.5,1.0,1,3
+discovery_inner,434,Libya,high_growth_rule,3,1,1,0.0,0.0,0.0,0.25,0.5,1,1
+discovery_inner,438,Liechtenstein,high_growth_rule,3,1,0,0.0,0.0,0.0,0.5,0.3333333333333333,1,1
+discovery_inner,440,Lithuania,high_growth_rule,3,1,1,1.0,1.0,1.0,1.0,0.0,1,1
+discovery_inner,442,Luxembourg,high_growth_rule,3,1,1,1.0,1.0,1.0,1.0,0.0,1,1
+discovery_inner,446,"China, Macao SAR",high_growth_rule,3,1,0,0.0,0.0,0.0,0.5,0.3333333333333333,1,1
+discovery_inner,450,Madagascar,high_growth_rule,3,2,2,1.0,1.0,1.0,1.0,0.0,1,2
+discovery_inner,454,Malawi,high_growth_rule,3,3,2,0.6666666666666666,1.0,0.8,0.5,1.0,1,3
+discovery_inner,458,Malaysia,high_growth_rule,3,2,0,0.0,0.0,0.0,0.5,0.6666666666666666,1,2
+discovery_inner,462,Maldives,high_growth_rule,3,2,0,0.0,0.0,0.0,0.5,0.6666666666666666,1,2
+discovery_inner,466,Mali,high_growth_rule,3,1,1,1.0,1.0,1.0,1.0,0.0,1,1
+discovery_inner,470,Malta,high_growth_rule,3,2,1,0.5,1.0,0.6666666666666666,0.75,0.5,1,2
+discovery_inner,478,Mauritania,high_growth_rule,3,0,0,0.0,0.0,0.0,0.5,0.0,0,0
+discovery_inner,480,Mauritius,high_growth_rule,3,2,0,0.0,0.0,0.0,0.5,0.6666666666666666,1,2
+discovery_inner,484,Mexico,high_growth_rule,3,0,0,0.0,0.0,0.0,0.5,0.0,0,0
+discovery_inner,492,Monaco,high_growth_rule,3,1,1,1.0,1.0,1.0,1.0,0.0,1,1
+discovery_inner,496,Mongolia,high_growth_rule,3,2,1,0.5,1.0,0.6666666666666666,0.75,0.5,1,2
+discovery_inner,498,Republic of Moldova,high_growth_rule,3,1,1,1.0,1.0,1.0,1.0,0.0,1,1
+discovery_inner,499,Montenegro,high_growth_rule,3,2,2,1.0,1.0,1.0,1.0,0.0,1,2
+discovery_inner,500,Montserrat,high_growth_rule,3,1,1,0.0,0.0,0.0,0.25,0.5,1,1
+discovery_inner,504,Morocco,high_growth_rule,3,2,1,0.5,1.0,0.6666666666666666,0.75,0.5,1,2
+discovery_inner,508,Mozambique,high_growth_rule,3,3,0,0.0,0.0,0.0,0.5,1.0,1,3
+discovery_inner,512,Oman,high_growth_rule,3,3,2,0.6666666666666666,1.0,0.8,0.5,1.0,1,3
+discovery_inner,516,Namibia,high_growth_rule,3,1,0,0.0,0.0,0.0,0.5,0.3333333333333333,1,1
+discovery_inner,520,Nauru,high_growth_rule,3,1,1,1.0,1.0,1.0,1.0,0.0,1,1
+discovery_inner,524,Nepal,high_growth_rule,3,3,1,0.3333333333333333,1.0,0.5,0.5,1.0,1,3
+discovery_inner,528,Netherlands,high_growth_rule,3,0,1,0.0,0.0,0.0,0.5,0.0,0,0
+discovery_inner,530,Former Netherlands Antilles,high_growth_rule,3,0,1,0.0,0.0,0.0,0.5,0.0,0,0
+discovery_inner,531,Curaçao,high_growth_rule,3,0,1,0.0,0.0,0.0,0.5,0.0,0,0
+discovery_inner,533,Aruba,high_growth_rule,3,0,1,0.0,0.0,0.0,0.5,0.0,0,0
+discovery_inner,534,Sint Maarten (Dutch part),high_growth_rule,3,1,1,1.0,1.0,1.0,1.0,0.0,1,1
+discovery_inner,540,New Caledonia,high_growth_rule,3,1,0,0.0,0.0,0.0,0.5,0.3333333333333333,1,1
+discovery_inner,548,Vanuatu,high_growth_rule,3,1,2,1.0,0.5,0.6666666666666666,0.75,0.0,1,1
+discovery_inner,554,New Zealand,high_growth_rule,3,0,1,0.0,0.0,0.0,0.5,0.0,0,0
+discovery_inner,558,Nicaragua,high_growth_rule,3,1,0,0.0,0.0,0.0,0.5,0.3333333333333333,1,1
+discovery_inner,562,Niger,high_growth_rule,3,1,1,1.0,1.0,1.0,1.0,0.0,1,1
+discovery_inner,566,Nigeria,high_growth_rule,3,3,0,0.0,0.0,0.0,0.5,1.0,1,3
+discovery_inner,578,Norway,high_growth_rule,3,0,1,0.0,0.0,0.0,0.5,0.0,0,0
+discovery_inner,583,Micronesia (FS of),high_growth_rule,3,0,1,0.0,0.0,0.0,0.5,0.0,0,0
+discovery_inner,584,Marshall Islands,high_growth_rule,3,0,1,0.0,0.0,0.0,0.5,0.0,0,0
+discovery_inner,585,Palau,high_growth_rule,3,0,0,0.0,0.0,0.0,0.5,0.0,0,0
+discovery_inner,586,Pakistan,high_growth_rule,3,1,1,1.0,1.0,1.0,1.0,0.0,1,1
+discovery_inner,591,Panama,high_growth_rule,3,2,1,0.5,1.0,0.6666666666666666,0.75,0.5,1,2
+discovery_inner,598,Papua New Guinea,high_growth_rule,3,2,1,0.5,1.0,0.6666666666666666,0.75,0.5,1,2
+discovery_inner,600,Paraguay,high_growth_rule,3,2,1,0.5,1.0,0.6666666666666666,0.75,0.5,1,2
+discovery_inner,604,Peru,high_growth_rule,3,2,1,0.5,1.0,0.6666666666666666,0.75,0.5,1,2
+discovery_inner,608,Philippines,high_growth_rule,3,2,0,0.0,0.0,0.0,0.5,0.6666666666666666,1,2
+discovery_inner,616,Poland,high_growth_rule,3,2,1,0.5,1.0,0.6666666666666666,0.75,0.5,1,2
+discovery_inner,620,Portugal,high_growth_rule,3,0,1,0.0,0.0,0.0,0.5,0.0,0,0
+discovery_inner,624,Guinea-Bissau,high_growth_rule,3,0,1,0.0,0.0,0.0,0.5,0.0,0,0
+discovery_inner,626,Timor-Leste,high_growth_rule,3,3,2,0.6666666666666666,1.0,0.8,0.5,1.0,1,3
+discovery_inner,630,Puerto Rico,high_growth_rule,3,0,0,0.0,0.0,0.0,0.5,0.0,0,0
+discovery_inner,634,Qatar,high_growth_rule,3,3,2,0.6666666666666666,1.0,0.8,0.5,1.0,1,3
+discovery_inner,642,Romania,high_growth_rule,3,2,2,1.0,1.0,1.0,1.0,0.0,1,2
+discovery_inner,643,Russian Federation,high_growth_rule,3,2,1,0.5,1.0,0.6666666666666666,0.75,0.5,1,2
+discovery_inner,646,Rwanda,high_growth_rule,3,3,1,0.3333333333333333,1.0,0.5,0.5,1.0,1,3
+discovery_inner,659,Saint Kitts and Nevis,high_growth_rule,3,1,1,1.0,1.0,1.0,1.0,0.0,1,1
+discovery_inner,660,Anguilla,high_growth_rule,3,1,1,1.0,1.0,1.0,1.0,0.0,1,1
+discovery_inner,662,Saint Lucia,high_growth_rule,3,1,0,0.0,0.0,0.0,0.5,0.3333333333333333,1,1
+discovery_inner,670,St. Vincent and the Grenadines,high_growth_rule,3,0,1,0.0,0.0,0.0,0.5,0.0,0,0
+discovery_inner,674,San Marino,high_growth_rule,3,0,2,0.0,0.0,0.0,0.5,0.0,0,0
+discovery_inner,678,Sao Tome and Principe,high_growth_rule,3,1,1,1.0,1.0,1.0,1.0,0.0,1,1
+discovery_inner,682,Saudi Arabia,high_growth_rule,3,1,0,0.0,0.0,0.0,0.5,0.3333333333333333,1,1
+discovery_inner,686,Senegal,high_growth_rule,3,0,1,0.0,0.0,0.0,0.5,0.0,0,0
+discovery_inner,688,Serbia,high_growth_rule,3,2,2,1.0,1.0,1.0,1.0,0.0,1,2
+discovery_inner,690,Seychelles,high_growth_rule,3,1,1,1.0,1.0,1.0,1.0,0.0,1,1
+discovery_inner,694,Sierra Leone,high_growth_rule,3,0,0,0.0,0.0,0.0,0.5,0.0,0,0
+discovery_inner,702,Singapore,high_growth_rule,3,1,0,0.0,0.0,0.0,0.5,0.3333333333333333,1,1
+discovery_inner,703,Slovakia,high_growth_rule,3,2,2,1.0,1.0,1.0,1.0,0.0,1,2
+discovery_inner,704,Viet Nam,high_growth_rule,3,3,2,0.6666666666666666,1.0,0.8,0.5,1.0,1,3
+discovery_inner,705,Slovenia,high_growth_rule,3,1,2,1.0,0.5,0.6666666666666666,0.75,0.0,1,1
+discovery_inner,706,Somalia,high_growth_rule,3,3,0,0.0,0.0,0.0,0.5,1.0,1,3
+discovery_inner,710,South Africa,high_growth_rule,3,1,1,1.0,1.0,1.0,1.0,0.0,1,1
+discovery_inner,716,Zimbabwe,high_growth_rule,3,1,1,1.0,1.0,1.0,1.0,0.0,1,1
+discovery_inner,724,Spain,high_growth_rule,3,0,1,0.0,0.0,0.0,0.5,0.0,0,0
+discovery_inner,728,South Sudan,high_growth_rule,1,1,1,1.0,1.0,1.0,0.5,,1,1
+discovery_inner,729,Sudan,high_growth_rule,1,1,1,1.0,1.0,1.0,0.5,,1,1
+discovery_inner,736,Sudan (Former),high_growth_rule,1,1,0,0.0,0.0,0.0,0.5,1.0,1,1
+discovery_inner,740,Suriname,high_growth_rule,3,2,0,0.0,0.0,0.0,0.5,0.6666666666666666,1,2
+discovery_inner,748,Eswatini,high_growth_rule,3,1,0,0.0,0.0,0.0,0.5,0.3333333333333333,1,1
+discovery_inner,752,Sweden,high_growth_rule,3,0,0,0.0,0.0,0.0,0.5,0.0,0,0
+discovery_inner,756,Switzerland,high_growth_rule,3,0,0,0.0,0.0,0.0,0.5,0.0,0,0
+discovery_inner,760,Syrian Arab Republic,high_growth_rule,3,3,1,0.3333333333333333,1.0,0.5,0.5,1.0,1,3
+discovery_inner,762,Tajikistan,high_growth_rule,3,3,1,0.3333333333333333,1.0,0.5,0.5,1.0,1,3
+discovery_inner,764,Thailand,high_growth_rule,3,1,0,0.0,0.0,0.0,0.5,0.3333333333333333,1,1
+discovery_inner,768,Togo,high_growth_rule,3,3,1,0.3333333333333333,1.0,0.5,0.5,1.0,1,3
+discovery_inner,776,Tonga,high_growth_rule,3,1,0,0.0,0.0,0.0,0.5,0.3333333333333333,1,1
+discovery_inner,780,Trinidad and Tobago,high_growth_rule,3,1,1,0.0,0.0,0.0,0.25,0.5,1,1
+discovery_inner,784,United Arab Emirates,high_growth_rule,3,1,0,0.0,0.0,0.0,0.5,0.3333333333333333,1,1
+discovery_inner,788,Tunisia,high_growth_rule,3,2,2,1.0,1.0,1.0,1.0,0.0,1,2
+discovery_inner,792,Türkiye,high_growth_rule,3,1,0,0.0,0.0,0.0,0.5,0.3333333333333333,1,1
+discovery_inner,795,Turkmenistan,high_growth_rule,3,3,0,0.0,0.0,0.0,0.5,1.0,1,3
+discovery_inner,796,Turks and Caicos Islands,high_growth_rule,3,2,2,1.0,1.0,1.0,1.0,0.0,1,2
+discovery_inner,798,Tuvalu,high_growth_rule,3,2,1,0.5,1.0,0.6666666666666666,0.75,0.5,1,2
+discovery_inner,800,Uganda,high_growth_rule,3,3,2,0.6666666666666666,1.0,0.8,0.5,1.0,1,3
+discovery_inner,804,Ukraine,high_growth_rule,3,1,1,1.0,1.0,1.0,1.0,0.0,1,1
+discovery_inner,807,North Macedonia,high_growth_rule,3,2,2,1.0,1.0,1.0,1.0,0.0,1,2
+discovery_inner,818,Egypt,high_growth_rule,3,3,2,0.6666666666666666,1.0,0.8,0.5,1.0,1,3
+discovery_inner,826,United Kingdom,high_growth_rule,3,0,0,0.0,0.0,0.0,0.5,0.0,0,0
+discovery_inner,835,U.R. of Tanzania: Mainland,high_growth_rule,3,3,1,0.3333333333333333,1.0,0.5,0.5,1.0,1,3
+discovery_inner,836,Zanzibar,high_growth_rule,3,3,1,0.3333333333333333,1.0,0.5,0.5,1.0,1,3
+discovery_inner,840,United States,high_growth_rule,3,0,0,0.0,0.0,0.0,0.5,0.0,0,0
+discovery_inner,854,Burkina Faso,high_growth_rule,3,2,0,0.0,0.0,0.0,0.5,0.6666666666666666,1,2
+discovery_inner,858,Uruguay,high_growth_rule,3,3,0,0.0,0.0,0.0,0.5,1.0,1,3
+discovery_inner,860,Uzbekistan,high_growth_rule,3,3,2,0.6666666666666666,1.0,0.8,0.5,1.0,1,3
+discovery_inner,862,Venezuela (Bolivarian Republic of),high_growth_rule,3,2,1,0.5,1.0,0.6666666666666666,0.75,0.5,1,2
+discovery_inner,882,Samoa,high_growth_rule,3,1,2,1.0,0.5,0.6666666666666666,0.75,0.0,1,1
+discovery_inner,887,Yemen,high_growth_rule,3,1,2,1.0,0.5,0.6666666666666666,0.75,0.0,1,1
+discovery_inner,894,Zambia,high_growth_rule,3,3,1,0.3333333333333333,1.0,0.5,0.5,1.0,1,3
+validation,4,Afghanistan,high_growth_rule,4,3,3,1.0,1.0,1.0,1.0,0.0,1,3
+validation,8,Albania,high_growth_rule,4,0,0,0.0,0.0,0.0,0.5,0.0,0,0
+validation,12,Algeria,high_growth_rule,4,1,1,1.0,1.0,1.0,1.0,0.0,1,1
+validation,20,Andorra,high_growth_rule,4,0,0,0.0,0.0,0.0,0.5,0.0,0,0
+validation,24,Angola,high_growth_rule,4,3,2,0.6666666666666666,1.0,0.8,0.75,0.5,1,3
+validation,28,Antigua and Barbuda,high_growth_rule,4,0,0,0.0,0.0,0.0,0.5,0.0,0,0
+validation,31,Azerbaijan,high_growth_rule,4,2,1,0.5,1.0,0.6666666666666666,0.8333333333333333,0.3333333333333333,1,2
+validation,32,Argentina,high_growth_rule,4,2,3,1.0,0.6666666666666666,0.8,0.8333333333333333,0.0,1,2
+validation,36,Australia,high_growth_rule,4,0,0,0.0,0.0,0.0,0.5,0.0,0,0
+validation,40,Austria,high_growth_rule,4,0,2,0.0,0.0,0.0,0.5,0.0,0,0
+validation,44,Bahamas,high_growth_rule,4,0,2,0.0,0.0,0.0,0.5,0.0,0,0
+validation,48,Bahrain,high_growth_rule,4,2,0,0.0,0.0,0.0,0.5,0.5,1,2
+validation,50,Bangladesh,high_growth_rule,4,4,0,0.0,0.0,0.0,0.5,1.0,1,4
+validation,51,Armenia,high_growth_rule,4,2,2,0.5,0.5,0.5,0.5,0.5,1,2
+validation,52,Barbados,high_growth_rule,4,0,1,0.0,0.0,0.0,0.5,0.0,0,0
+validation,56,Belgium,high_growth_rule,4,0,1,0.0,0.0,0.0,0.5,0.0,0,0
+validation,60,Bermuda,high_growth_rule,4,0,0,0.0,0.0,0.0,0.5,0.0,0,0
+validation,64,Bhutan,high_growth_rule,4,3,2,0.6666666666666666,1.0,0.8,0.75,0.5,1,3
+validation,68,Bolivia (Plurinational State of),high_growth_rule,4,4,1,0.25,1.0,0.4,0.5,1.0,1,4
+validation,70,Bosnia and Herzegovina,high_growth_rule,4,1,1,1.0,1.0,1.0,1.0,0.0,1,1
+validation,72,Botswana,high_growth_rule,4,3,2,0.3333333333333333,0.5,0.4,0.25,1.0,1,3
+validation,76,Brazil,high_growth_rule,4,1,4,1.0,0.25,0.4,0.5,,1,1
+validation,84,Belize,high_growth_rule,4,1,1,1.0,1.0,1.0,1.0,0.0,1,1
+validation,90,Solomon Islands,high_growth_rule,4,3,2,0.6666666666666666,1.0,0.8,0.75,0.5,1,3
+validation,92,British Virgin Islands,high_growth_rule,4,0,0,0.0,0.0,0.0,0.5,0.0,0,0
+validation,96,Brunei Darussalam,high_growth_rule,4,0,2,0.0,0.0,0.0,0.5,0.0,0,0
+validation,100,Bulgaria,high_growth_rule,4,0,1,0.0,0.0,0.0,0.5,0.0,0,0
+validation,104,Myanmar,high_growth_rule,4,4,1,0.25,1.0,0.4,0.5,1.0,1,4
+validation,108,Burundi,high_growth_rule,4,4,1,0.25,1.0,0.4,0.5,1.0,1,4
+validation,112,Belarus,high_growth_rule,4,2,4,1.0,0.5,0.6666666666666666,0.5,,1,2
+validation,116,Cambodia,high_growth_rule,4,4,0,0.0,0.0,0.0,0.5,1.0,1,4
+validation,120,Cameroon,high_growth_rule,4,2,0,0.0,0.0,0.0,0.5,0.5,1,2
+validation,124,Canada,high_growth_rule,4,0,0,0.0,0.0,0.0,0.5,0.0,0,0
+validation,132,Cabo Verde,high_growth_rule,4,0,1,0.0,0.0,0.0,0.5,0.0,0,0
+validation,136,Cayman Islands,high_growth_rule,4,0,0,0.0,0.0,0.0,0.5,0.0,0,0
+validation,140,Central African Republic,high_growth_rule,4,3,2,0.6666666666666666,1.0,0.8,0.75,0.5,1,3
+validation,144,Sri Lanka,high_growth_rule,4,4,3,0.75,1.0,0.8571428571428571,0.5,1.0,1,4
+validation,148,Chad,high_growth_rule,4,3,3,1.0,1.0,1.0,1.0,0.0,1,3
+validation,152,Chile,high_growth_rule,4,3,3,1.0,1.0,1.0,1.0,0.0,1,3
+validation,156,China,high_growth_rule,4,4,1,0.25,1.0,0.4,0.5,1.0,1,4
+validation,170,Colombia,high_growth_rule,4,3,2,0.6666666666666666,1.0,0.8,0.75,0.5,1,3
+validation,174,Comoros,high_growth_rule,4,4,2,0.5,1.0,0.6666666666666666,0.5,1.0,1,4
+validation,178,Congo,high_growth_rule,4,2,3,1.0,0.6666666666666666,0.8,0.8333333333333333,0.0,1,2
+validation,180,D.R. of the Congo,high_growth_rule,4,4,1,0.25,1.0,0.4,0.5,1.0,1,4
+validation,184,Cook Islands,high_growth_rule,4,0,0,0.0,0.0,0.0,0.5,0.0,0,0
+validation,188,Costa Rica,high_growth_rule,4,3,1,0.3333333333333333,1.0,0.5,0.6666666666666666,0.6666666666666666,1,3
+validation,191,Croatia,high_growth_rule,4,0,0,0.0,0.0,0.0,0.5,0.0,0,0
+validation,192,Cuba,high_growth_rule,4,0,1,0.0,0.0,0.0,0.5,0.0,0,0
+validation,196,Cyprus,high_growth_rule,4,0,2,0.0,0.0,0.0,0.5,0.0,0,0
+validation,203,Czechia,high_growth_rule,4,0,1,0.0,0.0,0.0,0.5,0.0,0,0
+validation,204,Benin,high_growth_rule,4,2,2,1.0,1.0,1.0,1.0,0.0,1,2
+validation,208,Denmark,high_growth_rule,4,0,0,0.0,0.0,0.0,0.5,0.0,0,0
+validation,212,Dominica,high_growth_rule,4,0,1,0.0,0.0,0.0,0.5,0.0,0,0
+validation,214,Dominican Republic,high_growth_rule,4,2,1,0.5,1.0,0.6666666666666666,0.8333333333333333,0.3333333333333333,1,2
+validation,218,Ecuador,high_growth_rule,4,4,3,0.75,1.0,0.8571428571428571,0.5,1.0,1,4
+validation,222,El Salvador,high_growth_rule,4,0,1,0.0,0.0,0.0,0.5,0.0,0,0
+validation,226,Equatorial Guinea,high_growth_rule,4,2,3,1.0,0.6666666666666666,0.8,0.8333333333333333,0.0,1,2
+validation,231,Ethiopia,high_growth_rule,4,4,2,0.5,1.0,0.6666666666666666,0.5,1.0,1,4
+validation,232,Eritrea,high_growth_rule,4,2,2,0.5,0.5,0.5,0.5,0.5,1,2
+validation,233,Estonia,high_growth_rule,4,1,1,1.0,1.0,1.0,1.0,0.0,1,1
+validation,242,Fiji,high_growth_rule,4,1,1,1.0,1.0,1.0,1.0,0.0,1,1
+validation,246,Finland,high_growth_rule,4,0,2,0.0,0.0,0.0,0.5,0.0,0,0
+validation,250,France,high_growth_rule,4,0,0,0.0,0.0,0.0,0.5,0.0,0,0
+validation,258,French Polynesia,high_growth_rule,4,0,0,0.0,0.0,0.0,0.5,0.0,0,0
+validation,262,Djibouti,high_growth_rule,4,4,2,0.5,1.0,0.6666666666666666,0.5,1.0,1,4
+validation,266,Gabon,high_growth_rule,4,4,2,0.5,1.0,0.6666666666666666,0.5,1.0,1,4
+validation,268,Georgia,high_growth_rule,4,4,2,0.5,1.0,0.6666666666666666,0.5,1.0,1,4
+validation,270,Gambia,high_growth_rule,4,2,1,0.5,1.0,0.6666666666666666,0.8333333333333333,0.3333333333333333,1,2
+validation,275,State of Palestine,high_growth_rule,4,4,2,0.5,1.0,0.6666666666666666,0.5,1.0,1,4
+validation,276,Germany,high_growth_rule,4,1,1,1.0,1.0,1.0,1.0,0.0,1,1
+validation,288,Ghana,high_growth_rule,4,4,3,0.75,1.0,0.8571428571428571,0.5,1.0,1,4
+validation,296,Kiribati,high_growth_rule,4,2,1,0.0,0.0,0.0,0.16666666666666666,0.6666666666666666,1,2
+validation,300,Greece,high_growth_rule,4,0,0,0.0,0.0,0.0,0.5,0.0,0,0
+validation,304,Greenland,high_growth_rule,4,0,2,0.0,0.0,0.0,0.5,0.0,0,0
+validation,308,Grenada,high_growth_rule,4,0,0,0.0,0.0,0.0,0.5,0.0,0,0
+validation,320,Guatemala,high_growth_rule,4,1,0,0.0,0.0,0.0,0.5,0.25,1,1
+validation,324,Guinea,high_growth_rule,4,4,2,0.5,1.0,0.6666666666666666,0.5,1.0,1,4
+validation,328,Guyana,high_growth_rule,4,3,2,0.6666666666666666,1.0,0.8,0.75,0.5,1,3
+validation,332,Haiti,high_growth_rule,4,2,2,1.0,1.0,1.0,1.0,0.0,1,2
+validation,340,Honduras,high_growth_rule,4,1,0,0.0,0.0,0.0,0.5,0.25,1,1
+validation,344,"China, Hong Kong SAR",high_growth_rule,4,2,2,1.0,1.0,1.0,1.0,0.0,1,2
+validation,348,Hungary,high_growth_rule,4,0,0,0.0,0.0,0.0,0.5,0.0,0,0
+validation,352,Iceland,high_growth_rule,4,0,0,0.0,0.0,0.0,0.5,0.0,0,0
+validation,356,India,high_growth_rule,4,4,1,0.25,1.0,0.4,0.5,1.0,1,4
+validation,360,Indonesia,high_growth_rule,4,4,0,0.0,0.0,0.0,0.5,1.0,1,4
+validation,364,Iran (Islamic Republic of),high_growth_rule,4,1,1,1.0,1.0,1.0,1.0,0.0,1,1
+validation,368,Iraq,high_growth_rule,4,4,2,0.5,1.0,0.6666666666666666,0.5,1.0,1,4
+validation,372,Ireland,high_growth_rule,4,0,0,0.0,0.0,0.0,0.5,0.0,0,0
+validation,376,Israel,high_growth_rule,4,3,0,0.0,0.0,0.0,0.5,0.75,1,3
+validation,380,Italy,high_growth_rule,4,0,1,0.0,0.0,0.0,0.5,0.0,0,0
+validation,384,Côte d'Ivoire,high_growth_rule,4,3,1,0.3333333333333333,1.0,0.5,0.6666666666666666,0.6666666666666666,1,3
+validation,388,Jamaica,high_growth_rule,4,0,0,0.0,0.0,0.0,0.5,0.0,0,0
+validation,392,Japan,high_growth_rule,4,1,1,1.0,1.0,1.0,1.0,0.0,1,1
+validation,398,Kazakhstan,high_growth_rule,4,4,3,0.75,1.0,0.8571428571428571,0.5,1.0,1,4
+validation,400,Jordan,high_growth_rule,4,0,0,0.0,0.0,0.0,0.5,0.0,0,0
+validation,404,Kenya,high_growth_rule,4,3,1,0.3333333333333333,1.0,0.5,0.6666666666666666,0.6666666666666666,1,3
+validation,408,D.P.R. of Korea,high_growth_rule,4,0,1,0.0,0.0,0.0,0.5,0.0,0,0
+validation,410,Republic of Korea,high_growth_rule,4,1,1,1.0,1.0,1.0,1.0,0.0,1,1
+validation,412,Kosovo,high_growth_rule,4,3,1,0.3333333333333333,1.0,0.5,0.6666666666666666,0.6666666666666666,1,3
+validation,414,Kuwait,high_growth_rule,4,2,2,1.0,1.0,1.0,1.0,0.0,1,2
+validation,417,Kyrgyzstan,high_growth_rule,4,2,1,0.5,1.0,0.6666666666666666,0.8333333333333333,0.3333333333333333,1,2
+validation,418,Lao People's DR,high_growth_rule,4,4,0,0.0,0.0,0.0,0.5,1.0,1,4
+validation,422,Lebanon,high_growth_rule,4,1,3,1.0,0.3333333333333333,0.5,0.6666666666666666,0.0,1,1
+validation,426,Lesotho,high_growth_rule,4,3,3,1.0,1.0,1.0,1.0,0.0,1,3
+validation,428,Latvia,high_growth_rule,4,1,1,1.0,1.0,1.0,1.0,0.0,1,1
+validation,430,Liberia,high_growth_rule,4,4,4,1.0,1.0,1.0,0.5,,1,4
+validation,434,Libya,high_growth_rule,4,2,2,1.0,1.0,1.0,1.0,0.0,1,2
+validation,438,Liechtenstein,high_growth_rule,4,2,2,1.0,1.0,1.0,1.0,0.0,1,2
+validation,440,Lithuania,high_growth_rule,4,3,1,0.3333333333333333,1.0,0.5,0.6666666666666666,0.6666666666666666,1,3
+validation,442,Luxembourg,high_growth_rule,4,0,0,0.0,0.0,0.0,0.5,0.0,0,0
+validation,446,"China, Macao SAR",high_growth_rule,4,4,4,1.0,1.0,1.0,0.5,,1,4
+validation,450,Madagascar,high_growth_rule,4,0,0,0.0,0.0,0.0,0.5,0.0,0,0
+validation,454,Malawi,high_growth_rule,4,4,1,0.25,1.0,0.4,0.5,1.0,1,4
+validation,458,Malaysia,high_growth_rule,4,4,1,0.25,1.0,0.4,0.5,1.0,1,4
+validation,462,Maldives,high_growth_rule,4,3,0,0.0,0.0,0.0,0.5,0.75,1,3
+validation,466,Mali,high_growth_rule,4,1,1,1.0,1.0,1.0,1.0,0.0,1,1
+validation,470,Malta,high_growth_rule,4,3,1,0.3333333333333333,1.0,0.5,0.6666666666666666,0.6666666666666666,1,3
+validation,478,Mauritania,high_growth_rule,4,3,1,0.3333333333333333,1.0,0.5,0.6666666666666666,0.6666666666666666,1,3
+validation,480,Mauritius,high_growth_rule,4,3,0,0.0,0.0,0.0,0.5,0.75,1,3
+validation,484,Mexico,high_growth_rule,4,1,1,1.0,1.0,1.0,1.0,0.0,1,1
+validation,492,Monaco,high_growth_rule,4,2,1,0.5,1.0,0.6666666666666666,0.8333333333333333,0.3333333333333333,1,2
+validation,496,Mongolia,high_growth_rule,4,4,3,0.75,1.0,0.8571428571428571,0.5,1.0,1,4
+validation,498,Republic of Moldova,high_growth_rule,4,3,1,0.3333333333333333,1.0,0.5,0.6666666666666666,0.6666666666666666,1,3
+validation,499,Montenegro,high_growth_rule,4,0,0,0.0,0.0,0.0,0.5,0.0,0,0
+validation,500,Montserrat,high_growth_rule,4,0,0,0.0,0.0,0.0,0.5,0.0,0,0
+validation,504,Morocco,high_growth_rule,4,3,2,0.6666666666666666,1.0,0.8,0.75,0.5,1,3
+validation,508,Mozambique,high_growth_rule,4,4,0,0.0,0.0,0.0,0.5,1.0,1,4
+validation,512,Oman,high_growth_rule,4,2,1,0.5,1.0,0.6666666666666666,0.8333333333333333,0.3333333333333333,1,2
+validation,516,Namibia,high_growth_rule,4,4,1,0.25,1.0,0.4,0.5,1.0,1,4
+validation,520,Nauru,high_growth_rule,4,4,2,0.5,1.0,0.6666666666666666,0.5,1.0,1,4
+validation,524,Nepal,high_growth_rule,4,3,2,0.3333333333333333,0.5,0.4,0.25,1.0,1,3
+validation,528,Netherlands,high_growth_rule,4,0,0,0.0,0.0,0.0,0.5,0.0,0,0
+validation,531,Curaçao,high_growth_rule,4,0,0,0.0,0.0,0.0,0.5,0.0,0,0
+validation,533,Aruba,high_growth_rule,4,1,1,1.0,1.0,1.0,1.0,0.0,1,1
+validation,534,Sint Maarten (Dutch part),high_growth_rule,4,2,2,1.0,1.0,1.0,1.0,0.0,1,2
+validation,540,New Caledonia,high_growth_rule,4,2,3,1.0,0.6666666666666666,0.8,0.8333333333333333,0.0,1,2
+validation,548,Vanuatu,high_growth_rule,4,0,0,0.0,0.0,0.0,0.5,0.0,0,0
+validation,554,New Zealand,high_growth_rule,4,0,0,0.0,0.0,0.0,0.5,0.0,0,0
+validation,558,Nicaragua,high_growth_rule,4,4,0,0.0,0.0,0.0,0.5,1.0,1,4
+validation,562,Niger,high_growth_rule,4,3,2,0.6666666666666666,1.0,0.8,0.75,0.5,1,3
+validation,566,Nigeria,high_growth_rule,4,4,1,0.25,1.0,0.4,0.5,1.0,1,4
+validation,578,Norway,high_growth_rule,4,0,0,0.0,0.0,0.0,0.5,0.0,0,0
+validation,583,Micronesia (FS of),high_growth_rule,4,0,2,0.0,0.0,0.0,0.5,0.0,0,0
+validation,584,Marshall Islands,high_growth_rule,4,1,0,0.0,0.0,0.0,0.5,0.25,1,1
+validation,585,Palau,high_growth_rule,4,1,0,0.0,0.0,0.0,0.5,0.25,1,1
+validation,586,Pakistan,high_growth_rule,4,1,0,0.0,0.0,0.0,0.5,0.25,1,1
+validation,591,Panama,high_growth_rule,4,4,2,0.5,1.0,0.6666666666666666,0.5,1.0,1,4
+validation,598,Papua New Guinea,high_growth_rule,4,2,1,0.5,1.0,0.6666666666666666,0.8333333333333333,0.3333333333333333,1,2
+validation,600,Paraguay,high_growth_rule,4,3,2,0.6666666666666666,1.0,0.8,0.75,0.5,1,3
+validation,604,Peru,high_growth_rule,4,4,3,0.75,1.0,0.8571428571428571,0.5,1.0,1,4
+validation,608,Philippines,high_growth_rule,4,3,0,0.0,0.0,0.0,0.5,0.75,1,3
+validation,616,Poland,high_growth_rule,4,1,1,0.0,0.0,0.0,0.3333333333333333,0.3333333333333333,1,1
+validation,620,Portugal,high_growth_rule,4,0,1,0.0,0.0,0.0,0.5,0.0,0,0
+validation,624,Guinea-Bissau,high_growth_rule,4,2,1,0.5,1.0,0.6666666666666666,0.8333333333333333,0.3333333333333333,1,2
+validation,626,Timor-Leste,high_growth_rule,4,3,2,0.6666666666666666,1.0,0.8,0.75,0.5,1,3
+validation,630,Puerto Rico,high_growth_rule,4,0,0,0.0,0.0,0.0,0.5,0.0,0,0
+validation,634,Qatar,high_growth_rule,4,4,3,0.75,1.0,0.8571428571428571,0.5,1.0,1,4
+validation,642,Romania,high_growth_rule,4,1,0,0.0,0.0,0.0,0.5,0.25,1,1
+validation,643,Russian Federation,high_growth_rule,4,2,3,1.0,0.6666666666666666,0.8,0.8333333333333333,0.0,1,2
+validation,646,Rwanda,high_growth_rule,4,4,2,0.5,1.0,0.6666666666666666,0.5,1.0,1,4
+validation,659,Saint Kitts and Nevis,high_growth_rule,4,1,0,0.0,0.0,0.0,0.5,0.25,1,1
+validation,660,Anguilla,high_growth_rule,4,0,1,0.0,0.0,0.0,0.5,0.0,0,0
+validation,662,Saint Lucia,high_growth_rule,4,1,2,1.0,0.5,0.6666666666666666,0.75,0.0,1,1
+validation,670,St. Vincent and the Grenadines,high_growth_rule,4,0,0,0.0,0.0,0.0,0.5,0.0,0,0
+validation,674,San Marino,high_growth_rule,4,0,0,0.0,0.0,0.0,0.5,0.0,0,0
+validation,678,Sao Tome and Principe,high_growth_rule,4,1,0,0.0,0.0,0.0,0.5,0.25,1,1
+validation,682,Saudi Arabia,high_growth_rule,4,3,2,0.6666666666666666,1.0,0.8,0.75,0.5,1,3
+validation,686,Senegal,high_growth_rule,4,1,0,0.0,0.0,0.0,0.5,0.25,1,1
+validation,688,Serbia,high_growth_rule,4,0,0,0.0,0.0,0.0,0.5,0.0,0,0
+validation,690,Seychelles,high_growth_rule,4,4,0,0.0,0.0,0.0,0.5,1.0,1,4
+validation,694,Sierra Leone,high_growth_rule,4,4,3,0.75,1.0,0.8571428571428571,0.5,1.0,1,4
+validation,702,Singapore,high_growth_rule,4,4,2,0.5,1.0,0.6666666666666666,0.5,1.0,1,4
+validation,703,Slovakia,high_growth_rule,4,1,1,1.0,1.0,1.0,1.0,0.0,1,1
+validation,704,Viet Nam,high_growth_rule,4,4,1,0.25,1.0,0.4,0.5,1.0,1,4
+validation,705,Slovenia,high_growth_rule,4,0,0,0.0,0.0,0.0,0.5,0.0,0,0
+validation,706,Somalia,high_growth_rule,4,3,1,0.3333333333333333,1.0,0.5,0.6666666666666666,0.6666666666666666,1,3
+validation,710,South Africa,high_growth_rule,4,0,0,0.0,0.0,0.0,0.5,0.0,0,0
+validation,716,Zimbabwe,high_growth_rule,4,3,3,1.0,1.0,1.0,1.0,0.0,1,3
+validation,724,Spain,high_growth_rule,4,0,0,0.0,0.0,0.0,0.5,0.0,0,0
+validation,728,South Sudan,high_growth_rule,4,1,1,1.0,1.0,1.0,1.0,0.0,1,1
+validation,729,Sudan,high_growth_rule,4,2,1,0.5,1.0,0.6666666666666666,0.8333333333333333,0.3333333333333333,1,2
+validation,740,Suriname,high_growth_rule,4,2,4,1.0,0.5,0.6666666666666666,0.5,,1,2
+validation,748,Eswatini,high_growth_rule,4,1,1,1.0,1.0,1.0,1.0,0.0,1,1
+validation,752,Sweden,high_growth_rule,4,1,1,1.0,1.0,1.0,1.0,0.0,1,1
+validation,756,Switzerland,high_growth_rule,4,0,0,0.0,0.0,0.0,0.5,0.0,0,0
+validation,760,Syrian Arab Republic,high_growth_rule,4,1,2,1.0,0.5,0.6666666666666666,0.75,0.0,1,1
+validation,762,Tajikistan,high_growth_rule,4,3,0,0.0,0.0,0.0,0.5,0.75,1,3
+validation,764,Thailand,high_growth_rule,4,2,2,1.0,1.0,1.0,1.0,0.0,1,2
+validation,768,Togo,high_growth_rule,4,4,0,0.0,0.0,0.0,0.5,1.0,1,4
+validation,776,Tonga,high_growth_rule,4,1,1,1.0,1.0,1.0,1.0,0.0,1,1
+validation,780,Trinidad and Tobago,high_growth_rule,4,0,1,0.0,0.0,0.0,0.5,0.0,0,0
+validation,784,United Arab Emirates,high_growth_rule,4,3,1,0.3333333333333333,1.0,0.5,0.6666666666666666,0.6666666666666666,1,3
+validation,788,Tunisia,high_growth_rule,4,2,2,1.0,1.0,1.0,1.0,0.0,1,2
+validation,792,Türkiye,high_growth_rule,4,4,2,0.5,1.0,0.6666666666666666,0.5,1.0,1,4
+validation,795,Turkmenistan,high_growth_rule,4,3,3,1.0,1.0,1.0,1.0,0.0,1,3
+validation,796,Turks and Caicos Islands,high_growth_rule,4,1,0,0.0,0.0,0.0,0.5,0.25,1,1
+validation,798,Tuvalu,high_growth_rule,4,2,1,0.5,1.0,0.6666666666666666,0.8333333333333333,0.3333333333333333,1,2
+validation,800,Uganda,high_growth_rule,4,2,1,0.5,1.0,0.6666666666666666,0.8333333333333333,0.3333333333333333,1,2
+validation,804,Ukraine,high_growth_rule,4,1,2,1.0,0.5,0.6666666666666666,0.75,0.0,1,1
+validation,807,North Macedonia,high_growth_rule,4,0,0,0.0,0.0,0.0,0.5,0.0,0,0
+validation,818,Egypt,high_growth_rule,4,1,1,1.0,1.0,1.0,1.0,0.0,1,1
+validation,826,United Kingdom,high_growth_rule,4,0,0,0.0,0.0,0.0,0.5,0.0,0,0
+validation,835,U.R. of Tanzania: Mainland,high_growth_rule,4,4,0,0.0,0.0,0.0,0.5,1.0,1,4
+validation,836,Zanzibar,high_growth_rule,4,4,0,0.0,0.0,0.0,0.5,1.0,1,4
+validation,840,United States,high_growth_rule,4,0,0,0.0,0.0,0.0,0.5,0.0,0,0
+validation,854,Burkina Faso,high_growth_rule,4,4,3,0.75,1.0,0.8571428571428571,0.5,1.0,1,4
+validation,858,Uruguay,high_growth_rule,4,4,2,0.5,1.0,0.6666666666666666,0.5,1.0,1,4
+validation,860,Uzbekistan,high_growth_rule,4,4,1,0.25,1.0,0.4,0.5,1.0,1,4
+validation,862,Venezuela (Bolivarian Republic of),high_growth_rule,4,2,3,1.0,0.6666666666666666,0.8,0.8333333333333333,0.0,1,2
+validation,882,Samoa,high_growth_rule,4,0,0,0.0,0.0,0.0,0.5,0.0,0,0
+validation,887,Yemen,high_growth_rule,4,2,2,0.5,0.5,0.5,0.5,0.5,1,2
+validation,894,Zambia,high_growth_rule,4,4,2,0.5,1.0,0.6666666666666666,0.5,1.0,1,4
+confirmation,4,Afghanistan,high_growth_rule,3,0,0,0.0,0.0,0.0,0.5,0.0,0,0
+confirmation,8,Albania,high_growth_rule,3,0,0,0.0,0.0,0.0,0.5,0.0,0,0
+confirmation,12,Algeria,high_growth_rule,3,1,2,1.0,0.5,0.6666666666666666,0.75,0.0,1,1
+confirmation,20,Andorra,high_growth_rule,3,0,1,0.0,0.0,0.0,0.5,0.0,0,0
+confirmation,24,Angola,high_growth_rule,3,1,1,1.0,1.0,1.0,1.0,0.0,1,1
+confirmation,28,Antigua and Barbuda,high_growth_rule,3,1,0,0.0,0.0,0.0,0.5,0.3333333333333333,1,1
+confirmation,31,Azerbaijan,high_growth_rule,3,0,1,0.0,0.0,0.0,0.5,0.0,0,0
+confirmation,32,Argentina,high_growth_rule,3,0,1,0.0,0.0,0.0,0.5,0.0,0,0
+confirmation,36,Australia,high_growth_rule,3,0,1,0.0,0.0,0.0,0.5,0.0,0,0
+confirmation,40,Austria,high_growth_rule,3,0,0,0.0,0.0,0.0,0.5,0.0,0,0
+confirmation,44,Bahamas,high_growth_rule,3,0,0,0.0,0.0,0.0,0.5,0.0,0,0
+confirmation,48,Bahrain,high_growth_rule,3,1,0,0.0,0.0,0.0,0.5,0.3333333333333333,1,1
+confirmation,50,Bangladesh,high_growth_rule,3,3,0,0.0,0.0,0.0,0.5,1.0,1,3
+confirmation,51,Armenia,high_growth_rule,3,0,0,0.0,0.0,0.0,0.5,0.0,0,0
+confirmation,52,Barbados,high_growth_rule,3,0,0,0.0,0.0,0.0,0.5,0.0,0,0
+confirmation,56,Belgium,high_growth_rule,3,0,0,0.0,0.0,0.0,0.5,0.0,0,0
+confirmation,60,Bermuda,high_growth_rule,3,0,0,0.0,0.0,0.0,0.5,0.0,0,0
+confirmation,64,Bhutan,high_growth_rule,3,3,3,1.0,1.0,1.0,0.5,,1,3
+confirmation,68,Bolivia (Plurinational State of),high_growth_rule,3,3,1,0.3333333333333333,1.0,0.5,0.5,1.0,1,3
+confirmation,70,Bosnia and Herzegovina,high_growth_rule,3,1,1,1.0,1.0,1.0,1.0,0.0,1,1
+confirmation,72,Botswana,high_growth_rule,3,2,1,0.5,1.0,0.6666666666666666,0.75,0.5,1,2
+confirmation,76,Brazil,high_growth_rule,3,0,0,0.0,0.0,0.0,0.5,0.0,0,0
+confirmation,84,Belize,high_growth_rule,3,0,1,0.0,0.0,0.0,0.5,0.0,0,0
+confirmation,90,Solomon Islands,high_growth_rule,3,1,1,1.0,1.0,1.0,1.0,0.0,1,1
+confirmation,92,British Virgin Islands,high_growth_rule,3,1,1,0.0,0.0,0.0,0.25,0.5,1,1
+confirmation,96,Brunei Darussalam,high_growth_rule,3,0,0,0.0,0.0,0.0,0.5,0.0,0,0
+confirmation,100,Bulgaria,high_growth_rule,3,0,0,0.0,0.0,0.0,0.5,0.0,0,0
+confirmation,104,Myanmar,high_growth_rule,3,3,2,0.6666666666666666,1.0,0.8,0.5,1.0,1,3
+confirmation,108,Burundi,high_growth_rule,3,1,0,0.0,0.0,0.0,0.5,0.3333333333333333,1,1
+confirmation,112,Belarus,high_growth_rule,3,0,0,0.0,0.0,0.0,0.5,0.0,0,0
+confirmation,116,Cambodia,high_growth_rule,3,3,0,0.0,0.0,0.0,0.5,1.0,1,3
+confirmation,120,Cameroon,high_growth_rule,3,3,1,0.3333333333333333,1.0,0.5,0.5,1.0,1,3
+confirmation,124,Canada,high_growth_rule,3,0,0,0.0,0.0,0.0,0.5,0.0,0,0
+confirmation,132,Cabo Verde,high_growth_rule,3,1,0,0.0,0.0,0.0,0.5,0.3333333333333333,1,1
+confirmation,136,Cayman Islands,high_growth_rule,3,0,0,0.0,0.0,0.0,0.5,0.0,0,0
+confirmation,140,Central African Republic,high_growth_rule,3,2,0,0.0,0.0,0.0,0.5,0.6666666666666666,1,2
+confirmation,144,Sri Lanka,high_growth_rule,3,3,1,0.3333333333333333,1.0,0.5,0.5,1.0,1,3
+confirmation,148,Chad,high_growth_rule,3,1,1,1.0,1.0,1.0,1.0,0.0,1,1
+confirmation,152,Chile,high_growth_rule,3,0,0,0.0,0.0,0.0,0.5,0.0,0,0
+confirmation,156,China,high_growth_rule,3,3,0,0.0,0.0,0.0,0.5,1.0,1,3
+confirmation,170,Colombia,high_growth_rule,3,1,1,1.0,1.0,1.0,1.0,0.0,1,1
+confirmation,174,Comoros,high_growth_rule,3,0,0,0.0,0.0,0.0,0.5,0.0,0,0
+confirmation,178,Congo,high_growth_rule,3,1,2,1.0,0.5,0.6666666666666666,0.75,0.0,1,1
+confirmation,180,D.R. of the Congo,high_growth_rule,3,2,1,0.5,1.0,0.6666666666666666,0.75,0.5,1,2
+confirmation,184,Cook Islands,high_growth_rule,3,3,1,0.3333333333333333,1.0,0.5,0.5,1.0,1,3
+confirmation,188,Costa Rica,high_growth_rule,3,1,0,0.0,0.0,0.0,0.5,0.3333333333333333,1,1
+confirmation,191,Croatia,high_growth_rule,3,0,0,0.0,0.0,0.0,0.5,0.0,0,0
+confirmation,192,Cuba,high_growth_rule,3,1,1,1.0,1.0,1.0,1.0,0.0,1,1
+confirmation,196,Cyprus,high_growth_rule,3,1,0,0.0,0.0,0.0,0.5,0.3333333333333333,1,1
+confirmation,203,Czechia,high_growth_rule,3,1,1,1.0,1.0,1.0,1.0,0.0,1,1
+confirmation,204,Benin,high_growth_rule,3,1,0,0.0,0.0,0.0,0.5,0.3333333333333333,1,1
+confirmation,208,Denmark,high_growth_rule,3,0,0,0.0,0.0,0.0,0.5,0.0,0,0
+confirmation,212,Dominica,high_growth_rule,3,0,1,0.0,0.0,0.0,0.5,0.0,0,0
+confirmation,214,Dominican Republic,high_growth_rule,3,3,1,0.3333333333333333,1.0,0.5,0.5,1.0,1,3
+confirmation,218,Ecuador,high_growth_rule,3,1,0,0.0,0.0,0.0,0.5,0.3333333333333333,1,1
+confirmation,222,El Salvador,high_growth_rule,3,0,0,0.0,0.0,0.0,0.5,0.0,0,0
+confirmation,226,Equatorial Guinea,high_growth_rule,3,0,1,0.0,0.0,0.0,0.5,0.0,0,0
+confirmation,231,Ethiopia,high_growth_rule,3,3,1,0.3333333333333333,1.0,0.5,0.5,1.0,1,3
+confirmation,232,Eritrea,high_growth_rule,3,2,2,1.0,1.0,1.0,1.0,0.0,1,2
+confirmation,233,Estonia,high_growth_rule,3,0,0,0.0,0.0,0.0,0.5,0.0,0,0
+confirmation,242,Fiji,high_growth_rule,3,2,1,0.0,0.0,0.0,0.0,1.0,1,2
+confirmation,246,Finland,high_growth_rule,3,0,0,0.0,0.0,0.0,0.5,0.0,0,0
+confirmation,250,France,high_growth_rule,3,0,0,0.0,0.0,0.0,0.5,0.0,0,0
+confirmation,258,French Polynesia,high_growth_rule,3,0,0,0.0,0.0,0.0,0.5,0.0,0,0
+confirmation,262,Djibouti,high_growth_rule,3,2,1,0.5,1.0,0.6666666666666666,0.75,0.5,1,2
+confirmation,266,Gabon,high_growth_rule,3,1,2,1.0,0.5,0.6666666666666666,0.75,0.0,1,1
+confirmation,268,Georgia,high_growth_rule,3,1,0,0.0,0.0,0.0,0.5,0.3333333333333333,1,1
+confirmation,270,Gambia,high_growth_rule,3,1,0,0.0,0.0,0.0,0.5,0.3333333333333333,1,1
+confirmation,275,State of Palestine,high_growth_rule,3,1,2,1.0,0.5,0.6666666666666666,0.75,0.0,1,1
+confirmation,276,Germany,high_growth_rule,3,0,0,0.0,0.0,0.0,0.5,0.0,0,0
+confirmation,288,Ghana,high_growth_rule,3,0,0,0.0,0.0,0.0,0.5,0.0,0,0
+confirmation,296,Kiribati,high_growth_rule,3,2,2,1.0,1.0,1.0,1.0,0.0,1,2
+confirmation,300,Greece,high_growth_rule,3,0,0,0.0,0.0,0.0,0.5,0.0,0,0
+confirmation,304,Greenland,high_growth_rule,3,1,1,1.0,1.0,1.0,1.0,0.0,1,1
+confirmation,308,Grenada,high_growth_rule,3,2,3,1.0,0.6666666666666666,0.8,0.5,,1,2
+confirmation,320,Guatemala,high_growth_rule,3,2,0,0.0,0.0,0.0,0.5,0.6666666666666666,1,2
+confirmation,324,Guinea,high_growth_rule,3,3,1,0.3333333333333333,1.0,0.5,0.5,1.0,1,3
+confirmation,328,Guyana,high_growth_rule,3,0,0,0.0,0.0,0.0,0.5,0.0,0,0
+confirmation,332,Haiti,high_growth_rule,3,0,1,0.0,0.0,0.0,0.5,0.0,0,0
+confirmation,340,Honduras,high_growth_rule,3,0,0,0.0,0.0,0.0,0.5,0.0,0,0
+confirmation,344,"China, Hong Kong SAR",high_growth_rule,3,0,1,0.0,0.0,0.0,0.5,0.0,0,0
+confirmation,348,Hungary,high_growth_rule,3,1,0,0.0,0.0,0.0,0.5,0.3333333333333333,1,1
+confirmation,352,Iceland,high_growth_rule,3,1,1,1.0,1.0,1.0,1.0,0.0,1,1
+confirmation,356,India,high_growth_rule,3,3,1,0.3333333333333333,1.0,0.5,0.5,1.0,1,3
+confirmation,360,Indonesia,high_growth_rule,3,3,0,0.0,0.0,0.0,0.5,1.0,1,3
+confirmation,364,Iran (Islamic Republic of),high_growth_rule,3,2,2,1.0,1.0,1.0,1.0,0.0,1,2
+confirmation,368,Iraq,high_growth_rule,3,2,3,1.0,0.6666666666666666,0.8,0.5,,1,2
+confirmation,372,Ireland,high_growth_rule,3,2,1,0.5,1.0,0.6666666666666666,0.75,0.5,1,2
+confirmation,376,Israel,high_growth_rule,3,1,0,0.0,0.0,0.0,0.5,0.3333333333333333,1,1
+confirmation,380,Italy,high_growth_rule,3,0,0,0.0,0.0,0.0,0.5,0.0,0,0
+confirmation,384,Côte d'Ivoire,high_growth_rule,3,3,2,0.6666666666666666,1.0,0.8,0.5,1.0,1,3
+confirmation,388,Jamaica,high_growth_rule,3,0,0,0.0,0.0,0.0,0.5,0.0,0,0
+confirmation,392,Japan,high_growth_rule,3,0,0,0.0,0.0,0.0,0.5,0.0,0,0
+confirmation,398,Kazakhstan,high_growth_rule,3,1,0,0.0,0.0,0.0,0.5,0.3333333333333333,1,1
+confirmation,400,Jordan,high_growth_rule,3,0,0,0.0,0.0,0.0,0.5,0.0,0,0
+confirmation,404,Kenya,high_growth_rule,3,3,0,0.0,0.0,0.0,0.5,1.0,1,3
+confirmation,408,D.P.R. of Korea,high_growth_rule,3,0,3,0.0,0.0,0.0,0.5,,0,0
+confirmation,410,Republic of Korea,high_growth_rule,3,0,0,0.0,0.0,0.0,0.5,0.0,0,0
+confirmation,412,Kosovo,high_growth_rule,3,2,1,0.5,1.0,0.6666666666666666,0.75,0.5,1,2
+confirmation,414,Kuwait,high_growth_rule,3,0,1,0.0,0.0,0.0,0.5,0.0,0,0
+confirmation,417,Kyrgyzstan,high_growth_rule,3,3,0,0.0,0.0,0.0,0.5,1.0,1,3
+confirmation,418,Lao People's DR,high_growth_rule,3,3,0,0.0,0.0,0.0,0.5,1.0,1,3
+confirmation,422,Lebanon,high_growth_rule,3,0,2,0.0,0.0,0.0,0.5,0.0,0,0
+confirmation,426,Lesotho,high_growth_rule,3,0,3,0.0,0.0,0.0,0.5,,0,0
+confirmation,428,Latvia,high_growth_rule,3,0,0,0.0,0.0,0.0,0.5,0.0,0,0
+confirmation,430,Liberia,high_growth_rule,3,2,2,0.5,0.5,0.5,0.25,1.0,1,2
+confirmation,434,Libya,high_growth_rule,3,0,1,0.0,0.0,0.0,0.5,0.0,0,0
+confirmation,438,Liechtenstein,high_growth_rule,3,0,0,0.0,0.0,0.0,0.5,0.0,0,0
+confirmation,440,Lithuania,high_growth_rule,3,0,0,0.0,0.0,0.0,0.5,0.0,0,0
+confirmation,442,Luxembourg,high_growth_rule,3,1,1,1.0,1.0,1.0,1.0,0.0,1,1
+confirmation,446,"China, Macao SAR",high_growth_rule,3,0,0,0.0,0.0,0.0,0.5,0.0,0,0
+confirmation,450,Madagascar,high_growth_rule,3,0,0,0.0,0.0,0.0,0.5,0.0,0,0
+confirmation,454,Malawi,high_growth_rule,3,3,2,0.6666666666666666,1.0,0.8,0.5,1.0,1,3
+confirmation,458,Malaysia,high_growth_rule,3,3,0,0.0,0.0,0.0,0.5,1.0,1,3
+confirmation,462,Maldives,high_growth_rule,3,2,0,0.0,0.0,0.0,0.5,0.6666666666666666,1,2
+confirmation,466,Mali,high_growth_rule,3,3,0,0.0,0.0,0.0,0.5,1.0,1,3
+confirmation,470,Malta,high_growth_rule,3,3,1,0.3333333333333333,1.0,0.5,0.5,1.0,1,3
+confirmation,478,Mauritania,high_growth_rule,3,2,0,0.0,0.0,0.0,0.5,0.6666666666666666,1,2
+confirmation,480,Mauritius,high_growth_rule,3,0,0,0.0,0.0,0.0,0.5,0.0,0,0
+confirmation,484,Mexico,high_growth_rule,3,0,1,0.0,0.0,0.0,0.5,0.0,0,0
+confirmation,492,Monaco,high_growth_rule,3,2,1,0.5,1.0,0.6666666666666666,0.75,0.5,1,2
+confirmation,496,Mongolia,high_growth_rule,3,1,1,1.0,1.0,1.0,1.0,0.0,1,1
+confirmation,498,Republic of Moldova,high_growth_rule,3,2,0,0.0,0.0,0.0,0.5,0.6666666666666666,1,2
+confirmation,499,Montenegro,high_growth_rule,3,0,0,0.0,0.0,0.0,0.5,0.0,0,0
+confirmation,500,Montserrat,high_growth_rule,3,1,1,0.0,0.0,0.0,0.25,0.5,1,1
+confirmation,504,Morocco,high_growth_rule,3,2,0,0.0,0.0,0.0,0.5,0.6666666666666666,1,2
+confirmation,508,Mozambique,high_growth_rule,3,3,3,1.0,1.0,1.0,0.5,,1,3
+confirmation,512,Oman,high_growth_rule,3,2,2,1.0,1.0,1.0,1.0,0.0,1,2
+confirmation,516,Namibia,high_growth_rule,3,2,2,1.0,1.0,1.0,1.0,0.0,1,2
+confirmation,520,Nauru,high_growth_rule,3,2,2,0.5,0.5,0.5,0.25,1.0,1,2
+confirmation,524,Nepal,high_growth_rule,3,1,0,0.0,0.0,0.0,0.5,0.3333333333333333,1,1
+confirmation,528,Netherlands,high_growth_rule,3,0,0,0.0,0.0,0.0,0.5,0.0,0,0
+confirmation,531,Curaçao,high_growth_rule,3,0,2,0.0,0.0,0.0,0.5,0.0,0,0
+confirmation,533,Aruba,high_growth_rule,3,0,0,0.0,0.0,0.0,0.5,0.0,0,0
+confirmation,534,Sint Maarten (Dutch part),high_growth_rule,3,0,2,0.0,0.0,0.0,0.5,0.0,0,0
+confirmation,540,New Caledonia,high_growth_rule,3,0,0,0.0,0.0,0.0,0.5,0.0,0,0
+confirmation,548,Vanuatu,high_growth_rule,3,0,0,0.0,0.0,0.0,0.5,0.0,0,0
+confirmation,554,New Zealand,high_growth_rule,3,1,0,0.0,0.0,0.0,0.5,0.3333333333333333,1,1
+confirmation,558,Nicaragua,high_growth_rule,3,3,2,0.6666666666666666,1.0,0.8,0.5,1.0,1,3
+confirmation,562,Niger,high_growth_rule,3,2,0,0.0,0.0,0.0,0.5,0.6666666666666666,1,2
+confirmation,566,Nigeria,high_growth_rule,3,2,1,0.5,1.0,0.6666666666666666,0.75,0.5,1,2
+confirmation,578,Norway,high_growth_rule,3,0,0,0.0,0.0,0.0,0.5,0.0,0,0
+confirmation,583,Micronesia (FS of),high_growth_rule,3,1,1,1.0,1.0,1.0,1.0,0.0,1,1
+confirmation,584,Marshall Islands,high_growth_rule,3,0,0,0.0,0.0,0.0,0.5,0.0,0,0
+confirmation,585,Palau,high_growth_rule,3,2,2,1.0,1.0,1.0,1.0,0.0,1,2
+confirmation,586,Pakistan,high_growth_rule,3,3,1,0.3333333333333333,1.0,0.5,0.5,1.0,1,3
+confirmation,591,Panama,high_growth_rule,3,3,2,0.6666666666666666,1.0,0.8,0.5,1.0,1,3
+confirmation,598,Papua New Guinea,high_growth_rule,3,3,2,0.6666666666666666,1.0,0.8,0.5,1.0,1,3
+confirmation,600,Paraguay,high_growth_rule,3,2,1,0.5,1.0,0.6666666666666666,0.75,0.5,1,2
+confirmation,604,Peru,high_growth_rule,3,0,0,0.0,0.0,0.0,0.5,0.0,0,0
+confirmation,608,Philippines,high_growth_rule,3,3,0,0.0,0.0,0.0,0.5,1.0,1,3
+confirmation,616,Poland,high_growth_rule,3,1,0,0.0,0.0,0.0,0.5,0.3333333333333333,1,1
+confirmation,620,Portugal,high_growth_rule,3,0,0,0.0,0.0,0.0,0.5,0.0,0,0
+confirmation,624,Guinea-Bissau,high_growth_rule,3,2,1,0.5,1.0,0.6666666666666666,0.75,0.5,1,2
+confirmation,626,Timor-Leste,high_growth_rule,3,1,2,1.0,0.5,0.6666666666666666,0.75,0.0,1,1
+confirmation,630,Puerto Rico,high_growth_rule,3,0,1,0.0,0.0,0.0,0.5,0.0,0,0
+confirmation,634,Qatar,high_growth_rule,3,2,3,1.0,0.6666666666666666,0.8,0.5,,1,2
+confirmation,642,Romania,high_growth_rule,3,1,0,0.0,0.0,0.0,0.5,0.3333333333333333,1,1
+confirmation,643,Russian Federation,high_growth_rule,3,0,0,0.0,0.0,0.0,0.5,0.0,0,0
+confirmation,646,Rwanda,high_growth_rule,3,3,0,0.0,0.0,0.0,0.5,1.0,1,3
+confirmation,659,Saint Kitts and Nevis,high_growth_rule,3,1,1,1.0,1.0,1.0,1.0,0.0,1,1
+confirmation,660,Anguilla,high_growth_rule,3,2,1,0.5,1.0,0.6666666666666666,0.75,0.5,1,2
+confirmation,662,Saint Lucia,high_growth_rule,3,0,1,0.0,0.0,0.0,0.5,0.0,0,0
+confirmation,670,St. Vincent and the Grenadines,high_growth_rule,3,1,1,1.0,1.0,1.0,1.0,0.0,1,1
+confirmation,674,San Marino,high_growth_rule,3,0,0,0.0,0.0,0.0,0.5,0.0,0,0
+confirmation,678,Sao Tome and Principe,high_growth_rule,3,2,1,0.5,1.0,0.6666666666666666,0.75,0.5,1,2
+confirmation,682,Saudi Arabia,high_growth_rule,3,2,1,0.5,1.0,0.6666666666666666,0.75,0.5,1,2
+confirmation,686,Senegal,high_growth_rule,3,3,0,0.0,0.0,0.0,0.5,1.0,1,3
+confirmation,688,Serbia,high_growth_rule,3,0,0,0.0,0.0,0.0,0.5,0.0,0,0
+confirmation,690,Seychelles,high_growth_rule,3,3,2,0.6666666666666666,1.0,0.8,0.5,1.0,1,3
+confirmation,694,Sierra Leone,high_growth_rule,3,1,0,0.0,0.0,0.0,0.5,0.3333333333333333,1,1
+confirmation,702,Singapore,high_growth_rule,3,0,1,0.0,0.0,0.0,0.5,0.0,0,0
+confirmation,703,Slovakia,high_growth_rule,3,1,0,0.0,0.0,0.0,0.5,0.3333333333333333,1,1
+confirmation,704,Viet Nam,high_growth_rule,3,3,0,0.0,0.0,0.0,0.5,1.0,1,3
+confirmation,705,Slovenia,high_growth_rule,3,0,0,0.0,0.0,0.0,0.5,0.0,0,0
+confirmation,706,Somalia,high_growth_rule,3,3,3,1.0,1.0,1.0,0.5,,1,3
+confirmation,710,South Africa,high_growth_rule,3,0,0,0.0,0.0,0.0,0.5,0.0,0,0
+confirmation,716,Zimbabwe,high_growth_rule,3,2,1,0.5,1.0,0.6666666666666666,0.75,0.5,1,2
+confirmation,724,Spain,high_growth_rule,3,1,0,0.0,0.0,0.0,0.5,0.3333333333333333,1,1
+confirmation,728,South Sudan,high_growth_rule,3,2,2,1.0,1.0,1.0,1.0,0.0,1,2
+confirmation,729,Sudan,high_growth_rule,3,2,2,0.5,0.5,0.5,0.25,1.0,1,2
+confirmation,740,Suriname,high_growth_rule,3,0,0,0.0,0.0,0.0,0.5,0.0,0,0
+confirmation,748,Eswatini,high_growth_rule,3,1,0,0.0,0.0,0.0,0.5,0.3333333333333333,1,1
+confirmation,752,Sweden,high_growth_rule,3,1,1,1.0,1.0,1.0,1.0,0.0,1,1
+confirmation,756,Switzerland,high_growth_rule,3,0,0,0.0,0.0,0.0,0.5,0.0,0,0
+confirmation,760,Syrian Arab Republic,high_growth_rule,3,0,0,0.0,0.0,0.0,0.5,0.0,0,0
+confirmation,762,Tajikistan,high_growth_rule,3,3,0,0.0,0.0,0.0,0.5,1.0,1,3
+confirmation,764,Thailand,high_growth_rule,3,0,0,0.0,0.0,0.0,0.5,0.0,0,0
+confirmation,768,Togo,high_growth_rule,3,3,0,0.0,0.0,0.0,0.5,1.0,1,3
+confirmation,776,Tonga,high_growth_rule,3,1,1,1.0,1.0,1.0,1.0,0.0,1,1
+confirmation,780,Trinidad and Tobago,high_growth_rule,3,0,1,0.0,0.0,0.0,0.5,0.0,0,0
+confirmation,784,United Arab Emirates,high_growth_rule,3,3,3,1.0,1.0,1.0,0.5,,1,3
+confirmation,788,Tunisia,high_growth_rule,3,1,0,0.0,0.0,0.0,0.5,0.3333333333333333,1,1
+confirmation,792,Türkiye,high_growth_rule,3,2,2,0.5,0.5,0.5,0.25,1.0,1,2
+confirmation,795,Turkmenistan,high_growth_rule,3,0,0,0.0,0.0,0.0,0.5,0.0,0,0
+confirmation,796,Turks and Caicos Islands,high_growth_rule,3,3,2,0.6666666666666666,1.0,0.8,0.5,1.0,1,3
+confirmation,798,Tuvalu,high_growth_rule,3,2,1,0.5,1.0,0.6666666666666666,0.75,0.5,1,2
+confirmation,800,Uganda,high_growth_rule,3,2,0,0.0,0.0,0.0,0.5,0.6666666666666666,1,2
+confirmation,804,Ukraine,high_growth_rule,3,0,0,0.0,0.0,0.0,0.5,0.0,0,0
+confirmation,807,North Macedonia,high_growth_rule,3,0,1,0.0,0.0,0.0,0.5,0.0,0,0
+confirmation,818,Egypt,high_growth_rule,3,2,0,0.0,0.0,0.0,0.5,0.6666666666666666,1,2
+confirmation,826,United Kingdom,high_growth_rule,3,0,0,0.0,0.0,0.0,0.5,0.0,0,0
+confirmation,835,U.R. of Tanzania: Mainland,high_growth_rule,3,3,0,0.0,0.0,0.0,0.5,1.0,1,3
+confirmation,836,Zanzibar,high_growth_rule,3,3,0,0.0,0.0,0.0,0.5,1.0,1,3
+confirmation,840,United States,high_growth_rule,3,0,0,0.0,0.0,0.0,0.5,0.0,0,0
+confirmation,854,Burkina Faso,high_growth_rule,3,2,0,0.0,0.0,0.0,0.5,0.6666666666666666,1,2
+confirmation,858,Uruguay,high_growth_rule,3,1,2,1.0,0.5,0.6666666666666666,0.75,0.0,1,1
+confirmation,860,Uzbekistan,high_growth_rule,3,3,1,0.3333333333333333,1.0,0.5,0.5,1.0,1,3
+confirmation,862,Venezuela (Bolivarian Republic of),high_growth_rule,3,0,3,0.0,0.0,0.0,0.5,,0,0
+confirmation,882,Samoa,high_growth_rule,3,2,2,0.5,0.5,0.5,0.25,1.0,1,2
+confirmation,887,Yemen,high_growth_rule,3,0,0,0.0,0.0,0.0,0.5,0.0,0,0
+confirmation,894,Zambia,high_growth_rule,3,1,1,0.0,0.0,0.0,0.25,0.5,1,1

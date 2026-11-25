@@ -1,0 +1,105 @@
+{
+  "manifest_type": "CHAOS_regime_substitute_entity_holdout_qa",
+  "runs": [
+    "regime_size_substitutes_v1",
+    "regime_size_substitutes_maxstat_null_v1_fast",
+    "regime_entity_holdout_v1"
+  ],
+  "counts": {
+    "size_metric_rows": 1944,
+    "size_aggregate_cells": 108,
+    "size_grid_cells": 108,
+    "size_null_replicates": 2000,
+    "entity_metric_rows": 1620,
+    "entity_grid_cells": 108,
+    "entity_folds": 5,
+    "time_folds": 3
+  },
+  "best_size_cell": {
+    "variant": "population",
+    "threshold_target": 4.0,
+    "threshold_size": 75000000.0,
+    "observed_mean_ba": 0.7276399174497001
+  },
+  "entity_best_by_variant": [
+    {
+      "variant": "energy_per_gdp",
+      "threshold_target": 4.0,
+      "threshold_size": 10.0,
+      "mean_ba": 0.7235019185648389,
+      "sd_ba": 0.05964389535131797,
+      "mean_f1": 0.49605033151487876,
+      "mean_support": 40.93333333333333,
+      "entity_folds_with_support": 15,
+      "groups": 15
+    },
+    {
+      "variant": "gdp_per_capita",
+      "threshold_target": 4.0,
+      "threshold_size": 10000.0,
+      "mean_ba": 0.6760405365746055,
+      "sd_ba": 0.06820259262531578,
+      "mean_f1": 0.45294525532515295,
+      "mean_support": 35.13333333333333,
+      "entity_folds_with_support": 15,
+      "groups": 15
+    },
+    {
+      "variant": "population",
+      "threshold_target": 4.0,
+      "threshold_size": 250000000.0,
+      "mean_ba": 0.7275184392512796,
+      "sd_ba": 0.05904215709913423,
+      "mean_f1": 0.501780794142277,
+      "mean_support": 39.46666666666667,
+      "entity_folds_with_support": 15,
+      "groups": 15
+    }
+  ],
+  "maxstat": {
+    "p": 0.0004997501249375312,
+    "null_mean": 0.6066524374402772,
+    "null_q975": 0.6295060734284872
+  },
+  "raw_integrity": {
+    "panel_sha256": "015736245ac4010aa1c97055930c69ca3c7da5fdd5970f5da34456b67a3172ad",
+    "panel_head_sha256": "015736245ac4010aa1c97055930c69ca3c7da5fdd5970f5da34456b67a3172ad",
+    "raw_sha256": "89a17937187a340947cb000fba1892fbe5c4c99fffd51edc3d4d1124dbea19e8",
+    "raw_head_sha256": "89a17937187a340947cb000fba1892fbe5c4c99fffd51edc3d4d1124dbea19e8",
+    "panel_matches_head": true,
+    "raw_matches_head": true
+  },
+  "flags": {
+    "locked_test_executed": false,
+    "raw_data_modified": false,
+    "imputation": false,
+    "normalization": false
+  },
+  "qa_pass_conditions": {
+    "size_grid_108": true,
+    "size_null_2000": true,
+    "entity_holdout_5x3": true,
+    "size_metric_complete": true,
+    "entity_metric_complete": true,
+    "raw_unchanged": true,
+    "locked_test_closed": true,
+    "no_transformations": true
+  },
+  "artifacts": [
+    "experiments/macro_plus_eia_energy/regime_entity_holdout_v1/ENTITY_HOLDOUT_AGGREGATE.csv",
+    "experiments/macro_plus_eia_energy/regime_entity_holdout_v1/ENTITY_HOLDOUT_METRICS.csv",
+    "experiments/macro_plus_eia_energy/regime_entity_holdout_v1/ENTITY_HOLDOUT_SUMMARY.json",
+    "experiments/macro_plus_eia_energy/regime_entity_holdout_v1/entity_holdout.log",
+    "experiments/macro_plus_eia_energy/regime_entity_holdout_v1/frozen_regime_comparison.txt",
+    "experiments/macro_plus_eia_energy/regime_size_substitutes_v1/REGIME_SIZE_SUBSTITUTES_REPORT_AR.md",
+    "experiments/macro_plus_eia_energy/regime_size_substitutes_v1/SIZE_SUBSTITUTE_AGGREGATE.csv",
+    "experiments/macro_plus_eia_energy/regime_size_substitutes_v1/SIZE_SUBSTITUTE_MAXSTAT_NULL_REPLICATES.csv",
+    "experiments/macro_plus_eia_energy/regime_size_substitutes_v1/SIZE_SUBSTITUTE_MAXSTAT_NULL_SUMMARY.json",
+    "experiments/macro_plus_eia_energy/regime_size_substitutes_v1/SIZE_SUBSTITUTE_METRICS.csv",
+    "experiments/macro_plus_eia_energy/regime_size_substitutes_v1/SIZE_SUBSTITUTE_RUN_SUMMARY.json",
+    "experiments/macro_plus_eia_energy/regime_size_substitutes_v1/best_variant_cells.txt",
+    "experiments/macro_plus_eia_energy/regime_size_substitutes_v1/size_maxstat_null.log",
+    "experiments/macro_plus_eia_energy/regime_size_substitutes_v1/size_maxstat_null_fast.log",
+    "experiments/macro_plus_eia_energy/regime_size_substitutes_v1/size_substitutes.log"
+  ]
+}

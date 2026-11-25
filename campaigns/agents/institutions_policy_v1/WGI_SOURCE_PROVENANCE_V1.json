@@ -1,0 +1,18 @@
+{
+  "source_id":"WORLD_BANK_WGI_2025_UPDATE",
+  "publisher":"World Bank Worldwide Governance Indicators",
+  "download_url":"https://databank.worldbank.org/data/download/WGI_CSV.zip",
+  "documentation_url":"https://www.worldbank.org/en/publication/worldwide-governance-indicators",
+  "raw_path":"catalog_first/readiness_gate/independent_sources/worldbank_wgi_2025/raw/WGI_CSV.zip",
+  "sha256":"6896f95b02163f3b2d8424bd7087380da04a7af269c530e9dbd2202ca9f69e37",
+  "release":"2025 update; downloaded 2026-08-27",
+  "coverage":"1996-2024 with source-defined years",
+  "dimensions":["Voice and Accountability","Political Stability","Government Effectiveness","Regulatory Quality","Rule of Law","Control of Corruption"],
+  "measurement":"governance estimate approximately -2.5 to +2.5; source also provides 0-100 score series",
+  "methodology_note":"composite perception-based indicators; historical estimates recalculated by source",
+  "license_note":"World Bank terms and source attribution apply; preserve source metadata",
+  "raw_immutable":true,
+  "policy_shock_observed":false,
+  "leader_specific_deviation_observed":false,
+  "causal_claims_permitted":false
+}

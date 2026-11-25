@@ -1,0 +1,305 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "CHAOS_P1_4_CAPABILITY_ENVELOPE_V1",
+  "title": "CHAOS P1.4 Capability Operating Envelope",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "envelope_id",
+    "decision_contract",
+    "common_controls",
+    "validation_history",
+    "capabilities"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "envelope_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "decision_contract": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "eligible_status",
+        "ineligible_status",
+        "default",
+        "production_authorization",
+        "note"
+      ],
+      "properties": {
+        "eligible_status": {
+          "const": "PILOT_ELIGIBLE"
+        },
+        "ineligible_status": {
+          "const": "NOT_ELIGIBLE"
+        },
+        "default": {
+          "const": "fail_closed"
+        },
+        "production_authorization": {
+          "type": "boolean"
+        },
+        "note": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "common_controls": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "quiet_calibration_observations",
+        "reserve_quiet_window_from_detection",
+        "no_future_suffix_access",
+        "no_holdout_recalibration",
+        "per_series_null_p0_target",
+        "minimum_valid_null_replicates"
+      ],
+      "properties": {
+        "quiet_calibration_observations": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "reserve_quiet_window_from_detection": {
+          "type": "boolean"
+        },
+        "no_future_suffix_access": {
+          "type": "boolean"
+        },
+        "no_holdout_recalibration": {
+          "type": "boolean"
+        },
+        "per_series_null_p0_target": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "minimum_valid_null_replicates": {
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    },
+    "validation_history": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "evidence_id",
+          "status",
+          "scope",
+          "validated_role",
+          "note"
+        ],
+        "properties": {
+          "evidence_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "status": {
+            "type": "string",
+            "minLength": 1
+          },
+          "scope": {
+            "type": "string",
+            "minLength": 1
+          },
+          "validated_role": {
+            "type": "boolean"
+          },
+          "note": {
+            "type": "string",
+            "minLength": 1
+          },
+          "source_commit": {
+            "type": "string",
+            "minLength": 7
+          }
+        }
+      }
+    },
+    "capabilities": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": {
+        "$ref": "#/$defs/capability"
+      }
+    }
+  },
+  "$defs": {
+    "capability": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "role",
+        "time_semantics",
+        "allowed_operations",
+        "input_contract",
+        "output_contract",
+        "minimum_observations",
+        "minimum_prebreak_observations",
+        "requires_online",
+        "requires_reset",
+        "requires_per_series_p0",
+        "not_binary",
+        "not_standalone_detector",
+        "allowed_parent_tools",
+        "restricted_uses",
+        "known_failure_conditions",
+        "implementation_status",
+        "runtime_supported",
+        "pilot_enabled",
+        "scientific_validation_status",
+        "validation_history"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "role": {
+          "enum": [
+            "online_detector",
+            "offline_segmenter",
+            "feature_generator",
+            "calibrator",
+            "reference_detector"
+          ]
+        },
+        "time_semantics": {
+          "enum": [
+            "online_prefix_only",
+            "retrospective_full_series",
+            "calibration_slice_only"
+          ]
+        },
+        "allowed_operations": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true
+        },
+        "input_contract": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true
+        },
+        "output_contract": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true
+        },
+        "minimum_observations": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "minimum_prebreak_observations": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "requires_online": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "requires_reset": {
+          "type": "boolean"
+        },
+        "requires_per_series_p0": {
+          "type": "boolean"
+        },
+        "not_binary": {
+          "type": "boolean"
+        },
+        "not_standalone_detector": {
+          "type": "boolean"
+        },
+        "allowed_parent_tools": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true
+        },
+        "restricted_uses": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true
+        },
+        "known_failure_conditions": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true
+        },
+        "implementation_status": {
+          "type": "string",
+          "minLength": 1
+        },
+        "runtime_supported": {
+          "type": "boolean"
+        },
+        "pilot_enabled": {
+          "type": "boolean"
+        },
+        "scientific_validation_status": {
+          "type": "string",
+          "minLength": 1
+        },
+        "validation_history": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "evidence_id",
+              "status",
+              "validated_role",
+              "note"
+            ],
+            "properties": {
+              "evidence_id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "status": {
+                "type": "string",
+                "minLength": 1
+              },
+              "validated_role": {
+                "type": "boolean"
+              },
+              "note": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

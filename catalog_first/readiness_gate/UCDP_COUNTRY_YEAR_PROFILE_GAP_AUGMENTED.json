@@ -1,0 +1,21 @@
+{
+  "rows": 7132,
+  "columns": 74,
+  "country_id_count": 199,
+  "country_name_count": 199,
+  "year_range": [
+    1989,
+    2025
+  ],
+  "exact_normalized_unique_wdi_mapping_count": 155,
+  "key_fields": [
+    "sb_exist",
+    "sb_total_deaths_best",
+    "ns_exist",
+    "ns_total_deaths_best",
+    "os_exist",
+    "os_total_deaths_best"
+  ],
+  "raw_path": "/home/ubuntu/market_intelligence_workspace/catalog_first/raw/ucdp/country_year261/organizedviolencecy-261-csv.zip",
+  "staged_path": "/home/ubuntu/market_intelligence_workspace/catalog_first/staged/ucdp/country_year261/OrganizedViolenceCYDataSet26_1.csv"
+}

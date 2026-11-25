@@ -1,0 +1,22 @@
+{
+  "run_id": "regime_size_substitutes_maxstat_null_v1_fast",
+  "grid_cells": 108,
+  "replicates": 2000,
+  "seed": 1397,
+  "observed_best_cell": {
+    "variant": "population",
+    "threshold_target": 4.0,
+    "threshold_size": 75000000.0,
+    "observed_mean_ba": 0.7276399174497001
+  },
+  "null_max_mean_ba_mean": 0.6066524374402772,
+  "null_max_mean_ba_q025": 0.5850863507692124,
+  "null_max_mean_ba_q500": 0.606527351022291,
+  "null_max_mean_ba_q975": 0.6295060734284872,
+  "p_best_cell_max_stat": 0.0004997501249375312,
+  "locked_test_executed": false,
+  "raw_data_modified": false,
+  "imputation": false,
+  "normalization": false,
+  "decision": "proxy-and-threshold grid max-statistic only; no promotion"
+}

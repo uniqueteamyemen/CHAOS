@@ -1,0 +1,17 @@
+{
+  "status": "not_testable",
+  "reporters": 135,
+  "fit_h2_events": 40,
+  "confirmation_h2_events": 42,
+  "checks": {
+    "coverage": true,
+    "effect_vs_rank": false,
+    "brier_vs_rank": false,
+    "concentration": true,
+    "subwindow_coverage": false,
+    "subwindow_lift": false,
+    "influential_direction": false,
+    "nulls_non_degenerate": true,
+    "nulls_corrected": false
+  }
+}

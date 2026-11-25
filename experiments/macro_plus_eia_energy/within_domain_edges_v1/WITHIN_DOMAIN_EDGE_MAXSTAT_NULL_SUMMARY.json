@@ -1,0 +1,40 @@
+{
+  "contract_ref": "experimental_contracts/WITHIN_DOMAIN_EDGE_CONTRACT_V1.json",
+  "source": "catalog_first/readiness_gate/macro_plus_eia_energy/MACRO_PLUS_EIA_ENERGY_COMPLETE_139_NUMERIC_RAW_2000_2024_WIDE.csv",
+  "source_sha256": "015736245ac4010aa1c97055930c69ca3c7da5fdd5970f5da34456b67a3172ad",
+  "replicates": 2000,
+  "seed": 20260826,
+  "observed_max_balanced_accuracy": 0.547155816892659,
+  "maxstat_p_value": 0.30134932533733133,
+  "edges_tested": [
+    "current_account_stress_to_deterioration",
+    "energy_intensity_increase_to_deterioration",
+    "high_growth_gt_4_existing_baseline",
+    "high_inflation_to_deterioration"
+  ],
+  "horizons": [
+    1,
+    2,
+    3
+  ],
+  "splits": {
+    "fit": [
+      2006,
+      2015
+    ],
+    "validation": [
+      2016,
+      2019
+    ],
+    "confirmation": [
+      2020,
+      2024
+    ]
+  },
+  "raw_data_modified": false,
+  "imputation": false,
+  "transformations": false,
+  "native_frequency": "annual",
+  "causal_claims_permitted": false,
+  "status": "research_evidence_only"
+}

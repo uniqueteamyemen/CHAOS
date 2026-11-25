@@ -1,0 +1,178 @@
+{
+  "manifest_type": "CHAOS_three_phase_progress_qa",
+  "counts": {
+    "ama_rows": 12100,
+    "ama_countries": 220,
+    "ama_eligible_origins": 3592,
+    "ama_metric_rows": 12,
+    "cross_ama_rows": 12100,
+    "cross_ucdp_rows": 7132,
+    "cross_matched_rows": 5762,
+    "cross_matched_countries": 163,
+    "cross_metric_rows": 24,
+    "cross_null_rows": 4,
+    "pattern_registry_records": 4
+  },
+  "evidence": {
+    "ama_validation_ba": 0.7325273192280864,
+    "ama_confirmation_ba": 0.6820987654320987,
+    "cross_validation": [
+      {
+        "outcome": "future_state_conflict",
+        "split": "validation",
+        "model": "high_growth",
+        "n": 651,
+        "support": 322,
+        "positive_outcomes": 134,
+        "precision": 0.2608695652173913,
+        "recall": 0.6268656716417911,
+        "f1": 0.3684210526315789,
+        "balanced_accuracy": 0.5832587545829846,
+        "false_alarm_rate": 0.460348162475822,
+        "countries": 163
+      },
+      {
+        "outcome": "future_high_fatality_25",
+        "split": "validation",
+        "model": "high_growth",
+        "n": 651,
+        "support": 322,
+        "positive_outcomes": 102,
+        "precision": 0.1987577639751552,
+        "recall": 0.6274509803921569,
+        "f1": 0.3018867924528302,
+        "balanced_accuracy": 0.57875281260045,
+        "false_alarm_rate": 0.4699453551912568,
+        "countries": 163
+      }
+    ],
+    "cross_confirmation": [
+      {
+        "outcome": "future_state_conflict",
+        "split": "confirmation",
+        "model": "high_growth",
+        "n": 489,
+        "support": 191,
+        "positive_outcomes": 115,
+        "precision": 0.3403141361256545,
+        "recall": 0.5652173913043478,
+        "f1": 0.4248366013071895,
+        "balanced_accuracy": 0.6141594977912113,
+        "false_alarm_rate": 0.3368983957219251,
+        "countries": 163
+      },
+      {
+        "outcome": "future_high_fatality_25",
+        "split": "confirmation",
+        "model": "high_growth",
+        "n": 489,
+        "support": 191,
+        "positive_outcomes": 78,
+        "precision": 0.2617801047120419,
+        "recall": 0.6410256410256411,
+        "f1": 0.3717472118959107,
+        "balanced_accuracy": 0.6489799737974921,
+        "false_alarm_rate": 0.3430656934306569,
+        "countries": 163
+      }
+    ],
+    "cross_null": [
+      {
+        "outcome": "future_state_conflict",
+        "split": "validation",
+        "observed_ba": 0.5832587545829846,
+        "observed_f1": 0.3684210526315789,
+        "null_ba_mean": 0.5870457143681976,
+        "null_ba_q975": 0.6020525996708912,
+        "null_f1_mean": 0.3719561403508772,
+        "null_f1_q975": 0.3859649122807017,
+        "p_ba": 0.7701149425287356,
+        "p_f1": 0.7701149425287356
+      },
+      {
+        "outcome": "future_state_conflict",
+        "split": "confirmation",
+        "observed_ba": 0.6141594977912113,
+        "observed_f1": 0.4248366013071895,
+        "null_ba_mean": 0.6123005928853755,
+        "null_ba_q975": 0.6198442222738898,
+        "null_f1_mean": 0.4226993464052288,
+        "null_f1_q975": 0.4313725490196078,
+        "p_ba": 0.6006996501749126,
+        "p_f1": 0.6006996501749126
+      },
+      {
+        "outcome": "future_high_fatality_25",
+        "split": "validation",
+        "observed_ba": 0.57875281260045,
+        "observed_f1": 0.3018867924528302,
+        "null_ba_mean": 0.5801100798242794,
+        "null_ba_q975": 0.5961909353905497,
+        "null_f1_mean": 0.3029882075471697,
+        "null_f1_q975": 0.3160377358490566,
+        "p_ba": 0.6711644177911045,
+        "p_f1": 0.6711644177911045
+      },
+      {
+        "outcome": "future_high_fatality_25",
+        "split": "confirmation",
+        "observed_ba": 0.6489799737974921,
+        "observed_f1": 0.3717472118959107,
+        "null_ba_mean": 0.6364643926632977,
+        "null_ba_q975": 0.6489799737974921,
+        "null_f1_mean": 0.359546468401487,
+        "null_f1_q975": 0.3717472118959107,
+        "p_ba": 0.1509245377311344,
+        "p_f1": 0.1509245377311344
+      }
+    ]
+  },
+  "raw_hashes": {
+    "ama_growth": "b707760b18cc63bc97d546ed3d67f40ca0f49e0607493380ee590bec0f053e78",
+    "ama_population": "e15fcbcf64e74016b3be63d6a0a1d837fe570287867e2a3d9ac0bec89c91bc6e",
+    "ucdp_cy": "66910888f5653af42776d2debc1d72fe527559e7f7fc82e69b7c8771467f2d34"
+  },
+  "flags": {
+    "ged_daily_aggregated": false,
+    "ucdp_country_year_native": true,
+    "previous_locked_test_reopened": false,
+    "raw_modified": false,
+    "imputation": false,
+    "normalization": false,
+    "causal_claims_permitted": false
+  },
+  "qa_pass_conditions": {
+    "ama_four_splits": true,
+    "ama_null_rows": true,
+    "cross_two_outcomes": true,
+    "cross_null_complete": true,
+    "pattern_registry_4": true,
+    "no_ged_annualization": true,
+    "previous_test_closed": true,
+    "raw_unchanged": true,
+    "no_transformations": true,
+    "no_causal_claim": true
+  },
+  "artifacts": [
+    "experiments/macro_plus_eia_energy/ama_ucdp_cross_domain_v1/AMA_UCDP_CROSS_DOMAIN_METRICS.csv",
+    "experiments/macro_plus_eia_energy/ama_ucdp_cross_domain_v1/AMA_UCDP_CROSS_DOMAIN_NULL_REPLICATES.csv",
+    "experiments/macro_plus_eia_energy/ama_ucdp_cross_domain_v1/AMA_UCDP_CROSS_DOMAIN_NULL_SUMMARY.csv",
+    "experiments/macro_plus_eia_energy/ama_ucdp_cross_domain_v1/AMA_UCDP_CROSS_DOMAIN_OBSERVED.csv",
+    "experiments/macro_plus_eia_energy/ama_ucdp_cross_domain_v1/AMA_UCDP_CROSS_DOMAIN_REPLAY_ROWS.csv",
+    "experiments/macro_plus_eia_energy/ama_ucdp_cross_domain_v1/AMA_UCDP_CROSS_DOMAIN_SUMMARY.json",
+    "experiments/macro_plus_eia_energy/ama_ucdp_cross_domain_v1/COUNTRY_NAME_MATCH_AUDIT.csv",
+    "experiments/macro_plus_eia_energy/ama_ucdp_cross_domain_v1/ama_ucdp_cross_domain.log",
+    "experiments/macro_plus_eia_energy/ama_ucdp_cross_domain_v1/ama_ucdp_cross_domain_null.log",
+    "experiments/macro_plus_eia_energy/un_ama_replication_v1/UN_AMA_INDEPENDENT_REPLICATION_REPORT_AR.md",
+    "experiments/macro_plus_eia_energy/un_ama_replication_v1/UN_AMA_REPLICATION_METRICS.csv",
+    "experiments/macro_plus_eia_energy/un_ama_replication_v1/UN_AMA_REPLICATION_METRICS_BY_COUNTRY.csv",
+    "experiments/macro_plus_eia_energy/un_ama_replication_v1/UN_AMA_REPLICATION_NULL_REPLICATES.csv",
+    "experiments/macro_plus_eia_energy/un_ama_replication_v1/UN_AMA_REPLICATION_NULL_SUMMARY.csv",
+    "experiments/macro_plus_eia_energy/un_ama_replication_v1/UN_AMA_REPLICATION_OBSERVED.csv",
+    "experiments/macro_plus_eia_energy/un_ama_replication_v1/UN_AMA_REPLICATION_QA_MANIFEST.json",
+    "experiments/macro_plus_eia_energy/un_ama_replication_v1/UN_AMA_REPLICATION_REPLAY_ROWS.csv",
+    "experiments/macro_plus_eia_energy/un_ama_replication_v1/UN_AMA_REPLICATION_SUMMARY.json",
+    "experiments/macro_plus_eia_energy/un_ama_replication_v1/un_ama_null.log",
+    "experiments/macro_plus_eia_energy/un_ama_replication_v1/un_ama_replication.log"
+  ]
+}

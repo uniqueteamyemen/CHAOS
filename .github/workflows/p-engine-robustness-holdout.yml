@@ -1,0 +1,44 @@
+name: CHAOS P-engine independent robustness holdout
+
+on:
+  push:
+    branches:
+      - experiment/p-engine-parallel-fusion-v1
+    paths:
+      - "experiments/identity_lab/exp_p_engine_holdout/robust_holdout.py"
+      - "experiments/identity_lab/exp_p_engine_holdout/test_robust_holdout.py"
+
+permissions:
+  contents: read
+
+jobs:
+  robustness-holdout:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Download completed G threshold-sweep report
+        uses: actions/download-artifact@v4
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          repository: ${{ github.repository }}
+          run-id: 43726545885
+          name: chaos-p-engine-parallel-fusion
+          path: ${{ runner.temp }}/p-engine-g
+      - name: Test holdout selection and data contracts
+        run: python -m unittest experiments.identity_lab.exp_p_engine_holdout.test_robust_holdout -v
+      - name: Run independent AR(1) and Student-t3 holdout
+        run: >-
+          python -m experiments.identity_lab.exp_p_engine_holdout.robust_holdout
+          --sweep-report ${{ runner.temp }}/p-engine-g/cusum_parameter_sweep.json
+      - name: Upload independent robustness holdout report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: chaos-p-engine-robustness-holdout
+          path: experiments/identity_lab/exp_p_engine_holdout/results/cusum_robust_holdout.json
+          if-no-files-found: warn
+          retention-days: 90

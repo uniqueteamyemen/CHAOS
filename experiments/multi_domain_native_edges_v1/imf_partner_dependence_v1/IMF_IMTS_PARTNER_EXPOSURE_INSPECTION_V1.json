@@ -1,0 +1,92 @@
+{
+  "exposure_rows": [
+    {
+      "reporter_id": "BRA",
+      "origin_year": 2009,
+      "selected_partner_ids": "[\"G110\", \"G200\", \"G092\", \"G205\", \"USA\"]",
+      "baseline_dominant_partner_ids": "[\"G110\", \"G200\", \"G092\", \"G205\", \"USA\"]",
+      "shocked_partner_ids": "[\"G110\", \"G205\", \"USA\"]",
+      "shocked_selected_partner_ids_all": "[\"G110\", \"G205\", \"USA\"]",
+      "dominant_partner_count": 5,
+      "shocked_partner_count": 3,
+      "shocked_selected_partner_count_all": 3
+    },
+    {
+      "reporter_id": "CAN",
+      "origin_year": 2009,
+      "selected_partner_ids": "[\"G110\", \"USA\", \"G200\", \"G092\", \"G163\"]",
+      "baseline_dominant_partner_ids": "[\"G110\", \"USA\"]",
+      "shocked_partner_ids": "[\"G110\", \"USA\"]",
+      "shocked_selected_partner_ids_all": "[\"G110\", \"USA\"]",
+      "dominant_partner_count": 2,
+      "shocked_partner_count": 2,
+      "shocked_selected_partner_count_all": 2
+    },
+    {
+      "reporter_id": "JPN",
+      "origin_year": 2009,
+      "selected_partner_ids": "[\"G110\", \"G200\", \"USA\", \"G092\", \"G505\"]",
+      "baseline_dominant_partner_ids": "[\"G110\", \"G200\", \"USA\", \"G092\", \"G505\"]",
+      "shocked_partner_ids": "[\"USA\"]",
+      "shocked_selected_partner_ids_all": "[\"USA\"]",
+      "dominant_partner_count": 5,
+      "shocked_partner_count": 1,
+      "shocked_selected_partner_count_all": 1
+    },
+    {
+      "reporter_id": "SAU",
+      "origin_year": 2009,
+      "selected_partner_ids": "[\"G110\", \"G200\", \"G092\", \"G505\", \"G400\"]",
+      "baseline_dominant_partner_ids": "[\"G110\", \"G200\", \"G092\", \"G505\"]",
+      "shocked_partner_ids": "[\"G110\", \"G200\", \"G092\", \"G505\"]",
+      "shocked_selected_partner_ids_all": "[\"G110\", \"G200\", \"G092\", \"G505\", \"G400\"]",
+      "dominant_partner_count": 4,
+      "shocked_partner_count": 4,
+      "shocked_selected_partner_count_all": 5
+    },
+    {
+      "reporter_id": "SAU",
+      "origin_year": 2015,
+      "selected_partner_ids": "[\"G110\", \"G200\", \"G092\", \"G505\", \"G400\"]",
+      "baseline_dominant_partner_ids": "[\"G110\", \"G200\", \"G092\", \"G505\"]",
+      "shocked_partner_ids": "[\"G110\", \"G200\", \"G092\", \"G505\"]",
+      "shocked_selected_partner_ids_all": "[\"G110\", \"G200\", \"G092\", \"G505\", \"G400\"]",
+      "dominant_partner_count": 4,
+      "shocked_partner_count": 4,
+      "shocked_selected_partner_count_all": 5
+    },
+    {
+      "reporter_id": "SAU",
+      "origin_year": 2020,
+      "selected_partner_ids": "[\"G110\", \"G200\", \"G092\", \"G505\", \"G400\"]",
+      "baseline_dominant_partner_ids": "[\"G110\", \"G200\", \"G092\", \"G505\"]",
+      "shocked_partner_ids": "[\"G110\", \"G505\"]",
+      "shocked_selected_partner_ids_all": "[\"G110\", \"G505\"]",
+      "dominant_partner_count": 4,
+      "shocked_partner_count": 2,
+      "shocked_selected_partner_count_all": 2
+    },
+    {
+      "reporter_id": "ZAF",
+      "origin_year": 2009,
+      "selected_partner_ids": "[\"G110\", \"G200\", \"G163\", \"G092\", \"GX605\"]",
+      "baseline_dominant_partner_ids": "[\"G110\", \"G200\", \"G163\", \"G092\"]",
+      "shocked_partner_ids": "[\"G110\", \"G163\"]",
+      "shocked_selected_partner_ids_all": "[\"G110\", \"G163\"]",
+      "dominant_partner_count": 4,
+      "shocked_partner_count": 2,
+      "shocked_selected_partner_count_all": 2
+    }
+  ],
+  "dominant_counts": {
+    "2": 1,
+    "4": 4,
+    "5": 2
+  },
+  "shock_counts_all": {
+    "1": 1,
+    "2": 3,
+    "3": 1,
+    "5": 2
+  }
+}

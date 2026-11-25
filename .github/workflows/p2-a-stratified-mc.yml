@@ -1,0 +1,92 @@
+name: CHAOS P2-A — Stratified Mc(t, region) Assessment
+
+on:
+  pull_request:
+    branches: [main-phase2]
+    paths:
+      - 'p2_a_mc/**'
+      - 'tests/p2_a_mc/**'
+      - '.github/workflows/p2-a-stratified-mc.yml'
+      - 'real_data_stress_pipeline/config/seismic_belts.json'
+      - 'real_data_stress_pipeline/config/pipeline.json'
+
+permissions:
+  actions: read
+  contents: read
+
+concurrency:
+  group: chaos-p2-a-stratified-mc-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  stratified-mc-assessment:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    env:
+      SOURCE_ARTIFACT_ID: '14863135742'
+      SOURCE_ARTIFACT_SHA256: '5f5b0c571c1423caef4cfc9001271c8bea261f1b89e2ba0a341f733f677ed683'
+      PROVENANCE_ARTIFACT_ID: '14934058860'
+      PROVENANCE_ARTIFACT_SHA256: '7b0fa5105c763b7ec917acacec4866457d8f96164ea3632712dea9edbd4e9467'
+    steps:
+      - name: Checkout exact PR commit
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Run unit and contract tests
+        run: python -m unittest discover -s tests/p2_a_mc -v
+
+      - name: Download immutable source artifacts and verify archive SHA-256
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p artifacts/p2_a/input
+          gh api --method GET "/repos/${GH_REPO}/actions/artifacts/${SOURCE_ARTIFACT_ID}/zip" > artifacts/p2_a/input/source-45244943216.zip
+          gh api --method GET "/repos/${GH_REPO}/actions/artifacts/${PROVENANCE_ARTIFACT_ID}/zip" > artifacts/p2_a/input/provenance-45421531702.zip
+          printf '%s  %s\n' "${SOURCE_ARTIFACT_SHA256}" artifacts/p2_a/input/source-45244943216.zip | sha256sum --check --strict
+          printf '%s  %s\n' "${PROVENANCE_ARTIFACT_SHA256}" artifacts/p2_a/input/provenance-45421531702.zip | sha256sum --check --strict
+
+      - name: Run complete five-belt stratified Mc analysis
+        env:
+          PYTHONUNBUFFERED: '1'
+        run: |
+          set -euo pipefail
+          python -m p2_a_mc.mc_analysis \
+            --source-archive artifacts/p2_a/input/source-45244943216.zip \
+            --provenance-archive artifacts/p2_a/input/provenance-45421531702.zip \
+            --config-dir real_data_stress_pipeline/config \
+            --output-dir artifacts/p2_a/mc_assessment \
+            | tee artifacts/p2_a/mc_assessment_stdout.json
+
+      - name: Publish complete JSON to GitHub Step Summary
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo '# P2-A — Stratified Mc(t, region) results' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Full JSON is authoritative. No Zaliapin, N1, or ETAS analysis is performed in this step.' >> "$GITHUB_STEP_SUMMARY"
+          if [[ -s artifacts/p2_a/mc_assessment/P2_A_MC_STRATIFIED_RESULTS.json ]]; then
+            cat artifacts/p2_a/mc_assessment/P2_A_MC_STRATIFIED_RESULTS.json >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo 'No result JSON was generated; inspect the failing job logs.' >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Upload complete Mc assessment evidence
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: chaos-p2-a-stratified-mc-${{ github.run_id }}-${{ github.run_attempt }}
+          retention-days: 90
+          if-no-files-found: warn
+          path: |
+            artifacts/p2_a/mc_assessment/
+            artifacts/p2_a/mc_assessment_stdout.json

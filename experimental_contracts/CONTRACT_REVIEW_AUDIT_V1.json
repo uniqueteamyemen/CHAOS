@@ -1,0 +1,236 @@
+{
+  "contract": "experimental_contracts/DATASET_CONFIGURATION_MACRO_PLUS_EIA_ENERGY_REVIEW_V1.json",
+  "matrix": "catalog_first/readiness_gate/macro_plus_eia_energy/MACRO_PLUS_EIA_ENERGY_COMPLETE_140_RAW_2000_2024_WIDE.csv",
+  "contract_sha256": "7ebc0fd313beb6047b911649a6022ac1834cdb5615e1a6172e02741830a795c6",
+  "matrix_sha256": "0271662489f529ee2e328190647c55115fd5c2a8eb1d6e34494cba1fd195953a",
+  "checks": {
+    "row_count": {
+      "expected": 3500,
+      "observed": 3500,
+      "pass": true
+    },
+    "entity_count": {
+      "expected": 140,
+      "observed": 140,
+      "pass": true
+    },
+    "year_set": {
+      "expected": [
+        2000,
+        2001,
+        2002,
+        2003,
+        2004,
+        2005,
+        2006,
+        2007,
+        2008,
+        2009,
+        2010,
+        2011,
+        2012,
+        2013,
+        2014,
+        2015,
+        2016,
+        2017,
+        2018,
+        2019,
+        2020,
+        2021,
+        2022,
+        2023,
+        2024
+      ],
+      "observed": [
+        2000,
+        2001,
+        2002,
+        2003,
+        2004,
+        2005,
+        2006,
+        2007,
+        2008,
+        2009,
+        2010,
+        2011,
+        2012,
+        2013,
+        2014,
+        2015,
+        2016,
+        2017,
+        2018,
+        2019,
+        2020,
+        2021,
+        2022,
+        2023,
+        2024
+      ],
+      "pass": true
+    },
+    "selected_column_count": {
+      "expected": 11,
+      "observed": 11,
+      "pass": true
+    },
+    "selected_columns_present": {
+      "missing": [],
+      "pass": true
+    },
+    "selected_missing_cells": {
+      "observed": 0,
+      "pass": true
+    },
+    "duplicate_entity_year_rows": {
+      "observed": 0,
+      "pass": true
+    },
+    "sorted_entity_year": {
+      "pass": true
+    },
+    "sequence_counts": {
+      "expected_from_contract": {
+        "train": 1400,
+        "validation": 560,
+        "test": 700
+      },
+      "recomputed": {
+        "train": 1400,
+        "validation": 560,
+        "test": 700
+      },
+      "pass": true
+    },
+    "temporal_firewall_examples": {
+      "examples": [
+        {
+          "target_year": 2006,
+          "origin_year": 2005,
+          "encoder_years": [
+            2001,
+            2002,
+            2003,
+            2004,
+            2005
+          ],
+          "target_outside_encoder": true,
+          "max_encoder_lt_target": true
+        },
+        {
+          "target_year": 2015,
+          "origin_year": 2014,
+          "encoder_years": [
+            2010,
+            2011,
+            2012,
+            2013,
+            2014
+          ],
+          "target_outside_encoder": true,
+          "max_encoder_lt_target": true
+        },
+        {
+          "target_year": 2016,
+          "origin_year": 2015,
+          "encoder_years": [
+            2011,
+            2012,
+            2013,
+            2014,
+            2015
+          ],
+          "target_outside_encoder": true,
+          "max_encoder_lt_target": true
+        },
+        {
+          "target_year": 2019,
+          "origin_year": 2018,
+          "encoder_years": [
+            2014,
+            2015,
+            2016,
+            2017,
+            2018
+          ],
+          "target_outside_encoder": true,
+          "max_encoder_lt_target": true
+        },
+        {
+          "target_year": 2020,
+          "origin_year": 2019,
+          "encoder_years": [
+            2015,
+            2016,
+            2017,
+            2018,
+            2019
+          ],
+          "target_outside_encoder": true,
+          "max_encoder_lt_target": true
+        },
+        {
+          "target_year": 2024,
+          "origin_year": 2023,
+          "encoder_years": [
+            2019,
+            2020,
+            2021,
+            2022,
+            2023
+          ],
+          "target_outside_encoder": true,
+          "max_encoder_lt_target": true
+        }
+      ],
+      "pass": true
+    },
+    "chronological_order": {
+      "train_before_validation": true,
+      "validation_before_test": true,
+      "pass": true
+    },
+    "no_random_split": {
+      "shuffle": false,
+      "random_entity_split": false,
+      "pass": true
+    },
+    "no_imputation": {
+      "contract_mode": "no_imputation",
+      "runtime_behavior": "fail_closed_and_report",
+      "pass": true
+    },
+    "no_transformations": {
+      "transformations": {
+        "log": false,
+        "difference": false,
+        "return_or_new_growth": false,
+        "normalization": false,
+        "zscore": false,
+        "winsorization": false,
+        "clipping": false,
+        "currency_conversion": false,
+        "source_reconciliation": false,
+        "target_scaling": "not approved; any later scaling requires a separate contract and train-only fit"
+      },
+      "pass": true
+    },
+    "training_gate": {
+      "training_authorized": false,
+      "approval_required": true,
+      "pass": true
+    }
+  },
+  "all_automated_checks_pass": true,
+  "training_run": false,
+  "tft_run": false,
+  "architecture_changed": false,
+  "notes": [
+    "This is a data/contract audit only.",
+    "entity_code is a group identifier, not a numeric predictor; TFT architecture must declare this explicitly.",
+    "All selected covariates are past observed covariates in this contract; no future-known exogenous variables are declared.",
+    "Target scaling is not approved and must remain a pre-training decision gate."
+  ]
+}

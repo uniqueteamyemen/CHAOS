@@ -1,0 +1,7 @@
+{
+  "contract": "experimental_contracts/EVENT_PATH_SEISMIC_TRANSFER_CONTRACT_V1.json",
+  "economic_definition_changed": false,
+  "window_width": 3,
+  "train_size": 8,
+  "tuning_after_transfer": false
+}

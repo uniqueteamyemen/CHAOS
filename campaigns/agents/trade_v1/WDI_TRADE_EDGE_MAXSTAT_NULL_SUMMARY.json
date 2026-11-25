@@ -1,0 +1,20 @@
+{
+  "contract_ref": "experimental_contracts/WDI_TRADE_EDGE_CONTRACT_V1.json",
+  "source": "campaigns/agents/trade_v1/WDI_TRADE_OBSERVED_RECORDS_2000_2024.csv",
+  "source_sha256": "35f1064dd8e2a5fd7925a772e05cb6a08199835f0b1a1cc2844be23019a1f3cf",
+  "rows_joined_by_lead": {
+    "1": 5239,
+    "2": 5002
+  },
+  "entities": 236,
+  "observed_max_balanced_accuracy": 0.6943799948440319,
+  "maxstat_p_value": 0.4547726136931534,
+  "replicates": 2000,
+  "seed": 20260827,
+  "exact_consecutive_years_required": true,
+  "raw_modified": false,
+  "imputation": false,
+  "source_averaging": false,
+  "causal_claims_permitted": false,
+  "status": "research_evidence_only"
+}

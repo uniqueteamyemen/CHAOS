@@ -1,0 +1,33 @@
+name: B-v7.1 Isolated Markov Router Benchmark
+on:
+  push:
+    branches:
+      - experiment/b7-1-isolated-markov-router
+    paths:
+      - '.github/workflows/b71-trigger-once.txt'
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+jobs:
+  b71-benchmark:
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: experiment/b7-1-isolated-markov-router
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install runtime dependency
+        run: python -m pip install --upgrade numpy
+      - name: Execute official 26M development and 27M validation run
+        run: python -m experiments.identity_lab.exp_sequential_break_b7_1_isolated_markov_router.benchmark_b71
+      - name: Publish benchmark report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: b71-26m-27m-report
+          path: experiments/identity_lab/exp_sequential_break_b7_1_isolated_markov_router/results/
+          if-no-files-found: warn

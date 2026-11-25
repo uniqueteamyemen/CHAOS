@@ -1,0 +1,92 @@
+name: CHAOS P1.4 — Deterministic Cohort Selection
+
+on:
+  push:
+    branches:
+      - feat/p1-4-capability-envelope-pilot-v1-20261125
+    paths:
+      - "scripts/p1_4/build_cohort_selection.py"
+      - "p1_4_validation/cohort_manifest.json"
+      - "p1_4_validation/pilot_protocol.json"
+      - ".github/workflows/p1-4-cohort-selection.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: chaos-p1-4-cohort-selection-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  select-cohorts:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      OMP_NUM_THREADS: "1"
+      OPENBLAS_NUM_THREADS: "1"
+      MKL_NUM_THREADS: "1"
+      NUMEXPR_NUM_THREADS: "1"
+      PYTHONUNBUFFERED: "1"
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install pinned pipeline dependencies
+        run: python -m pip install -r real_data_stress_pipeline/requirements.txt
+      - name: Download pinned P2.2 prepared artifact and four G1 evaluation shards
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/p2-g1-shards
+          curl --fail --location --retry 3 \
+            -H "Authorization: Bearer ${GH_TOKEN}" \
+            -H "Accept: application/vnd.github+json" \
+            https://api.github.com/repos/${GITHUB_REPOSITORY}/actions/artifacts/14857826243/zip \
+            -o /tmp/p2-prepared.zip
+          echo "c83f6e960296fbbdb687650a798959f08cb8d98db68de8ca713d7be278e824fe  /tmp/p2-prepared.zip" | sha256sum --check
+
+          declare -a IDS=(14861808748 14861805478 14862282819 14860330825)
+          declare -a DIGESTS=(
+            6cf04825de2a5e7f6b30f03aad97426fa0392038e84764ee68b52e2f70d5f89c
+            6f617b240c3c35d68f0295a9e21ebf07e797ff72d3566b984b764491b925c886
+            881c40e34838329c1b809257d9c729c56e5304ab20b015bf8b98f656075586d4
+            6996d69724f01b1be7ba1660ecc1572e4432802f1aebc21d521e22b58e5a35df
+          )
+          for index in 0 1 2 3; do
+            curl --fail --location --retry 3 \
+              -H "Authorization: Bearer ${GH_TOKEN}" \
+              -H "Accept: application/vnd.github+json" \
+              "https://api.github.com/repos/${GITHUB_REPOSITORY}/actions/artifacts/${IDS[$index]}/zip" \
+              -o "/tmp/p2-eval-${index}.zip"
+            echo "${DIGESTS[$index]}  /tmp/p2-eval-${index}.zip" | sha256sum --check
+            unzip -p "/tmp/p2-eval-${index}.zip" "shard-${index}.json" > "/tmp/p2-g1-shards/shard-${index}.json"
+            test -s "/tmp/p2-g1-shards/shard-${index}.json"
+          done
+      - name: Build and exact-match committed cohort selection
+        run: |
+          set -euo pipefail
+          python -u scripts/p1_4/build_cohort_selection.py \
+            --prepared-zip /tmp/p2-prepared.zip \
+            --g1-shards-dir /tmp/p2-g1-shards \
+            --cohort-manifest p1_4_validation/cohort_manifest.json \
+            --pilot-protocol p1_4_validation/pilot_protocol.json \
+            --output artifacts/p1_4/cohort_selection.json \
+            --stratification-report artifacts/p1_4/cohort_stratification_report.json \
+            --selection-commit "$GITHUB_SHA"
+          sha256sum artifacts/p1_4/cohort_selection.json > artifacts/p1_4/cohort_selection.json.sha256
+      - name: Upload cohort selection artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: chaos-p1-4-cohort-selection-${{ github.run_id }}-${{ github.run_attempt }}
+          retention-days: 90
+          if-no-files-found: error
+          path: |
+            artifacts/p1_4/cohort_selection.json
+            artifacts/p1_4/cohort_selection.json.sha256
+            artifacts/p1_4/cohort_stratification_report.json

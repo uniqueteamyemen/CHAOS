@@ -1,0 +1,16 @@
+{
+  "source_id": "USGS_EARTHQUAKE_M6_5_2000_2024",
+  "source_url": "https://earthquake.usgs.gov/fdsnws/event/1/query?format=csv&starttime=2000-01-01T00:00:00&endtime=2024-12-31T23:59:59&minmagnitude=6.5&orderby=time-asc&limit=20000",
+  "query_contract": {
+    "starttime": "2000-01-01T00:00:00",
+    "endtime": "2024-12-31T23:59:59",
+    "minmagnitude": 6.5,
+    "orderby": "time-asc",
+    "format": "csv"
+  },
+  "raw_file": "USGS_EARTHQUAKE_M6_5_2000_2024_RAW.csv",
+  "event_count": 1141,
+  "sha256": "b56020231fc0bb615d34886affd8a86361aff38096758dce770336296472708b",
+  "purpose": "Restore the raw source referenced by the existing environment-disaster derived-state artifact; no edge rerun performed.",
+  "causal_claims_permitted": false
+}

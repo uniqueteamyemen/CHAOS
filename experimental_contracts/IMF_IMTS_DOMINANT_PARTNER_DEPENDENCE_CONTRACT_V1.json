@@ -1,0 +1,361 @@
+{
+  "contract_id": "IMF_IMTS_DOMINANT_PARTNER_DEPENDENCE_CONTRACT_V1",
+  "version": "1.0-draft",
+  "status": "draft_for_review",
+  "purpose": "Test whether pre-specified reporter dependence on selected bilateral trade partners, combined with a partner-specific export-flow contraction, provides a reproducible predictive signal for subsequent material GDP deterioration.",
+  "scientific_scope": {
+    "question": "Does dependence on a specifically selected partner add information beyond total exports and beyond an arbitrary assignment of dominant-partner identity?",
+    "claim_type": "descriptive_predictive_transition_test_only",
+    "causal_claim_permitted": false,
+    "not_claimed": [
+      "No causal effect of a partner is inferred.",
+      "No geopolitical responsibility, policy responsibility, or production shock is inferred from a bilateral flow contraction.",
+      "No partner is called a cause because it is selected as dominant.",
+      "No result is eligible for runtime or positive Path Composer weight unless it passes the supervisor gate."
+    ]
+  },
+  "source_contract": {
+    "trade_source_id": "IMF.STA:IMTS",
+    "trade_dataset_urn": "IMF.STA:IMTS(1.0.0)",
+    "trade_official_card": "https://data.imf.org/en/datasets/IMF.STA:IMTS",
+    "trade_structure_api": "https://api.imf.org/external/sdmx/3.0/structure/dataflow/IMF.STA/IMTS/1.0.0?detail=full&references=all",
+    "trade_observation_artifact": "experiments/multi_domain_native_adapters_v1/imf_imts_v1/IMF_IMTS_OBSERVED_RECORDS_2000_2024.csv",
+    "trade_raw_acquisition_summary": "campaigns/research_rounds/20260827_BROWSER_DEEP_RESEARCH/IMF_IMTS_15_PER_REPORTER_ACQUISITION_SUMMARY_V1.json",
+    "economic_target_source": "World Bank WDI series already present in CHAOS macro panel",
+    "economic_target_artifact": "catalog_first/readiness_gate/macro_plus_eia_energy/MACRO_PLUS_EIA_ENERGY_COMPLETE_139_NUMERIC_RAW_2000_2024_WIDE.csv",
+    "source_separation": "IMTS and WDI remain separate source observations; only exact reporter/year keys are joined; no source averaging or reconciliation.",
+    "vintage_policy": "Record the IMTS dataset version, publication/update metadata, acquisition timestamp, raw request URL, response headers, and SHA-256. Historical observed values only; no projections or future revisions may be introduced after the contract is frozen.",
+    "raw_policy": {
+      "raw_immutable": true,
+      "raw_modified": false,
+      "imputation": false,
+      "normalization": false,
+      "log_transform": false,
+      "smoothing": false,
+      "source_averaging": false,
+      "forced_reconciliation": false,
+      "scale_conversion": false,
+      "frequency_conversion": false,
+      "missing_as_zero": false
+    }
+  },
+  "analysis_unit": {
+    "primary_unit": "reporter_year",
+    "source_native_unit": "reporter x counterpart_country x indicator x annual observation",
+    "primary_reporter_ids": ["USA", "CHN", "DEU", "JPN", "IND", "GBR", "FRA", "ITA", "CAN", "KOR", "BRA", "MEX", "SAU", "TUR", "ZAF"],
+    "reporter_count_target": 15,
+    "target_deduplication_rule": "At most one GDP outcome record per reporter-year-horizon. Multiple shocked partners are aggregated into one reporter-year exposure record with shocked partner IDs retained.",
+    "partner_level_analysis": "Diagnostic and audit layer only; partner-level rows must not be treated as independent GDP outcomes."
+  },
+  "native_frequency_and_period": {
+    "trade_frequency_required": "A",
+    "trade_frequency_label": "Annual",
+    "target_frequency_required": "annual",
+    "period": [2000, 2024],
+    "selection_window": [2000, 2004],
+    "origin_period": [2005, 2021],
+    "late_origins_excluded_for_h3": [2022, 2023, 2024],
+    "reason_for_late_origin_exclusion": "The material GDP outcome at t+3 is not observed inside the frozen 2000-2024 panel.",
+    "no_daily_monthly_event_annualization": true
+  },
+  "dimension_requirements": {
+    "reporter_dimension": "COUNTRY",
+    "partner_dimension": "COUNTERPART_COUNTRY",
+    "indicator_dimension": "INDICATOR",
+    "frequency_dimension": "FREQUENCY",
+    "required_indicator": "XG_FOB_USD",
+    "indicator_definition": "Exports of goods, Free on board (FOB), US dollar",
+    "required_flow": "XG",
+    "required_valuation": "FOB",
+    "required_unit": "USD",
+    "required_frequency": "A",
+    "raw_value_field": "OBS_VALUE",
+    "raw_scale_field": "SCALE",
+    "scale_rule": "Preserve SCALE as metadata; use OBS_VALUE exactly as delivered; do not multiply, divide, or reinterpret the raw value by SCALE."
+  },
+  "partner_selection": {
+    "selection_is_frozen_before_outcome_test": true,
+    "selection_uses_target_gdp": false,
+    "selection_uses_confirmation": false,
+    "selection_rule": "For each reporter, rank eligible counterpart codes by the arithmetic mean of raw XG_FOB_USD values divided by raw G001 World XG_FOB_USD values for each complete year in 2000-2004, requiring all five bilateral and World observations to be present. Select the top 5 eligible counterpart codes.",
+    "selection_formula": "baseline_share(r,p)=mean_t(raw_exports(r,p,t)/raw_exports(r,G001,t)) for t in 2000..2004",
+    "selection_requires_complete_window": true,
+    "selection_tie_break": "Descending baseline_share, then ascending source counterpart code.",
+    "selected_partner_count": 5,
+    "dominance_rule": {
+      "id": "baseline_dominant_partner",
+      "definition": "A selected partner is dominant if its 2000-2004 baseline mean share is at least 0.20.",
+      "threshold": 0.20,
+      "threshold_frozen_before_run": true,
+      "dependence_is_pre_shock": true,
+      "no_origin_year_reselection": true
+    },
+    "selection_failure": "If a reporter has fewer than 5 eligible counterpart codes with complete 2000-2004 bilateral and World observations, that reporter is excluded from the primary test and recorded as not_testable_selection_coverage; no fallback partner selection is allowed."
+  },
+  "partner_exclusion_policy": {
+    "purpose": "Prevent aggregate, unknown, non-specific, or non-comparable counterpart codes from being treated as named bilateral partners.",
+    "world_denominator_exception": "G001=World is excluded as a named partner but required only as the same-source denominator for reporter total exports.",
+    "always_exclude_codes": ["G001"],
+    "exclude_if_source_name_matches_case_insensitive": [
+      "world",
+      "not specified",
+      "unspecified",
+      "special categories",
+      "countries & areas",
+      "other countries",
+      "all countries",
+      "regional aggregate",
+      "region",
+      "group",
+      "union",
+      "area not elsewhere included",
+      "oil related aggregate",
+      "services aggregate"
+    ],
+    "exclude_if_codebook_marks_as": [
+      "world aggregate",
+      "regional aggregate",
+      "economic group aggregate",
+      "special category",
+      "unknown or not specified",
+      "non-country reporting area"
+    ],
+    "exclude_self_reporter": true,
+    "exclude_missing_partner_code": true,
+    "exclude_missing_partner_name_when_codebook_mapping_is_required": true,
+    "exclude_non_numeric_or_missing_observation": true,
+    "exclude_non_annual_frequency": true,
+    "exclude_non_XG_indicator": true,
+    "exclude_non_USD_or_non_FOB_observation": true,
+    "excluded_code_register_required": true,
+    "excluded_code_register_artifact": "experiments/multi_domain_native_edges_v1/imf_imts_partner_dependence_v1/IMF_IMTS_PARTNER_EXCLUSION_REGISTER_V1.json",
+    "manual_exclusion_rule": "No manual exclusion may be added after seeing GDP results. Any code not classifiable from the official codelist is quarantined and recorded, not silently included.",
+    "exclusion_not_equal_to_missing": "Excluded counterpart codes are not converted to zero and do not fill missing bilateral observations."
+  },
+  "trade_exposure_states": {
+    "state_family": "source_specific_bilateral_flow_candidate",
+    "primary_state": {
+      "id": "dominant_partner_flow_contraction_candidate",
+      "definition": "At reporter r and origin year t, at least one selected baseline-dominant partner p has raw XG_FOB_USD(r,p,t) < 0.70 * raw XG_FOB_USD(r,p,t-1), with exact consecutive source years and both values positive and present.",
+      "formula": "shock(r,p,t)=1[exports(r,p,t)<0.70*exports(r,p,t-1)]",
+      "threshold": 0.70,
+      "threshold_meaning": "A raw bilateral export value contraction of more than 30 percent relative to the immediately preceding annual source observation; the raw values remain unchanged.",
+      "exposure_formula": "exposure(r,t)=1 if any selected baseline-dominant p has shock(r,p,t)=1",
+      "dependence_formula": "dependence(r)=1 if at least one selected p has baseline_share(r,p)>=0.20",
+      "interaction_formula": "dominant_partner_flow_contraction_candidate(r,t)=dependence(r) AND exposure(r,t)",
+      "missing_policy": "If either bilateral value is missing, non-positive, non-annual, duplicated, or not an exact t/t-1 pair, shock is missing for that partner-year; it is not False and not zero.",
+      "state_semantics": "Candidate trade-flow state only; not a production shock, supply shock, causal shock, or geopolitical attribution."
+    },
+    "diagnostic_states": [
+      "any_selected_partner_flow_contraction",
+      "any_baseline_dominant_partner_flow_contraction",
+      "baseline_dominant_partner_presence_without_current_shock",
+      "no_eligible_dominant_partner_observation"
+    ],
+    "aggregation_fields_required": [
+      "reporter_id",
+      "origin_year",
+      "selected_partner_ids",
+      "baseline_dominant_partner_ids",
+      "shocked_partner_ids",
+      "shocked_partner_count",
+      "raw_partner_values_t",
+      "raw_partner_values_t_minus_1",
+      "raw_world_exports_t",
+      "raw_world_exports_t_minus_1",
+      "exposure_state",
+      "dependence_state",
+      "interaction_state"
+    ]
+  },
+  "target_definition": {
+    "target_source": "World Bank WDI",
+    "target_variable": "wdi__NY.GDP.MKTP.KD.ZG",
+    "target_definition": "GDP annual percentage growth; constant 2015 US$ basis, as stored in the frozen CHAOS macro panel.",
+    "outcome_family": "material_drop_2pp",
+    "outcome_formula": "wdi_gdp_growth(r,t+h) <= wdi_gdp_growth(r,t) - 2.0",
+    "horizons_years": [1, 2, 3],
+    "future_data_usage": "Future GDP enters only as the transition outcome label after the current-state exposure is frozen; no future GDP is used in partner selection or exposure construction.",
+    "missing_policy": "Complete-case per reporter and horizon; missing target values remain missing and remove that reporter-origin-horizon from that metric only."
+  },
+  "chronological_design": {
+    "selection": [2000, 2004],
+    "fit": [2005, 2013],
+    "validation": [2014, 2018],
+    "confirmation": [2019, 2021],
+    "selection_temporally_precedes_fit": true,
+    "validation_not_used_for_configuration_choice": true,
+    "confirmation_not_used_for_selection_or_threshold_choice": true,
+    "no_random_row_split": true,
+    "no_entity_year_leakage": true,
+    "origin_horizon_rule": "For each h, use only origins with an observed target at t+h; do not backfill or truncate the outcome into a proxy."
+  },
+  "primary_statistics": {
+    "primary_statistic": "risk_difference",
+    "formula": "P(material_deterioration at t+h | interaction_state=1) - P(material_deterioration at t+h | interaction_state=0)",
+    "report_by": ["fit", "validation", "confirmation", "horizon", "reporter"],
+    "required_counts": ["rows", "reporters", "positive_exposures", "positive_outcomes", "exposed_outcomes", "unexposed_outcomes", "event_rate_exposed", "event_rate_unexposed"],
+    "secondary_descriptives": ["per_reporter risk difference", "share of reporters with positive risk difference", "exposure prevalence", "outcome prevalence"],
+    "no_population_or_gdp_weighting": true,
+    "no_partner_level_pooled_outcome": true
+  },
+  "partner_identity_null": {
+    "purpose": "Test whether the identity assignment of dominant partners carries information beyond the number of dominant slots, the reporter, the bilateral flow series, and the observed shock timing.",
+    "primary_identity_null": {
+      "id": "fixed_within_reporter_dominant_slot_permutation",
+      "procedure": [
+        "For each reporter, retain the selected five bilateral partner time series, all raw values, all missingness, and all observed partner-specific shock flags.",
+        "Retain the reporter-specific number of baseline-dominant slots m, where m is the count of selected partners meeting the 0.20 baseline-share rule.",
+        "For each permutation, randomly reassign the m dominant labels among the five selected partner series within that reporter.",
+        "Apply one fixed permutation per reporter across all years, not a separate permutation per year, preserving temporal dependence within every bilateral flow series.",
+        "Recompute the reporter-year interaction exposure from the permuted dominant labels and the unchanged partner-specific shocks.",
+        "Keep the WDI GDP outcome labels unchanged.",
+        "Compute the max risk difference across h=1,2,3 for the permuted exposure."
+      ],
+      "preserves": [
+        "reporter identities",
+        "number of selected partners",
+        "number of dominant slots per reporter",
+        "bilateral raw flow values",
+        "bilateral missingness pattern",
+        "partner-specific shock timing",
+        "annual frequency",
+        "GDP outcome labels"
+      ],
+      "breaks_only": "The mapping between dominant-partner identity and the bilateral flow series.",
+      "replicates": 10000,
+      "rng_seed": 20260827,
+      "statistic": "max_horizon_risk_difference",
+      "p_value": "(1 + count(null_stat >= observed_stat)) / (10000 + 1)",
+      "interpretation": "A small p-value means the observed dominant-partner assignment is unusual under random identity assignment with the same reporter-level structure; it does not establish causality."
+    },
+    "secondary_identity_control": {
+      "id": "matched_slot_count_partner_relabeling",
+      "status": "optional_after_primary_contract_review",
+      "procedure": "Within reporter, permute dominant labels among selected partners separately within baseline-share rank strata when at least two partners exist in a stratum; if a stratum cannot be formed, mark the replicate not_testable rather than forcing a match.",
+      "purpose": "Sensitivity to the fact that dominant slots may be concentrated in a few very large bilateral series.",
+      "not_for_promotion_without_pre_registration": true
+    },
+    "identity_null_failure_rules": [
+      "Do not permute partner labels independently by year.",
+      "Do not resample outcomes independently of reporter.",
+      "Do not select a new partner set inside a null replicate.",
+      "Do not replace missing bilateral observations with zero.",
+      "Do not allow a null replicate to change the selection window, threshold, or reporter set.",
+      "Do not pool partner-level rows as independent outcomes."
+    ]
+  },
+  "additional_null_controls": {
+    "outcome_null": {
+      "id": "within_reporter_outcome_label_permutation",
+      "procedure": "Within each reporter, permute the complete-case GDP outcome labels across eligible origin years separately for each horizon while keeping the frozen interaction exposure unchanged.",
+      "replicates": 10000,
+      "rng_seed": 20260828,
+      "statistic": "max_horizon_risk_difference",
+      "purpose": "Test whether the observed exposure-outcome ordering exceeds a reporter-preserving label null."
+    },
+    "cluster_bootstrap": {
+      "id": "reporter_cluster_bootstrap",
+      "replicates": 5000,
+      "rng_seed": 20260829,
+      "resampling_unit": "reporter",
+      "purpose": "Describe uncertainty under cross-sectional dependence; not a substitute for confirmation or identity null.",
+      "promotion_use": "stability diagnostic only"
+    }
+  },
+  "multiple_testing_and_promotion": {
+    "test_family": "one primary interaction exposure across three horizons and two required null controls",
+    "max_statistic_across_horizons": true,
+    "familywise_alpha": 0.05,
+    "per_null_alpha": 0.025,
+    "promotion_requires_all": [
+      "positive confirmation max risk difference",
+      "confirmation direction not contradicted materially by validation",
+      "outcome_null p-value < 0.025",
+      "partner_identity_null p-value < 0.025",
+      "minimum coverage requirements pass",
+      "entity-concentration checks pass",
+      "no dependence on a single reporter or a single partner code",
+      "no schema, provenance, frequency, or missingness violations"
+    ],
+    "if_positive_fit_but_failed_confirmation": "rejected",
+    "if_insufficient_confirmation_counts": "not_testable",
+    "if_identity_null_passes_but_outcome_null_fails": "rejected",
+    "if_outcome_null_passes_but_identity_null_fails": "rejected",
+    "if_both_nulls_pass_but_entity_stability_fails": "rejected_or_unresolved",
+    "positive_composer_weight_allowed_only_after_gate": true,
+    "causal_claim_allowed": false
+  },
+  "coverage_and_stability_requirements": {
+    "selection": {
+      "complete_baseline_years_required": 5,
+      "minimum_selected_partners": 5
+    },
+    "per_split": {
+      "minimum_reporters": 10,
+      "minimum_complete_origin_rows_per_horizon": 30
+    },
+    "confirmation": {
+      "minimum_positive_interaction_exposures": 5,
+      "minimum_positive_outcomes": 5,
+      "minimum_reporters_with_positive_exposure": 5,
+      "minimum_reporters_with_complete_horizon": 10
+    },
+    "entity_concentration": {
+      "maximum_share_of_positive_exposures_from_one_reporter": 0.40,
+      "maximum_share_of_positive_exposures_from_one_partner_code": 0.60,
+      "rule": "If either concentration limit is exceeded, the edge cannot be promoted; report it as concentrated or rejected depending on coverage."
+    },
+    "reporter_stability": {
+      "minimum_reporters_with_defined_confirmation_risk_difference": 10,
+      "minimum_fraction_positive_reporter_level_risk_difference": 0.60,
+      "diagnostic_only_until_review": true
+    }
+  },
+  "audit_artifacts_required": [
+    "IMF_IMTS_PARTNER_EXCLUSION_REGISTER_V1.json",
+    "IMF_IMTS_PARTNER_SELECTION_REGISTER_V1.json",
+    "IMF_IMTS_PARTNER_DEPENDENCE_REPORTER_YEAR_PANEL_V1.csv",
+    "IMF_IMTS_PARTNER_DEPENDENCE_SELECTION_PROFILE_V1.csv",
+    "IMF_IMTS_PARTNER_DEPENDENCE_METRICS_V1.csv",
+    "IMF_IMTS_PARTNER_IDENTITY_NULL_SUMMARY_V1.json",
+    "IMF_IMTS_OUTCOME_NULL_SUMMARY_V1.json",
+    "IMF_IMTS_PARTNER_DEPENDENCE_TRANSITION_EVIDENCE_V1.jsonl",
+    "IMF_IMTS_PARTNER_DEPENDENCE_RUN_MANIFEST_V1.json"
+  ],
+  "governance": {
+    "required_validators": [
+      "validate_domain_state_schema_v1.py",
+      "validate_transition_evidence_schema_v1.py",
+      "run_supervisor_admission_gate_v1.py",
+      "build_evidence_graph_v1.py",
+      "compile_patterns_v1.py",
+      "run_campaign_supervisor_final_gate_v1.py"
+    ],
+    "required_status_if_not_promoted": ["rejected", "unresolved", "not_testable"],
+    "rejected_or_unresolved_positive_weight": false,
+    "runtime_eligible_without_gate": false,
+    "raw_data_modified": false,
+    "market_intelligence_engine_modified": false,
+    "old_baselines_modified": false,
+    "research_ledger_append_only": true
+  },
+  "reproducibility": {
+    "contract_freeze_required_before_run": true,
+    "configuration_hash_required": true,
+    "random_seeds_fixed": true,
+    "software_environment_manifest_required": true,
+    "input_sha256_required": true,
+    "request_urls_required": true,
+    "logs_required": true,
+    "failed_cases_required": true,
+    "rerun_policy": "A rerun with changed partner exclusion, selection window, thresholds, reporter scope, null procedure, or outcome definition is a new versioned contract, not a silent update of V1."
+  },
+  "decision_states": {
+    "candidate": "Contract or descriptive hypothesis exists but has not passed the required tests.",
+    "supported_predictive": "All predeclared confirmation, null, coverage, and stability gates pass; still not causal.",
+    "rejected": "The tested interaction fails a required predictive or identity-control condition.",
+    "unresolved": "Evidence is contradictory or concentrated and cannot be adjudicated by this contract.",
+    "not_testable": "Coverage, complete-case, source, or frequency requirements are insufficient."
+  }
+}

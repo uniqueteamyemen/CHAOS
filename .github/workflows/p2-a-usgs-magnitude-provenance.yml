@@ -1,0 +1,130 @@
+name: CHAOS P2-A — USGS Magnitude Provenance Recovery
+
+on:
+  push:
+    branches:
+      - feat/p2-a-usgs-mag-source-recovery-v1
+      - main-phase2
+    paths:
+      - 'scripts/audits/p2_a_usgs_magnitude_provenance.py'
+      - '.github/workflows/p2-a-usgs-magnitude-provenance.yml'
+      - 'real_data_stress_pipeline/contracts/p2_a_magnitude_provenance_recovery_v1.json'
+      - 'real_data_stress_pipeline/run_pipeline.py'
+      - 'real_data_stress_pipeline/config/*.json'
+      - 'tests/audits/test_p2_a_usgs_magnitude_provenance.py'
+  workflow_dispatch:
+    inputs:
+      source_run_id:
+        description: Existing P2.2.3 source-artifact workflow run ID
+        required: true
+        default: '45244943216'
+      source_run_attempt:
+        description: Source workflow run attempt containing the immutable artifact
+        required: true
+        default: '1'
+
+permissions:
+  actions: read
+  contents: write
+
+concurrency:
+  group: chaos-p2-a-research-ledger
+  cancel-in-progress: false
+
+jobs:
+  recover-magnitude-source:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    env:
+      SOURCE_RUN_ID: ${{ inputs.source_run_id || '45244943216' }}
+      SOURCE_RUN_ATTEMPT: ${{ inputs.source_run_attempt || '1' }}
+      LEDGER_PATH: governance/ledger/RESEARCH_LEDGER_V1.jsonl
+      LEDGER_BRANCH: governance/research-ledger-v1
+      OMP_NUM_THREADS: '1'
+      OPENBLAS_NUM_THREADS: '1'
+      MKL_NUM_THREADS: '1'
+      NUMEXPR_NUM_THREADS: '1'
+      VECLIB_MAXIMUM_THREADS: '1'
+      PYTHONUNBUFFERED: '1'
+    steps:
+      - name: Checkout triggering commit
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Restore canonical Research Ledger from its protected-state branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$(dirname "$LEDGER_PATH")"
+          git fetch --no-tags origin "$LEDGER_BRANCH"
+          git cat-file -e "FETCH_HEAD:$LEDGER_PATH" 2>/dev/null || {
+            echo "canonical_research_ledger_missing_on:$LEDGER_BRANCH" >&2
+            exit 1
+          }
+          git show "FETCH_HEAD:$LEDGER_PATH" > "$LEDGER_PATH"
+          test -s "$LEDGER_PATH"
+          echo "Restored canonical append-only ledger from $LEDGER_BRANCH."
+
+      - name: Download immutable P2.2.3 source artifact
+        uses: actions/download-artifact@v8
+        with:
+          digest-mismatch: error
+          name: chaos-p2-domain-null-${{ env.SOURCE_RUN_ID }}-${{ env.SOURCE_RUN_ATTEMPT }}
+          run-id: ${{ env.SOURCE_RUN_ID }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          path: artifacts/p2_a/source
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+          cache-dependency-path: real_data_stress_pipeline/requirements.txt
+
+      - name: Install audit dependencies
+        run: python -m pip install -r real_data_stress_pipeline/requirements.txt
+
+      - name: Recover preferred magnitude source and reconcile
+        run: |
+          python -u scripts/audits/p2_a_usgs_magnitude_provenance.py \
+            --source-root artifacts/p2_a/source \
+            --output-dir artifacts/p2_a/magnitude_provenance \
+            --ledger-path "$LEDGER_PATH" \
+            --source-run-id "$SOURCE_RUN_ID" \
+            --source-run-attempt "$SOURCE_RUN_ATTEMPT"
+
+      - name: Persist append-only Research Ledger to its dedicated repository branch
+        if: github.ref == 'refs/heads/main-phase2'
+        shell: bash
+        run: |
+          set -euo pipefail
+          ledger_snapshot="$RUNNER_TEMP/RESEARCH_LEDGER_V1.jsonl"
+          cp "$LEDGER_PATH" "$ledger_snapshot"
+          git fetch --no-tags origin "$LEDGER_BRANCH"
+          rm -f "$LEDGER_PATH"
+          git checkout -B "$LEDGER_BRANCH" FETCH_HEAD
+          mkdir -p "$(dirname "$LEDGER_PATH")"
+          cp "$ledger_snapshot" "$LEDGER_PATH"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add "$LEDGER_PATH"
+          if git diff --cached --quiet; then
+            echo "Research Ledger already contains these records; nothing to persist."
+          else
+            git commit -m "chore(governance): append P2-A Research Ledger records"
+            git push origin "HEAD:refs/heads/$LEDGER_BRANCH"
+          fi
+
+      - name: Upload P2-A provenance and Research Ledger evidence
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: chaos-p2-a-mag-source-${{ github.run_id }}-${{ github.run_attempt }}
+          retention-days: 90
+          if-no-files-found: warn
+          path: |
+            artifacts/p2_a/magnitude_provenance/
+            governance/ledger/RESEARCH_LEDGER_V1.jsonl

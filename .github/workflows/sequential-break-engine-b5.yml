@@ -1,0 +1,36 @@
+name: CHAOS B-v5 Rho-Adaptive Transient + Half Bias Correction
+
+on:
+  push:
+    branches:
+      - experiment/b5-rho-adaptive-transient-kendall
+    paths:
+      - "experiments/identity_lab/exp_sequential_break_b5_rho_adaptive/**"
+      - ".github/workflows/sequential-break-engine-b5.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  pristine-b5-comparison:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install pinned numerical dependency
+        run: python -m pip install numpy==2.2.6
+      - name: Run B-v5 specification and lifecycle tests
+        run: python -m unittest experiments.identity_lab.exp_sequential_break_b5_rho_adaptive.test_b5 -v
+      - name: Run paired B-v3.1 B-v3.2 B-v4 B-v5 benchmark on fresh seeds
+        run: python -m experiments.identity_lab.exp_sequential_break_b5_rho_adaptive.benchmark_b5 --dev-trials 500 --holdout-trials 500
+      - name: Upload complete four-version comparison report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: chaos-b3-1-b3-2-b4-b5-pristine-comparison
+          path: experiments/identity_lab/exp_sequential_break_b5_rho_adaptive/results/sequential_break_engine_b3_1_b3_2_b4_b5_comparison.json
+          if-no-files-found: error
+          retention-days: 90

@@ -1,0 +1,107 @@
+{
+  "configuration_id": "macro_plus_eia_energy_review_v1",
+  "status": "review_required_before_tft",
+  "training_authorized": false,
+  "matrix": {
+    "id": "macro_plus_eia_energy",
+    "native_frequency": "annual",
+    "period": {"start": 2000, "end": 2024, "years": 25},
+    "entity_key": "entity_code",
+    "entity_semantics": "Source-defined WDI/IMF/EIA entity/economy identifier; grouping key only, never a numeric feature.",
+    "entity_universe": {"full_candidate": 194, "complete_experiment_universe": 140},
+    "complete_rule": "All selected raw cells present for all 11 selected columns and all years 2000-2024; no imputation.",
+    "raw_rows": 3500,
+    "raw_value_cells": 38500,
+    "raw_missing_cells": 0
+  },
+  "dataset_files": {
+    "complete_wide": "catalog_first/readiness_gate/macro_plus_eia_energy/MACRO_PLUS_EIA_ENERGY_COMPLETE_140_RAW_2000_2024_WIDE.csv",
+    "full_candidate_wide": "catalog_first/readiness_gate/macro_plus_eia_energy/MACRO_PLUS_EIA_ENERGY_RAW_2000_2024_WIDE.csv",
+    "selected_variable_provenance": "catalog_first/readiness_gate/macro_plus_eia_energy/SELECTED_VARIABLE_PROVENANCE.csv",
+    "gap_profile_country": "catalog_first/readiness_gate/macro_plus_eia_energy/COUNTRY_GAP_PROFILE_ALL_194.csv",
+    "gap_profile_variable": "catalog_first/readiness_gate/macro_plus_eia_energy/VARIABLE_GAP_PROFILE_11_VARIABLES.csv",
+    "matrix_summary": "catalog_first/readiness_gate/macro_plus_eia_energy/MACRO_PLUS_EIA_ENERGY_RAW_AND_GAP_SUMMARY.json"
+  },
+  "target": {
+    "id": "wdi__NY.GDP.MKTP.KD.ZG",
+    "definition": "World Bank WDI GDP annual percentage growth; constant 2015 US$ basis.",
+    "unit": "percent",
+    "prediction": "raw target at t+1",
+    "target_expression": "target(entity, t+1) = wdi__NY.GDP.MKTP.KD.ZG(entity, t+1)",
+    "target_derivation": false
+  },
+  "input_columns": {
+    "total_selected_columns": 11,
+    "lagged_target_history": [
+      {"id": "wdi__NY.GDP.MKTP.KD.ZG", "source": "WDI", "unit": "percent", "role": "encoder_target_history_only"}
+    ],
+    "exogenous_covariates": [
+      {"id": "wdi__NY.GDP.PCAP.KD", "source": "WDI", "unit": "constant 2015 US$", "role": "time_varying_observed"},
+      {"id": "wdi__FP.CPI.TOTL.ZG", "source": "WDI", "unit": "percent", "role": "time_varying_observed"},
+      {"id": "wdi__SP.POP.TOTL", "source": "WDI", "unit": "persons; midyear estimate", "role": "time_varying_observed"},
+      {"id": "wdi__PA.NUS.PPP", "source": "WDI", "unit": "LCU per international dollar", "role": "time_varying_observed"},
+      {"id": "imf__NGDP_RPCH", "source": "IMF WEO", "unit": "percent", "role": "time_varying_observed_source_comparator"},
+      {"id": "imf__PCPI", "source": "IMF WEO", "unit": "source-defined annual CPI index", "role": "time_varying_observed_source_comparator"},
+      {"id": "imf__PPPEX", "source": "IMF WEO", "unit": "source-defined PPP exchange rate", "role": "time_varying_observed_source_comparator"},
+      {"id": "imf__BCA_NGDPD", "source": "IMF WEO", "unit": "percent of GDP", "role": "time_varying_observed"},
+      {"id": "eia__energy_consumption_per_capita", "source": "EIA", "unit": "million Btu per person", "role": "time_varying_observed_energy"},
+      {"id": "eia__energy_consumption_per_gdp", "source": "EIA", "unit": "thousand Btu per USD at PPP", "role": "time_varying_observed_energy_intensity"}
+    ]
+  },
+  "temporal_contract": {
+    "origin_year": "t",
+    "input_window": "[t-4, t-3, t-2, t-1, t]",
+    "encoder_length": 5,
+    "prediction_length": 1,
+    "target_year": "t+1",
+    "future_known_covariates": [],
+    "release_date_reconstruction": false,
+    "vintage_mode": "latest-vintage historical replay; not real-time information-set replay",
+    "leakage_rule": "No value dated t+1 or later may enter the input window at origin t."
+  },
+  "split": {
+    "train": {"target_years": [2006, 2015], "origin_years": [2005, 2014], "sequence_count": 1400},
+    "validation": {"target_years": [2016, 2019], "origin_years": [2015, 2018], "sequence_count": 560},
+    "test": {"target_years": [2020, 2024], "origin_years": [2019, 2023], "sequence_count": 700},
+    "total_sequences": 2660,
+    "shuffle": false,
+    "random_entity_split": false,
+    "test_used_for_selection": false
+  },
+  "missing_data_policy": {
+    "mode": "no_imputation",
+    "forward_fill": false,
+    "backward_fill": false,
+    "interpolation": false,
+    "mean_median_fill": false,
+    "zero_reclassification": false,
+    "post_hoc_variable_drop": false,
+    "runtime_behavior": "fail_closed_and_report",
+    "note": "The 140-entity experiment subset is complete by explicit selection; this does not erase the 194-entity candidate gap profile."
+  },
+  "transformations": {
+    "log": false,
+    "difference": false,
+    "return_or_new_growth": false,
+    "normalization": false,
+    "zscore": false,
+    "winsorization": false,
+    "clipping": false,
+    "currency_conversion": false,
+    "source_reconciliation": false,
+    "target_scaling": "not approved; any later scaling requires a separate contract and train-only fit"
+  },
+  "metrics": {
+    "primary": ["MAE", "RMSE"],
+    "secondary": ["R2_out_of_sample", "directional_accuracy"],
+    "optional": ["sMAPE"],
+    "not_primary": {"MAPE": "excluded because GDP growth can be zero or sign-changing"},
+    "aggregation": "unweighted pooled rows plus per-entity error distribution; no population or GDP weights in headline metrics"
+  },
+  "baselines": [
+    {"id": "persistence_one_step", "formula": "prediction(entity,t+1) = raw target(entity,t)", "primary": true},
+    {"id": "entity_train_mean", "formula": "mean target per entity using train target years only", "primary": false}
+  ],
+  "prohibited_now": ["TFT training", "any model training", "structure learning", "surrogate experiment", "architecture change", "market-intelligence-engine modification", "data upload not covered by this contract"],
+  "approval_required": true
+}

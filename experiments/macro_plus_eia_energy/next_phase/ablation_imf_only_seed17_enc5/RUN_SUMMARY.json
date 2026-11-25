@@ -1,0 +1,76 @@
+{
+  "run_id": "ablation_imf_only_seed17_enc5",
+  "family": "ablation",
+  "seed": 17,
+  "encoder_length": 5,
+  "support_start_target_year": 2006,
+  "train_target_years": [
+    2006,
+    2015
+  ],
+  "validation_target_years": [
+    2016,
+    2019
+  ],
+  "test_target_years": [
+    2020,
+    2024
+  ],
+  "feature_columns": [
+    "wdi__NY_GDP_MKTP_KD_ZG",
+    "imf__NGDP_RPCH",
+    "imf__PCPI",
+    "imf__PPPEX",
+    "imf__BCA_NGDPD"
+  ],
+  "feature_columns_original": [
+    "wdi__NY.GDP.MKTP.KD.ZG",
+    "imf__NGDP_RPCH",
+    "imf__PCPI",
+    "imf__PPPEX",
+    "imf__BCA_NGDPD"
+  ],
+  "window_counts": {
+    "train": 1390,
+    "validation": 556,
+    "test": 695
+  },
+  "expected_window_counts": {
+    "train": 1390,
+    "validation": 556,
+    "test": 695
+  },
+  "best_checkpoint": "experiments/macro_plus_eia_energy/next_phase/ablation_imf_only_seed17_enc5/checkpoints/tft-epoch=19-val_loss=1.5910.ckpt",
+  "best_epoch": 25,
+  "elapsed_seconds": 20.790483951568604,
+  "validation_metrics": {
+    "n": 556,
+    "MAE": 1.591013238055082,
+    "RMSE": 2.6516182444312566,
+    "R2": 0.15244066480466956,
+    "directional_accuracy": 0.9244604316546763,
+    "split": "validation"
+  },
+  "test_metrics": {
+    "n": 695,
+    "MAE": 3.9595383465960086,
+    "RMSE": 6.677170373076906,
+    "R2": 0.019520334702052833,
+    "directional_accuracy": 0.7741007194244605,
+    "split": "test"
+  },
+  "test_used_for_selection": false,
+  "raw_data_modified": false,
+  "imputation": false,
+  "transformations": false,
+  "model_params": {
+    "hidden_size": 16,
+    "lstm_layers": 1,
+    "dropout": 0.1,
+    "attention_head_size": 2,
+    "hidden_continuous_size": 8,
+    "learning_rate": 0.001,
+    "max_epochs": 25
+  },
+  "status": "completed"
+}

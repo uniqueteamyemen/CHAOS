@@ -1,0 +1,4 @@
+pattern_type,pattern,support_runs,total_runs,mean_importance,status,causal_claim
+candidate_structural_descriptive,variable_top3:wdi__NY_GDP_MKTP_KD_ZG,9,9,0.23974131526034556,candidate_only,False
+candidate_structural_descriptive,variable_top3:eia__energy_consumption_per_capita,9,9,0.1494958470173088,candidate_only,False
+candidate_structural_descriptive,variable_top3:eia__energy_consumption_per_gdp,9,9,0.09447818943931732,candidate_only,False

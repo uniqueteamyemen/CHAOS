@@ -1,0 +1,1 @@
+https://api.worldbank.org/v2/country/WLD/indicator/FP.CPI.TOTL.ZG?date=2000:2025&format=json&per_page=100

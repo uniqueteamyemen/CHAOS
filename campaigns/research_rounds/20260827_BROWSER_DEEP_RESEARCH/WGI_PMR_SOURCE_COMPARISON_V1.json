@@ -1,0 +1,164 @@
+{
+  "comparison_id": "WGI_PMR_SOURCE_COMPARISON_V1",
+  "wgi_rows": 32403,
+  "pmr_rows": 4134,
+  "comparisons": [
+    {
+      "wgi_indicator": "wgi_regulatory_quality",
+      "pmr_indicator": "BTE",
+      "overlap_rows": 144,
+      "overlap_entities": 47,
+      "overlap_years": [
+        1998,
+        2003,
+        2008,
+        2013
+      ],
+      "pearson": -0.5557673625754816,
+      "spearman": -0.5020617313720762,
+      "interpretation": "source_concordance_only_not_edge"
+    },
+    {
+      "wgi_indicator": "wgi_regulatory_quality",
+      "pmr_indicator": "BTI",
+      "overlap_rows": 145,
+      "overlap_entities": 47,
+      "overlap_years": [
+        1998,
+        2003,
+        2008,
+        2013
+      ],
+      "pearson": -0.6491146862126347,
+      "spearman": -0.5448227404150796,
+      "interpretation": "source_concordance_only_not_edge"
+    },
+    {
+      "wgi_indicator": "wgi_regulatory_quality",
+      "pmr_indicator": "PMR",
+      "overlap_rows": 144,
+      "overlap_entities": 47,
+      "overlap_years": [
+        1998,
+        2003,
+        2008,
+        2013
+      ],
+      "pearson": -0.7207661079294957,
+      "spearman": -0.6561369664817941,
+      "interpretation": "source_concordance_only_not_edge"
+    },
+    {
+      "wgi_indicator": "wgi_regulatory_quality",
+      "pmr_indicator": "TRD",
+      "overlap_rows": 145,
+      "overlap_entities": 47,
+      "overlap_years": [
+        1998,
+        2003,
+        2008,
+        2013
+      ],
+      "pearson": -0.5182986616663646,
+      "spearman": -0.5150608744861846,
+      "interpretation": "source_concordance_only_not_edge"
+    },
+    {
+      "wgi_indicator": "wgi_regulatory_quality",
+      "pmr_indicator": "TRF",
+      "overlap_rows": 145,
+      "overlap_entities": 47,
+      "overlap_years": [
+        1998,
+        2003,
+        2008,
+        2013
+      ],
+      "pearson": -0.5303451828549678,
+      "spearman": -0.402370832448916,
+      "interpretation": "source_concordance_only_not_edge"
+    },
+    {
+      "wgi_indicator": "wgi_government_effectiveness",
+      "pmr_indicator": "BTE",
+      "overlap_rows": 144,
+      "overlap_entities": 47,
+      "overlap_years": [
+        1998,
+        2003,
+        2008,
+        2013
+      ],
+      "pearson": -0.44704311422070303,
+      "spearman": -0.4205610481472551,
+      "interpretation": "source_concordance_only_not_edge"
+    },
+    {
+      "wgi_indicator": "wgi_government_effectiveness",
+      "pmr_indicator": "BTI",
+      "overlap_rows": 145,
+      "overlap_entities": 47,
+      "overlap_years": [
+        1998,
+        2003,
+        2008,
+        2013
+      ],
+      "pearson": -0.5880057883058682,
+      "spearman": -0.44889857275721934,
+      "interpretation": "source_concordance_only_not_edge"
+    },
+    {
+      "wgi_indicator": "wgi_government_effectiveness",
+      "pmr_indicator": "PMR",
+      "overlap_rows": 144,
+      "overlap_entities": 47,
+      "overlap_years": [
+        1998,
+        2003,
+        2008,
+        2013
+      ],
+      "pearson": -0.6493172838618819,
+      "spearman": -0.5614621011172736,
+      "interpretation": "source_concordance_only_not_edge"
+    },
+    {
+      "wgi_indicator": "wgi_government_effectiveness",
+      "pmr_indicator": "TRD",
+      "overlap_rows": 145,
+      "overlap_entities": 47,
+      "overlap_years": [
+        1998,
+        2003,
+        2008,
+        2013
+      ],
+      "pearson": -0.4622520107602886,
+      "spearman": -0.4394285965076472,
+      "interpretation": "source_concordance_only_not_edge"
+    },
+    {
+      "wgi_indicator": "wgi_government_effectiveness",
+      "pmr_indicator": "TRF",
+      "overlap_rows": 145,
+      "overlap_entities": 47,
+      "overlap_years": [
+        1998,
+        2003,
+        2008,
+        2013
+      ],
+      "pearson": -0.5050525368629227,
+      "spearman": -0.3620967431494126,
+      "interpretation": "source_concordance_only_not_edge"
+    }
+  ],
+  "rules": {
+    "exact_entity_year_join_only": true,
+    "no_interpolation": true,
+    "no_composite": true,
+    "no_causal_claim": true
+  },
+  "status": "descriptive_source_comparison"
+}

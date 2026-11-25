@@ -1,0 +1,34 @@
+{
+  "contract_id": "CHAOS_MULTI_DOMAIN_RESEARCH_SCOPE_V1",
+  "purpose": "Expand the evidence space before expanding the model",
+  "status": "scope_contract_not_result_claim",
+  "domains": [
+    {"id":"economic","priority":"reference","states":["growth","deterioration","recovery","regime_shift"],"native_frequency":"annual_or_source_native"},
+    {"id":"energy","priority":"high","states":["intensity_shift","consumption_shock","energy_stress","recovery"],"native_frequency":"source_native"},
+    {"id":"trade","priority":"high","states":["trade_disruption","export_concentration","import_dependence","flow_recovery"],"native_frequency":"source_native"},
+    {"id":"commodity_market","priority":"high","states":["commodity_shock","food_pressure","oil_price_shock","inflation_regime"],"native_frequency":"source_native"},
+    {"id":"conflict","priority":"high_with_caution","states":["onset","presence","escalation","deescalation","high_fatality"],"native_frequency":"annual_or_event_native"},
+    {"id":"environment_disaster","priority":"high","states":["environmental_stress","event_shock","production_shock","recovery"],"native_frequency":"monthly_daily_or_event"},
+    {"id":"health_pandemic","priority":"high","states":["outbreak","mobility_or_policy_shock","health_stress","recovery"],"native_frequency":"daily_monthly_or_event"},
+    {"id":"institutions_policy","priority":"medium_after_definition","states":["institutional_transition","policy_shock","policy_continuity","leader_specific_deviation"],"native_frequency":"event_or_annual"},
+    {"id":"demography","priority":"medium","states":["population_structure","demographic_stress","labor_transition"],"native_frequency":"annual"}
+  ],
+  "priority_paths_as_search_space": [
+    "event -> production_shock -> recovery",
+    "disaster -> trade_or_energy_disruption",
+    "health_shock -> economic_deterioration",
+    "policy_shock -> growth_or_inflation_transition",
+    "trade_disruption -> energy_or_economic_stress",
+    "environmental_stress -> energy_stress -> economic_regime",
+    "economic_deterioration -> conflict_outcome"
+  ],
+  "institution_policy_rule": "Model institutional and policy states as potentially nonlinear, regime-dependent, and interaction-bearing; do not replace them with a single average coefficient or leader label.",
+  "pandemic_rule": "Treat COVID-19 and other epidemics as explicit health/event shocks with source-native timing; do not encode them as an unexplained annual dummy unless a separate alignment contract is approved.",
+  "disaster_rule": "Represent natural disasters as Event -> Production Shock -> Recovery when source coverage permits; preserve event timing and do not aggregate GED-like event data to annual values by default.",
+  "edge_statuses": ["candidate","supported_predictive","rejected","unresolved","not_testable"],
+  "required_evidence_gates": ["source_provenance","coverage","native_frequency","chronological_oos","entity_or_region_holdout","appropriate_null","multiple_testing_control","failure_registry"],
+  "composition_rule": "Do not compose paths until each enabled edge has its own evidence record. Rejected or unresolved edges remain visible but cannot contribute positive weight.",
+  "runtime_rule": "No production or host-engine promotion in this scope; outputs remain in CHAOS research layers.",
+  "raw_data_policy": {"immutable":true,"imputation":false,"normalization":false,"forced_reconciliation":false,"source_averaging":false},
+  "next_execution_order": ["domain_state_adapters","within_domain_edges","cross_domain_edges","mediator_paths","branching_composer","research_runtime_review"]
+}

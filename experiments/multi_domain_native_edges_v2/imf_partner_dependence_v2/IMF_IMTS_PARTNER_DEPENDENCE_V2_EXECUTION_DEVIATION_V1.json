@@ -1,0 +1,22 @@
+{
+  "deviation_id": "IMF_IMTS_PARTNER_DEPENDENCE_V2_EXECUTION_DEVIATION_V1",
+  "created_at_utc": "2026-08-27T02:01:10.562148+00:00",
+  "contract_ref": "experimental_contracts/IMF_IMTS_PARTNER_DEPENDENCE_CONTRACT_V2.json",
+  "contract_sha256": "95c15b08aad41212e5cba2a2128a958c4bfcf3ceaf592aeafb6d167aae09d5e6",
+  "contract_status_at_execution": "draft_for_review",
+  "required_contract_freeze": "contract_freeze_required_before_authoritative_run",
+  "authorization_context": "User explicitly authorized execution of all proposed IMTS expansion methods and requested continuation, while preserving the contract and recording any governance deviation.",
+  "execution_classification": "exploratory_research_only",
+  "authoritative_run": false,
+  "contract_modified_after_execution": false,
+  "raw_modified": false,
+  "result_status": "rejected",
+  "runtime_eligible": false,
+  "causal_claim": false,
+  "run_manifest": {
+    "path": "experiments/multi_domain_native_edges_v2/imf_partner_dependence_v2/IMF_IMTS_PARTNER_DEPENDENCE_RUN_MANIFEST_V2.json",
+    "sha256": "f886a96a2992b3ca53a6440a74f9c853ca0abd305e51ccb5abb49b1e1a3498ac"
+  },
+  "decision": "Document deviation; do not rewrite historical contract status, do not treat V2 as frozen-authoritative, and require a new frozen V3 contract before any future same-question rerun.",
+  "scope_note": "This record does not alter V2 metrics, evidence status, supervisor quarantine, graph admission, or baseline."
+}

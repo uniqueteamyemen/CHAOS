@@ -1,0 +1,1 @@
+https://comtradeapi.un.org/public/v1/preview/C/A/HS?reporterCode=36&period=2022&cmdCode=TOTAL&flowCode=M&partnerCode=0&partner2Code=0&customsCode=C00&motCode=0&maxRecords=500

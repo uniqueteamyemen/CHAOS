@@ -1,0 +1,4 @@
+rule_id,clauses,path_length,split,n_origins,support,positive_outcomes,tp,tn,fp,fn,precision,recall,f1,balanced_accuracy,false_alarm_rate,entity_coverage,year_coverage,lead_time_years
+imf__NGDP_RPCH[t-0]=low_or_negative,"[[""imf__NGDP_RPCH"", 0, ""low""]]",1,discovery_fit,973,142,159,44,716,98,115,0.30985915492957744,0.27672955974842767,0.29235880398671094,0.5781682196776536,0.12039312039312039,81,7,1.0
+imf__NGDP_RPCH[t-0]=low_or_negative,"[[""imf__NGDP_RPCH"", 0, ""low""]]",1,discovery_inner,417,43,33,15,356,28,18,0.3488372093023256,0.45454545454545453,0.39473684210526316,0.6908143939393939,0.07291666666666667,29,3,1.0
+imf__NGDP_RPCH[t-0]=low_or_negative,"[[""imf__NGDP_RPCH"", 0, ""low""]]",1,validation,556,42,139,23,398,19,116,0.5476190476190477,0.16546762589928057,0.2541436464088398,0.5599520383693045,0.045563549160671464,29,4,1.0

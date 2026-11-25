@@ -1,0 +1,24 @@
+{
+  "run_id": "reverse_extraction_null_controls_v1",
+  "contract": "experimental_contracts/REVERSE_EXTRACTION_CONTRACT_V1_DRAFT.json",
+  "candidate_run": "reverse_extraction_v1_draft_symbolic",
+  "candidate_rule_id": "imf__NGDP_RPCH[t-0]=low_or_negative",
+  "seed": 460,
+  "replicates_per_control_per_split": 5000,
+  "controls": [
+    "label_permutation_within_entity_and_split",
+    "support_matched_random_trigger_within_entity_and_split",
+    "temporal_cyclic_shift_placebo_within_entity_and_split"
+  ],
+  "evaluated_splits": [
+    "discovery_inner",
+    "validation"
+  ],
+  "locked_test_executed": false,
+  "null_test_years_included": false,
+  "raw_data_modified": false,
+  "imputation": false,
+  "normalization": false,
+  "p_value_rule": "(1 + count(null_stat >= observed_stat)) / (replicates + 1)",
+  "decision": "null_evidence_only; no operational promotion and no causal interpretation"
+}

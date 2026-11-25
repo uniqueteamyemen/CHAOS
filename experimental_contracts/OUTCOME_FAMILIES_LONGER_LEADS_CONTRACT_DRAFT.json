@@ -1,0 +1,101 @@
+{
+  "contract_id": "outcome_families_longer_leads_macro_plus_eia_v1_draft",
+  "status": "design_only_not_run",
+  "purpose": "Pre-register outcome families and lead horizons for a later reverse-extraction campaign without selecting them after null results.",
+  "dataset": {
+    "matrix_id": "macro_plus_eia_energy",
+    "native_frequency": "annual",
+    "entities": 139,
+    "years": [2000, 2024],
+    "raw_immutable": true,
+    "no_imputation": true,
+    "no_normalization": true,
+    "no_source_reconciliation": true
+  },
+  "outcome_families_primary": [
+    {
+      "id": "contraction",
+      "definition": "target[t+h] < 0",
+      "horizons": [1, 2, 3]
+    },
+    {
+      "id": "material_drop_2pp",
+      "definition": "target[t+h] <= target[t] - 2.0 percentage points",
+      "horizons": [1, 2, 3]
+    },
+    {
+      "id": "adverse_tail_q10",
+      "definition": "target[t+h] <= q10 of future target values estimated from discovery_fit only",
+      "horizons": [1, 2, 3]
+    }
+  ],
+  "outcome_families_exploratory": [
+    {
+      "id": "any_contraction_by_h",
+      "definition": "min(target[t+1], ..., target[t+h]) < 0",
+      "horizons": [2, 3],
+      "role": "early-warning-window only"
+    }
+  ],
+  "deferred_outcomes": [
+    {
+      "id": "persistent_nonpositive_through_h",
+      "reason": "validation event rate is only 4.7% at h=2 and 1.6% at h=3"
+    },
+    {
+      "id": "raw_deterioration",
+      "reason": "validation event rate is 62.8% at h=1 and may be too broad as a primary outcome"
+    }
+  ],
+  "lead_horizons": {
+    "values": [1, 2, 3],
+    "trigger_rule": "At origin t, use only observations through t. Never use target values from t+1 through t+h in trigger construction.",
+    "ordered_chain_required_for_long_lead": true,
+    "compare_same_origin_conjunction": true,
+    "compare_with_target_history_and_exogenous_only": true
+  },
+  "path_families": [
+    "single_state_diagnostic",
+    "same_origin_conjunction",
+    "ordered_temporal_chain",
+    "transition_motif",
+    "tft_informed_shortlist"
+  ],
+  "splits": {
+    "discovery_fit": [2006, 2012],
+    "discovery_inner": [2013, 2015],
+    "validation": [2016, 2019],
+    "locked_test": [2020, 2024],
+    "test_execution": "deferred_until_after_discovery_inner_and_validation_review"
+  },
+  "null_controls": {
+    "replicates": 5000,
+    "controls": [
+      "label_block_permutation_within_entity",
+      "support_and_run_length_matched_random_trigger",
+      "temporal_cyclic_shift_placebo"
+    ],
+    "primary_statistic": "balanced_accuracy",
+    "secondary_statistic": "f1",
+    "multiple_testing": "max_statistic_over_all_declared_outcome_horizon_path_family_combinations",
+    "p_value_rule": "(1 + count(null_stat >= observed_stat)) / (replicates + 1)"
+  },
+  "minimum_support": {
+    "ordinary_family": 30,
+    "rare_family": 20,
+    "minimum_entities": 15,
+    "rare_family_policy": "report uncertainty and do not promote from a small event count"
+  },
+  "promotion_gates": [
+    "future_leakage_audit_pass",
+    "beats_target_history_and_prevalence_baselines",
+    "exceeds_max_statistic_null_after_declared_search_correction",
+    "positive_lead_time",
+    "stability_across_entities_seeds_and_discovery_windows",
+    "simplicity_limit_pass",
+    "no causal interpretation"
+  ],
+  "current_action": "design_and_profile_only",
+  "locked_test_opened": false,
+  "operational_promotion": false
+}

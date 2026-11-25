@@ -1,0 +1,37 @@
+{
+  "source_id": "IMF.STA:IMTS",
+  "official_dataset_url": "https://data.imf.org/en/datasets/IMF.STA:IMTS",
+  "api_url": "https://api.imf.org/external/sdmx/3.0/data/dataflow/IMF.STA/IMTS/1.0.0/USA+CHN+DEU+JPN+IND+GBR+FRA+ITA+CAN+KOR+BRA+MEX+SAU+TUR+ZAF.XG_FOB_USD.G001.A?c[TIME_PERIOD]=ge:2000-01-01%2Ble:2024-12-31&attributes=all&detail=full&includeHistory=true&limit=5000",
+  "retrieved_at_utc": "2026-08-26T23:41:57.191903+00:00",
+  "status_code": 200,
+  "content_type": "application/vnd.sdmx.data+csv;version=2.0",
+  "bytes": 229335,
+  "sha256": "bf3ea685598a2d8c82375064d895c551e8ef778975deb498d33b632ec28a6c49",
+  "raw_path": "campaigns/research_rounds/20260827_BROWSER_DEEP_RESEARCH/raw/imf_imts_world_export_probe/IMF_IMTS_15_REPORTERS_EXPORTS_WORLD_2000_2024.csv",
+  "raw_immutable": true,
+  "query_scope": {
+    "countries": [
+      "USA",
+      "CHN",
+      "DEU",
+      "JPN",
+      "IND",
+      "GBR",
+      "FRA",
+      "ITA",
+      "CAN",
+      "KOR",
+      "BRA",
+      "MEX",
+      "SAU",
+      "TUR",
+      "ZAF"
+    ],
+    "counterpart_country": "G001",
+    "indicator": "XG_FOB_USD",
+    "frequency": "A",
+    "period": "2000-2024",
+    "limit": 5000
+  },
+  "status": "downloaded_response"
+}

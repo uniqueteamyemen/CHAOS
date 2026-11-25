@@ -1,0 +1,18 @@
+{
+  "contract_id": "CHAOS_RESEARCH_RUNTIME_SANDBOX_V1",
+  "purpose": "Emit auditable research alerts from frozen domain states without production side effects",
+  "input": "frozen DomainState records and frozen pattern registry",
+  "output": "append-only research alert records with evidence and uncertainty",
+  "enabled_pattern": "AMA_HIGH_GROWTH_STATE_V1",
+  "alert_rule": "ama_gdp_growth_pct[t] > 4.0",
+  "alert_semantics": "current-state observation only; not an outcome forecast by itself",
+  "future_outcome_in_alert": false,
+  "retraining_in_runtime": false,
+  "threshold_update_in_runtime": false,
+  "external_send": false,
+  "market_intelligence_engine_modified": false,
+  "source_conflicts_preserved": true,
+  "required_alert_fields": ["alert_id","pattern_id","domain","entity_id","entity_name","timestamp","native_frequency","state_label","observed_values","uncertainty","evidence_refs","runtime_status"],
+  "runtime_statuses": ["research_only","candidate_review","suppressed","expired"],
+  "promotion_rule": "No promotion without independent replication, OOS stability, explicit review, and a separate compatibility decision."
+}

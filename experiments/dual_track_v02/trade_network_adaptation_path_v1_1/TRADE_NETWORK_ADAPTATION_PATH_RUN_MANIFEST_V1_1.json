@@ -1,0 +1,44 @@
+{
+  "run_id": "TRADE_NETWORK_ADAPTATION_PATH_V1_1_FULL_RUN",
+  "created_at_utc": "2026-08-27T06:40:11.182595+00:00",
+  "contract_ref": "experimental_contracts/dual_track_v02/TRADE_NETWORK_ADAPTATION_PATH_CONTRACT_V1_1.json",
+  "contract_sha256": "b4178c38a20179c1a6122a49770cc3b3e20815dca59f1acfaa49b9d34249f05e",
+  "protocol_ref": "campaigns/dual_track_v02/CHAOS_DUAL_TRACK_PROTOCOL_V0_2.json",
+  "protocol_sha256": "f2eb1e89f1539362b8166603b24271105251eb401455c1a0868f5bd183a2e053",
+  "code_ref": "tooling/run_trade_network_adaptation_path_v1_1.py",
+  "code_sha256": "057d52c2d9f3ad9237f55c9d19a299cd3b4952c250b4e6859b9b28ef18b183c6",
+  "seed": 271108,
+  "null_replicates": {
+    "block": 2000,
+    "rank": 2000,
+    "time": 2000
+  },
+  "input_refs": [
+    "experiments/multi_domain_native_edges_v2/imf_partner_dependence_v2/IMF_IMTS_PARTNER_SELECTION_REGISTER_V2.csv",
+    "experiments/multi_domain_native_adapters_v1/imf_imts_v2/IMF_IMTS_XG_OBSERVATION_SHARDS_MANIFEST_V2.json"
+  ],
+  "input_sha256": {
+    "experiments/multi_domain_native_edges_v2/imf_partner_dependence_v2/IMF_IMTS_PARTNER_SELECTION_REGISTER_V2.csv": "936dcf922c3470e0966efe2f1bfc56cc10c7fb42396bf09562f7a92808ab9a1e",
+    "experiments/multi_domain_native_adapters_v1/imf_imts_v2/IMF_IMTS_XG_OBSERVATION_SHARDS_MANIFEST_V2.json": "4d382629b544de714a53b050d2aae33826dfe841cbf1700684e355124854fc95"
+  },
+  "output_refs": [
+    "experiments/dual_track_v02/trade_network_adaptation_path_v1_1/TRADE_NETWORK_ADAPTATION_EVENTS_V1.csv",
+    "experiments/dual_track_v02/trade_network_adaptation_path_v1_1/TRADE_NETWORK_ADAPTATION_NULL_SUMMARIES_V1.json",
+    "experiments/dual_track_v02/trade_network_adaptation_path_v1_1/TRADE_NETWORK_ADAPTATION_PATH_RUN_MANIFEST_V1.json",
+    "experiments/dual_track_v02/trade_network_adaptation_path_v1_1/TRADE_NETWORK_ADAPTATION_PATH_STDOUT.json",
+    "experiments/dual_track_v02/trade_network_adaptation_path_v1_1/TRADE_NETWORK_ADAPTATION_PATH_SUMMARY_V1.json",
+    "experiments/dual_track_v02/trade_network_adaptation_path_v1_1/TRADE_NETWORK_ADAPTATION_PATH_TRANSITION_EVIDENCE_V1_1.jsonl",
+    "experiments/dual_track_v02/trade_network_adaptation_path_v1_1/TRADE_NETWORK_ADAPTATION_PATH_V1_1_REPORT_AR.md",
+    "experiments/dual_track_v02/trade_network_adaptation_path_v1_1/TRADE_NETWORK_ADAPTATION_ROLLING_METRICS_V1.csv",
+    "experiments/dual_track_v02/trade_network_adaptation_path_v1_1/TRADE_NETWORK_ADAPTATION_STATE_PANEL_V1.csv"
+  ],
+  "status": "rejected",
+  "research_only": true,
+  "causal_validation_status": "not_run",
+  "runtime_eligible": false,
+  "causal_claim": false,
+  "raw_modified": false,
+  "notes": [
+    "Event-path V1.1 used 170 events and 3375 states. Candidate was worse than all fit-only baselines on locked final block; no promotion."
+  ]
+}

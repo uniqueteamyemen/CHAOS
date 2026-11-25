@@ -1,0 +1,14 @@
+{
+  "agent_id":"EVIDENCE_COMPOSITION_AGENT_V1",
+  "status":"supervisor_gate_active_no_new_composite_pattern",
+  "gate":"campaigns/CAMPAIGN_SHARED_GATE_V1/SUPERVISOR_GATE_DECISION_V1.json",
+  "admitted_supported_predictive_records":2,
+  "quarantined_records_before_current_round":20,
+  "positive_composer_status":"supported_predictive only",
+  "compiled_runtime_eligible_patterns":0,
+  "provisional_research_candidates":1,
+  "current_composite_paths":["P_A_ECONOMIC_BASELINE"],
+  "rejected_or_not_testable_paths_not_composed":true,
+  "causal_claims_permitted":false,
+  "supervisor_only_shared_write":true
+}

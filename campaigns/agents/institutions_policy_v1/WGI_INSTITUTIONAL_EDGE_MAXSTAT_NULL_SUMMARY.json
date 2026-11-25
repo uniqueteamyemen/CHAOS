@@ -1,0 +1,26 @@
+{
+  "contract_ref": "experimental_contracts/WGI_INSTITUTIONAL_EDGE_CONTRACT_V1.json",
+  "source_raw": "catalog_first/readiness_gate/independent_sources/worldbank_wgi_2025/raw/WGI_CSV.zip",
+  "source_sha256": "6896f95b02163f3b2d8424bd7087380da04a7af269c530e9dbd2202ca9f69e37",
+  "dimensions": [
+    "GOV_WGI_VA.EST",
+    "GOV_WGI_PS.EST",
+    "GOV_WGI_GE.EST",
+    "GOV_WGI_RQ.EST",
+    "GOV_WGI_RL.EST",
+    "GOV_WGI_CC.EST"
+  ],
+  "metrics_rows": 60,
+  "prepared_edge_combinations": 20,
+  "replicates": 2000,
+  "seed": 20260827,
+  "observed_max_balanced_accuracy": 1.0,
+  "maxstat_p_value": 1.0,
+  "raw_data_modified": false,
+  "imputation": false,
+  "policy_shock_inferred": false,
+  "leader_specific_deviation_inferred": false,
+  "native_frequency": "annual_source_defined_years",
+  "causal_claims_permitted": false,
+  "status": "research_evidence_only"
+}

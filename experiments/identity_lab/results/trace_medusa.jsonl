@@ -1,0 +1,10 @@
+{"step": 1, "action": "create", "h0": "H0", "code": 200, "provenance": "observed", "note": "session + H0", "state": null, "signal": null}
+{"step": 2, "action": "inject_h0", "h0": "H0", "code": 200, "provenance": "observed", "note": "H0 into order metadata", "state": null, "signal": null}
+{"step": 3, "action": "fulfil_attempt", "h0": "H0", "code": 400, "provenance": "observed", "note": "PAYLOCK_RESOLVE_REJECTED - missing required signals", "state": null, "signal": null}
+{"step": 4, "action": "ack", "h0": "H0", "code": 200, "provenance": "observed", "note": "provider_ack via /v1/signal", "state": null, "signal": "provider_ack"}
+{"step": 5, "action": "unlock", "h0": "H0", "code": 200, "provenance": "observed", "note": "UNLOCKED", "state": null, "signal": null}
+{"step": 6, "action": "resolve", "h0": "H0", "code": 200, "provenance": "observed", "note": "EXECUTION_PROVEN", "state": null, "signal": null}
+{"step": 7, "action": "fulfil_attempt", "h0": "H0", "code": 200, "provenance": "observed", "note": "marked as delivered after proof", "state": null, "signal": null}
+{"step": 8, "action": "resolve", "h0": "H0", "code": 404, "provenance": "stated", "note": "PAYLOCK_RESOLVE_REJECTED - session not found", "state": null, "signal": null}
+{"step": 9, "action": "fulfil_attempt", "h0": "H0", "code": 400, "provenance": "stated", "note": "PAYLOCK_MISSING_H0 - blocked", "state": null, "signal": null}
+{"step": 10, "action": "fulfil_attempt", "h0": "H0", "code": 500, "provenance": "stated", "note": "PAYLOCK_NOT_CONFIGURED - runtime refusal", "state": null, "signal": null}
