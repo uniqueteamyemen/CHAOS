@@ -1,12 +1,13 @@
 from __future__ import annotations
 
 import unittest
+from unittest.mock import patch
 import numpy as np
 
 from p1_4_validation.injection_runner import (
     NotEligibleError, break_is_unmonitored, build_injected_case,
     calibrate_threshold, deterministic_seed, evaluate_online_hits,
-    fit_ar_candidate, generate_ar_null_trace, injection_grid,
+    fit_ar_candidate, focus_reset_rearm, generate_ar_null_trace, injection_grid,
     match_r_fpop_boundary, select_ar_model, wilson_upper,
 )
 from p2_b_benchmark.p2c_engine import (
@@ -99,6 +100,41 @@ class P14InjectionRunnerTests(unittest.TestCase):
         self.assertEqual(row["matched_breakpoint_index"], 1)
         self.assertEqual(row["false_breakpoint_count"], 2)
         self.assertAlmostEqual(row["boundary_precision"], 1/3)
+
+    def test_focus_reset_rearm_restarts_on_a_fresh_40_observation_window(self):
+        values = np.arange(150, dtype=float)
+        calls = []
+
+        def fake_focus_detector(segment, *, quiet_points, threshold):
+            calls.append(np.asarray(segment, dtype=float).copy())
+            self.assertEqual(quiet_points, 40)
+            self.assertEqual(threshold, 7.0)
+            if len(calls) == 1:
+                return {"status": "OK", "hits": [{
+                    "detection_index": 50, "estimated_change_index": 47,
+                    "sign": 1, "score": 8.0,
+                }]}
+            if len(calls) == 2:
+                return {"status": "OK", "hits": [{
+                    "detection_index": 45, "estimated_change_index": 42,
+                    "sign": -1, "score": 9.0,
+                }]}
+            self.fail("unexpected third detector invocation")
+
+        with patch("p2_b_benchmark.p2c_engine.focus_detector", side_effect=fake_focus_detector):
+            result = focus_reset_rearm(values, threshold=7.0, quiet_points=40)
+
+        self.assertEqual([row["detection_index"] for row in result["hits"]], [50, 136])
+        self.assertEqual([row["estimated_change_index"] for row in result["hits"]], [47, 133])
+        self.assertEqual(result["rearm_intervals"], [
+            {"start_inclusive": 51, "end_exclusive": 91},
+            {"start_inclusive": 137, "end_exclusive": 150},
+        ])
+        self.assertEqual(len(calls), 2)
+        # The next detector invocation receives only the suffix after the
+        # first hit; its first 40 observations are the new calibration window.
+        self.assertTrue(np.array_equal(calls[1], values[91:]))
+        self.assertTrue(np.array_equal(calls[1][:40], values[91:131]))
 
     def test_rearm_window_is_a_missed_exposure_not_a_removed_case(self):
         intervals = [{"start_inclusive": 101, "end_exclusive": 141}]
