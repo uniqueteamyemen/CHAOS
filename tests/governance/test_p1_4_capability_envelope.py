@@ -31,6 +31,12 @@ class CapabilityEnvelopeTests(unittest.TestCase):
         self.assertEqual((c1["original_count_claimed"], c1["verified_count"]), (147, 147))
         self.assertEqual(c1["criterion_breakdown"]["g1_fail_total"], 147)
         self.assertEqual(c1["discrepancy_severity"], "material")
+        self.assertEqual(c1["pilot_failure_class_counts"], {
+            "ADF_PASS_KPSS_FAIL": 12,
+            "ADF_FAIL_KPSS_FAIL": 6,
+            "ADF_FAIL_KPSS_PASS": 2,
+        })
+        self.assertTrue(c1["pilot_stratification_summary"]["minimum_quotas_satisfied"])
         self.assertEqual((c2["original_count_claimed"], c2["verified_count"]), (50, 50))
         self.assertEqual(m["pilot_scope"]["series_count"], 40)
         self.assertEqual(m["pilot_scope"]["run_cases"], 760)
