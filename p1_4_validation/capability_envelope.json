@@ -97,7 +97,8 @@
       "input_contract": [
         "finite_numeric_1d_series",
         "first_40_observations_reserved_for_calibration",
-        "point_in_time_prefix_only"
+        "point_in_time_prefix_only",
+        "minimum_150_observations_for_focus_pilot"
       ],
       "output_contract": [
         "change_event",
@@ -107,7 +108,7 @@
         "reset_state",
         "rearm_interval"
       ],
-      "minimum_observations": 41,
+      "minimum_observations": 150,
       "minimum_prebreak_observations": 40,
       "requires_online": true,
       "requires_reset": true,
@@ -125,7 +126,8 @@
         "high_autocorrelation_order_above_selected_model",
         "variance_jump_not_represented_in_null",
         "heavy_tails_outside_fitted_ar_null",
-        "poorly_identified_ar_parameters"
+        "poorly_identified_ar_parameters",
+        "series_length_below_150_is_not_eligible_not_a_low_recall_result"
       ],
       "implementation_status": "P1_4_RESET_REARM_ADAPTER_IMPLEMENTED_CONTRACT_TESTED",
       "runtime_supported": true,
@@ -149,6 +151,12 @@
           "status": "RESET_REARM_AND_P0_CONTRACT_TESTS_PASS",
           "validated_role": false,
           "note": "Verified adapter restart semantics, exclusive re-calibration windows, per-series P0 contract and no silent removal of changes during re-arm. Does not constitute cohort Pilot validation. Evidence commit: 6875722cc9b19e0b1cd3916917398c779bfa3fc2."
+        },
+        {
+          "evidence_id": "P1.4-ELIGIBILITY-GUARD",
+          "status": "MINIMUM_SERIES_LENGTH_150_FROZEN_BEFORE_PILOT",
+          "validated_role": false,
+          "note": "The FOCuS pilot is NOT_ELIGIBLE below n=150 (40 calibration + at least 110 detection observations). This is an eligibility gate, not a detector-performance result."
         }
       ]
     },
