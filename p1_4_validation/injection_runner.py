@@ -230,7 +230,9 @@ def focus_reset_rearm(
             intervals.append({"start_inclusive": next_start, "end_exclusive": next_end})
         if next_end >= x.size:
             break
-        cursor = next_start
+        # Skip the complete 40-observation re-calibration interval; monitoring
+        # resumes only at its exclusive end, never at the first quiet point.
+        cursor = next_end
     return {"status": "OK", "hits": hits, "event_count": len(hits),
             "rearm_intervals": intervals}
 
