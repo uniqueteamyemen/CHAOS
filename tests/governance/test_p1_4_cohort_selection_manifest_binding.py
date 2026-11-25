@@ -63,6 +63,10 @@ class CohortSelectionManifestBindingTests(unittest.TestCase):
                   "pilot_series":[{"series_id":x} for x in c2_pilot],
                   "sample_source_counts":{"pink_sheet":7,"gem":43},
                   "pilot_source_counts":{"pink_sheet":3,"gem":17}},
+            "C2_STRATIFICATION_REPORT":{
+                "dimensions":["source","domain","length_band","ar1_abs_band","missingness_pattern"],
+                "pilot_is_subset_of_sample":True,
+            },
             "pilot_scope":{"series_ids":pilot,"run_cases":760},
         }
         _assert_manifest_selection(selection,manifest)
