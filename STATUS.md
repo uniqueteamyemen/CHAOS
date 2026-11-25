@@ -103,3 +103,15 @@
 
 
 **فرع العمل الحالي:** `feat/p1-4-capability-envelope-pilot-v1-20261125` (مبني من `main-phase2@86cb8e5`).
+
+
+## P2-C Evidence-First Execution — 2026-11-25
+فرع التنفيذ: feat/p2c-evidence-first-execution-v1
+مرجع الالتقاط: f6a69cfde01482adf3045e8b54886dbe8f68eb52.
+
+- الإصلاح معزول بفرع مستقل دون الكتابة فوق الفرع السابق.
+- protocol v1.1.9: 40 مرشحاً، لكن Pilot التنفيذي <=15 C1 /285 حالة.
+- Threshold 90 و200 وRearm overlap وPilot تبقى NOT_RUN حتى Artifact أصلي.
+- لا تعديل على P2-B أو A_FAST/A_CONSENSUS أو experiments/** أو structural_engine/isolated_break_detector_v1/**.
+- الحسابات والتنفيذ في CHAOS P1.4 Evidence-First P2-C Pipeline فقط.
+- كل Artifact يربط run_id وsource commit وSHA-256 وreplay command.

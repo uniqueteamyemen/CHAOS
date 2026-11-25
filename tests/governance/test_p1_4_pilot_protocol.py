@@ -42,7 +42,7 @@ class P14PilotProtocolTests(unittest.TestCase):
 
     def test_protocol_matches_schema_and_is_frozen(self):
         validate_required(self.protocol, self.schema)
-        self.assertEqual(self.protocol["protocol_version"], "1.1.8")
+        self.assertEqual(self.protocol["protocol_version"], "1.1.9")
         self.assertEqual(self.protocol["status"], "FROZEN_BEFORE_EXECUTION")
         self.assertTrue(self.protocol["must_not_be_changed_after_pilot_start"])
 
@@ -50,8 +50,11 @@ class P14PilotProtocolTests(unittest.TestCase):
         m = json.loads((ROOT / "p1_4_validation" / "cohort_manifest.json").read_text(encoding="utf-8"))
         pilot = m["pilot_scope"]
         self.assertEqual((pilot["series_count"], pilot["run_cases"]), (40, 760))
-        self.assertEqual(self.protocol["cohort_design"]["pilot_scope"]["verified_series_count"], 40)
-        self.assertEqual(self.protocol["cohort_design"]["pilot_scope"]["total_run_cases"], 760)
+        scope = self.protocol["cohort_design"]["pilot_scope"]
+        self.assertEqual(scope["candidate_universe_series"], 40)
+        self.assertEqual(scope["planned_execution_series"], 15)
+        self.assertEqual(scope["planned_execution_cases"], 285)
+        self.assertEqual(scope["status"], "PENDING_ARTIFACT_BACKED_CALIBRATION")
 
     def test_null_p0_and_arl0_are_separate(self):
         n = self.protocol["ar_null_and_calibration"]
@@ -114,9 +117,11 @@ class P14PilotProtocolTests(unittest.TestCase):
         self.assertIn("exclude from recall", guard["recall_accounting"])
         policy = d["guard_window_policy"]
         self.assertEqual(policy["min_observations_between_last_rearm_and_injection"], 20)
-        self.assertEqual(self.protocol["injection_design"]["rearm_overlap_guard"]["measured_calibrated_pilot_overlap"]["original_five_stratum_106"]["rate"], 0)
-        self.assertEqual(self.protocol["injection_design"]["rearm_overlap_guard"]["measured_calibrated_pilot_overlap"]["extended_eleven_stratum_106"]["rate"], 0)
-        self.assertEqual(self.protocol["injection_design"]["rearm_overlap_guard"]["measured_calibrated_pilot_overlap"]["all_fifteen_calibrated_c1"]["rate"], 0)
+        empirical = guard["empirical_overlap_measurement"]
+        self.assertEqual(empirical["status"], "NOT_RUN")
+        self.assertIsNone(empirical["run_id"])
+        self.assertIsNone(empirical["artifact_sha256"])
+        self.assertIsNone(empirical["replay_command"])
 
     def test_focus_minimum_n150_is_explicit(self):
         eligibility = self.protocol["injection_design"]["eligibility"]
@@ -157,7 +162,7 @@ class P14PilotProtocolTests(unittest.TestCase):
                          ("PILOT_PARTIAL", 15, 19, 285))
 
     def test_stratum_32_threshold_200_extension_is_once_only_and_pre_registered(self):
-        extension = self.protocol["cohort_design"]["C1"]["grid_extension_stratum_32"]
+        extension = self.protocol["execution"]["pre_registered_grid_extension_stratum_32"]
         self.assertTrue(extension["pre_registered"])
         self.assertEqual(extension["test_threshold"], 200)
         self.assertFalse(extension["allowed_to_repeat"])
@@ -177,29 +182,28 @@ class P14PilotProtocolTests(unittest.TestCase):
         self.assertIn("Historical-break candidates", names)
         self.assertTrue(track["no_post_hoc_changes"])
 
-    def test_reduced_track_a_scope_is_16_series_304_cases_not_original_40(self):
-        a = self.protocol["execution"]["diagnostic_tracks"]["track_A"]
-        b = self.protocol["execution"]["diagnostic_tracks"]["track_B"]
-        self.assertEqual(a["status"], "NOT_STARTED_CALIBRATION_ARTIFACT_REQUIRED")
-        self.assertEqual(a["candidate_strata"], {"ADF_PASS_KPSS_FAIL": 12, "ADF_FAIL_KPSS_FAIL": 6, "ADF_FAIL_KPSS_PASS": 2})
-        self.assertEqual(b["status"], "NOT_STARTED")
+    def test_partial_pilot_scope_is_15_series_285_cases_pending_calibration(self):
         scope = self.protocol["execution"]["pilot_scope_change"]
         self.assertEqual(scope["actual"], "NOT_STARTED")
-        self.assertEqual(scope["track_b"], "4_series_0_injection_cases")
+        self.assertEqual((scope["planned_series"], scope["planned_cases"]), (15, 285))
+        self.assertEqual(scope["planned_cases_per_series"], 19)
+        self.assertEqual(self.protocol["execution"]["diagnostic_tracks"]["track_B"]["status"], "NOT_STARTED")
 
-    def test_threshold_200_was_applied_to_ten_series_once_only(self):
+    def test_threshold_200_targets_are_artifact_selected_and_unrun(self):
         extension = self.protocol["execution"]["pre_registered_grid_extension"]
         self.assertEqual(extension["execution_status"], "NOT_RUN")
+        self.assertEqual(extension["stratum_106"]["expected_failure_count"], 7)
+        self.assertEqual(extension["stratum_106"]["threshold_200_test"]["status"], "NOT_RUN")
+        self.assertIsNone(extension["stratum_106"]["threshold_200_test"]["artifact_sha256"])
         self.assertEqual(extension["stratum_32"]["threshold_200_test"]["status"], "NOT_RUN")
-        self.assertIsNone(extension["stratum_32"]["threshold_200_test"]["series_count"])
-        self.assertEqual(extension["threshold_500_tested"], False)
-        self.assertFalse(extension["allowed_to_repeat"])
         self.assertFalse(extension["threshold_500_tested"])
+        self.assertFalse(extension["allowed_to_repeat"])
 
-    def test_pilot_scope_change_is_explicit(self):
+    def test_execution_scope_does_not_mislabel_candidate_universe(self):
         scope = self.protocol["execution"]["pilot_scope_change"]
-        self.assertEqual(scope["original"], "40_series_760_cases")
-        self.assertEqual((scope["planned_series"], scope["planned_cases"]), (40, 760))
+        self.assertEqual(scope["original"], "40_series_760_candidate_universe")
+        self.assertEqual((scope["source_universe_series"], scope["planned_series"], scope["planned_cases"]), (40, 15, 285))
+        self.assertEqual(scope["actual"], "NOT_STARTED")
 
     def test_c3_is_pending_and_never_silently_substituted(self):
         c3 = self.protocol["cohort_design"]["C3"]

@@ -1,6 +1,6 @@
 {
   "protocol_id": "CHAOS_P1_4_CAPABILITY_PILOT_V1",
-  "protocol_version": "1.1.8",
+  "protocol_version": "1.1.9",
   "status": "FROZEN_BEFORE_EXECUTION",
   "must_not_be_changed_after_pilot_start": true,
   "purpose": "Evaluate declared detector and estimator roles on verified economic-series cohorts with controlled permanent mean-shift injections and independent synthetic null traces. This is not a forecast-accuracy test and does not authorize production use.",
@@ -19,7 +19,21 @@
       "pink_sheet": 51,
       "gem": 458
     },
-    "no_raw_values_in_persisted_manifests": true
+    "no_raw_values_in_persisted_manifests": true,
+    "integrity_policy": {
+      "revoked_unverified_claims": true,
+      "forbidden_empirical_sources": [
+        "deleted hand-authored calibration_results_all_strata.json",
+        "deleted hand-authored track_b_diagnostics.json"
+      ],
+      "required_evidence": [
+        "github_actions_run_id",
+        "source_commit_sha",
+        "original_artifact_sha256",
+        "replay_command"
+      ],
+      "unrun_values_must_remain": "NOT_RUN"
+    }
   },
   "cohort_design": {
     "C1": {
@@ -136,17 +150,18 @@
       "no_substitute_cohort": true
     },
     "pilot_scope": {
-      "verified_series_count": 40,
-      "run_cases_per_series": 19,
-      "original_cases_per_series": 1,
-      "injected_cases_per_series": 18,
-      "total_run_cases": 760,
-      "composition": {
+      "candidate_universe_series": 40,
+      "candidate_universe_composition": {
         "C1": 20,
         "C2": 20,
         "C3": 0
       },
-      "status": "SELECTED_NOT_EXECUTED"
+      "planned_execution_series": 15,
+      "run_cases_per_series": 19,
+      "planned_execution_cases": 285,
+      "execution_cohort": "C1 only until each selected series has artifact-backed per-position calibration; C2 is not inferred to be calibrated from C1.",
+      "selection_rule": "Select at most 15 from the exact verified C1 20-series pilot IDs, using only series with artifact-backed FOCuS calibration for all three injection positions and n>=150. Preserve each G1 failure class. If fewer than 15 qualify, execute only the actual eligible subset without replacements.",
+      "status": "PENDING_ARTIFACT_BACKED_CALIBRATION"
     },
     "rule": "Run only the 40 exact series IDs frozen in the cohort manifest. No silent replacements. If a selected series becomes ineligible, record the reason and maintain the planned coverage denominator."
   },
@@ -586,7 +601,7 @@
     "required_artifact_fields": "series_id,cohort_id,series_candidate_sha256,injection_magnitude_sigma,injection_position_fraction,injection_direction,true_break_index,tool_outputs,original_alarm_burden,synthetic_null_fpr,ar_model_order,ar_coefficients,residual_sigma,thresholds,penalty,seed_ledger,coverage_denominator,calibration_overlap_with_injection,injection_case_status,invalid_injection_reason,c1_failure_class,length_band,pre_injection_ar1_abs_band,missingness_pattern,pilot_run_manifest.json,replay_command,artifact_sha256,calibration_status,calibration_threshold,calibration_p0,calibration_p0_wilson_upper,track_id,track_b_diagnostic_features,focus_eligibility_status,focus_eligibility_reason,calibration_status,calibration_threshold,calibration_p0,calibration_p0_wilson_upper,track_id,track_b_diagnostic_features,garch_omega,garch_alpha,garch_beta,garch_persistence,focus_null_p50,focus_null_p90,focus_null_p95,focus_null_p99,focus_null_p999,focus_null_max,calibration_status,calibration_threshold,calibration_p0,calibration_p0_wilson_upper,track_id,garch_omega,garch_alpha,garch_beta,garch_persistence,focus_null_p50,focus_null_p90,focus_null_p95,focus_null_p99,focus_null_p999,focus_null_max,calibration_overlap_with_injection",
     "artifact_integrity": "SHA-256 each per-series artifact and posterior PMF artifact before upload. Aggregate only the exact frozen series IDs and verify all files/hashes.",
     "replay": "Every per-series output includes deterministic replay command and exact source, model, tool version, protocol SHA and seed identities.",
-    "pilot_start_gate": "PILOT NOT STARTED. Do not dispatch run_pilot.py until artifact-backed threshold-90 calibration for all 20 C1 series, the one-time threshold-200 tests on the empirically identified failures in strata 106 and 32, Track B diagnostics, runtime/overlap gates, exact scope accounting, and pilot_run_manifest/replay/SHA outputs are complete.",
+    "pilot_start_gate": "Pilot remains blocked until this pipeline produces threshold-90 calibration, one-time threshold-200 extension, Track B, 1000-trace rearm overlap, min_n=150 runtime, immutable scope/seed/hash manifest and contract results. Pilot <=15 artifact-calibrated C1 series /285 cases; fewer eligible means smaller run.",
     "seed_rule": "Seed identity excludes tool/scale variant so paired arms receive identical stochastic inputs; separate streams are keyed by protocol, series, position, AR order, phase and replicate.",
     "implementation_time_budget": {
       "maximum_hours": 24,
@@ -596,8 +611,8 @@
         "series_count": 15,
         "cases_per_series": 19,
         "total_cases": 285,
-        "selection": "Deterministic subset only from series with artifact-backed calibration eligibility, preserving G1 stratum labels. If 15 eligible series do not exist, report the smaller actual scope; do not insert non-calibratable series or silently replace IDs.",
-        "interpretation": "Engineering/coverage evidence only; no full-cohort PASS/FAIL or production promotion."
+        "selection": "At most 15 artifact-calibrated C1 series with min_n=150 and all required position thresholds. If fewer qualify or budget expires, preserve actual completed subset.",
+        "interpretation": "Engineering/coverage evidence only; C2 generalization and C3 external validation remain pending."
       }
     },
     "diagnostic_tracks": {
@@ -621,16 +636,17 @@
         "status": "NOT_STARTED",
         "series_count": null,
         "injected_cases": 0,
-        "target_selection": "All C1 Pilot series classified NOT_CALIBRATABLE after the permitted threshold-90 and one-time threshold-200 steps. Exact IDs must be sourced from calibration_results_all_strata.json generated by a GitHub Actions run.",
+        "target_selection": "All C1 pilot series still NOT_CALIBRATABLE after real threshold-90 and permitted threshold-200; IDs only from those artifacts.",
         "diagnostic_artifact": "p1_4_validation/track_b_diagnostics.json",
         "measurements": [
-          "AR persistence/order and AR(1) coefficient on the pre-break prefix",
-          "Gaussian GARCH(1,1) MLE on pre-break AR residuals; convergence and alpha+beta; NOT_ESTIMABLE if fit fails",
-          "ARCH-LM diagnostic on pre-break AR residuals",
-          "lag-12 raw-series and AR-residual autocorrelation",
-          "normalized pre-break trend effect",
-          "unlabelled FOCuS candidate alerts on the unmodified prefix; not adjudicated historical breaks",
-          "P50/P90/P95/P99/P99.9/max and threshold exceedance counts from the 1000 deterministic AR(p) null max-statistics"
+          "AR persistence",
+          "GARCH(1,1)",
+          "ARCH-LM",
+          "Lag-12 autocorrelation",
+          "Normalized trend",
+          "Historical-break candidates",
+          "FOCuS null-statistic distribution",
+          "Calibrated comparison"
         ],
         "no_injections": true,
         "no_parameter_changes": true,
@@ -653,7 +669,8 @@
         "replay_command": null
       },
       "stratum_106": {
-        "target": "All C1 Pilot series in ADF_PASS_KPSS_FAIL that fail the real threshold-90 calibration",
+        "expected_failure_count": 7,
+        "target": "Every selected C1 ADF_PASS_KPSS_FAIL series classified NOT_CALIBRATABLE at anchor position 0.30 by the real threshold-90 artifact. Never truncate to force a count of seven.",
         "threshold_200_test": {
           "status": "NOT_RUN",
           "planned_once": true,
@@ -664,11 +681,11 @@
         }
       },
       "stratum_32": {
-        "target": "All C1 Pilot series in ADF_FAIL_KPSS_FAIL that fail the real threshold-90 calibration",
+        "target": "Only the pre-registered DJI, ECU and HKG C1 series actually NOT_CALIBRATABLE at threshold <=90 at position 0.30.",
         "threshold_200_test": {
           "status": "NOT_RUN",
           "planned_once": true,
-          "series_count": null,
+          "series_count": 3,
           "artifact_sha256": null,
           "run_id": null,
           "replay_command": null
@@ -677,7 +694,7 @@
       "decision_rule": {
         "if_calibrates": "GRID_LIMITED_CALIBRATED_AT_200",
         "if_not": "STRUCTURAL_NOT_CALIBRATABLE_AT_200",
-        "stop": "No threshold 500, intermediate thresholds, AR-order replacement, residual-bootstrap change or P0 relaxation."
+        "stop": "No threshold 500, intermediate thresholds, AR-order replacement, residual-bootstrap change, target relaxation or post-holdout retuning."
       }
     },
     "pre_registered_grid_extension_stratum_32": {
@@ -689,69 +706,75 @@
         "gem:CPTOTSAXN:ECU",
         "gem:CPTOTSAXN:HKG"
       ],
-      "eligibility": "Exactly the three original ADF_FAIL_KPSS_FAIL series marked NOT_CALIBRATABLE_AT_90 in the frozen C1 20-series pilot selection.",
-      "method": "Use the same fitted AR(p), same deterministic seed identities and same 1000 development null max-statistic values generated under protocol 1.1.3 at position 0.30. Evaluate threshold 200 exactly once; do not generate a different null model or select a new model order.",
+      "eligibility": "Run only if each listed ID is in frozen C1 pilot and its real threshold-90 status is NOT_CALIBRATABLE at position 0.30.",
+      "method": "Reuse the exact development null max-statistics from threshold-90 artifact. Test threshold 200 once; no new AR fit or null path.",
       "decision_rule": {
-        "if_calibrates": "GRID_LIMITED_CALIBRATED_AT_200; include in Track A with threshold 200",
-        "if_not": "STRUCTURAL_NOT_CALIBRATABLE_AT_200; include in Track B diagnostic only"
+        "if_calibrates": "GRID_LIMITED_CALIBRATED_AT_200",
+        "if_not": "STRUCTURAL_NOT_CALIBRATABLE_AT_200"
       },
       "allowed_to_repeat": false,
       "forbidden": [
         "threshold 500",
-        "testing intermediate thresholds",
-        "switching AR order after seeing results",
-        "changing residual bootstrap",
-        "changing P0 target",
-        "dropping a failed series"
+        "intermediate thresholds",
+        "AR-order switch after results",
+        "residual-bootstrap change",
+        "P0 change",
+        "drop or replace failed series"
       ]
     },
     "track_b_protocol": {
       "status": "PRE_REGISTERED_DIAGNOSTIC_ONLY",
       "no_injections": true,
-      "targets": "Every selected C1 series still NOT_CALIBRATABLE after the permitted threshold-200 tests; always include gem:CPTOTSAXN:SUR as the specific structural target. Also retain a separate comparison set of the seven original stratum-106 series that failed the threshold grid <=90.",
+      "targets": "All frozen C1 pilot series still NOT_CALIBRATABLE after actual threshold-90 and permitted threshold-200. Include SUR only if it is in frozen C1 selection; otherwise record NOT_IN_PILOT.",
       "measurements": [
         {
           "name": "AR persistence",
-          "definition": "Selected AR(p) order and AR(1) coefficient from the same pre-break prefix used for calibration."
+          "definition": "Selected AR(p) and AR(1) coefficient on 0.30 pre-break prefix."
         },
         {
           "name": "GARCH(1,1)",
-          "definition": "Fit a Gaussian GARCH(1,1) to the pre-break AR residuals only; record omega, alpha, beta, alpha+beta, convergence and standard errors. If the estimator is unavailable or fails convergence, report NOT_ESTIMABLE; no proxy is relabeled GARCH."
+          "definition": "Gaussian GARCH(1,1) MLE on the same pre-break AR residuals; record convergence and parameters; NOT_ESTIMABLE on failure."
         },
         {
-          "name": "Seasonality",
+          "name": "ARCH-LM",
+          "definition": "ARCH-LM statistic and p-value on pre-break AR residuals."
+        },
+        {
+          "name": "Lag-12 autocorrelation",
           "definition": "Raw-series and pre-break AR-residual autocorrelation at lag 12."
         },
         {
-          "name": "Trend",
-          "definition": "OLS linear slope over the pre-break prefix, normalized as slope*n/std(series)."
+          "name": "Normalized trend",
+          "definition": "OLS slope on the pre-break prefix, multiplied by prefix length and divided by sample standard deviation."
         },
         {
           "name": "Historical-break candidates",
-          "definition": "Count FOCuS first-hit/rearm candidate events on the original unmodified pre-break prefix at thresholds 90 and 200. These are unlabelled candidates, not verified historical break truth; C3 external labels remain pending."
+          "definition": "Unlabelled FOCuS events on original unmodified series at 90 and 200; not adjudicated truth."
         },
         {
           "name": "FOCuS null-statistic distribution",
-          "definition": "For the same 1000 deterministic AR(p) development null traces, persist P50, P90, P95, P99, P99.9, maximum, and exceedance counts at thresholds 90 and 200. Do not select any new threshold from Track B."
+          "definition": "P50, P90, P95, P99, P99.9, max and exceedance counts from exact 1000 development null scores."
         },
         {
           "name": "Calibrated comparison",
-          "definition": "Compare the above measures against the 11 calibrated stratum-106 series and all other calibrated C1 Pilot series using descriptive medians, ranges and individual rows; no causal conclusion from group summaries."
+          "definition": "Descriptive comparison only against actual calibrated C1 rows from same run; never reuse old hand-authored counts."
         }
       ],
       "no_post_hoc_changes": true,
       "required_artifact": "p1_4_validation/track_b_diagnostics.json",
-      "conclusion_rule": "Track B can describe associations and model-limit indicators only. It cannot change the null model, AR order, P0 target, threshold ceiling or cohort membership."
+      "conclusion_rule": "Track B descriptive only; cannot change null model, AR order, P0 target, threshold ceiling, cohort or Pilot eligibility."
     },
     "pilot_scope_change": {
-      "original": "40_series_760_cases",
+      "original": "40_series_760_candidate_universe",
       "actual": "NOT_STARTED",
-      "planned_series": 40,
+      "source_universe_series": 40,
+      "planned_series": 15,
       "planned_cases_per_series": 19,
-      "planned_cases": 760,
-      "reason": "No calibration artifact currently establishes a reduced eligible set. Any reduction must be recalculated from a real, replayable calibration artifact.",
-      "impact": "No Pilot power or eligible Track A count is currently established.",
-      "note": "Do not claim 15/285 or 16/304. The original 40/760 design is a plan, not an executed Pilot. Report per-tool NOT_ELIGIBLE cases explicitly."
+      "planned_cases": 285,
+      "status": "NOT_RUN",
+      "reason": "The 40-series selection remains the candidate universe. The executable partial Pilot is capped at 15 C1 series and 285 cases, selected only after genuine per-series/per-position calibration.",
+      "selection": "Deterministic selection from the frozen C1 20-series IDs; preserve failure-class labels; no replacements; actual count may be below 15.",
+      "track_b": "No injection cases; diagnostic-only series are not Pilot series."
     }
   }
 }

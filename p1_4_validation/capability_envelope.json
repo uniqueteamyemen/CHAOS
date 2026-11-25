@@ -100,7 +100,6 @@
         "point_in_time_prefix_only",
         "minimum_150_observations_for_focus_pilot",
         "40_initial_calibration_observations",
-        "40_initial_calibration_observations",
         "20_post_hit_rearm_calibration_observations",
         "min_n_for_focus_150_runtime_rejection"
       ],

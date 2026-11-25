@@ -29,6 +29,9 @@ class P14InjectionRunnerTests(unittest.TestCase):
         seed = deterministic_seed("1.1.2", "gem:TEST:X", 0.5, 1, "development", 3)
         self.assertEqual(seed, deterministic_seed("1.1.2", "gem:TEST:X", 0.5, 1, "development", 3))
         self.assertNotEqual(seed, deterministic_seed("1.1.2", "gem:TEST:X", 0.5, 1, "holdout", 3))
+        rearm_seed = deterministic_seed("1.1.9", "gem:TEST:X", 0.3, 1, "rearm", 0)
+        self.assertEqual(rearm_seed, deterministic_seed("1.1.9", "gem:TEST:X", 0.3, 1, "rearm", 0))
+        self.assertNotEqual(rearm_seed, deterministic_seed("1.1.9", "gem:TEST:X", 0.3, 1, "development", 0))
 
     def test_ar_fit_and_stability_gate(self):
         x = ar_fixture()
