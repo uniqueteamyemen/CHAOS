@@ -62,6 +62,8 @@ jobs:
           set -euo pipefail
           test "$(git hash-object p1_4_validation/pilot_protocol.json)" = "2ad0db0654bd1d9dd42c87c5cdb531f9b2aa3a2d"
           test "$(git hash-object p1_4_validation/cohort_manifest.json)" = "2a9ca14b501567f06840d047597d3a24398c31f2"
+          test "$(git hash-object p1_4_validation/run_evidence_pipeline.py)" = "9036a939a41ee4d4b43aa5ad4ae22461f8504aa2"
+          test "$(git hash-object p1_4_validation/injection_runner.py)" = "84144451b8fc26556a614dbc3e986987fd4ca236"
           test "$(git hash-object p2_b_benchmark/p2c_engine.py)" = "5efcf408822551e00cb87c24e39502dcf0ed595a"
       - name: Download and SHA-verify frozen C2 source inputs
         env:
