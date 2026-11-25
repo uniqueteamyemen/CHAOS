@@ -42,6 +42,7 @@ class P2CStressSuite(unittest.TestCase):
     def test_01_null_and_symmetric_positive_negative_shifts(self):
         null = fixture(260, 1001)
         self.assertEqual(focus_detector(null)["hits"], [])
+        self.assertEqual(bocpd_detector(null)["hits"], [])
         self.assertEqual(post_quiet_huber_detector(null, scale_mode="mad")["hits"], [])
 
         base = fixture(260, 1002)
@@ -68,6 +69,7 @@ class P2CStressSuite(unittest.TestCase):
         x[105] += 30.0
         robust = post_quiet_huber_detector(x, scale_mode="mad")
         self.assertEqual(robust["hits"], [])
+        self.assertEqual(bocpd_detector(x)["hits"], [])
 
         persistent = fixture(240, 2003)
         sigma = 1.4826 * np.median(np.abs(persistent[:40] - np.median(persistent[:40])))
@@ -84,7 +86,10 @@ class P2CStressSuite(unittest.TestCase):
         result = bocpd_detector(x)
         assert_online_contract(self, result, x.size)
         negative = [hit for hit in result["hits"] if int(hit["index"]) >= 240]
-        self.assertTrue(negative, "BOCPD missed the downward transition from +5σ to +2σ")
+        self.assertTrue(
+            negative,
+            f"BOCPD missed +5σ to +2σ downshift; hits={result['hits']}"
+        )
         self.assertEqual(int(negative[0]["sign"]), -1)
         self.assertGreater(
             float(negative[0]["prior_regime_mean"]),
