@@ -42,7 +42,7 @@ class P14PilotProtocolTests(unittest.TestCase):
 
     def test_protocol_matches_schema_and_is_frozen(self):
         validate_required(self.protocol, self.schema)
-        self.assertEqual(self.protocol["protocol_version"], "1.1.5")
+        self.assertEqual(self.protocol["protocol_version"], "1.1.6")
         self.assertEqual(self.protocol["status"], "FROZEN_BEFORE_EXECUTION")
         self.assertTrue(self.protocol["must_not_be_changed_after_pilot_start"])
 
@@ -155,6 +155,32 @@ class P14PilotProtocolTests(unittest.TestCase):
         self.assertEqual((fallback["status"], fallback["series_count"],
                           fallback["cases_per_series"], fallback["total_cases"]),
                          ("PILOT_PARTIAL", 15, 19, 285))
+
+    def test_stratum_32_threshold_200_extension_is_once_only_and_pre_registered(self):
+        extension = self.protocol["cohort_design"]["C1"]["grid_extension_stratum_32"]
+        self.assertTrue(extension["pre_registered"])
+        self.assertEqual(extension["test_threshold"], 200)
+        self.assertFalse(extension["allowed_to_repeat"])
+        self.assertEqual(extension["series"], [
+            "gem:CPTOTSAXN:DJI",
+            "gem:CPTOTSAXN:ECU",
+            "gem:CPTOTSAXN:HKG",
+        ])
+        self.assertIn("threshold 500", " ".join(extension["forbidden"]))
+
+    def test_track_b_is_pre_registered_no_injection_diagnostic(self):
+        track = self.protocol["execution"]["track_b_protocol"]
+        self.assertTrue(track["no_injections"])
+        names = {row["name"] for row in track["measurements"]}
+        self.assertIn("GARCH(1,1)", names)
+        self.assertIn("FOCuS null-statistic distribution", names)
+        self.assertIn("Historical-break candidates", names)
+        self.assertTrue(track["no_post_hoc_changes"])
+
+    def test_pilot_scope_change_is_explicit(self):
+        scope = self.protocol["execution"]["pilot_scope_change"]
+        self.assertEqual(scope["original"], "40_series_760_cases")
+        self.assertIn("not the original 40-series Pilot", scope["note"])
 
     def test_c3_is_pending_and_never_silently_substituted(self):
         c3 = self.protocol["cohort_design"]["C3"]
