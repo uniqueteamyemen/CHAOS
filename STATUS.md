@@ -9,7 +9,7 @@
 ## مرجعية المستودع
 
 - الفرع المرجعي والافتراضي: `main-phase2`.
-- آخر خط أساس مدمج عند تثبيت هذه الحالة: `3c8eab34927640be2fb433efb77467cb9c1e31e2`.
+- آخر خط أساس مدمج: `86cb8e576dc0bd21044743dd2749f5bf1d8899ff` (دمج PR #51، P2-C benchmark implementation؛ لا يغيّر المحرك الأساسي المجمد).
 - لا تُعامل الفروع التجريبية أو PRs غير المدمجة على أنها مصدر حقيقة. جميع الأعمال الجديدة تبدأ من `main-phase2` بعد دمج نقطة الدخول هذه.
 
 ## أين نقف الآن؟
@@ -37,17 +37,30 @@
 
 ### P2-C — دفعة الكواشف المستقلة
 
-**[ACTIVE PHASE]**
+**[BENCH_ESTABLISHED — VALIDATION: PENDING]**
 
-هذه هي المرحلة النشطة. تُنفّذ وفق وثيقة [P2-C Detector Batch Plan](docs/P2_C_DETECTOR_BATCH_PLAN_AR.md)، لا وفق فرع P2-B تجريبي سابق.
+دُمجت منظومة تنفيذ ومقارنة P2-C عبر PR #51 عند merge commit `86cb8e576dc0bd21044743dd2749f5bf1d8899ff`. اكتمل التشغيل الاقتصادي الموثق على 509 سلسلة (51 Pink Sheet و458 GEM)، ونجحت شرائح التنفيذ الأربع والتجميع وبوابات التغطية والـcausal replay. هذا يثبت اكتمال الـbenchmark وإمكانية إعادة تشغيله، ولا يثبت اعتماد صلاحية الأدوار أو الجودة التشغيلية لأي كاشف.
 
-التصنيف الصحيح للمكونات:
+- PR #51: [feat(p2-c): independent online detectors and robust segmentation](https://github.com/uniqueteamyemen/CHAOS/pull/51).
+- Workflow اقتصادي ناجح: [#45524159488](https://github.com/uniqueteamyemen/CHAOS/actions/runs/45524159488).
+- Workflow اختبارات اصطناعية ناجح: [#45524143985](https://github.com/uniqueteamyemen/CHAOS/actions/runs/45524143985).
+- التقرير النهائي وartifacts محفوظة في تشغيل المنافسة؛ مرجع SHA-256 لحزمة التقرير: `d919835bffe8efb1436bc7b9e239ffdacc105834901844abc9705166169d64dd`.
+- أدوار FOCuS وBOCPD وBartlett LRV وR-FPOP تصنيفات تجريبية/مرشحة فقط إلى أن تجتاز P1.4 Capability Operating Envelope والـPilot المحدد مسبقاً.
+- `A_FAST` و`A_CONSENSUS` يظلان مرجعي المقارنة؛ لا يترتب على دمج P2-C تفعيل أي كاشف جديد في المحرك التشغيلي.
+- لا يُعلن `VALIDATED` أو `LOCKED_REJECTED` قبل مراجعة أدلة Pilot المقبولة. فشل شروط القياس، أو عدم كفاية الأدلة، يجب أن يسجّل كلٌ بحالته المستقلة.
 
-- **FOCuS:** كاشف online بتقليم دالي functional pruning، مع prefix replay.
-- **BOCPD:** كاشف Bayesian online؛ يجب أن يعتمد على posterior run-length mass وأن يحدد الاتجاه نسبةً إلى النظام السابق النشط.
-- **Post-Quiet Huber:** كاشف sequential robust بعد أول 40 مشاهدة، ويُختبر بمقياسي المعايرة MAD وBartlett LRV.
-- **Bartlett LRV:** مقدّر long-run variance / scale داخل مقارنة المعايرة، وليس detector مستقلاً ولا يصدر hits.
-- **R-FPOP:** robust penalized segmentation بمسار منفصل. يجب الفصل بين `estimated_change_index` و`detection_index`; لا يدخل ترتيب online ما لم يثبت زمن إصدار سببي.
+### المرحلة النشطة التالية — P1.4 Capability Operating Envelope
+
+**[IN PROGRESS — DESIGN / IMPLEMENTATION ONLY]**
+
+العمل يبدأ من هذا الفرع المنشأ من `main-phase2@86cb8e5`، ويُسلّم على commits منفصلة: تحديث الحالة، تعريف cohort manifest، Schema وعقود runtime enforcement، بروتوكول Pilot المجمد، ثم كود الحقن والاختبارات. لا تشغيل ثقيل على البيانات قبل اكتمال هذه التسليمات ومراجعتها.
+
+- C1 المقصود مبدئياً هو مجموعة GEM التي لم تجتز بوابة G1 في سجل P2.2؛ الهوية والعدد ومعيار الاختيار قيد التحقق المستقل. لا تُفترض صحة العدد 147 قبل مطابقة السجلات.
+- حد التحقق من هوية C1: يوم واحد من بدء التدقيق. عند عدم الحسم تسجّل الحالة `PARTIALLY_VERIFIED` ويُسمح Pilot على الجزء المتحقق فقط إذا كان صالحاً إحصائياً وممثلاً؛ لا تُستخدم هوية غير مثبتة.
+- C2: عينة طبقية من خارج C1، وتُثبت هوياتها وطبقات اختيارها في manifest.
+- C3: known-break external validation؛ تبقى `PENDING` ما لم تتوفر series/vintages وتواريخ أحداث موثقة تكفي لمطابقة point-in-time.
+- P2-C تظل `VALIDATION: PENDING` ولا تُغلق حتى مراجعة Pilot والتوسع المقرر، إن استحق.
+
 
 ## نقطة البدء الإلزامية
 
