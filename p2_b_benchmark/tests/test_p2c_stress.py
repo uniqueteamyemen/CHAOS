@@ -83,12 +83,13 @@ class P2CStressSuite(unittest.TestCase):
         quiet_scale = 1.4826 * np.median(np.abs(x[:40] - np.median(x[:40])))
         x[120:240] += 5.0 * quiet_scale
         x[240:] += 2.0 * quiet_scale
-        result = bocpd_detector(x)
+        result = bocpd_detector(x, diagnostics=True)
         assert_online_contract(self, result, x.size)
         negative = [hit for hit in result["hits"] if int(hit["index"]) >= 240]
         self.assertTrue(
             negative,
-            f"BOCPD missed +5σ to +2σ downshift; hits={result['hits']}"
+            f"BOCPD missed +5σ to +2σ downshift; hits={result['hits']}; "
+            f"posterior_tail={result['metadata'].get('posterior_diagnostic_tail')}"
         )
         self.assertEqual(int(negative[0]["sign"]), -1)
         self.assertGreater(
