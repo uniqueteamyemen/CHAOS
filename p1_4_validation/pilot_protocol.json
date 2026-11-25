@@ -761,7 +761,7 @@
       "pilot_scope": "C1_SELECTED_SAMPLE",
       "candidate_series_count": 20,
       "candidate_series_ids_source": "The exact C1 pilot IDs in the preserved cohort manifest and verified selection artifact.",
-      "series_count_policy": "Do not predeclare or cap the number of eligible/executed series. Derive it from artifact-backed calibration and runtime eligibility. No substitutions.",
+      "series_count_policy": "No fixed eligible-series count is asserted before calibration. Derive the exact eligible and executed counts from original GitHub Actions artifacts.",
       "cases_per_executed_series": 19,
       "injected_cases_per_executed_series": 18,
       "eligible_series_count": null,

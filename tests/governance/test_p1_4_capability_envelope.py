@@ -29,6 +29,7 @@ class CapabilityEnvelopeTests(unittest.TestCase):
         envelope = load_envelope()
         focus = envelope["capabilities"]["FOCUS_RESET_ARL_PILOT"]
         contract = focus["input_contract"]
+        self.assertEqual(len(contract), len(set(contract)))
         self.assertEqual(contract.count("40_initial_calibration_observations"), 1)
         self.assertEqual(contract.count("20_post_hit_rearm_calibration_observations"), 1)
         self.assertEqual(focus["minimum_observations"], 150)
