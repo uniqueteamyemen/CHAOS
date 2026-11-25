@@ -39,13 +39,15 @@
     "c1_verified_count": 147,
     "c1_interpretation_discrepancy_severity": "material",
     "old_branch_source": "feat/p1-4-capability-envelope-pilot-v1@ad419702958f3fa7f7c79f623c59dd702c8379e5",
-    "selection_workflow_run_id": 45545605162,
-    "selection_artifact_id": 14991172651,
-    "selection_json_sha256": "e5dfe77b204a4da075f5776f4cfb2ec90dacc9c6548c3c6da72ee4feea281d97",
-    "selection_zip_sha256": "339c9c097ea5b2e0f6f98f0ef99a67b36ba728c84ee4ed2c872342f3e1a7d9f9",
-    "selection_commit": "d2f361a044b156561022ea74eb722561c0c9a17e",
+    "selection_workflow_run_id": 45557117680,
+    "selection_artifact_id": 14995009654,
+    "selection_json_sha256": "9ad27e0c78e3d851ec9f2c02828eadc15567f84fc1ed8f467588bb7d4f42288b",
+    "selection_zip_sha256": "fa67b9c79e5867a0d799c981903e3a44b9b7b680bb2a844a25dfd2a91bf31e0b",
+    "selection_commit": "a2a932e8f00f499883772c9ebb18951b724e9fb9",
     "final_protocol_resync_required": false,
-    "protocol_sha256": "f9fa144e38b940350b6fa6f57c4da98bfa927d5653dd6f115567a11320f4bd81"
+    "protocol_sha256": "644f8e778f5e4fed39273582986170bc510a2ee63d7047724669590bf4fe7807",
+    "selection_artifact_name": "chaos-p1-4-cohort-selection-45557117680-1",
+    "stratification_report_sha256": "0e856d8afbb1c4fb0c960f81b0b0dc5d279b65cd1a94cb2d06ada17e97a77942"
   },
   "cohorts": {
     "C1": {
@@ -409,7 +411,16 @@
         "pink_sheet": 3,
         "gem": 17
       },
-      "STRATIFICATION_REPORT_STATUS": "PENDING_ACTIONS_REBUILD"
+      "STRATIFICATION_REPORT_STATUS": "VERIFIED",
+      "focus_eligibility": {
+        "minimum_n_for_focus": 150,
+        "eligible_count": 19,
+        "not_eligible_count": 1,
+        "not_eligible_ids": [
+          "gem:IPTOTSAKD:AZE"
+        ],
+        "rule": "NOT_ELIGIBLE for FOCuS only; do not record as weak recall. Other detectors follow their own minimum-observation contract."
+      }
     },
     "C3": {
       "candidate_anchor_events": [
@@ -433,10 +444,22 @@
     }
   },
   "selection_artifact": {
-    "status": "SUPERSEDED_PENDING_COHORT_V2_REBUILD",
-    "superseded_workflow_run_id": 45545605162,
-    "superseded_artifact_id": 14991172651,
-    "reason": "C1 pilot allocation rebalanced to guarantee at least 6/6/2 coverage across all three verified G1 failure mechanisms. New stratification dimensions/report required before Pilot."
+    "status": "VERIFIED_CURRENT_PROTOCOL_BOUND",
+    "workflow_run_id": 45557117680,
+    "workflow_url": "https://github.com/uniqueteamyemen/CHAOS/actions/runs/45557117680",
+    "workflow_head_commit": "a2a932e8f00f499883772c9ebb18951b724e9fb9",
+    "selection_builder_commit": "a2a932e8f00f499883772c9ebb18951b724e9fb9",
+    "artifact_id": 14995009654,
+    "artifact_name": "chaos-p1-4-cohort-selection-45557117680-1",
+    "artifact_zip_sha256": "fa67b9c79e5867a0d799c981903e3a44b9b7b680bb2a844a25dfd2a91bf31e0b",
+    "selection_json_sha256": "9ad27e0c78e3d851ec9f2c02828eadc15567f84fc1ed8f467588bb7d4f42288b",
+    "selection_sidecar_verified": true,
+    "stratification_report_sha256": "0e856d8afbb1c4fb0c960f81b0b0dc5d279b65cd1a94cb2d06ada17e97a77942",
+    "protocol_sha256": "644f8e778f5e4fed39273582986170bc510a2ee63d7047724669590bf4fe7807",
+    "prepared_artifact_sha256": "c83f6e960296fbbdb687650a798959f08cb8d98db68de8ca713d7be278e824fe",
+    "candidate_registry_sha256": "4c6643acd6ae1ccf30570c103b163340a460e2b7dfbfa9f2a11eee537d0e78f9",
+    "cohort_selection_commit": "a2a932e8f00f499883772c9ebb18951b724e9fb9",
+    "protocol_sha256_at_selection": "644f8e778f5e4fed39273582986170bc510a2ee63d7047724669590bf4fe7807"
   },
   "pilot_scope": {
     "status": "SELECTED_NOT_EXECUTED",
@@ -494,9 +517,14 @@
     "C3_included": false,
     "C3_status": "PENDING_EXTERNAL_EVIDENCE",
     "raw_values_persisted": false,
-    "protocol_binding_status": "BOUND_TO_FROZEN_PROTOCOL_V1_1_2",
-    "selection_artifact_id": null,
-    "selection_workflow_run_id": null,
-    "stratification_status": "C1_MECHANISM_QUOTAS_UPDATED_C2_REPORT_PENDING"
+    "protocol_binding_status": "BOUND_TO_FROZEN_PROTOCOL_V1_1_5",
+    "selection_artifact_id": 14995009654,
+    "selection_workflow_run_id": 45557117680,
+    "stratification_status": "VERIFIED_C1_12_6_2_C2_SOURCE_DOMAIN_LENGTH_AR1_MISSINGNESS",
+    "C2_FOCUS_NOT_ELIGIBLE_COUNT": 1,
+    "C2_FOCUS_NOT_ELIGIBLE_IDS": [
+      "gem:IPTOTSAKD:AZE"
+    ],
+    "C2_FOCUS_ELIGIBLE_COUNT": 19
   }
 }
