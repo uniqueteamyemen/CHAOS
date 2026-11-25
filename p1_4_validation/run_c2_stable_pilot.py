@@ -448,7 +448,7 @@ def run_injection_pilot(ctx: dict[str, Any], calibrations: dict[str, dict[str, A
                 "magnitude_sigma": injected.get("magnitude_sigma", (0.5, 1.0, 2.0)[index // 6]),
                 "position_fraction": injected.get("position_fraction", (0.30, 0.50, 0.70)[(index % 6) // 2]),
                 "direction": injected.get("direction", (-1, 1)[index % 2]),
-                "true_break_index": injected.get("true_break_index", int(math.floor((0.30, 0.50, 0.70)[(index % 6) // 2] * len(x))),
+                "true_break_index": injected.get("true_break_index", int(math.floor((0.30, 0.50, 0.70)[(index % 6) // 2] * len(x)))),
                 "injection_status": injected.get("status"),
                 "injection_reason": injected.get("reason"),
                 "tool_outcomes": {},
