@@ -77,6 +77,7 @@ jobs:
             --cohort-manifest p1_4_validation/cohort_manifest.json \
             --pilot-protocol p1_4_validation/pilot_protocol.json \
             --output artifacts/p1_4/cohort_selection.json \
+            --stratification-report artifacts/p1_4/cohort_stratification_report.json \
             --selection-commit "$GITHUB_SHA"
           sha256sum artifacts/p1_4/cohort_selection.json > artifacts/p1_4/cohort_selection.json.sha256
       - name: Upload cohort selection artifact
@@ -88,3 +89,4 @@ jobs:
           path: |
             artifacts/p1_4/cohort_selection.json
             artifacts/p1_4/cohort_selection.json.sha256
+            artifacts/p1_4/cohort_stratification_report.json
