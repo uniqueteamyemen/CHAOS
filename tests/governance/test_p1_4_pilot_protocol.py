@@ -42,7 +42,7 @@ class P14PilotProtocolTests(unittest.TestCase):
 
     def test_protocol_matches_schema_and_is_frozen(self):
         validate_required(self.protocol, self.schema)
-        self.assertEqual(self.protocol["protocol_version"], "1.1.3")
+        self.assertEqual(self.protocol["protocol_version"], "1.1.4")
         self.assertEqual(self.protocol["status"], "FROZEN_BEFORE_EXECUTION")
         self.assertTrue(self.protocol["must_not_be_changed_after_pilot_start"])
 
@@ -108,9 +108,15 @@ class P14PilotProtocolTests(unittest.TestCase):
     def test_focus_rearm_overlap_is_invalid_not_false_negative(self):
         d = self.protocol["injection_design"]
         guard = d["rearm_overlap_guard"]
-        self.assertEqual(guard["calibration_observations"], 40)
+        self.assertEqual(guard["initial_calibration_observations"], 40)
+        self.assertEqual(guard["rearm_calibration_observations"], 15)
         self.assertEqual(guard["overlap_outcome"], "INVALID_INJECTION")
         self.assertIn("exclude from recall", guard["recall_accounting"])
+        policy = d["guard_window_policy"]
+        self.assertEqual(policy["min_observations_between_last_rearm_and_injection"], 15)
+        self.assertEqual(policy["expected_rate_on_147"]["window_40"]["rate"], 0.1712328767)
+        self.assertEqual(policy["expected_rate_on_147"]["window_15"]["rate"], 0.0890410959)
+        self.assertEqual(policy["expected_rate_on_147"]["selected_20_c1_pilot_at_window_15"]["total"]["rate"], 0.2)
 
     def test_focus_minimum_n150_is_explicit(self):
         eligibility = self.protocol["injection_design"]["eligibility"]
@@ -118,6 +124,11 @@ class P14PilotProtocolTests(unittest.TestCase):
         self.assertIn("NOT_ELIGIBLE", eligibility["below_minimum"])
 
     def test_c1_pilot_guarantees_all_three_failure_mechanisms(self):
+        power = self.protocol["cohort_design"]["C1"]["pre_registered_power_analysis"]
+        self.assertEqual(power["stratum_106"]["n_series"], 12)
+        self.assertEqual(power["stratum_32"]["n_series"], 6)
+        self.assertEqual(power["stratum_9"]["n_series"], 2)
+        self.assertIn("anecdotal_must_not_drive_decision", power["stratum_9"]["findings"])
         minimums = self.protocol["cohort_design"]["C1"]["pilot_failure_class_minimums"]
         self.assertEqual(minimums, {
             "ADF_PASS_KPSS_FAIL": 6,
@@ -132,6 +143,10 @@ class P14PilotProtocolTests(unittest.TestCase):
                     "monthly missingness pattern"}
         self.assertTrue(required.issubset(set(c2["stratification_dimensions"])))
         self.assertIn("20-series Pilot subset", c2["stratification_report"])
+        frame = c2["sampling_frame_explanation"]
+        self.assertEqual(frame["frame_count"], 362)
+        self.assertEqual(frame["composition"], {"gem_g1_pass": 311, "pink_sheet": 51})
+        self.assertIn("not the full 509-series universe", frame["frame"])
 
     def test_24_hour_budget_has_partial_pilot_fallback(self):
         budget = self.protocol["execution"]["implementation_time_budget"]
@@ -139,7 +154,7 @@ class P14PilotProtocolTests(unittest.TestCase):
         fallback = budget["partial_fallback"]
         self.assertEqual((fallback["status"], fallback["series_count"],
                           fallback["cases_per_series"], fallback["total_cases"]),
-                         ("PILOT_PARTIAL", 10, 19, 190))
+                         ("PILOT_PARTIAL", 15, 19, 285))
 
     def test_c3_is_pending_and_never_silently_substituted(self):
         c3 = self.protocol["cohort_design"]["C3"]
