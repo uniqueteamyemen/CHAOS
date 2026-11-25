@@ -106,8 +106,8 @@ class P14InjectionRunnerTests(unittest.TestCase):
         calls = []
 
         def fake_focus_detector(segment, *, quiet_points, threshold):
-            calls.append(np.asarray(segment, dtype=float).copy())
-            self.assertEqual(quiet_points, 40)
+            calls.append((np.asarray(segment, dtype=float).copy(), quiet_points))
+            self.assertEqual(quiet_points, 40 if len(calls) == 1 else 15)
             self.assertEqual(threshold, 7.0)
             if len(calls) == 1:
                 return {"status": "OK", "hits": [{
@@ -116,7 +116,7 @@ class P14InjectionRunnerTests(unittest.TestCase):
                 }]}
             if len(calls) == 2:
                 return {"status": "OK", "hits": [{
-                    "detection_index": 45, "estimated_change_index": 42,
+                    "detection_index": 30, "estimated_change_index": 27,
                     "sign": -1, "score": 9.0,
                 }]}
             if len(calls) == 3:
@@ -124,21 +124,23 @@ class P14InjectionRunnerTests(unittest.TestCase):
             self.fail("unexpected fourth detector invocation")
 
         with patch("p2_b_benchmark.p2c_engine.focus_detector", side_effect=fake_focus_detector):
-            result = focus_reset_rearm(values, threshold=7.0, quiet_points=40)
+            result = focus_reset_rearm(values, threshold=7.0, quiet_points=40,
+                                       rearm_quiet_points=15)
 
-        self.assertEqual([row["detection_index"] for row in result["hits"]], [50, 96])
-        self.assertEqual([row["estimated_change_index"] for row in result["hits"]], [47, 93])
+        self.assertEqual([row["detection_index"] for row in result["hits"]], [50, 81])
+        self.assertEqual([row["estimated_change_index"] for row in result["hits"]], [47, 78])
         self.assertEqual(result["rearm_intervals"], [
-            {"start_inclusive": 51, "end_exclusive": 91},
-            {"start_inclusive": 97, "end_exclusive": 137},
+            {"start_inclusive": 51, "end_exclusive": 66},
+            {"start_inclusive": 82, "end_exclusive": 97},
         ])
+        self.assertEqual(result["initial_calibration_observations"], 40)
+        self.assertEqual(result["rearm_calibration_observations"], 15)
         self.assertEqual(len(calls), 3)
-        # Each new invocation starts immediately after the prior hit. The
-        # detector itself consumes the next 40 observations for recalibration.
-        self.assertTrue(np.array_equal(calls[1], values[51:]))
-        self.assertTrue(np.array_equal(calls[1][:40], values[51:91]))
-        self.assertTrue(np.array_equal(calls[2], values[97:]))
-        self.assertTrue(np.array_equal(calls[2][:40], values[97:137]))
+        # Startup uses 40 points; every subsequent reset reserves 15 points.
+        self.assertTrue(np.array_equal(calls[1][0], values[51:]))
+        self.assertTrue(np.array_equal(calls[1][0][:15], values[51:66]))
+        self.assertTrue(np.array_equal(calls[2][0], values[82:]))
+        self.assertTrue(np.array_equal(calls[2][0][:15], values[82:97]))
 
     def test_rearm_window_is_a_missed_exposure_not_a_removed_case(self):
         intervals = [{"start_inclusive": 101, "end_exclusive": 141}]
