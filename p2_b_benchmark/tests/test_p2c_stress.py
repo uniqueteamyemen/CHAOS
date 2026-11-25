@@ -203,7 +203,7 @@ class AlgorithmReferenceTests(unittest.TestCase):
                 segment = z[start:t + 1]
                 total = float(segment.sum())
                 length = int(segment.size)
-                delta = min(8.0, max(-8.0, total / length))
+                delta = total / length
                 score = delta * total - 0.5 * length * delta * delta
                 if score > best:
                     best, best_start = score, start
