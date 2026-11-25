@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import os
 import statistics
@@ -15,11 +16,9 @@ import numpy as np
 from p2_b_benchmark.engine import mad_sigma
 from p2_b_benchmark.p2c_engine import P2C_VARIANTS, run_p2c_all, r_fpop_segment
 from p2_b_benchmark.run import (
-    BASE_SEED,
     NULL_BLOCK_LENGTH,
     SHIFT_SIGMA,
     _score_all,
-    _seed_for,
     _series_manifest_sha256,
     _sorted_ids_sha256,
     stationary_sample,
@@ -31,8 +30,47 @@ SHARD_COUNT = 4
 EXPECTED_COUNTS = {
     "series": 509, "pink_sheet": 51, "gem": 458,
     "null_eligible": 359, "null_eligible_pink_sheet": 48,
-    "null_eligible_gem": 311,
+    "null_eligible_gem": 311, "null_ineligible": 150,
 }
+P2C_DEV_BASE_SEED = 2026112501
+P2C_HOLDOUT_BASE_SEED = 2026112502
+P2C_DEV_REPLICATES = 49
+P2C_HOLDOUT_REPLICATES = 50
+
+
+def _p2c_seed_for(series_id: str, phase: str) -> int:
+    """Independent deterministic seed stream per series and phase."""
+    bases = {
+        "development": P2C_DEV_BASE_SEED,
+        "holdout": P2C_HOLDOUT_BASE_SEED,
+    }
+    if phase not in bases:
+        raise ValueError(f"p2c_seed_phase_invalid:{phase}")
+    payload = f"CHAOS:P2-C:{phase}:{bases[phase]}:{series_id}".encode("utf-8")
+    return int(hashlib.sha256(payload).hexdigest()[:16], 16)
+
+
+def _empty_null_counts() -> dict[str, dict[str, int]]:
+    return {
+        arm: {"alarm_replicates": 0, "event_count": 0,
+              "valid_replicates": 0, "abstained_replicates": 0}
+        for arm in P2C_VARIANTS
+    }
+
+
+def _null_phase_summary(counts: dict[str, int], replicates: int) -> dict[str, Any]:
+    valid = int(counts["valid_replicates"])
+    return {
+        **counts,
+        "replicates_attempted": int(replicates),
+        "conditional_alarm_probability": (
+            counts["alarm_replicates"] / valid if valid else None
+        ),
+        "events_per_replicate": (
+            counts["event_count"] / valid if valid else None
+        ),
+        "status": "OK" if valid else "ABSTAIN_ALL_ZERO_QUIET_SCALE",
+    }
 
 
 def _one_series(item: dict[str, Any], null_replicates: int) -> dict[str, Any]:
