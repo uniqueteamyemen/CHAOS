@@ -7,6 +7,13 @@ import math
 from collections import defaultdict
 from pathlib import Path
 from typing import Any
+import sys
+
+# Direct script execution sets sys.path[0] to scripts/p1_4; add repository
+# root explicitly so repository packages resolve identically in Actions.
+REPOSITORY_ROOT = Path(__file__).resolve().parents[2]
+if str(REPOSITORY_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPOSITORY_ROOT))
 
 import numpy as np
 
