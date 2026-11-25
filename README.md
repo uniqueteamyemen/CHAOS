@@ -1,5 +1,7 @@
 # CHAOS — Governed Historical Signals and Structural Discovery
 
+> ⛔ **BRANCH STATUS: INACTIVE BY DEFAULT.** Do not continue or merge a branch unless it is explicitly allowlisted in the [central branch status register](BRANCH_STATUS.md). See the [repository status notice](https://github.com/uniqueteamyemen/CHAOS/issues/53). Historical branches are preserved; existence does not mean active.
+
 > **Start here:** [STATUS.md — current execution status, active phase, and mandatory entry point](STATUS.md)
 
 **CHAOS** is a research and engineering workspace for discovering, testing, and governing temporal structure across independent real-world domains. Its purpose is broader than any single forecasting task or dataset: preserve source evidence, identify transitions, test whether signals repeat or connect, and only then evaluate whether they support sensing or prediction.
@@ -93,7 +95,7 @@ The archived scan is `structural_engine/isolated_break_detector_v1/results/real_
 | Global M6.5+, quarterly counts | 100 quarters | Non-degenerate; no empty quarters | No transitions detected |
 | Global M6.5+, inter-event intervals | 1,140 intervals | Non-degenerate; full lifecycle horizon available | Markov: 1 internally confirmed; Fast and Consensus: none |
 
-The event-time representation is `log1p(days_between_consecutive_events)`. A negative direction means shorter waiting intervals (higher event rate); a positive direction means longer intervals (lower event rate).
+The event-time representation is `log1p(days_between_consecutive_events)`. A negative direction means shorter waiting intervals (higher event rate); a positive direction means longer waiting intervals (lower event rate).
 
 Historical event-time candidates:
 
