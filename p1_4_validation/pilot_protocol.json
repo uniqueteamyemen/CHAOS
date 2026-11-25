@@ -1,6 +1,6 @@
 {
   "protocol_id": "CHAOS_P1_4_CAPABILITY_PILOT_V1",
-  "protocol_version": "1.1.4",
+  "protocol_version": "1.1.5",
   "status": "FROZEN_BEFORE_EXECUTION",
   "must_not_be_changed_after_pilot_start": true,
   "purpose": "Evaluate declared detector and estimator roles on verified economic-series cohorts with controlled permanent mean-shift injections and independent synthetic null traces. This is not a forecast-accuracy test and does not authorize production use.",
@@ -151,15 +151,45 @@
     "minimum_prebreak_observations": 40,
     "short_prebreak_rule": "NOT_ELIGIBLE with a machine-readable reason for that position; preserve it in the planned-case and coverage denominators. Do not silently drop it or count it as a detector miss.",
     "direction_correct_detection": "A true positive must have the correct sign and detection_index >= true_break_index. A pre-onset or wrong-direction event cannot be a true positive.",
-    "rearm_exposure_rule": "The first detector invocation reserves 40 initial observations. Following each confirmed FOCuS hit, the adapter reserves the next 15 observations for re-calibration. An injected break in that half-open interval is INVALID_INJECTION, not a detector false negative.",
+    "rearm_exposure_rule": "The first detector invocation reserves 40 initial observations. Following each confirmed FOCuS hit, the adapter reserves the next 20 observations for re-calibration. An injected break in that half-open interval is INVALID_INJECTION, not a detector false negative.",
     "rearm_overlap_guard": {
       "initial_calibration_observations": 40,
-      "rearm_calibration_observations": 15,
+      "rearm_calibration_observations": 20,
       "case_field": "calibration_overlap_with_injection",
       "overlap_rule": "true_break_index is within [start_inclusive,end_exclusive) of any FOCuS rearm interval",
       "overlap_outcome": "INVALID_INJECTION",
       "recall_accounting": "exclude from recall numerator and denominator; retain in planned and invalid coverage counts",
-      "non_overlap_outcome": "evaluate normally as DETECTED or MISSED"
+      "non_overlap_outcome": "evaluate normally as DETECTED or MISSED",
+      "measured_calibrated_pilot_overlap": {
+        "original_five_stratum_106": {
+          "series": 5,
+          "overlap_series": 0,
+          "rate": 0,
+          "planned_cases": 30,
+          "invalid_cases": 0,
+          "thresholds": {
+            "gem:CPTOTSAXN:BLR": 15,
+            "gem:CPTOTSAXN:KNA": 90,
+            "gem:CPTOTSAXN:KOR": 75,
+            "gem:CPTOTSAXN:ZAF": 75,
+            "gem:DXGSRMRCHNSKD:ECA": 20
+          }
+        },
+        "extended_eleven_stratum_106": {
+          "series": 11,
+          "overlap_series": 0,
+          "rate": 0,
+          "planned_cases": 66,
+          "invalid_cases": 0
+        },
+        "all_fifteen_calibrated_c1": {
+          "series": 15,
+          "overlap_series": 0,
+          "rate": 0,
+          "planned_cases": 90,
+          "invalid_cases": 0
+        }
+      }
     },
     "eligibility": {
       "min_n_for_focus": 150,
@@ -167,102 +197,24 @@
       "below_minimum": "FOCUS status NOT_ELIGIBLE with reason FOCUS_MIN_N_150_REQUIRED; do not record a low-recall result",
       "scope": "FOCuS_RESET_ARL_PILOT only; other tools retain their own declared minimums"
     },
-    "rearm_quiet_points": 15,
+    "rearm_quiet_points": 20,
     "guard_window_policy": {
-      "min_observations_between_last_rearm_and_injection": 15,
+      "min_observations_between_last_rearm_and_injection": 20,
       "on_violation": "mark_as_INVALID_INJECTION_exclude_from_recall",
-      "expected_rate_on_147": {
-        "measurement_method": "Run the current P2-C FOCuS implementation on original pinned C1 observations at legacy reference threshold 45, with one planned injection point at floor(0.30*n) per series. Each series contributes six nested 30%-position injection cases (three magnitudes by two directions); these six are not independent series.",
-        "population_count": 147,
-        "eligible_series_n_ge_150": 146,
-        "not_eligible_series_n_lt_150": 1,
-        "threshold_basis": "Legacy fixed threshold 45, not final per-series calibrated threshold; pre-pilot guard-risk diagnostic only.",
-        "window_40": {
+      "decision": "Retain the 20-observation post-hit rearm window: measured overlap was 0/5 on the original calibrated stratum-106 series at their actual calibrated thresholds; 0/11 after the one-time extension; and 0/15 across all calibrated C1 pilot series at their actual thresholds, at the 30% injection position.",
+      "legacy_threshold_45_reference": {
+        "eligible_series": 146,
+        "not_eligible_series": 1,
+        "window40": {
           "overlap_series": 25,
-          "eligible_series": 146,
-          "rate": 0.1712328767,
-          "invalid_injection_cases": 150,
-          "planned_injection_cases": 876,
-          "case_rate": 0.1712328767
+          "rate": 0.1712328767
         },
-        "window_20": {
+        "window20": {
           "overlap_series": 18,
-          "eligible_series": 146,
-          "rate": 0.1232876712,
-          "invalid_injection_cases": 108,
-          "planned_injection_cases": 876,
-          "case_rate": 0.1232876712
+          "rate": 0.1232876712
         },
-        "window_15": {
-          "overlap_series": 13,
-          "eligible_series": 146,
-          "rate": 0.0890410959,
-          "invalid_injection_cases": 78,
-          "planned_injection_cases": 876,
-          "case_rate": 0.0890410959
-        },
-        "window_15_by_g1_stratum": {
-          "ADF_PASS_KPSS_FAIL": {
-            "overlap_series": 5,
-            "eligible_series": 106,
-            "rate": 0.0471698113,
-            "invalid_injection_cases": 30,
-            "planned_injection_cases": 636
-          },
-          "ADF_FAIL_KPSS_FAIL": {
-            "overlap_series": 8,
-            "eligible_series": 31,
-            "rate": 0.2580645161,
-            "not_eligible_series": 1,
-            "invalid_injection_cases": 48,
-            "planned_injection_cases": 186
-          },
-          "ADF_FAIL_KPSS_PASS": {
-            "overlap_series": 0,
-            "eligible_series": 9,
-            "rate": 0,
-            "invalid_injection_cases": 0,
-            "planned_injection_cases": 54
-          }
-        },
-        "selected_20_c1_pilot_at_window_15": {
-          "ADF_PASS_KPSS_FAIL": {
-            "overlap_series": 1,
-            "series": 12,
-            "rate": 0.0833333333,
-            "invalid_injection_cases": 6,
-            "cases": 72
-          },
-          "ADF_FAIL_KPSS_FAIL": {
-            "overlap_series": 3,
-            "series": 6,
-            "rate": 0.5,
-            "invalid_injection_cases": 18,
-            "cases": 36
-          },
-          "ADF_FAIL_KPSS_PASS": {
-            "overlap_series": 0,
-            "series": 2,
-            "rate": 0,
-            "invalid_injection_cases": 0,
-            "cases": 12
-          },
-          "total": {
-            "overlap_series": 4,
-            "series": 20,
-            "rate": 0.2,
-            "invalid_injection_cases": 24,
-            "cases": 120
-          }
-        },
-        "window_15_scale_check": {
-          "rearm_windows_examined": 282,
-          "zero_mad_windows": 0,
-          "interpretation": "No zero-MAD calibration window was observed in this C1 diagnostic; this does not establish future stability."
-        },
-        "decision": "Use a 15-observation rearm window. It is the only tested candidate among 40, 20 and 15 that keeps the aggregate C1 diagnostic overlap rate below 10%. Preserve INVALID_INJECTION accounting and publish stratum-specific coverage; the selected pilot intentionally oversamples the both-fail stratum, so its observed 20% overlap diagnostic must remain visible."
-      },
-      "caveat": "This is descriptive overlap risk on original observations using the legacy threshold, not a false-alarm estimate or final calibrated-threshold estimate. The development calibration check on the 12-series ADF-pass/KPSS-fail pilot subset found only 5/12 calibratable within the frozen threshold grid (7/12 NOT_CALIBRATABLE); no overall calibrated overlap rate is claimed."
+        "interpretation": "Conservative reference-only diagnostic at fixed legacy threshold 45. It is not the calibrated-threshold Pilot overlap result and must not override the calibrated-subset measurement."
+      }
     }
   },
   "ar_null_and_calibration": {
@@ -467,8 +419,8 @@
     "FOCuS": {
       "role": "online_detector",
       "variant": "FOCUS_RESET_ARL_PILOT",
-      "first_hit_engine_limitation": "Resolved by the P1.4 reset/rearm adapter: the initial invocation uses 40 observations; each post-hit invocation recalibrates using the next 15 observations before monitoring resumes.",
-      "reset_policy": "Use 40 observations for initial calibration. After every confirmed hit, reset functional-pruning state and reserve the next 15 observations as the new calibration/rearm interval. Record its exact half-open start/end and exposure. If an injected break falls inside the interval, mark INVALID_INJECTION and exclude it from Recall numerator and denominator; do not count it as a false negative.",
+      "first_hit_engine_limitation": "Resolved by the P1.4 reset/rearm adapter: initial invocation uses 40 observations; post-hit invocations recalibrate with the next 20 observations.",
+      "reset_policy": "Use 40 observations for initial calibration. After every confirmed hit, reset functional-pruning state and reserve the next 20 observations as the new calibration/rearm interval. Record its exact half-open start/end and exposure. If an injected break falls inside the interval, mark INVALID_INJECTION and exclude it from Recall numerator and denominator; do not count it as a false negative.",
       "per_series_threshold": "Use the threshold selected only from development AR(p) null traces for the same series and position.",
       "primary_success": {
         "recall_at_1sigma": "Series-clustered 95% lower bound >= 0.60",
@@ -632,11 +584,11 @@
     "matrix": "One matrix job per selected series. Each job executes the original baseline and all 18 injected cases for that series. Each series-position null bank is generated once per development/holdout phase and reused across candidate arms; paired variants never receive different null paths.",
     "cases_per_series": 19,
     "raw_values_in_artifacts": false,
-    "required_preflight_gates": "C1 identity and composite G1 criterion are verified; C2 50-series sample and exact 20-series Pilot subset are verified; C3 remains explicitly excluded until source vintages are proven; FOCuS reset/rearm runner tests pass with 40 initial and 15 post-hit observations; BOCPD exports full posterior PMF for every prefix; capability envelope schema/runtime tests pass; pilot protocol schema/tests pass and final protocol SHA is bound to cohort selection; injection, null calibration, prefix replay and no-future-suffix mutation tests pass; BOCPD posterior feature evaluation is restricted to declared diagnostic/fusion scope; C1 pilot failure-class counts satisfy minimum 6/6/2 and exact IDs match cohort manifest; C2_STRATIFICATION_REPORT_V1 includes sample and pilot distributions for source, domain, length, AR1 and missingness; FOCuS pilot cases with n < 150 return NOT_ELIGIBLE; FOCuS calibration overlap with injection is INVALID_INJECTION and excluded from Recall, never FN; C1 pre-registered power analysis is present and stratum_9 findings are anecdotal; C2 sampling frame is explicitly the 362-series C1 complement, not the full 509-series universe.",
-    "required_artifact_fields": "series_id,cohort_id,series_candidate_sha256,injection_magnitude_sigma,injection_position_fraction,injection_direction,true_break_index,tool_outputs,original_alarm_burden,synthetic_null_fpr,ar_model_order,ar_coefficients,residual_sigma,thresholds,penalty,seed_ledger,coverage_denominator,calibration_overlap_with_injection,injection_case_status,invalid_injection_reason,c1_failure_class,length_band,pre_injection_ar1_abs_band,missingness_pattern,pilot_run_manifest.json,replay_command,artifact_sha256",
+    "required_preflight_gates": "C1 identity and composite G1 criterion are verified; C2 50-series sample and exact 20-series Pilot subset are verified; C3 remains explicitly excluded until source vintages are proven; FOCuS reset/rearm runner tests pass with 40 initial and 15 post-hit observations; BOCPD exports full posterior PMF for every prefix; capability envelope schema/runtime tests pass; pilot protocol schema/tests pass and final protocol SHA is bound to cohort selection; injection, null calibration, prefix replay and no-future-suffix mutation tests pass; BOCPD posterior feature evaluation is restricted to declared diagnostic/fusion scope; C1 pilot failure-class counts satisfy minimum 6/6/2 and exact IDs match cohort manifest; C2_STRATIFICATION_REPORT_V1 includes sample and pilot distributions for source, domain, length, AR1 and missingness; FOCuS pilot cases with n < 150 return NOT_ELIGIBLE; FOCuS calibration overlap with injection is INVALID_INJECTION and excluded from Recall, never FN; C1 pre-registered power analysis is present and stratum_9 findings are anecdotal; C2 sampling frame is explicitly the 362-series C1 complement, not the full 509-series universe.; all-strata calibration results artifact exists and every C1 pilot series has explicit calibration status; threshold 200 was applied once only to the original seven stratum-106 failures; Track B is no-injection and does not modify thresholds; Track A contains only FOCuS-calibratable C1 pilot series with class labels preserved",
+    "required_artifact_fields": "series_id,cohort_id,series_candidate_sha256,injection_magnitude_sigma,injection_position_fraction,injection_direction,true_break_index,tool_outputs,original_alarm_burden,synthetic_null_fpr,ar_model_order,ar_coefficients,residual_sigma,thresholds,penalty,seed_ledger,coverage_denominator,calibration_overlap_with_injection,injection_case_status,invalid_injection_reason,c1_failure_class,length_band,pre_injection_ar1_abs_band,missingness_pattern,pilot_run_manifest.json,replay_command,artifact_sha256,calibration_status,calibration_threshold,calibration_p0,calibration_p0_wilson_upper,track_id,track_b_diagnostic_features",
     "artifact_integrity": "SHA-256 each per-series artifact and posterior PMF artifact before upload. Aggregate only the exact frozen series IDs and verify all files/hashes.",
     "replay": "Every per-series output includes deterministic replay command and exact source, model, tool version, protocol SHA and seed identities.",
-    "pilot_start_gate": "Do not dispatch until every preflight item passes on the exact Pilot commit and protocol SHA 1.1.4 is bound to cohort selection. The dispatch is a separate [skip-p2-full] action. C3 may remain pending only with the declared scope limitation. If the 24-hour implementation budget expires, run the predeclared 15-series/285-case PILOT_PARTIAL (five from each C1 failure stratum), not an unstratified subset.",
+    "pilot_start_gate": "Pilot is not authorized by calibration success alone. Require the all-strata calibration results artifact, the one-time threshold-200 decision record, Track A/Track B separation, exact 40-series cohort-selection binding, and per-case invalid-injection guards before dispatch.",
     "seed_rule": "Seed identity excludes tool/scale variant so paired arms receive identical stochastic inputs; separate streams are keyed by protocol, series, position, AR order, phase and replicate.",
     "implementation_time_budget": {
       "maximum_hours": 24,
@@ -648,6 +600,72 @@
         "total_cases": 285,
         "selection": "Five series from each of the three C1 G1 failure strata (5 x 3 = 15). Preserve C1 mechanism labels and exact selected IDs; no C2 substitution.",
         "interpretation": "Engineering and coverage evidence only; no full-cohort PASS/FAIL or production promotion."
+      }
+    },
+    "diagnostic_tracks": {
+      "track_A": {
+        "name": "CALIBRATABLE_SERIES_INJECTION_TRACK",
+        "status": "READY_FOR_RUN_PILOT_IMPLEMENTATION",
+        "eligibility": "FOCuS calibration passes the frozen development P0 gate; preserve stratum and actual threshold.",
+        "series_counts_by_stratum": {
+          "ADF_PASS_KPSS_FAIL": 11,
+          "ADF_FAIL_KPSS_FAIL": 3,
+          "ADF_FAIL_KPSS_PASS": 1
+        },
+        "total_series": 15,
+        "cases_per_series": 19,
+        "total_cases": 285,
+        "interpretation_by_stratum": {
+          "ADF_PASS_KPSS_FAIL": "confirmatory",
+          "ADF_FAIL_KPSS_FAIL": "exploratory_moderate",
+          "ADF_FAIL_KPSS_PASS": "anecdotal_must_not_drive_decision"
+        },
+        "no_substitutions": true
+      },
+      "track_B": {
+        "name": "ORIGINAL_SEVEN_NO_INJECTION_DIAGNOSTIC",
+        "status": "DIAGNOSTIC_ONLY",
+        "series_count": 7,
+        "injected_cases": 0,
+        "series_ids": [
+          "gem:CPTOTSAXN:BEN",
+          "gem:CPTOTSAXN:CHL",
+          "gem:CPTOTSAXN:LAO",
+          "gem:CPTOTSAXN:MNG",
+          "gem:CPTOTSAXN:RWA",
+          "gem:CPTOTSAXN:SUR",
+          "gem:CPTOTSAXN:TJK"
+        ],
+        "questions": [
+          "prebreak AR persistence/order",
+          "lag-12 seasonal dependence",
+          "trend",
+          "prebreak residual heteroscedasticity",
+          "original-series FOCuS alert indices without injected labels"
+        ],
+        "purpose": "Explain the original threshold-grid failures, separating six grid-limited series now calibrated at 200 from one series not calibrated at 200. Descriptive only; no causal inference."
+      },
+      "overlap_between_tracks": "A series may appear in both tracks: Track A evaluates injected cases at its calibrated threshold; Track B observes the same original series without injections. These are different diagnostic roles, not independent series."
+    },
+    "pre_registered_grid_extension": {
+      "purpose": "distinguish_grid_limitation_vs_structural_failure",
+      "test_threshold": 200,
+      "series": "the seven original not-calibratable series from stratum 106",
+      "decision_rule": {
+        "if_calibrates": "extend the frozen FOCuS threshold grid to 200 for those that calibrate; 200 is the final extension",
+        "if_not": "record STRUCTURAL_NOT_CALIBRATABLE_AT_200 for the remaining series; do not try 500"
+      },
+      "pre_registered": true,
+      "allowed_to_repeat": false,
+      "execution_record": {
+        "protocol_seed_version": "1.1.3",
+        "development_null_traces_per_series": 1000,
+        "same_seeded_null_statistics_reused": true,
+        "threshold_200_calibrated": 6,
+        "threshold_200_not_calibrated": 1,
+        "non_calibratable_series": "gem:CPTOTSAXN:SUR",
+        "no_threshold_500_tested": true,
+        "results_artifact": "p1_4_validation/calibration_results_all_strata.json"
       }
     }
   }
