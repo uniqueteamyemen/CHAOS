@@ -29,8 +29,8 @@ FOCUS_THRESHOLD = 45.0
 BOCPD_HAZARD = 1.0 / 120.0
 BOCPD_MAX_RUN = 539
 BOCPD_SHORT_RUN_MAX = 3
-BOCPD_SHORT_MASS_THRESHOLD = 0.05
-BOCPD_PERSISTENCE = 2
+BOCPD_SHORT_MASS_THRESHOLD = 0.35
+BOCPD_PERSISTENCE = 3
 HUBER_C = 1.345
 HUBER_K = 0.50
 HUBER_THRESHOLD = 12.0
@@ -280,6 +280,7 @@ def bocpd_detector(values: Any, *, quiet_points: int = QUIET_POINTS,
     armed = True
     hits: list[dict[str, Any]] = []
     events: list[dict[str, Any]] = []
+    posterior_short_run_mass_max = 0.0
 
     for t in range(quiet_points, int(x.size)):
         # Use the posterior MAP among established (long-run) states. A fresh
@@ -370,6 +371,7 @@ def bocpd_detector(values: Any, *, quiet_points: int = QUIET_POINTS,
             (run_lengths >= 1) & (run_lengths <= int(short_run_max))
         )
         short_mass = float(posterior[short_mask].sum())
+        posterior_short_run_mass_max = max(posterior_short_run_mass_max, short_mass)
         if short_mass >= float(short_mass_threshold):
             if streak == 0:
                 short_indices = np.flatnonzero(short_mask)
@@ -410,6 +412,7 @@ def bocpd_detector(values: Any, *, quiet_points: int = QUIET_POINTS,
                          "max_run_length": max_run, "short_run_max": short_run_max,
                          "short_run_mass_threshold": short_mass_threshold,
                          "short_run_mass_definition": "posterior P(1<=run_length<=short_run_max); excludes r=0",
+                         "posterior_short_run_mass_max": float(posterior_short_run_mass_max),
                          "persistence": persistence,
                          "predictive": "Normal-Inverse-Gamma Student-t",
                          "direction_reference": "MAP prior-regime predictive mean"}}
