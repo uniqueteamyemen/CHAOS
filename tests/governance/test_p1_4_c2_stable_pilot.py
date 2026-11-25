@@ -159,19 +159,25 @@ class C2StablePilotTests(unittest.TestCase):
                 runner.load_calibrations(folder, ctx)
 
     def test_directional_recall_pre_onset_and_invalid_cases_are_separated(self):
+        def make_case(direction, status, pre_onset=0, wrong_direction=0):
+            return {
+                "direction": direction,
+                "tool_outcomes": {
+                    "FOCUS": {
+                        "status": status,
+                        "pre_onset_alert_count": pre_onset,
+                        "wrong_direction_alert_count": wrong_direction,
+                    },
+                    "POST_QUIET_HUBER_MAD": {"status": "NOT_ELIGIBLE"},
+                    "POST_QUIET_HUBER_BARTLETT": {"status": "NOT_ELIGIBLE"},
+                },
+            }
+
         cases = [
-            {"direction": 1, "tool_outcomes": {"FOCUS": {
-                "status": "DETECTED", "pre_onset_alert_count": 1,
-                "wrong_direction_alert_count": 0}}},
-            {"direction": 1, "tool_outcomes": {"FOCUS": {
-                "status": "MISSED", "pre_onset_alert_count": 0,
-                "wrong_direction_alert_count": 0}}},
-            {"direction": -1, "tool_outcomes": {"FOCUS": {
-                "status": "DETECTED", "pre_onset_alert_count": 0,
-                "wrong_direction_alert_count": 2}}},
-            {"direction": -1, "tool_outcomes": {"FOCUS": {
-                "status": "INVALID_INJECTION", "pre_onset_alert_count": 1,
-                "wrong_direction_alert_count": 0}}},
+            make_case(1, "DETECTED", pre_onset=1),
+            make_case(1, "MISSED"),
+            make_case(-1, "DETECTED", wrong_direction=2),
+            make_case(-1, "INVALID_INJECTION", pre_onset=1),
         ]
         pilot = {"series": {"stable-series": {
             "series_length": 200, "executed_injection_cases": cases,
