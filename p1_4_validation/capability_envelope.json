@@ -140,9 +140,16 @@
         },
         {
           "evidence_id": "P1.4-INJECTION-RUNNER",
-          "status": "IMPLEMENTED_CONTRACT_TESTS_PENDING",
+          "status": "RESET_REARM_ADAPTER_CONTRACT_TESTED",
           "validated_role": false,
-          "note": "Reset/re-arm adapter exists with an explicit 40-observation re-calibration window. Cohort Pilot not executed; detector role remains unvalidated."
+          "note": "Reset/re-arm adapter consumes the next 40 observations as recalibration before monitoring resumes. Contract test passed; cohort Pilot has not executed and detector role remains unvalidated."
+        },
+        {
+          "evidence_id": "github-actions:45553264606",
+          "status": "RESET_REARM_AND_P0_CONTRACT_TESTS_PASS",
+          "validated_role": false,
+          "source_commit": "6875722cc9b19e0b1cd3916917398c779bfa3fc2",
+          "note": "Verified adapter restart semantics, exclusive re-calibration windows, per-series P0 contract and no silent removal of changes during re-arm. Does not constitute cohort Pilot validation."
         }
       ]
     },
@@ -303,9 +310,16 @@
         },
         {
           "evidence_id": "P1.4-INJECTION-RUNNER",
-          "status": "FULL_POSTERIOR_EXPORT_IMPLEMENTED_CONTRACT_TESTS_PENDING",
+          "status": "FULL_POSTERIOR_PER_PREFIX_CONTRACT_TESTED",
           "validated_role": false,
-          "note": "Full normalized run-length PMF is emitted at each post-quiet prefix with deterministic SHA-256. This authorizes feature evaluation only, not standalone binary detection."
+          "note": "The P1.4 runner exports a normalized run-length PMF at every post-quiet prefix and records its deterministic SHA-256; contract test passed. Feature generator only, not an independent binary detector."
+        },
+        {
+          "evidence_id": "github-actions:45553264606",
+          "status": "FULL_POSTERIOR_EXPORT_CONTRACT_TEST_PASS",
+          "validated_role": false,
+          "source_commit": "6875722cc9b19e0b1cd3916917398c779bfa3fc2",
+          "note": "Verified every post-quiet prefix has normalized run-length support and posterior mass. Scientific feature value and detector-role validation remain pending."
         }
       ]
     },
