@@ -26,7 +26,7 @@ from p2_b_benchmark.engine import mad_sigma
 
 QUIET_POINTS = 40
 FOCUS_THRESHOLD = 45.0
-BOCPD_HAZARD = 1.0 / 120.0
+BOCPD_HAZARD = 1.0 / 60.0
 BOCPD_MAX_RUN = 539
 BOCPD_SHORT_RUN_MAX = 3
 BOCPD_SHORT_MASS_THRESHOLD = 0.35
@@ -263,7 +263,7 @@ def bocpd_detector(values: Any, *, quiet_points: int = QUIET_POINTS,
                 "hits": [], "events": [], "event_count": 0}
     center = float(np.median(q))
     y = (x - center) / scale
-    mu0, kappa0, alpha0, beta0 = 0.0, 0.25, 3.0, 0.5
+    mu0, kappa0, alpha0, beta0 = 0.0, 0.25, 3.0, 2.0
     quiet_normalized = (q - center) / scale
     active_mean = float(np.mean(quiet_normalized))
     active_var = float(np.var(quiet_normalized, ddof=1))
@@ -320,7 +320,11 @@ def bocpd_detector(values: Any, *, quiet_points: int = QUIET_POINTS,
         reset_scale = math.sqrt(
             beta0 * (kappa0 + 1.0) / (alpha0 * kappa0)
         )
-        reset_residual = (y[t] - mu0) / reset_scale
+        # Center the new-regime prior on the active previous regime. A fixed
+        # global-zero reset prior suppresses legitimate reversals that remain
+        # above/below the original quiet centre (e.g. +5σ -> +2σ).
+        reset_prior_mean = prior_regime_mean
+        reset_residual = (y[t] - reset_prior_mean) / reset_scale
         reset_log_likelihood = (
             gammaln((reset_df + 1.0) / 2.0) - gammaln(reset_df / 2.0)
             - 0.5 * math.log(reset_df * math.pi) - math.log(reset_scale)
@@ -346,11 +350,11 @@ def bocpd_detector(values: Any, *, quiet_points: int = QUIET_POINTS,
         # observation. Update its Normal-Inverse-Gamma sufficient statistics
         # from the reset prior with this same datum; retaining the untouched
         # prior here would silently discard the change-point observation.
-        change_mean = (kappa0 * mu0 + y[t]) / (kappa0 + 1.0)
+        change_mean = (kappa0 * reset_prior_mean + y[t]) / (kappa0 + 1.0)
         change_kappa = kappa0 + 1.0
         change_alpha = alpha0 + 0.5
         change_beta = beta0 + (
-            kappa0 * (y[t] - mu0) ** 2 / (2.0 * (kappa0 + 1.0))
+            kappa0 * (y[t] - reset_prior_mean) ** 2 / (2.0 * (kappa0 + 1.0))
         )
         means = np.concatenate(([change_mean], growth_mean))
         kappas = np.concatenate(([change_kappa], growth_kappa))
@@ -487,6 +491,7 @@ def bocpd_detector(values: Any, *, quiet_points: int = QUIET_POINTS,
                          "confirmed_regime_reseed": "NIG posterior reinitialized from confirmed segment statistics",
                          "persistence": persistence,
                          "predictive": "Normal-Inverse-Gamma Student-t",
+                         "reset_prior_center": "active previous regime posterior mean",
                          "direction_reference": "MAP prior-regime predictive mean"}}
 
 
