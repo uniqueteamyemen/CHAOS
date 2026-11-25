@@ -1,0 +1,57 @@
+name: CHAOS P1.4 Capability Contract Gates
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: chaos-p1-4-capability-gates-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  contract-gates:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Compile capability runtime
+        run: python -m py_compile chaos_governance_kernel/capability_envelope.py p1_4_validation/injection_runner.py p1_4_validation/run_evidence_pipeline.py
+      - name: Install pinned P1.4 engine runtime dependencies
+        run: |
+          python -m pip install "numpy==1.26.4" "pandas==2.2.3"
+          python -m pip install -r real_data_stress_pipeline/requirements.txt
+      - name: Run P1.4 capability, protocol and injection contract tests
+        run: |
+          python -m unittest discover -s tests/governance -p 'test_p1_4_capability_envelope.py' -v
+          python -m unittest discover -s tests/governance -p 'test_p1_4_pilot_protocol.py' -v
+          python -m unittest discover -s tests/governance -p 'test_p1_4_injection_runner.py' -v
+          python -m unittest discover -s tests/governance -p 'test_p1_4_cohort_selection_manifest_binding.py' -v
+  calibrate-preflight:
+    needs: contract-gates
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install pinned engine runtime environment
+        run: |
+          python -m pip install "numpy==1.26.4" "pandas==2.2.3"
+          python -m pip install -r real_data_stress_pipeline/requirements.txt
+      - name: Verify arch import, bytecode compilation and CLI
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import numpy, pandas, statsmodels
+          assert numpy.__version__ == "1.26.4", numpy.__version__
+          assert pandas.__version__ == "2.2.3", pandas.__version__
+          print(f"numpy=={numpy.__version__}; pandas=={pandas.__version__}: import PASS")
+          PY
+          python -m py_compile p1_4_validation/injection_runner.py p1_4_validation/run_evidence_pipeline.py
+          python p1_4_validation/run_evidence_pipeline.py --help
