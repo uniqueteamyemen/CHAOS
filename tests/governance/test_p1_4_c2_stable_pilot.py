@@ -1,4 +1,5 @@
 import json
+import tempfile
 import unittest
 from pathlib import Path
 
@@ -93,6 +94,50 @@ class C2StablePilotTests(unittest.TestCase):
         arm["holdout"]["alarm_traces"] += 1
         with self.assertRaisesRegex(ValueError, "C2_HOLDOUT_RAW_COUNT_MISMATCH"):
             runner.calibration_and_holdout({row["series_id"]: row})
+
+    def test_calibration_job_manifest_binds_series_file_sha256(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            folder = Path(temporary)
+            ids = sorted(EXPECTED_C2)
+            ctx = {
+                "c2_ids": ids,
+                "candidate_hashes": {sid: f"candidate-{i}" for i, sid in enumerate(ids)},
+                "source_sha256": {"protocol": "frozen-protocol", "prepared_zip": "frozen-prepared"},
+            }
+            series_paths = {}
+            for index, sid in enumerate(ids):
+                row = {
+                    "series_id": sid,
+                    "cohort": "C2",
+                    "candidate_sha256": ctx["candidate_hashes"][sid],
+                    "protocol_sha256": ctx["source_sha256"]["protocol"],
+                    "source_sha256": {"prepared_zip": ctx["source_sha256"]["prepared_zip"]},
+                    "calibration_status": "COMPLETE",
+                }
+                series_path = folder / f"series-{runner.base.safe_id(sid)}.json"
+                runner.base.write_json(series_path, row)
+                series_paths[sid] = series_path
+                runner.base.write_json(folder / f"job-{index}.json.tmp", {}) if False else None
+                job_dir = folder / f"job-{index}"
+                job_dir.mkdir()
+                # Each matrix artifact has its own directory and paired manifest.
+                series_path.replace(job_dir / series_path.name)
+                series_paths[sid] = job_dir / series_path.name
+                runner.base.write_json(job_dir / "calibration_job_manifest.json", {
+                    "artifact_type": "P1_4_C2_CALIBRATION_JOB",
+                    "cohort": "C2",
+                    "series_id": sid,
+                    "candidate_sha256": ctx["candidate_hashes"][sid],
+                    "status": "COMPLETE",
+                    "artifact_sha256": runner.base.sha_file(series_paths[sid]),
+                    "protocol_sha256": ctx["source_sha256"]["protocol"],
+                })
+            loaded = runner.load_calibrations(folder, ctx)
+            self.assertEqual(len(loaded), 20)
+            first = series_paths[ids[0]]
+            first.write_text("{}\n", encoding="utf-8")
+            with self.assertRaisesRegex(ValueError, "C2_CALIBRATION_SERIES_SHA_MISMATCH"):
+                runner.load_calibrations(folder, ctx)
 
     def test_directional_recall_pre_onset_and_invalid_cases_are_separated(self):
         cases = [
