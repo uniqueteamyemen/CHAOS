@@ -148,8 +148,7 @@
           "evidence_id": "github-actions:45553264606",
           "status": "RESET_REARM_AND_P0_CONTRACT_TESTS_PASS",
           "validated_role": false,
-          "source_commit": "6875722cc9b19e0b1cd3916917398c779bfa3fc2",
-          "note": "Verified adapter restart semantics, exclusive re-calibration windows, per-series P0 contract and no silent removal of changes during re-arm. Does not constitute cohort Pilot validation."
+          "note": "Verified adapter restart semantics, exclusive re-calibration windows, per-series P0 contract and no silent removal of changes during re-arm. Does not constitute cohort Pilot validation. Evidence commit: 6875722cc9b19e0b1cd3916917398c779bfa3fc2."
         }
       ]
     },
@@ -318,8 +317,7 @@
           "evidence_id": "github-actions:45553264606",
           "status": "FULL_POSTERIOR_EXPORT_CONTRACT_TEST_PASS",
           "validated_role": false,
-          "source_commit": "6875722cc9b19e0b1cd3916917398c779bfa3fc2",
-          "note": "Verified every post-quiet prefix has normalized run-length support and posterior mass. Scientific feature value and detector-role validation remain pending."
+          "note": "Verified every post-quiet prefix has normalized run-length support and posterior mass. Scientific feature value and detector-role validation remain pending. Evidence commit: 6875722cc9b19e0b1cd3916917398c779bfa3fc2."
         }
       ]
     },
