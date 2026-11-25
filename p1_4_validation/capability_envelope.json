@@ -100,8 +100,8 @@
         "point_in_time_prefix_only",
         "minimum_150_observations_for_focus_pilot",
         "40_initial_calibration_observations",
-        "15_post_hit_rearm_calibration_observations",
-        "injection_during_rearm_is_invalid_not_false_negative"
+        "injection_during_rearm_is_invalid_not_false_negative",
+        "20_post_hit_rearm_calibration_observations"
       ],
       "output_contract": [
         "change_event",
@@ -147,7 +147,7 @@
           "evidence_id": "P1.4-INJECTION-RUNNER",
           "status": "RESET_REARM_ADAPTER_CONTRACT_TESTED",
           "validated_role": false,
-          "note": "Reset/rearm adapter uses 40 observations for initial calibration and 15 after each confirmed hit. An injected break in [rearm_start,rearm_end) is marked INVALID_INJECTION and excluded from recall; it is not a detector false negative. Contract tests pass; scientific role remains unvalidated."
+          "note": "Reset/rearm adapter uses 40 observations for initial calibration and 20 after each confirmed hit. An injected break in [rearm_start,rearm_end) is marked INVALID_INJECTION and excluded from recall; it is not a detector false negative. Contract tests pass; scientific role remains unvalidated."
         },
         {
           "evidence_id": "github-actions:45553264606",
@@ -163,9 +163,9 @@
         },
         {
           "evidence_id": "P1.4-REARM-OVERLAP-DIAGNOSTIC",
-          "status": "15_POINT_REARM_SELECTED_FROM_147_SERIES_DIAGNOSTIC",
+          "status": "20_POINT_REARM_VERIFIED_ON_CALIBRATED_PILOT_SERIES",
           "validated_role": false,
-          "note": "On 146 C1 series with n>=150, legacy threshold 45 yielded 25/146 overlap at rearm 40 (17.12%), 18/146 at 20 (12.33%), and 13/146 at 15 (8.90%). 15-point rearm retained non-zero MAD in 282 observed rearm windows. Selected 20-series Pilot overlap is 4/20 (20%) due deliberate oversampling of the both-fail stratum; invalid cases remain excluded from Recall."
+          "note": "At actual calibrated thresholds, window-20 overlap was 0/5 on the original calibratable stratum-106 series (0/30 nested 30%-position injection cases). After the one-time threshold-200 extension, all 11 calibratable stratum-106 series had 0/11 overlap at window 20; the 15 calibratable C1 series across all three strata had 0/15 overlap (0/90 cases). Retain 20; 15 is not required by the measured pilot subset."
         }
       ]
     },
