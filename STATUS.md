@@ -58,8 +58,10 @@
 - **C1 تم التحقق منها: 147/147** من GEM ذات `G1 SCREEN_FAIL`، وفق `cohorts/p1_4/cohort_manifest.json` عند commit `3ee8bee`. جرى ربط 458/458 معرف GEM بين registry ونتائج shards الأربعة دون IDs مفقودة/زائدة أو candidate-hash mismatches. بصمة registry: `4c6643acd6ae1ccf30570c103b163340a460e2b7dfbfa9f2a11eee537d0e78f9`.
 - تدقيق المعيار: G1 يتطلب ADF p<0.05 وKPSS p≥0.05. من C1: 106 فشل KPSS فقط، 32 فشل الاختبارين، و9 فشل ADF فقط. إذن 147 هي مجموعة فشل G1 المركّب، وليست 147 حالة KPSS-only. العدد الأصلي 147 مطابق ولا توجد فجوة عددية.
 - سقف يوم التحقق لم يُستهلك؛ حُسمت الهوية والقاعدة من artifacts P2.2 المحفوظة. بقي C2 (عينة 50) وC3 (المراسي التاريخية ذات source vintages) قيد الإعداد؛ لا تُستخدم هويات غير مثبتة.
-- C2: عينة طبقية من خارج C1، وتُثبت هوياتها وطبقات اختيارها في manifest.
-- C3: known-break external validation؛ تبقى `PENDING` ما لم تتوفر series/vintages وتواريخ أحداث موثقة تكفي لمطابقة point-in-time.
+- **C2 تم التحقق منها: 50/50** من إطار 362 سلسلة خارج C1 (51 Pink Sheet +311 GEM G1-pass). حُفظت عضوية العينة وبذورها ومعرفات Pilot العشرين في `cohorts/p1_4/cohort_manifest.json`. توزيع عينة C2: 7 Pink Sheet +43 GEM؛ Pilot: 3 Pink Sheet +17 GEM.
+- **Pilot cohort ثابتة: 40 سلسلة / 760 حالة** (20 من C1 +20 من C2؛ 19 حالة لكل سلسلة: الأصلية +18 حقناً). مصدر اختيارها Workflow [#45538866028](https://github.com/uniqueteamyemen/CHAOS/actions/runs/45538866028)، artifact `14988741300`، SHA-256 ZIP: `c5a3720c2a5cd7754f9f9da022e70305cda90cde17bed4f74884a39026830523`، JSON: `b916e5d1f40f9e224a229096565e618c8bcdec659303def9041769c7834dc960`. تم التحقق من sidecar SHA-256 ومطابقة IDs بعد تصحيح اختلاف نقل واحد.
+- **C3: PENDING_EXTERNAL_EVIDENCE**؛ known-break external validation لم يُضمّن في Pilot لأن source-vintages التي تثبت توفر المشاهدات عند event-time غير مثبتة. لا نُحوّل المطابقات الاسترجاعية إلى ground truth آني.
+- لا يبدأ Pilot قبل اكتمال وتنفيذ كود الحقن، واجتياز اختبارات العقود والحقن، ثم تشغيل Workflow منفصل على GitHub Actions.
 - P2-C تظل `VALIDATION: PENDING` ولا تُغلق حتى مراجعة Pilot والتوسع المقرر، إن استحق.
 
 
