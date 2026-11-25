@@ -474,8 +474,8 @@ def _write_outputs(report: dict[str, Any], output_dir: str | Path) -> tuple[Path
         "",
         "## Conditional null diagnostics",
         "",
-        "| Arm | Cohort | P(≥1 alarm) | Events/replicate | Abstained |",
-        "|---|---|---:|---:|---:|",
+        "| Arm | Cohort | Combined P(≥1) | Development P(≥1) | Holdout P(≥1) | Abstained |",
+        "|---|---|---:|---:|---:|---:|
     ]
     for arm in P2C_VARIANTS:
         for cohort in ("all", "pink_sheet", "gem"):
@@ -483,7 +483,9 @@ def _write_outputs(report: dict[str, Any], output_dir: str | Path) -> tuple[Path
             if r:
                 lines.append(
                     f"| {arm} | {cohort} | {r['conditional_alarm_probability_pooled']} | "
-                    f"{r['events_per_replicate_pooled']} | {r['replicates_abstained']} |"
+                    f"{r['phases']['development']['conditional_alarm_probability_pooled']} | "
+                    f"{r['phases']['holdout']['conditional_alarm_probability_pooled']} | "
+                    f"{r['replicates_abstained']} |"
                 )
     lines.extend(["", "## Injected-break performance", "",
                   "| Arm | Scenario | Cohort | Sensitivity | Miss | Pre-onset | Median delay |",
