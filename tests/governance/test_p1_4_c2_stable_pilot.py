@@ -117,7 +117,6 @@ class C2StablePilotTests(unittest.TestCase):
                 series_path = folder / f"series-{runner.base.safe_id(sid)}.json"
                 runner.base.write_json(series_path, row)
                 series_paths[sid] = series_path
-                runner.base.write_json(folder / f"job-{index}.json.tmp", {}) if False else None
                 job_dir = folder / f"job-{index}"
                 job_dir.mkdir()
                 # Each matrix artifact has its own directory and paired manifest.
