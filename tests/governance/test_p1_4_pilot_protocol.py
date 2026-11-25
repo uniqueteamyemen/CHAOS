@@ -88,6 +88,13 @@ class P14PilotProtocolTests(unittest.TestCase):
         self.assertEqual(b["incremental_value_test"]["replicates"], 1000)
         self.assertIn("Cohen's dz", b["incremental_value_test"]["effect_size"])
 
+    def test_calibration_grids_are_frozen_and_null_paths_are_paired(self):
+        n = self.protocol["ar_null_and_calibration"]
+        self.assertEqual(n["threshold_grids"]["FOCuS"], [15, 20, 25, 30, 35, 40, 45, 50, 60, 75, 90])
+        self.assertEqual(n["threshold_grids"]["POST_QUIET_HUBER_MAD"], [4, 6, 8, 10, 12, 14, 16, 20, 24, 32])
+        self.assertIn("MAD and Bartlett variants receive identical paths", n["null_seed_streams"])
+        self.assertEqual(n["paired_paths_rule"].count("same"), 1)
+
     def test_c3_is_pending_and_never_silently_substituted(self):
         c3 = self.protocol["cohort_design"]["C3"]
         self.assertFalse(c3["included"])
