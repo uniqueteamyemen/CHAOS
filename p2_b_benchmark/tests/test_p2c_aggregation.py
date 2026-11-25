@@ -4,10 +4,12 @@ import unittest
 
 from p2_b_benchmark.p2c_engine import P2C_VARIANTS
 from p2_b_benchmark.p2c_run import (
+    P2C_DEV_BASE_SEED,
     EXPECTED_COUNTS,
     SHARD_COUNT,
     _combine_shards,
     _protocol,
+    _p2c_seed_for,
 )
 from p2_b_benchmark.run import _series_manifest_sha256, _sorted_ids_sha256
 
@@ -44,6 +46,10 @@ def make_rows():
                     "conditional_alarm_probability": 1.0 / 3.0,
                     "events_per_replicate": 2.0 / 3.0,
                     "replicates_attempted": 3, "status": "OK",
+                    "phases": {
+                        "development": {"alarm_replicates": 0, "event_count": 0, "valid_replicates": 1, "abstained_replicates": 0, "conditional_alarm_probability": 0.0, "events_per_replicate": 0.0, "replicates_attempted": 1, "status": "OK"},
+                        "holdout": {"alarm_replicates": 1, "event_count": 2, "valid_replicates": 2, "abstained_replicates": 0, "conditional_alarm_probability": 0.5, "events_per_replicate": 1.0, "replicates_attempted": 2, "status": "OK"},
+                    },
                 }
         rows.append(row)
     return sorted(rows, key=lambda row: row["id"])
@@ -81,6 +87,15 @@ class P2CAggregationTests(unittest.TestCase):
         self.assertEqual(
             combined["summary"]["null"]["A_FAST"]["all"]["series"], 359
         )
+        phases = combined["summary"]["null"]["A_FAST"]["all"]["phases"]
+        self.assertEqual(phases["development"]["replicates_attempted"], 359)
+        self.assertEqual(phases["holdout"]["replicates_attempted"], 718)
+        self.assertFalse(phases["holdout"]["threshold_tuning_allowed"])
+        self.assertNotEqual(_p2c_seed_for("series-1", "development"), _p2c_seed_for("series-1", "holdout"))
+        ledger = combined["protocol"]["seed_ledger"]
+        self.assertEqual(ledger["development_replicates"], 1)
+        self.assertEqual(ledger["holdout_replicates"], 2)
+        self.assertFalse(ledger["holdout_threshold_tuning_allowed"])
         self.assertEqual(
             combined["summary"]["r_fpop_segmentation"]["all"]["series"], 509
         )
