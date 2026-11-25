@@ -250,9 +250,10 @@
         "gem:CPTOTSAXN:BWA",
         "gem:CPTOTSAXN:CHL",
         "gem:CPTOTSAXN:DEV",
+        "gem:CPTOTSAXN:DJI",
+        "gem:CPTOTSAXN:ECU",
         "gem:CPTOTSAXN:EDX",
         "gem:CPTOTSAXN:HKG",
-        "gem:CPTOTSAXN:ISR",
         "gem:CPTOTSAXN:KNA",
         "gem:CPTOTSAXN:KOR",
         "gem:CPTOTSAXN:LAO",
@@ -262,19 +263,41 @@
         "gem:CPTOTSAXN:SSP",
         "gem:CPTOTSAXN:SUR",
         "gem:CPTOTSAXN:TJK",
-        "gem:CPTOTSAXN:TUN",
         "gem:CPTOTSAXN:ZAF",
         "gem:DXGSRMRCHNSKD:ECA"
       ],
       "pilot_failure_class_counts": {
-        "ADF_PASS_KPSS_FAIL": 14,
-        "ADF_FAIL_KPSS_FAIL": 4,
+        "ADF_PASS_KPSS_FAIL": 12,
+        "ADF_FAIL_KPSS_FAIL": 6,
         "ADF_FAIL_KPSS_PASS": 2
       },
       "discrepancy_kind": "interpretation_label_not_count_or_identity",
       "C1_STATUS": "VERIFIED",
       "verification_deadline_hours": 24,
-      "verification_completed_within_deadline": true
+      "verification_completed_within_deadline": true,
+      "pilot_minimum_failure_class_quotas": {
+        "ADF_PASS_KPSS_FAIL": 6,
+        "ADF_FAIL_KPSS_FAIL": 6,
+        "ADF_FAIL_KPSS_PASS": 2
+      },
+      "pilot_selection_rule": "Deterministic stratified selection by G1 failure class with minimum representation 6/6/2 for ADF-pass/KPSS-fail, both-fail, and ADF-fail/KPSS-pass respectively; then length and pre-break AR1 strata.",
+      "pilot_stratification_summary": {
+        "failure_class_counts": {
+          "ADF_PASS_KPSS_FAIL": 12,
+          "ADF_FAIL_KPSS_FAIL": 6,
+          "ADF_FAIL_KPSS_PASS": 2
+        },
+        "length_band_counts": {
+          "gte_360": 17,
+          "240_359": 3
+        },
+        "prebreak_ar1_abs_band_counts": {
+          "MODERATE": 12,
+          "LOW": 5,
+          "HIGH": 3
+        },
+        "minimum_quotas_satisfied": true
+      }
     },
     "C2": {
       "discrepancy_reason": null,
@@ -337,10 +360,12 @@
       ],
       "status": "VERIFIED",
       "stratification_dimensions": [
+        "source",
         "source_cohort",
         "domain",
         "observation_count_band",
-        "pre_injection_ar1_abs_band"
+        "pre_injection_ar1_abs_band",
+        "missingness_pattern"
       ],
       "verified_count": 50,
       "identity_status": "VERIFIED",
@@ -383,7 +408,8 @@
       "pilot_source_counts": {
         "pink_sheet": 3,
         "gem": 17
-      }
+      },
+      "STRATIFICATION_REPORT_STATUS": "PENDING_ACTIONS_REBUILD"
     },
     "C3": {
       "candidate_anchor_events": [
@@ -407,21 +433,10 @@
     }
   },
   "selection_artifact": {
-    "status": "VERIFIED_CURRENT_PROTOCOL_BOUND",
-    "workflow_run_id": 45545605162,
-    "workflow_url": "https://github.com/uniqueteamyemen/CHAOS/actions/runs/45545605162",
-    "workflow_head_commit": "d2f361a044b156561022ea74eb722561c0c9a17e",
-    "selection_builder_commit": "d2f361a044b156561022ea74eb722561c0c9a17e",
-    "artifact_id": 14991172651,
-    "artifact_name": "chaos-p1-4-cohort-selection-45545605162-1",
-    "artifact_zip_sha256": "339c9c097ea5b2e0f6f98f0ef99a67b36ba728c84ee4ed2c872342f3e1a7d9f9",
-    "selection_json_sha256": "e5dfe77b204a4da075f5776f4cfb2ec90dacc9c6548c3c6da72ee4feea281d97",
-    "selection_sidecar_verified": true,
-    "protocol_sha256": "f9fa144e38b940350b6fa6f57c4da98bfa927d5653dd6f115567a11320f4bd81",
-    "prepared_artifact_sha256": "c83f6e960296fbbdb687650a798959f08cb8d98db68de8ca713d7be278e824fe",
-    "candidate_registry_sha256": "4c6643acd6ae1ccf30570c103b163340a460e2b7dfbfa9f2a11eee537d0e78f9",
-    "cohort_selection_commit": "d2f361a044b156561022ea74eb722561c0c9a17e",
-    "protocol_sha256_at_selection": "f9fa144e38b940350b6fa6f57c4da98bfa927d5653dd6f115567a11320f4bd81"
+    "status": "SUPERSEDED_PENDING_COHORT_V2_REBUILD",
+    "superseded_workflow_run_id": 45545605162,
+    "superseded_artifact_id": 14991172651,
+    "reason": "C1 pilot allocation rebalanced to guarantee at least 6/6/2 coverage across all three verified G1 failure mechanisms. New stratification dimensions/report required before Pilot."
   },
   "pilot_scope": {
     "status": "SELECTED_NOT_EXECUTED",
@@ -441,10 +456,11 @@
       "gem:CPTOTSAXN:CHL",
       "gem:CPTOTSAXN:DEU",
       "gem:CPTOTSAXN:DEV",
+      "gem:CPTOTSAXN:DJI",
+      "gem:CPTOTSAXN:ECU",
       "gem:CPTOTSAXN:EDX",
       "gem:CPTOTSAXN:HKG",
       "gem:CPTOTSAXN:IRL",
-      "gem:CPTOTSAXN:ISR",
       "gem:CPTOTSAXN:KNA",
       "gem:CPTOTSAXN:KOR",
       "gem:CPTOTSAXN:LAO",
@@ -454,7 +470,6 @@
       "gem:CPTOTSAXN:SSP",
       "gem:CPTOTSAXN:SUR",
       "gem:CPTOTSAXN:TJK",
-      "gem:CPTOTSAXN:TUN",
       "gem:CPTOTSAXN:ZAF",
       "gem:DXGSRMRCHNSKD:BRA",
       "gem:DXGSRMRCHNSKD:DEV",
@@ -480,7 +495,8 @@
     "C3_status": "PENDING_EXTERNAL_EVIDENCE",
     "raw_values_persisted": false,
     "protocol_binding_status": "BOUND_TO_FROZEN_PROTOCOL_V1_1_2",
-    "selection_artifact_id": 14991172651,
-    "selection_workflow_run_id": 45545605162
+    "selection_artifact_id": null,
+    "selection_workflow_run_id": null,
+    "stratification_status": "C1_MECHANISM_QUOTAS_UPDATED_C2_REPORT_PENDING"
   }
 }
