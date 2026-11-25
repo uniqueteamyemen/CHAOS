@@ -1,4 +1,5 @@
 import json
+import os
 import tempfile
 import unittest
 from pathlib import Path
@@ -141,6 +142,8 @@ class C2StablePilotTests(unittest.TestCase):
                     "candidate_sha256": ctx["candidate_hashes"][sid],
                     "status": "COMPLETE",
                     "artifact_sha256": runner.base.sha_file(series_paths[sid]),
+                    "source_commit": os.environ.get("GITHUB_SHA"),
+                    "workflow_run_id": os.environ.get("GITHUB_RUN_ID"),
                     "protocol_sha256": ctx["source_sha256"]["protocol"],
                     "runner_sha256": runner.base.sha_file(Path(runner.__file__)),
                 })
