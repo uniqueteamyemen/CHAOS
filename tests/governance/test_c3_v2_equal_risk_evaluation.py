@@ -197,7 +197,8 @@ class C3V2EqualRiskTests(unittest.TestCase):
             {"detector": "A_FAST", "hit_miss": "HIT", "episode_id": "EP_A", "detection_lag_days": 7},
             {"detector": "A_CONSENSUS", "hit_miss": "MISS", "episode_id": "EP_B", "detection_lag_days": None},
         ]
-        summary = c3.summarize_detector_results({}, historical, {})
+        calibration = {"TEST": {"arms": {name: {"status": "NOT_VALIDATED"} for name in c3.CANDIDATES}}}
+        summary = c3.summarize_detector_results(calibration, historical, {})
         report = {
             "status": "OPTIMIZATION_RUN",
             "run_id": "TEST",
