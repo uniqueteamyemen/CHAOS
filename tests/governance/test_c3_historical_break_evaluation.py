@@ -8,6 +8,7 @@ from datetime import date
 from p1_4_validation.c3.run_historical_break_evaluation import (
     CSV_FIELDNAMES,
     csv_export_row,
+    ensure_causal_release_order,
     score_events,
 )
 
@@ -21,6 +22,20 @@ def rows(dates, frequency="Monthly"):
 
 
 class C3HistoricalEvaluationTests(unittest.TestCase):
+    def test_first_release_availability_must_follow_observation_order(self):
+        ordered = rows([
+            date(2020, 1, 8), date(2020, 1, 15), date(2020, 1, 22),
+        ])
+        ensure_causal_release_order("TEST_SERIES", ordered)
+
+        unordered = rows([
+            date(2020, 1, 8), date(2020, 1, 22), date(2020, 1, 15),
+        ])
+        with self.assertRaisesRegex(
+            ValueError, "C3_NON_MONOTONIC_FIRST_RELEASE_AVAILABILITY:TEST_SERIES:2"
+        ):
+            ensure_causal_release_order("TEST_SERIES", unordered)
+
     def test_baseline_alarm_count_excludes_first_40_and_uses_available_at(self):
         data = rows([
             date(2004, 1, 1), date(2004, 2, 1), date(2004, 3, 1),
