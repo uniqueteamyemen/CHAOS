@@ -263,8 +263,7 @@ def fetch_series_initial_releases(series: dict, output_dir: Path) -> tuple[list[
             raise ValueError(
                 f"ALFRED_PRE_ARCHIVE_AVAILABILITY:{series_id}:{observation}:{available}"
             )
-        records.append({
-            "event_id": series["event_id"],
+        record = {
             "series_id": series_id,
             "observation_date": observation.isoformat(),
             "available_at": available.isoformat(),
@@ -272,26 +271,36 @@ def fetch_series_initial_releases(series: dict, output_dir: Path) -> tuple[list[
             "frequency": series["frequency"],
             "units": series["units"],
             "value_semantics": "FIRST_ALFRED_VINTAGE_VALUE",
-        })
+        }
+        # V1 remains event-per-series; V2 stores one tape per unique series.
+        # Event-to-series relationships live in the separate pre-registered map.
+        if series.get("event_id"):
+            record["event_id"] = series["event_id"]
+        records.append(record)
 
-    if len(records) < int(series["expected_initial_observation_count_min"]):
+    minimum_count = int(
+        series.get("minimum_observation_count",
+                   series.get("expected_initial_observation_count_min", 0))
+    )
+    if len(records) < minimum_count:
         raise ValueError(
             f"C3_INSUFFICIENT_FIRST_RELEASE_OBSERVATIONS:{series_id}:"
-            f"{len(records)}<{series['expected_initial_observation_count_min']}"
+            f"{len(records)}<{minimum_count}"
         )
-    anchor = date.fromisoformat(series["anchor_date"])
-    pre_event = sum(date.fromisoformat(row["observation_date"]) < anchor for row in records)
-    post_event = sum(date.fromisoformat(row["observation_date"]) >= anchor for row in records)
-    min_pre = int(series["minimum_pre_event_observations"])
-    min_post = int(series["minimum_post_event_observations"])
-    if pre_event < min_pre:
-        raise ValueError(
-            f"C3_INSUFFICIENT_PRE_EVENT_HISTORY:{series_id}:{pre_event}<{min_pre}"
-        )
-    if post_event < min_post:
-        raise ValueError(
-            f"C3_INSUFFICIENT_POST_EVENT_HISTORY:{series_id}:{post_event}<{min_post}"
-        )
+    if series.get("anchor_date"):
+        anchor = date.fromisoformat(series["anchor_date"])
+        pre_event = sum(date.fromisoformat(row["observation_date"]) < anchor for row in records)
+        post_event = sum(date.fromisoformat(row["observation_date"]) >= anchor for row in records)
+        min_pre = int(series.get("minimum_pre_event_observations", 0))
+        min_post = int(series.get("minimum_post_event_observations", 0))
+        if pre_event < min_pre:
+            raise ValueError(
+                f"C3_INSUFFICIENT_PRE_EVENT_HISTORY:{series_id}:{pre_event}<{min_pre}"
+            )
+        if post_event < min_post:
+            raise ValueError(
+                f"C3_INSUFFICIENT_POST_EVENT_HISTORY:{series_id}:{post_event}<{min_post}"
+            )
     observations = [r["observation_date"] for r in records]
     availability = [r["available_at"] for r in records]
     if len(observations) != len(set(observations)):
@@ -305,38 +314,59 @@ def fetch_series_initial_releases(series: dict, output_dir: Path) -> tuple[list[
 def write_intake(contract_path: Path, output_dir: Path) -> dict:
     contract_bytes = contract_path.read_bytes()
     contract = json.loads(contract_bytes)
-    if contract.get("contract_id") != "CHAOS_P1_4_C3_POINT_IN_TIME_SOURCE_INTAKE_V1":
+    contract_id = contract.get("contract_id")
+    supported_contracts = {
+        "CHAOS_P1_4_C3_POINT_IN_TIME_SOURCE_INTAKE_V1",
+        "CHAOS_P1_4_C3_EXPANDED_EVENT_COHORT_V1",
+    }
+    if contract_id not in supported_contracts:
         raise ValueError("C3_SOURCE_CONTRACT_ID_MISMATCH")
 
     output_dir.mkdir(parents=True, exist_ok=True)
     all_records: list[dict] = []
     series_results: list[dict] = []
     raw_batches: list[dict] = []
+    # Original V1 contract is event-per-series. Expanded V1 fetches each unique
+    # series once, while multiple historical anchors are represented separately.
+    series_specs = contract.get("series", contract.get("events", []))
+    if not series_specs:
+        raise ValueError("C3_SOURCE_CONTRACT_HAS_NO_SERIES")
 
-    for series in contract["events"]:
+    for series in series_specs:
         records, batches = fetch_series_initial_releases(series, output_dir)
         all_records.extend(records)
         raw_batches.extend(batches)
-        series_results.append({
-            "event_id": series["event_id"],
+        summary = {
             "series_id": series["series_id"],
             "observation_start": series["observation_start"],
             "observation_end": series["observation_end"],
             "observation_count": len(records),
-            "pre_event_observations": sum(date.fromisoformat(r["observation_date"]) < date.fromisoformat(series["anchor_date"]) for r in records),
-            "post_event_observations": sum(date.fromisoformat(r["observation_date"]) >= date.fromisoformat(series["anchor_date"]) for r in records),
+            "pre_event_observations": (
+                sum(date.fromisoformat(r["observation_date"]) < date.fromisoformat(series["anchor_date"]) for r in records)
+                if series.get("anchor_date") else None
+            ),
+            "post_event_observations": (
+                sum(date.fromisoformat(r["observation_date"]) >= date.fromisoformat(series["anchor_date"]) for r in records)
+                if series.get("anchor_date") else None
+            ),
             "first_observation": records[0]["observation_date"],
             "last_observation": records[-1]["observation_date"],
             "first_available_at": records[0]["available_at"],
             "last_available_at": records[-1]["available_at"],
             "vintage_batches": len(batches),
-        })
+        }
+        if series.get("event_id"):
+            summary["event_id"] = series["event_id"]
+        series_results.append(summary)
 
     tape_path = output_dir / contract["intake_output"]["normalized_file"]
-    fieldnames = [
-        "event_id", "series_id", "observation_date", "available_at",
-        "value", "frequency", "units", "value_semantics",
-    ]
+    fieldnames = (
+        ["event_id", "series_id", "observation_date", "available_at",
+         "value", "frequency", "units", "value_semantics"]
+        if contract_id == "CHAOS_P1_4_C3_POINT_IN_TIME_SOURCE_INTAKE_V1"
+        else ["series_id", "observation_date", "available_at",
+              "value", "frequency", "units", "value_semantics"]
+    )
     with tape_path.open("w", encoding="utf-8", newline="") as stream:
         writer = csv.DictWriter(stream, fieldnames=fieldnames)
         writer.writeheader()
@@ -347,9 +377,20 @@ def write_intake(contract_path: Path, output_dir: Path) -> dict:
 
     manifest = {
         "artifact_type": "CHAOS_P1_4_C3_SOURCE_INTAKE",
+        "contract_id": contract_id,
+        "contract_version": contract.get("contract_version"),
         "status": "SOURCE_TAPES_ACQUIRED_NOT_DETECTOR_EXECUTED",
+        "event_count": len(contract.get("events", [])),
+        "series_count": len(series_specs),
+        "event_series_pair_count": (
+            sum(len(event.get("expected_sign_by_series", {}))
+                for event in contract.get("events", []))
+            if any("expected_sign_by_series" in event for event in contract.get("events", []))
+            else len(series_specs)
+        ),
         "contract_sha256": sha256_bytes(contract_bytes),
         "shock_event_contract_git_blob": contract["frozen_references"]["shock_event_contract_git_blob"],
+        "shock_event_contract_sha256": contract["frozen_references"].get("shock_event_contract_sha256"),
         "source_commit": os.environ.get("GITHUB_SHA"),
         "workflow_run_id": os.environ.get("GITHUB_RUN_ID"),
         "acquisition_method": "ALFRED historical vintage CSV snapshots; earliest non-missing value per observation",

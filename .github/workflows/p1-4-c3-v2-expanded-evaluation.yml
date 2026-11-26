@@ -1,0 +1,166 @@
+name: CHAOS P1.4 C3 v2 — Expanded Cohort & Equal-Risk Evaluation
+
+"on":
+  workflow_call:
+    inputs:
+      source_intake_run_id:
+        description: "Completed C3 v2 source-intake workflow run ID"
+        required: true
+        type: string
+      source_intake_artifact_name:
+        description: "Exact C3 v2 source-intake artifact name"
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: chaos-c3-v2-expanded-evaluation-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  expanded-equal-risk-evaluation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    env:
+      PYTHONUNBUFFERED: "1"
+      PYTHONHASHSEED: "0"
+      OMP_NUM_THREADS: "1"
+      OPENBLAS_NUM_THREADS: "1"
+      MKL_NUM_THREADS: "1"
+    steps:
+      - name: Require the isolated C3 v2 branch and a source-intake artifact
+        shell: bash
+        env:
+          SOURCE_INTAKE_RUN_ID: ${{ inputs.source_intake_run_id }}
+          SOURCE_INTAKE_ARTIFACT_NAME: ${{ inputs.source_intake_artifact_name }}
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REF" = "refs/heads/feat/c3-v2-expanded-cohort-self-calibrating" || {
+            echo "C3_V2_WRONG_BRANCH:$GITHUB_REF" >&2
+            exit 1
+          }
+          [[ "$SOURCE_INTAKE_RUN_ID" =~ ^[0-9]+$ ]] || {
+            echo "C3_V2_INVALID_SOURCE_INTAKE_RUN_ID" >&2
+            exit 1
+          }
+          [[ "$SOURCE_INTAKE_ARTIFACT_NAME" == chaos-c3-v2-expanded-source-intake-* ]] || {
+            echo "C3_V2_INVALID_SOURCE_INTAKE_ARTIFACT_NAME" >&2
+            exit 1
+          }
+
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install frozen runtime dependencies
+        run: python -m pip install -r real_data_stress_pipeline/requirements.txt
+
+      - name: Download the exact immutable source-intake artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ inputs.source_intake_artifact_name }}
+          run-id: ${{ inputs.source_intake_run_id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          path: /tmp/c3-v2-source-intake
+
+      - name: Verify artifact handoff and assemble deterministic source ZIP
+        shell: bash
+        env:
+          SOURCE_INTAKE_RUN_ID: ${{ inputs.source_intake_run_id }}
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json
+          import os
+          import zipfile
+          from pathlib import Path
+
+          root = Path("/tmp/c3-v2-source-intake")
+          manifest_path = root / "expanded_source_intake_manifest.json"
+          tape_path = root / "expanded_initial_release_tape.csv"
+          if not manifest_path.is_file() or not tape_path.is_file():
+              raise SystemExit("C3_V2_SOURCE_ARTIFACT_REQUIRED_FILES_MISSING")
+          manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+          if str(manifest.get("workflow_run_id")) != os.environ["SOURCE_INTAKE_RUN_ID"]:
+              raise SystemExit("C3_V2_SOURCE_INTAKE_RUN_ID_MISMATCH")
+          if manifest.get("contract_id") != "CHAOS_P1_4_C3_EXPANDED_EVENT_COHORT_V1":
+              raise SystemExit("C3_V2_SOURCE_CONTRACT_ID_MISMATCH")
+          if manifest.get("status") != "SOURCE_TAPES_ACQUIRED_NOT_DETECTOR_EXECUTED":
+              raise SystemExit("C3_V2_SOURCE_INTAKE_STATUS_MISMATCH")
+          if not manifest.get("raw_vintage_batches"):
+              raise SystemExit("C3_V2_RAW_VINTAGE_BATCHES_MISSING")
+          output = Path("/tmp/c3-v2-expanded-source-intake.zip")
+          with zipfile.ZipFile(output, "w", compression=zipfile.ZIP_DEFLATED) as archive:
+              for path in sorted(root.rglob("*")):
+                  if path.is_file():
+                      archive.write(path, path.relative_to(root).as_posix())
+          with zipfile.ZipFile(output) as archive:
+              names = set(archive.namelist())
+              if "expanded_source_intake_manifest.json" not in names:
+                  raise SystemExit("C3_V2_ZIP_MANIFEST_MISSING")
+              if "expanded_initial_release_tape.csv" not in names:
+                  raise SystemExit("C3_V2_ZIP_TAPE_MISSING")
+          print(f"C3_V2_SOURCE_ARCHIVE_READY bytes={output.stat().st_size}")
+          PY
+
+      - name: Compile C3 v2 runner and execute all governance tests
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m py_compile \
+            p1_4_validation/c3/alfred_first_release_intake.py \
+            p1_4_validation/c3/run_equal_risk_calibration.py \
+            p1_4_validation/c3/run_historical_break_evaluation.py \
+            p1_4_validation/c3/run_c3_v2_equal_risk_evaluation.py
+          PYTHONPATH="$GITHUB_WORKSPACE" python -m unittest discover \
+            -s tests/governance -p 'test_c3_equal_risk_calibration.py' -v
+          PYTHONPATH="$GITHUB_WORKSPACE" python -m unittest discover \
+            -s tests/governance -p 'test_c3_historical_break_evaluation.py' -v
+          PYTHONPATH="$GITHUB_WORKSPACE" python -m unittest discover \
+            -s tests/governance -p 'test_p1_4_c3_source_intake.py' -v
+          PYTHONPATH="$GITHUB_WORKSPACE" python -m unittest discover \
+            -s tests/governance -p 'test_c3_v2_expanded_cohort.py' -v
+          PYTHONPATH="$GITHUB_WORKSPACE" python -m unittest discover \
+            -s tests/governance -p 'test_c3_v2_source_intake.py' -v
+          PYTHONPATH="$GITHUB_WORKSPACE" python -m unittest discover \
+            -s tests/governance -p 'test_c3_v2_equal_risk_evaluation.py' -v
+
+      - name: Run independent equal-risk calibration and expanded historical replay
+        shell: bash
+        run: |
+          set -euo pipefail
+          PYTHONPATH="$GITHUB_WORKSPACE" python -u \
+            p1_4_validation/c3/run_c3_v2_equal_risk_evaluation.py \
+            --source-zip /tmp/c3-v2-expanded-source-intake.zip \
+            --contract p1_4_validation/c3/c3_expanded_event_cohort_v1.json \
+            --output-dir artifacts/p1_4/c3/v2_expanded_evaluation
+
+      - name: Publish C3 v2 result summary
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          {
+            echo "# C3 v2 — Expanded Cohort & Self-Calibrating Thresholds"
+            if [[ -s artifacts/p1_4/c3/v2_expanded_evaluation/C3_V2_EXPANDED_EVALUATION.md ]]; then
+              cat artifacts/p1_4/c3/v2_expanded_evaluation/C3_V2_EXPANDED_EVALUATION.md
+            else
+              echo "C3 v2 evaluation report unavailable; inspect the job logs."
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload full C3 v2 evaluation evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: chaos-c3-v2-expanded-evaluation-${{ github.run_id }}-${{ github.run_attempt }}
+          path: artifacts/p1_4/c3/v2_expanded_evaluation/
+          retention-days: 90
+          if-no-files-found: warn

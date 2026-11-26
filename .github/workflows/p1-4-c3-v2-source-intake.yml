@@ -1,0 +1,127 @@
+name: CHAOS P1.4 C3 v2 — Expanded ALFRED Source Intake
+
+"on":
+  workflow_call:
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: chaos-c3-v2-source-intake-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  expanded-source-intake:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    env:
+      PYTHONUNBUFFERED: "1"
+      PYTHONHASHSEED: "0"
+    steps:
+      - name: Require the isolated C3 v2 branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REF" = "refs/heads/feat/c3-v2-expanded-cohort-self-calibrating" || {
+            echo "C3_V2_WRONG_BRANCH:$GITHUB_REF" >&2
+            exit 1
+          }
+
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install frozen runtime dependencies
+        run: python -m pip install -r real_data_stress_pipeline/requirements.txt
+
+      - name: Verify the inherited frozen shock-event reference
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import hashlib
+          import json
+          from pathlib import Path
+          contract = json.loads(Path("p1_4_validation/c3/c3_expanded_event_cohort_v1.json").read_text())
+          shock_path = Path(contract["frozen_references"]["shock_event_contract_path"])
+          actual = hashlib.sha256(shock_path.read_bytes()).hexdigest()
+          expected = contract["frozen_references"]["shock_event_contract_sha256"]
+          if actual != expected:
+              raise SystemExit(f"C3_V2_SHOCK_EVENT_CONTRACT_SHA_MISMATCH:{actual}")
+          original_path = Path(contract["frozen_references"]["original_c3_v1_contract_path"])
+          original_sha = hashlib.sha256(original_path.read_bytes()).hexdigest()
+          expected_original_sha = contract["frozen_references"]["original_c3_v1_source_contract_sha256"]
+          if original_sha != expected_original_sha:
+              raise SystemExit(f"C3_V2_ORIGINAL_C3_V1_CONTRACT_SHA_MISMATCH:{original_sha}")
+          if len(contract["events"]) != 20:
+              raise SystemExit("C3_V2_PRE_REGISTERED_EVENT_COUNT_MISMATCH")
+          pairs = sum(len(event["expected_sign_by_series"]) for event in contract["events"])
+          if pairs != 37:
+              raise SystemExit("C3_V2_PRE_REGISTERED_PAIR_COUNT_MISMATCH")
+          PY
+
+      - name: Compile and test the frozen source-intake contracts
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m py_compile p1_4_validation/c3/alfred_first_release_intake.py
+          PYTHONPATH="$GITHUB_WORKSPACE" python -m unittest discover \
+            -s tests/governance -p 'test_p1_4_c3_source_intake.py' -v
+          PYTHONPATH="$GITHUB_WORKSPACE" python -m unittest discover \
+            -s tests/governance -p 'test_c3_v2_expanded_cohort.py' -v
+          PYTHONPATH="$GITHUB_WORKSPACE" python -m unittest discover \
+            -s tests/governance -p 'test_c3_v2_source_intake.py' -v
+
+      - name: Acquire unique-series ALFRED first-release tapes
+        shell: bash
+        run: |
+          set -euo pipefail
+          PYTHONPATH="$GITHUB_WORKSPACE" python \
+            p1_4_validation/c3/alfred_first_release_intake.py \
+            --contract p1_4_validation/c3/c3_expanded_event_cohort_v1.json \
+            --output artifacts/p1_4/c3/v2_source_intake
+
+      - name: Publish cohort manifest and exact artifact handoff
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          {
+            echo "# C3 v2 Expanded ALFRED Source Intake"
+            if [[ -s artifacts/p1_4/c3/v2_source_intake/expanded_source_intake_manifest.json ]]; then
+              python - <<'PY'
+          import json
+          from pathlib import Path
+          p = Path("artifacts/p1_4/c3/v2_source_intake/expanded_source_intake_manifest.json")
+          m = json.loads(p.read_text(encoding="utf-8"))
+          print()
+          print(f"Status: {m['status']}")
+          print(f"Events: {m['event_count']} | Series: {m['series_count']} | Event-series pairs: {m['event_series_pair_count']}")
+          print(f"Points: {m['point_count']} | Raw ALFRED batches: {len(m['raw_vintage_batches'])}")
+          print(f"Tape SHA-256: {m['normalized_tape']['sha256']}")
+          print(f"Source contract SHA-256: {m['contract_sha256']}")
+          print()
+          print("No detector or calibration was executed in this intake workflow.")
+          print()
+          print("Copy the source intake run ID and artifact name below into the C3 v2 evaluation workflow.")
+          print(f"Source intake run ID: {m.get('workflow_run_id')}")
+          print(f"Artifact name: chaos-c3-v2-expanded-source-intake-{m.get('workflow_run_id')}-{__import__('os').environ.get('GITHUB_RUN_ATTEMPT', '1')}")
+          PY
+            else
+              echo "Source-intake manifest unavailable; inspect the failed job step."
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload immutable C3 v2 first-release evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: chaos-c3-v2-expanded-source-intake-${{ github.run_id }}-${{ github.run_attempt }}
+          path: artifacts/p1_4/c3/v2_source_intake/
+          retention-days: 90
+          if-no-files-found: error
