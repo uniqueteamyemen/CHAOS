@@ -612,5 +612,33 @@ class C3V2EqualRiskTests(unittest.TestCase):
 
 
 
+    def test_per_series_router_abstains_when_validated_members_have_no_historical_coverage(self):
+        calibration = {
+            "S1": {"arms": {
+                "FOCuS (reset-rearm)": {"status": "NOT_VALIDATED"},
+                c3.FOCUS4_NAME: {"status": "NOT_VALIDATED"},
+                "Post-Quiet Huber + MAD": {"status": "VALIDATED", "frozen_threshold": 30.0},
+                "Post-Quiet Huber + Bartlett LRV": {"status": "NOT_VALIDATED"},
+            }}
+        }
+        historical = [{
+            "series_id": "S1",
+            "detector": "Post-Quiet Huber + MAD",
+            "hit_miss": "MISS",
+            "episode_id": "EP_A",
+            "detection_lag_days": None,
+        }]
+        details = c3.append_per_series_router_results(
+            calibration, historical, {},
+            {"S1": [{"value_float": 0.0}]},
+            {"S1": []},
+        )
+        route = calibration["S1"]["per_series_router"]
+        self.assertIsNone(route["selected_detector"])
+        self.assertEqual(route["status"], "NO_HISTORICAL_COVERAGE")
+        self.assertEqual(details["validated_series_count"], 0)
+
+
+
 if __name__ == "__main__":
     unittest.main()
