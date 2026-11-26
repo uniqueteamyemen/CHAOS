@@ -1246,10 +1246,12 @@ def summarize_detector_results(
 ) -> dict:
     summary = {}
     total_series = len(calibration)
-    for detector in CANDIDATES:
-        validated_series = sum(
-            calibration[sid]["arms"].get(detector, {}).get("status") == "VALIDATED"
-            for sid in calibration
+    for detector in ALL_DETECTORS:
+        validated_series = (
+            sum(
+                calibration[sid]["arms"].get(detector, {}).get("status") == "VALIDATED"
+                for sid in calibration
+            ) if detector in CANDIDATES else 0
         )
         rows = [row for row in historical_results if row["detector"] == detector]
         matched = [row for row in rows if row["hit_miss"] == "HIT"]
@@ -1263,6 +1265,7 @@ def summarize_detector_results(
             for sid in calibration
         }
         summary[detector] = {
+            "role": "CANDIDATE" if detector in CANDIDATES else "READ_ONLY",
             "validated_series_count": int(validated_series),
             "series_count": total_series,
             "validated_all_series": validated_series == total_series,
@@ -1282,7 +1285,7 @@ def summarize_detector_results(
 
     eligible = [
         (name, values) for name, values in summary.items()
-        if values["validated_all_series"]
+        if name in CANDIDATES and values["validated_all_series"]
     ]
     ranking_rule = (
         "Eligible only after Holdout Wilson U95 <= 0.10 on every series; "
@@ -1318,7 +1321,7 @@ def summarize_detector_results(
 
 def markdown_report(report: dict) -> str:
     lines = [
-        "# CHAOS C3 v2 — Expanded Cohort & Self-Calibrating Thresholds",
+        "# CHAOS C3 v2.1 — Operational Detector Optimization",
         "",
         "- Status: **" + report["status"] + "**",
         "- Run ID: " + str(report["run_id"]),
@@ -1332,8 +1335,9 @@ def markdown_report(report: dict) -> str:
         "- Development gate: one-sided Wilson U95 <= 0.10",
         "- Holdout gate: one-sided Wilson U95 <= 0.10; no threshold retuning",
         "- Replicates per series: 1000 Development + 1000 independent Holdout",
-        "- FOCuS policy: 40 initial observations, 20 reset/rearm observations, up to 12 alerts",
-        "- Hybrid policy: FOCuS plus one Huber scale variant, same direction, within one observation",
+        "- FOCuS policy: 40 initial observations; Monthly re-arm 10 observations; Weekly re-arm 20 observations; up to 12 alerts",
+        "- Hybrid policy: FOCuS plus one or more Holdout-eligible Huber members, same direction, within eight observations",
+        "- PAYEMS analysis transform: causal first difference; other series remain at level",
         "",
         "## 1. Per-series calibration",
         "",
@@ -1381,13 +1385,13 @@ def markdown_report(report: dict) -> str:
         "",
         "## 3. Risk-first detector comparison",
         "",
-        "| Detector | Validated series | Matched pairs | Matched episode clusters | Unmatched alarms | Median absolute lag (days) |",
-        "|---|---:|---:|---:|---:|---:|",
+        "| Detector | Role | Validated series | Matched pairs | Matched episode clusters | Unmatched alarms | Median absolute lag (days) |",
+        "|---|---|---:|---:|---:|---:|---:|",
     ]
-    for detector in CANDIDATES:
+    for detector in ALL_DETECTORS:
         row = report["detector_summary"][detector]
         lines.append(
-            "| " + detector + " | "
+            "| " + detector + " | " + row["role"] + " | "
             + str(row["validated_series_count"]) + "/" + str(row["series_count"]) + " | "
             + str(row["matched_event_series_pairs"]) + "/" + str(row["total_event_series_pairs"]) + " | "
             + str(row["matched_episode_clusters"]) + "/" + str(row["episode_clusters_with_any_registered_pair"]) + " | "
@@ -1433,13 +1437,19 @@ def main() -> int:
     )
     args = parser.parse_args()
 
+    source_archive_path = Path(args.source_zip)
     manifest, by_series, contract, archive_sha, contract_sha = verify_source_bundle(
-        Path(args.source_zip), Path(args.contract)
+        source_archive_path, Path(args.contract)
+    )
+    by_series, transform_audit = apply_causal_series_transforms(
+        source_archive_path, manifest, by_series, contract
     )
     calibration = {}
     for series_id in sorted(by_series):
         series_cal = calibrate_series(
-            series_id, by_series[series_id], manifest["normalized_tape"]["sha256"]
+            series_id, by_series[series_id],
+            manifest["normalized_tape"]["sha256"],
+            {row["series_id"]: row for row in contract["series"]}[series_id],
         )
         calibration[series_id] = series_cal
         print(
@@ -1532,6 +1542,10 @@ def main() -> int:
             "source_intake_commit": manifest.get("source_commit"),
             "point_count": manifest["point_count"],
             "raw_batch_count": len(manifest.get("raw_vintage_batches", [])),
+            "source_contract_sha256": manifest.get("contract_sha256"),
+            "source_contract_id": manifest.get("contract_id"),
+            "analysis_transforms": transform_audit,
+            "source_archive_mutated": False,
         },
         "calibration_protocol": {
             "p0_target": P0_TARGET,
@@ -1545,9 +1559,11 @@ def main() -> int:
             "ar_orders": [1, 2, 3],
             "ar_selection": "minimum AIC; unstable winner fails closed",
             "null_generator": "AR(p) residual bootstrap",
-            "focus_policy": "40 initial + 20 rearm; maximum 12 alerts",
+            "focus_policy": "40 initial; monthly rearm 10; weekly rearm 20; maximum 12 alerts",
             "huber_policy": "MAD or Bartlett LRV scale; two-sided Huber score",
-            "hybrid_policy": "FOCuS + one Huber scale variant; same sign; gap <= 1 observation",
+            "hybrid_policy": "FOCuS + one or more Holdout-eligible Huber variants; same sign; gap <= 8 observations",
+            "hybrid_member_gate": "Only members with status VALIDATED are passed into Hybrid for each series.",
+            "optimization_mode": "OPERATIONAL_TUNING_USING_CURRENT_DEVELOPMENT_AND_HOLDOUT_COHORTS",
             "event_matching": "one-to-one direction-constrained calendar-exact ±12 months",
             "seed_namespace": "CHAOS:C3_V2_EXPANDED",
         },
@@ -1560,6 +1576,8 @@ def main() -> int:
                 "observation_end": series["observation_end"],
                 "frequency": series["frequency"],
                 "units": series["units"],
+                "analysis_units": series.get("analysis_units", series["units"]),
+                "series_transform": series.get("series_transform", "level"),
                 "minimum_observation_count": series["minimum_observation_count"],
             }
             for series in contract["series"]
