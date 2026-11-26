@@ -19,7 +19,7 @@ permissions:
   actions: read
 
 concurrency:
-  group: chaos-c3-v2-1-optimization-\${{ github.ref }}
+  group: chaos-c3-v2-1-optimization-${{ github.ref }}
   cancel-in-progress: false
 
 jobs:
@@ -29,8 +29,8 @@ jobs:
       - name: Require isolated C3 v2.1 branch and explicit approval
         shell: bash
         env:
-          EXECUTE_C3_V2: \${{ inputs.execute_c3_equal_risk_calibration }}
-          REUSE_SOURCE_INTAKE_RUN_ID: \${{ inputs.reuse_source_intake_run_id }}
+          EXECUTE_C3_V2: ${{ inputs.execute_c3_equal_risk_calibration }}
+          REUSE_SOURCE_INTAKE_RUN_ID: ${{ inputs.reuse_source_intake_run_id }}
         run: |
           set -euo pipefail
           test "$GITHUB_REF" = "refs/heads/feat/c3-v2-expanded-cohort-self-calibrating" || {
@@ -48,7 +48,7 @@ jobs:
 
   expanded-source-intake:
     needs: validate-dispatch
-    if: \${{ inputs.execute_c3_equal_risk_calibration == true && inputs.reuse_source_intake_run_id == '' }}
+    if: ${{ inputs.execute_c3_equal_risk_calibration == true && inputs.reuse_source_intake_run_id == '' }}
     uses: ./.github/workflows/p1-4-c3-v2-source-intake.yml
     secrets: inherit
 
@@ -57,13 +57,13 @@ jobs:
       - validate-dispatch
       - expanded-source-intake
     if: >-
-      \${{ always() &&
+      ${{ always() &&
           inputs.execute_c3_equal_risk_calibration == true &&
           needs.validate-dispatch.result == 'success' &&
           (needs.expanded-source-intake.result == 'success' ||
            inputs.reuse_source_intake_run_id != '') }}
     uses: ./.github/workflows/p1-4-c3-v2-expanded-evaluation.yml
     with:
-      source_intake_run_id: \${{ inputs.reuse_source_intake_run_id != '' && inputs.reuse_source_intake_run_id || github.run_id }}
-      source_intake_artifact_name: chaos-c3-v2-expanded-source-intake-\${{ inputs.reuse_source_intake_run_id != '' && inputs.reuse_source_intake_run_id || github.run_id }}-\${{ inputs.reuse_source_intake_run_id != '' && '1' || github.run_attempt }}
+      source_intake_run_id: ${{ inputs.reuse_source_intake_run_id != '' && inputs.reuse_source_intake_run_id || github.run_id }}
+      source_intake_artifact_name: chaos-c3-v2-expanded-source-intake-${{ inputs.reuse_source_intake_run_id != '' && inputs.reuse_source_intake_run_id || github.run_id }}-${{ inputs.reuse_source_intake_run_id != '' && '1' || github.run_attempt }}
     secrets: inherit
