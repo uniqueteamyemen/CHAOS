@@ -23,7 +23,7 @@ class C3V2ExpandedCohortTests(unittest.TestCase):
         cls.contract = json.loads(CONTRACT_PATH.read_text(encoding="utf-8"))
 
     def test_frozen_cohort_size_and_episode_clustering(self):
-        self.assertEqual(self.contract["contract_id"], "CHAOS_P1_4_C3_EXPANDED_EVENT_COHORT_V1")
+        self.assertEqual(self.contract["contract_id"], "CHAOS_P1_4_C3_EXPANDED_EVENT_COHORT_V2_1")
         self.assertEqual(len(self.contract["events"]), 20)
         self.assertEqual(len(self.contract["series"]), 4)
         self.assertEqual(self.contract["cohort_design"]["episode_clusters"], 10)
@@ -34,6 +34,21 @@ class C3V2ExpandedCohortTests(unittest.TestCase):
             {series["series_id"] for series in self.contract["series"]},
             {"UNRATE", "PAYEMS", "WCOILBRENTEU", "ICSA"},
         )
+
+    def test_registered_analysis_transforms_are_series_specific(self):
+        transforms = {
+            row["series_id"]: row.get("series_transform", "level")
+            for row in self.contract["series"]
+        }
+        self.assertEqual(transforms, {
+            "UNRATE": "level",
+            "PAYEMS": "first_difference",
+            "WCOILBRENTEU": "level",
+            "ICSA": "level",
+        })
+        payems = next(row for row in self.contract["series"] if row["series_id"] == "PAYEMS")
+        self.assertEqual(payems["predecessor_observation_date"], "1966-07-01")
+        self.assertIn("Monthly change", payems["analysis_units"])
 
     def test_frozen_c3_v1_source_intake_contract_path_and_sha256(self):
         frozen = self.contract["frozen_references"]
