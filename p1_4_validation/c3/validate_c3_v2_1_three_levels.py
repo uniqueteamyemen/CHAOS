@@ -298,8 +298,20 @@ def run_level_3_engine_output_check(
             member_status = report["calibration"][series_id]["arms"][selected_member].get("status")
             if member_status != "VALIDATED":
                 raise RuntimeError(f"C3_V2_1_LEVEL3_ROUTER_MEMBER_NOT_VALIDATED:{series_id}:{selected_member}")
-        elif route.get("status") != "NO_VALIDATED_MEMBER":
+        elif route.get("status") not in {"NO_VALIDATED_MEMBER", "NO_HISTORICAL_COVERAGE"}:
             raise RuntimeError(f"C3_V2_1_LEVEL3_ROUTER_EMPTY_ROUTE_STATUS_INVALID:{series_id}")
+        elif route.get("status") == "NO_HISTORICAL_COVERAGE":
+            scores = route.get("candidate_scores", [])
+            if not any(row.get("validated") for row in scores):
+                raise RuntimeError(f"C3_V2_1_LEVEL3_ROUTER_COVERAGE_ABSTENTION_WITHOUT_VALIDATED_MEMBER:{series_id}")
+            if any(
+                row.get("validated") and (
+                    int(row.get("matched_event_series_pairs", 0)) > 0
+                    or int(row.get("matched_episode_clusters", 0)) > 0
+                )
+                for row in scores
+            ):
+                raise RuntimeError(f"C3_V2_1_LEVEL3_ROUTER_IGNORED_HISTORICAL_COVERAGE:{series_id}")
 
     historical = report.get("historical_results", [])
     counts = Counter(row.get("detector") for row in historical)
