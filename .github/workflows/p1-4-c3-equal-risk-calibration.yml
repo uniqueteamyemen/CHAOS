@@ -8,6 +8,11 @@ on:
         required: true
         type: boolean
         default: false
+      reuse_source_intake_run_id:
+        description: "Optional completed C3 v2.1 source-intake run ID. Use 45757611871 to reuse the archived ALFRED artifact without downloading again."
+        required: false
+        type: string
+        default: ""
 
 permissions:
   contents: read
@@ -21,5 +26,5 @@ jobs:
       - name: Select the C3 equal-risk implementation branch
         run: |
           echo "This default-branch workflow only registers the manual action."
-          echo "Select feat/c3-equal-risk-calibration-v1 in the branch selector."
-          echo "No calibration or source-intake operation runs from main-phase2."
+          echo "Select feat/c3-v2-expanded-cohort-self-calibrating in the branch selector."
+          echo "Set execute_c3_equal_risk_calibration=true. Set reuse_source_intake_run_id=45757611871 to reuse the saved source artifact."
