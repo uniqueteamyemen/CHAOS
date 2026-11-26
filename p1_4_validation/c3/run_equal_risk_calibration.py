@@ -24,8 +24,8 @@ QUIET_POINTS = 40
 REPLICATES = 1000
 MIN_VALID_REPLICATES = 950
 P0_TARGET = 0.10
-FOCUS_GRID = (15, 20, 25, 30, 35, 40, 45, 50, 60, 75, 90)
-HUBER_GRID = (4, 6, 8, 10, 12, 14, 16, 20, 24, 32)
+FOCUS_GRID = (15, 20, 25, 30, 35, 40, 45, 50, 60, 75, 90, 110, 150, 200, 250, 300, 350, 400, 500, 600, 800, 1000, 1200)
+HUBER_GRID = (4, 6, 8, 10, 12, 14, 16, 20, 24, 32, 40, 50, 60, 70, 80, 90, 100, 110, 125, 150, 200)
 CANDIDATES = (
     "Post-Quiet Huber + MAD",
     "Post-Quiet Huber + Bartlett LRV",
@@ -67,7 +67,7 @@ def deterministic_seed(series_id: str, ar_order: int, phase: str, replicate: int
     if phase not in {"development", "holdout"}:
         raise ValueError("C3_INVALID_SEED_PHASE")
     identity = (
-        "CHAOS:P1.4:C3_EQUAL_RISK:v1:"
+        "CHAOS:P1.4:C3_EQUAL_RISK:v2:"
         + PINNED["tape_sha256"] + ":" + series_id + ":"
         + str(int(ar_order)) + ":" + phase + ":" + str(int(replicate))
     )
@@ -343,7 +343,8 @@ def markdown_report(report: dict) -> str:
         "- Null design: AR(1–3), AIC selection from first 40 observations only; residual bootstrap",
         "- Replicates per series and phase: 1000 development + 1000 independent holdout",
         "- Minimum valid replicates per phase and arm: 950",
-        "- Threshold selected on development only. Holdout is validation only; never retuned.",
+        "- Threshold selected on development only. Holdout is validation only; never retuned.
+        - Grid v2 expands the predeclared C3 threshold search range after v1 development-only shortfalls; a new seed namespace supplies fresh development and holdout simulations.",
         "- P0 is conditional on the fitted AR model and residual-bootstrap assumptions.",
         "",
         "## 1. Per-series calibration",
@@ -491,7 +492,9 @@ def main() -> int:
             "threshold_selected_on": "development only",
             "holdout_retuning": False,
             "historical_evaluation_requires_holdout_pass": True,
-            "null_seed_namespace": "CHAOS:P1.4:C3_EQUAL_RISK:v1",
+            "null_seed_namespace": "CHAOS:P1.4:C3_EQUAL_RISK:v2",
+            "threshold_grid_revision": "v2_extended_after_development_only_search_range_shortfall",
+            "independent_seed_set_from_prior_calibration_attempt": True,
         },
         "calibration": calibration,
         "historical_results": historical_results,
