@@ -12,10 +12,12 @@ import io
 import json
 import os
 import re
+import socket
 import time
 from datetime import date, timedelta
 from html.parser import HTMLParser
 from pathlib import Path
+from urllib.error import HTTPError, URLError
 from urllib.parse import urlencode
 from urllib.request import Request, urlopen
 
@@ -25,6 +27,10 @@ ALFRED_GRAPH = "https://alfred.stlouisfed.org/graph/alfredgraph.csv"
 USER_AGENT = "CHAOS-C3-point-in-time-intake/1.0"
 BATCH_SIZE = 10
 REQUEST_DELAY_SECONDS = 1.0
+HTTP_TIMEOUT_SECONDS = 120
+HTTP_MAX_ATTEMPTS = 5
+HTTP_BACKOFF_INITIAL_SECONDS = 2.0
+HTTP_BACKOFF_MAX_SECONDS = 30.0
 DATE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 
 
@@ -58,13 +64,64 @@ def extract_vintage_dates(html: str, start: str, end: str) -> list[str]:
     return dates
 
 
-def _http_get(url: str, timeout: int = 60) -> bytes:
-    request = Request(url, headers={"User-Agent": USER_AGENT})
-    with urlopen(request, timeout=timeout) as response:
-        status = getattr(response, "status", 200)
-        if status != 200:
-            raise RuntimeError(f"ALFRED_HTTP_STATUS:{status}:{url}")
-        return response.read()
+def _http_get(url: str, timeout: int = HTTP_TIMEOUT_SECONDS) -> bytes:
+    """Fetch ALFRED idempotent GETs with bounded retry and explicit diagnostics."""
+    request = Request(
+        url,
+        headers={
+            "User-Agent": USER_AGENT,
+            "Accept": "text/html,text/csv, */*;q=0.8",
+            "Cache-Control": "no-cache",
+        },
+    )
+    retryable_http_statuses = {408, 425, 429, 500, 502, 503, 504}
+    last_error: Exception | None = None
+
+    for attempt in range(1, HTTP_MAX_ATTEMPTS + 1):
+        try:
+            with urlopen(request, timeout=timeout) as response:
+                status = getattr(response, "status", 200)
+                if status != 200:
+                    raise RuntimeError(f"ALFRED_HTTP_STATUS:{status}:{url}")
+                payload = response.read()
+                if not payload:
+                    raise RuntimeError(f"ALFRED_EMPTY_RESPONSE:{url}")
+                return payload
+        except HTTPError as exc:
+            last_error = exc
+            if exc.code not in retryable_http_statuses:
+                raise RuntimeError(
+                    f"ALFRED_HTTP_NONRETRYABLE:{exc.code}:{url}"
+                ) from exc
+            retry_after = exc.headers.get("Retry-After") if exc.headers else None
+        except (URLError, TimeoutError, socket.timeout, ConnectionError) as exc:
+            last_error = exc
+            retry_after = None
+
+        if attempt >= HTTP_MAX_ATTEMPTS:
+            break
+
+        backoff = min(
+            HTTP_BACKOFF_INITIAL_SECONDS * (2 ** (attempt - 1)),
+            HTTP_BACKOFF_MAX_SECONDS,
+        )
+        try:
+            server_delay = float(retry_after) if retry_after else 0.0
+        except (TypeError, ValueError):
+            server_delay = 0.0
+        delay = min(max(backoff, server_delay), 60.0)
+        print(
+            f"ALFRED_RETRY attempt={attempt}/{HTTP_MAX_ATTEMPTS - 1} "
+            f"next_delay_seconds={delay:g} error={type(last_error).__name__}",
+            flush=True,
+        )
+        time.sleep(delay)
+
+    raise RuntimeError(
+        f"ALFRED_REQUEST_EXHAUSTED:attempts={HTTP_MAX_ATTEMPTS}:"
+        f"timeout_seconds={timeout}:url={url}:"
+        f"last_error={type(last_error).__name__}:{last_error}"
+    ) from last_error
 
 
 def fetch_vintage_dates(series: dict) -> list[str]:
