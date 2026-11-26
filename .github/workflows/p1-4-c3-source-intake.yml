@@ -1,0 +1,103 @@
+name: CHAOS P1.4 C3 — Point-in-Time Historical Source Intake
+
+on:
+  workflow_dispatch:
+    inputs:
+      execute_c3_source_intake:
+        description: "Explicitly acquire the three frozen C3 historical source tapes"
+        required: true
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  source-intake:
+    if: ${{ inputs.execute_c3_source_intake == true }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      PYTHONUNBUFFERED: "1"
+      PYTHONHASHSEED: "0"
+    steps:
+      - name: Require the active P1.4 implementation branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REF" = "refs/heads/feat/p1-4-capability-envelope-pilot-v1-20261125" || {
+            echo "C3_SOURCE_INTAKE_WRONG_BRANCH:$GITHUB_REF" >&2
+            exit 1
+          }
+
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Verify frozen C3 references
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import hashlib
+          from pathlib import Path
+          path = Path("real_data_stress_pipeline/shock_event_contract.json")
+          actual = hashlib.sha256(path.read_bytes()).hexdigest()
+          expected = "f7ee733eebedec96b0d06eae5c960edf36aee49d52edb24df549b8784a7ba18e"
+          if actual != expected:
+              raise SystemExit(f"C3_SHOCK_EVENT_CONTRACT_SHA_MISMATCH:{actual}")
+          PY
+
+      - name: Run C3 source-intake governance tests
+        shell: bash
+        run: |
+          set -euo pipefail
+          PYTHONPATH="$GITHUB_WORKSPACE" python -m unittest discover \
+            -s tests/governance -p 'test_p1_4_c3_source_intake.py' -v
+
+      - name: Acquire ALFRED first-release tapes
+        shell: bash
+        run: |
+          set -euo pipefail
+          PYTHONPATH="$GITHUB_WORKSPACE" python \
+            p1_4_validation/c3/alfred_first_release_intake.py \
+            --contract p1_4_validation/c3/c3_source_contract_v1.json \
+            --output artifacts/p1_4/c3/source_intake
+
+      - name: Publish C3 intake summary
+        if: always()
+        shell: bash
+        run: |
+          if [ -f artifacts/p1_4/c3/source_intake/source_intake_manifest.json ]; then
+            python - <<'PY' >> "$GITHUB_STEP_SUMMARY"
+          import json
+          from pathlib import Path
+          data = json.loads(Path("artifacts/p1_4/c3/source_intake/source_intake_manifest.json").read_text())
+          print("# C3 Point-in-Time Source Intake")
+          print()
+          print(f"Status: **{data['status']}**")
+          print()
+          print("| Event | Series | Observations | First available | Last available |")
+          print("|---|---|---:|---|---|")
+          for row in data["series"]:
+              print(f"| {row['event_id']} | {row['series_id']} | {row['observation_count']} | {row['first_available_at']} | {row['last_available_at']} |")
+          print()
+          print(f"Total points: {data['point_count']}")
+          print(f"Tape SHA-256: `{data['normalized_tape']['sha256']}`")
+          print()
+          print("No detector was executed in this source-intake workflow.")
+          PY
+          fi
+
+      - name: Upload C3 point-in-time source evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: chaos-p1-4-c3-source-intake-${{ github.run_id }}-${{ github.run_attempt }}
+          path: artifacts/p1_4/c3/source_intake/
+          retention-days: 90
+          if-no-files-found: warn
