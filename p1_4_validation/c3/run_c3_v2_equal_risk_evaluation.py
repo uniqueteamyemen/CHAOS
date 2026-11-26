@@ -11,7 +11,7 @@ import os
 import sys
 import zipfile
 from calendar import monthrange
-from datetime import date
+from datetime import date, timedelta
 from pathlib import Path, PurePosixPath
 from typing import Any
 
@@ -22,6 +22,7 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from p1_4_validation.injection_runner import (  # noqa: E402
+    focus_rearm_points_for_frequency,
     focus_reset_rearm,
     generate_ar_null_trace,
     select_ar_model,
@@ -39,10 +40,10 @@ REPLICATES = 1000
 MIN_VALID_REPLICATES = 950
 P0_TARGET = 0.10
 WILSON_Z = 1.6448536269514722
-HYBRID_MAX_GAP = 1
+HYBRID_MAX_GAP = 8
 FOCUS_GRID = (
     15, 20, 25, 30, 35, 40, 45, 50, 60, 75, 90, 110, 150, 200,
-    250, 300, 350, 400, 500, 600, 800, 1000, 1200,
+    225, 250, 300, 350, 400, 500, 600, 800, 1000, 1200,
 )
 HUBER_GRID = (
     4, 6, 8, 10, 12, 14, 16, 20, 24, 32, 40, 50, 60, 70,
@@ -158,7 +159,7 @@ def verify_source_bundle(
     archive_sha = sha256(payload)
     contract_bytes = contract_path.read_bytes()
     contract = json.loads(contract_bytes)
-    if contract.get("contract_id") != "CHAOS_P1_4_C3_EXPANDED_EVENT_COHORT_V1":
+    if contract.get("contract_id") != "CHAOS_P1_4_C3_EXPANDED_EVENT_COHORT_V2_1":
         raise ValueError("C3_V2_EXPANDED_CONTRACT_ID_MISMATCH")
     contract_sha = sha256(contract_bytes)
     frozen = contract.get("frozen_references", {})
@@ -201,10 +202,14 @@ def verify_source_bundle(
         manifest = json.loads(manifest_bytes)
         if manifest.get("status") != "SOURCE_TAPES_ACQUIRED_NOT_DETECTOR_EXECUTED":
             raise ValueError("C3_V2_SOURCE_INTAKE_STATUS_MISMATCH")
-        if manifest.get("contract_id") != contract["contract_id"]:
-            raise ValueError("C3_V2_MANIFEST_CONTRACT_ID_MISMATCH")
-        if manifest.get("contract_sha256") != contract_sha:
-            raise ValueError("C3_V2_CONTRACT_SHA256_MISMATCH")
+        manifest_contract_id = manifest.get("contract_id")
+        frozen_source_sha = frozen.get("source_intake_contract_sha256")
+        accepted_source_contracts = {
+            (contract["contract_id"], contract_sha),
+            ("CHAOS_P1_4_C3_EXPANDED_EVENT_COHORT_V1", frozen_source_sha),
+        }
+        if (manifest_contract_id, manifest.get("contract_sha256")) not in accepted_source_contracts:
+            raise ValueError("C3_V2_SOURCE_CONTRACT_SNAPSHOT_MISMATCH")
         if manifest.get("shock_event_contract_git_blob") != frozen.get("shock_event_contract_git_blob"):
             raise ValueError("C3_V2_SHOCK_CONTRACT_BLOB_MISMATCH")
         if manifest.get("shock_event_contract_sha256") != frozen.get("shock_event_contract_sha256"):
@@ -298,6 +303,191 @@ def verify_source_bundle(
                 raise ValueError(f"C3_V2_EVENT_SERIES_NOT_IN_TAPE:{event['event_id']}:{sid}")
     return manifest, by_series, contract, archive_sha, contract_sha
 
+
+def deterministic_seed(
+
+
+def _raw_value_is_missing(value: str | None) -> bool:
+    return value is None or value.strip() in {"", ".", "NA", "N/A", "nan", "NaN"}
+
+
+def extract_first_release_level_from_archive(
+    archive_path: Path,
+    manifest: dict,
+    series_id: str,
+    observation_date: date,
+) -> dict:
+    """Extract one prior first-print from already-hashed raw vintage files."""
+    candidates = []
+    with zipfile.ZipFile(archive_path) as archive:
+        batches = sorted(
+            (
+                batch for batch in manifest.get("raw_vintage_batches", [])
+                if PurePosixPath(batch["file"]).parts[1] == series_id
+            ),
+            key=lambda row: int(row["batch"]),
+        )
+        for batch in batches:
+            with archive.open(batch["file"]) as stream:
+                reader = csv.DictReader(
+                    (line.decode("utf-8-sig") for line in stream)
+                )
+                match = next(
+                    (
+                        row for row in reader
+                        if row.get("observation_date") == observation_date.isoformat()
+                    ),
+                    None,
+                )
+            if match is None:
+                continue
+            for vintage_date in batch["requested_vintage_dates"]:
+                field = f"{series_id}_{vintage_date.replace('-', '')}"
+                value = match.get(field)
+                if _raw_value_is_missing(value):
+                    continue
+                numeric = float(value)
+                available_at = date.fromisoformat(vintage_date)
+                if not math.isfinite(numeric) or available_at < observation_date:
+                    raise ValueError(
+                        f"C3_V2_INVALID_RAW_PREDECESSOR:{series_id}:{observation_date}"
+                    )
+                candidates.append({
+                    "series_id": series_id,
+                    "observation_date": observation_date.isoformat(),
+                    "observation_date_obj": observation_date,
+                    "available_at": vintage_date,
+                    "available_at_obj": available_at,
+                    "value_float": numeric,
+                    "value": format(numeric, ".15g"),
+                    "source_batch_file": batch["file"],
+                    "source_batch_sha256": batch["sha256"],
+                    "source_vintage": vintage_date,
+                })
+                break
+    if not candidates:
+        raise ValueError(
+            f"C3_V2_RAW_PREDECESSOR_NOT_FOUND:{series_id}:{observation_date}"
+        )
+    return min(candidates, key=lambda row: row["available_at_obj"])
+
+
+def apply_causal_series_transforms(
+    archive_path: Path,
+    manifest: dict,
+    by_series: dict[str, list[dict]],
+    contract: dict,
+) -> tuple[dict[str, list[dict]], dict]:
+    """Apply registered transforms without altering the source archive or release times."""
+    configured = {row["series_id"]: row for row in contract["series"]}
+    transformed: dict[str, list[dict]] = {}
+    audit: dict[str, dict] = {}
+
+    for series_id, source_rows in by_series.items():
+        series_config = configured[series_id]
+        transform = series_config.get("series_transform", "level")
+        rows = sorted(
+            source_rows,
+            key=lambda row: (row["observation_date_obj"], row["available_at_obj"]),
+        )
+        analysis_units = series_config.get("analysis_units", series_config["units"])
+
+        if transform == "level":
+            transformed[series_id] = [
+                {
+                    **row,
+                    "series_transform": "level",
+                    "source_value_float": float(row["value_float"]),
+                    "units": analysis_units,
+                }
+                for row in rows
+            ]
+            audit[series_id] = {
+                "transform": "level",
+                "source_observation_count": len(rows),
+                "analysis_observation_count": len(rows),
+                "analysis_units": analysis_units,
+            }
+            continue
+
+        if transform != "first_difference":
+            raise ValueError(f"C3_V2_UNKNOWN_SERIES_TRANSFORM:{series_id}:{transform}")
+        if not rows:
+            raise ValueError(f"C3_V2_EMPTY_TRANSFORM_SOURCE:{series_id}")
+
+        first_date = rows[0]["observation_date_obj"]
+        if series_config["frequency"] == "Monthly":
+            predecessor_date = add_calendar_months(first_date, -1)
+            next_observation = lambda value: add_calendar_months(value, 1)
+        elif series_config["frequency"].startswith("Weekly"):
+            predecessor_date = first_date - timedelta(days=7)
+            next_observation = lambda value: value + timedelta(days=7)
+        else:
+            raise ValueError(f"C3_V2_TRANSFORM_FREQUENCY_UNSUPPORTED:{series_id}")
+
+        predecessor = extract_first_release_level_from_archive(
+            archive_path, manifest, series_id, predecessor_date
+        )
+        if predecessor["available_at_obj"] > rows[0]["available_at_obj"]:
+            raise ValueError(
+                f"C3_V2_PREDECESSOR_RELEASES_AFTER_CURRENT_POINT:{series_id}"
+            )
+
+        output_rows = []
+        previous_date = predecessor_date
+        previous_value = float(predecessor["value_float"])
+        previous_available = predecessor["available_at_obj"]
+        for index, row in enumerate(rows):
+            current_date = row["observation_date_obj"]
+            if current_date != next_observation(previous_date):
+                raise ValueError(
+                    f"C3_V2_FIRST_DIFFERENCE_OBSERVATION_GAP:{series_id}:{previous_date}:{current_date}"
+                )
+            current_available = row["available_at_obj"]
+            if current_available < previous_available:
+                raise ValueError(
+                    f"C3_V2_FIRST_DIFFERENCE_NON_CAUSAL_RELEASE_ORDER:{series_id}:{index}"
+                )
+            current_value = float(row["value_float"])
+            difference = current_value - previous_value
+            if not math.isfinite(difference):
+                raise ValueError(f"C3_V2_NON_FINITE_FIRST_DIFFERENCE:{series_id}:{index}")
+            output_rows.append({
+                **row,
+                "value": format(difference, ".15g"),
+                "value_float": difference,
+                "source_value_float": current_value,
+                "previous_source_value_float": previous_value,
+                "series_transform": "first_difference",
+                "value_semantics": "CAUSAL_FIRST_DIFFERENCE_OF_FIRST_ALFRED_RELEASES",
+                "units": analysis_units,
+            })
+            previous_date = current_date
+            previous_value = current_value
+            previous_available = current_available
+
+        transformed[series_id] = output_rows
+        audit[series_id] = {
+            "transform": "first_difference",
+            "formula": "delta_x_t = x_t - x_t_minus_1",
+            "source_observation_count": len(rows),
+            "analysis_observation_count": len(output_rows),
+            "first_analysis_observation": output_rows[0]["observation_date"],
+            "first_analysis_available_at": output_rows[0]["available_at"],
+            "analysis_units": analysis_units,
+            "predecessor": {
+                "observation_date": predecessor["observation_date"],
+                "available_at": predecessor["available_at"],
+                "value": predecessor["value"],
+                "source_batch_file": predecessor["source_batch_file"],
+                "source_batch_sha256": predecessor["source_batch_sha256"],
+                "source_vintage": predecessor["source_vintage"],
+            },
+            "availability_policy": "Each transformed point retains the current observation's original first-release available_at; predecessor was first published no later than the current point.",
+            "source_archive_mutated": False,
+        }
+
+    return transformed, audit
 
 def deterministic_seed(
     tape_sha: str, series_id: str, ar_order: int, phase: str, replicate: int,
@@ -406,12 +596,14 @@ def choose_threshold_by_dev_wilson(
     }
 
 
-def focus_path_alarm(trace: np.ndarray, threshold: float) -> bool | None:
+def focus_path_alarm(
+    trace: np.ndarray, threshold: float, rearm_quiet_points: int = REARM_POINTS,
+) -> bool | None:
     result = focus_reset_rearm(
         trace,
         threshold=finite_positive_threshold(threshold),
         quiet_points=QUIET_POINTS,
-        rearm_quiet_points=REARM_POINTS,
+        rearm_quiet_points=int(rearm_quiet_points),
         max_events=MAX_EVENTS,
         min_series_length=QUIET_POINTS + 1,
     )
@@ -423,11 +615,12 @@ def focus_path_alarm(trace: np.ndarray, threshold: float) -> bool | None:
 def calibrate_focus(
     development_traces: list[np.ndarray],
     holdout_traces: list[np.ndarray],
+    rearm_quiet_points: int = REARM_POINTS,
 ) -> dict:
     grid_rows = []
     selected = None
     for threshold in FOCUS_GRID:
-        outcomes = [focus_path_alarm(trace, threshold) for trace in development_traces]
+        outcomes = [focus_path_alarm(trace, threshold, rearm_quiet_points) for trace in development_traces]
         valid = [value for value in outcomes if value is not None]
         if len(valid) < MIN_VALID_REPLICATES:
             return {
@@ -437,7 +630,7 @@ def calibrate_focus(
                 "frozen_threshold": None,
                 "development_grid": grid_rows,
                 "holdout": {"status": "NOT_RUN_NO_DEVELOPMENT_THRESHOLD"},
-                "execution_policy": "40_initial_20_rearm_max_12_hits",
+                "execution_policy": f"40_initial_{int(rearm_quiet_points)}_rearm_max_12_hits",
             }
         alarms = sum(bool(value) for value in valid)
         stats = wilson_stats(alarms, len(valid))
@@ -456,11 +649,11 @@ def calibrate_focus(
             "frozen_threshold": None,
             "development_grid": grid_rows,
             "holdout": {"status": "NOT_RUN_NO_DEVELOPMENT_THRESHOLD"},
-            "execution_policy": "40_initial_20_rearm_max_12_hits",
+            "execution_policy": f"40_initial_{int(rearm_quiet_points)}_rearm_max_12_hits",
         }
 
     threshold = float(selected["threshold"])
-    holdout_outcomes = [focus_path_alarm(trace, threshold) for trace in holdout_traces]
+    holdout_outcomes = [focus_path_alarm(trace, threshold, rearm_quiet_points) for trace in holdout_traces]
     valid_hold = [value for value in holdout_outcomes if value is not None]
     alarms = sum(bool(value) for value in valid_hold)
     stats = wilson_stats(alarms, len(valid_hold))
@@ -479,7 +672,7 @@ def calibrate_focus(
         "development_grid": grid_rows,
         "holdout": {"status": holdout_status, **stats},
         "holdout_retuning": False,
-        "execution_policy": "40_initial_20_rearm_max_12_hits",
+        "execution_policy": f"40_initial_{int(rearm_quiet_points)}_rearm_max_12_hits",
     }
 
 
@@ -499,6 +692,7 @@ def extract_detector_hits(
     detector: str,
     values: np.ndarray,
     threshold: float | None = None,
+    rearm_quiet_points: int = REARM_POINTS,
 ) -> tuple[list[dict], str, dict]:
     if detector == "FOCuS (reset-rearm)":
         if threshold is None:
@@ -507,7 +701,7 @@ def extract_detector_hits(
             values,
             threshold=float(threshold),
             quiet_points=QUIET_POINTS,
-            rearm_quiet_points=REARM_POINTS,
+            rearm_quiet_points=int(rearm_quiet_points),
             max_events=MAX_EVENTS,
             min_series_length=QUIET_POINTS + 1,
         )
@@ -562,13 +756,16 @@ def extract_detector_hits(
 
 
 def hybrid_confirmation_hits(
-    values: np.ndarray, thresholds: dict[str, float | None],
+    values: np.ndarray,
+    thresholds: dict[str, float | None],
+    rearm_quiet_points: int = REARM_POINTS,
 ) -> tuple[list[dict], dict]:
     focus_threshold = thresholds.get("FOCuS (reset-rearm)")
     if focus_threshold is None:
         return [], {"status": "ABSTAIN", "reason": "FOCUS_THRESHOLD_UNAVAILABLE"}
     focus_hits, focus_status, focus_meta = extract_detector_hits(
-        "FOCuS (reset-rearm)", values, float(focus_threshold)
+        "FOCuS (reset-rearm)", values, float(focus_threshold),
+        rearm_quiet_points=int(rearm_quiet_points)
     )
     huber_hits: list[tuple[str, dict]] = []
     used_huber_arms = []
@@ -576,7 +773,10 @@ def hybrid_confirmation_hits(
         threshold = thresholds.get(detector)
         if threshold is None:
             continue
-        hits, status, _ = extract_detector_hits(detector, values, float(threshold))
+        hits, status, _ = extract_detector_hits(
+            detector, values, float(threshold),
+            rearm_quiet_points=int(rearm_quiet_points),
+        )
         if status == "OK":
             huber_hits.extend((detector, hit) for hit in hits)
             used_huber_arms.append(detector)
@@ -621,7 +821,7 @@ def hybrid_confirmation_hits(
     output.sort(key=lambda row: (row["index"], row["sign"]))
     return output, {
         "status": "OK",
-        "confirmation_rule": "FOCuS plus one Huber variant; same sign; max gap 1 observation",
+        "confirmation_rule": "FOCuS plus one Holdout-eligible Huber variant; same sign; max gap 8 observations",
         "focus_metadata": focus_meta,
         "huber_members": used_huber_arms,
     }
@@ -631,6 +831,7 @@ def calibrate_ensemble(
     development_traces: list[np.ndarray],
     holdout_traces: list[np.ndarray],
     thresholds: dict[str, float | None],
+    rearm_quiet_points: int = REARM_POINTS,
 ) -> dict:
     if thresholds.get("FOCuS (reset-rearm)") is None or not any(
         thresholds.get(name) is not None
@@ -648,7 +849,9 @@ def calibrate_ensemble(
     def outcomes(traces):
         result = []
         for trace in traces:
-            hits, metadata = hybrid_confirmation_hits(trace, thresholds)
+            hits, metadata = hybrid_confirmation_hits(
+                trace, thresholds, rearm_quiet_points=int(rearm_quiet_points)
+            )
             result.append(None if metadata.get("status") != "OK" else bool(hits))
         return result
 
@@ -691,14 +894,34 @@ def calibrate_ensemble(
         "development": dev_stats,
         "holdout": {"status": hold_status, **hold_stats},
         "holdout_retuning": False,
-        "confirmation_rule": "FOCuS plus at least one Huber scale variant, same sign, gap <= 1 observation",
+        "confirmation_rule": "FOCuS plus at least one Holdout-eligible Huber scale variant, same sign, gap <= 8 observations",
     }
 
 
 def calibrate_series(
-    series_id: str, rows: list[dict], tape_sha: str,
+
+
+def eligible_hybrid_member_thresholds(arms: dict[str, dict]) -> dict[str, float | None]:
+    """Pass only members that have completed and passed their Holdout operating gate."""
+    names = (
+        "FOCuS (reset-rearm)",
+        "Post-Quiet Huber + MAD",
+        "Post-Quiet Huber + Bartlett LRV",
+    )
+    return {
+        name: (
+            arms.get(name, {}).get("frozen_threshold")
+            if arms.get(name, {}).get("status") == "VALIDATED"
+            else None
+        )
+        for name in names
+    }
+
+def calibrate_series(
+    series_id: str, rows: list[dict], tape_sha: str, series_config: dict,
 ) -> dict:
     values = np.asarray([row["value_float"] for row in rows], dtype=float)
+    rearm_quiet_points = focus_rearm_points_for_frequency(series_config["frequency"])
     if values.size <= QUIET_POINTS:
         raise ValueError(f"C3_V2_SERIES_TOO_SHORT:{series_id}")
     model = select_ar_model(values[:QUIET_POINTS])
@@ -736,9 +959,10 @@ def calibrate_series(
 
     arms = {}
     arms["FOCuS (reset-rearm)"] = calibrate_focus(
-        development_traces, holdout_traces
+        development_traces, holdout_traces, rearm_quiet_points=rearm_quiet_points
     )
     arms["FOCuS (reset-rearm)"]["threshold_grid"] = list(FOCUS_GRID)
+    arms["FOCuS (reset-rearm)"]["rearm_quiet_points"] = rearm_quiet_points
     for detector, scale in (
         ("Post-Quiet Huber + MAD", "mad"),
         ("Post-Quiet Huber + Bartlett LRV", "bartlett"),
@@ -750,17 +974,12 @@ def calibrate_series(
         )
         arms[detector]["threshold_grid"] = list(HUBER_GRID)
 
-    member_thresholds = {
-        detector: arms[detector].get("frozen_threshold")
-        for detector in (
-            "FOCuS (reset-rearm)",
-            "Post-Quiet Huber + MAD",
-            "Post-Quiet Huber + Bartlett LRV",
-        )
-    }
+    member_thresholds = eligible_hybrid_member_thresholds(arms)
     arms["Hybrid: FOCuS + Huber confirmation"] = calibrate_ensemble(
-        development_traces, holdout_traces, member_thresholds
+        development_traces, holdout_traces, member_thresholds,
+        rearm_quiet_points=rearm_quiet_points,
     )
+    arms["Hybrid: FOCuS + Huber confirmation"]["rearm_quiet_points"] = rearm_quiet_points
     validated = all(arms[name]["status"] == "VALIDATED" for name in CANDIDATES)
     return {
         "status": "ALL_CANDIDATES_VALIDATED" if validated
@@ -773,6 +992,9 @@ def calibrate_series(
             )
         },
         "seed_ledger_sha256": sha256("\n".join(seed_material).encode("utf-8")),
+        "series_transform": series_config.get("series_transform", "level"),
+        "analysis_units": series_config.get("analysis_units", series_config["units"]),
+        "rearm_quiet_points": rearm_quiet_points,
         "valid_null_replicates_per_phase": {
             "development": REPLICATES, "holdout": REPLICATES,
         },
@@ -786,15 +1008,19 @@ def extract_hits(
     arms = calibration.get("arms", {})
     if detector in CANDIDATES:
         arm = arms.get(detector, {})
+        rearm_quiet_points = int(arm.get("rearm_quiet_points", REARM_POINTS))
         if detector == "Hybrid: FOCuS + Huber confirmation":
             hits, metadata = hybrid_confirmation_hits(
-                values, arm.get("frozen_thresholds", {})
+                values, arm.get("frozen_thresholds", {}),
+                rearm_quiet_points=rearm_quiet_points,
             )
             return hits, metadata.get("status", "ABSTAIN"), metadata
         threshold = arm.get("frozen_threshold")
         if threshold is None:
             return [], "ABSTAIN", {"reason": "NO_FROZEN_THRESHOLD"}
-        return extract_detector_hits(detector, values, float(threshold))
+        return extract_detector_hits(
+            detector, values, float(threshold), rearm_quiet_points=rearm_quiet_points
+        )
     return extract_detector_hits(detector, values)
 
 
