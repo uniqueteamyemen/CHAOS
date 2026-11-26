@@ -1316,7 +1316,12 @@ def append_per_series_router_results(
                     float(np.median(lags)) if lags else None
                 ),
             })
-        eligible = [row for row in candidate_scores if row["validated"]]
+        validated_members = [row for row in candidate_scores if row["validated"]]
+        eligible = [
+            row for row in validated_members
+            if row["matched_event_series_pairs"] > 0
+            and row["matched_episode_clusters"] > 0
+        ]
         eligible.sort(key=lambda row: (
             -row["matched_episode_clusters"],
             -row["matched_event_series_pairs"],
@@ -1326,8 +1331,13 @@ def append_per_series_router_results(
             row["detector"],
         ))
         selected = eligible[0]["detector"] if eligible else None
+        route_status = (
+            "SELECTED_VALIDATED" if selected else
+            "NO_HISTORICAL_COVERAGE" if validated_members else
+            "NO_VALIDATED_MEMBER"
+        )
         calibration[series_id]["per_series_router"] = {
-            "status": "SELECTED_VALIDATED" if selected else "NO_VALIDATED_MEMBER",
+            "status": route_status,
             "selected_detector": selected,
             "selection_basis": "registered historical event coverage among per-series Holdout-validated members",
             "retrospective_optimization_only": True,
