@@ -282,6 +282,24 @@ def run_level_3_engine_output_check(
     for detector in ("A_FAST", "A_CONSENSUS"):
         if summary[detector].get("role") != "READ_ONLY":
             raise RuntimeError(f"C3_V2_1_LEVEL3_BASELINE_ROLE_INVALID:{detector}")
+    if summary[c3.PER_SERIES_ROUTER].get("role") != "COMPOSITE_OPTIMIZATION":
+        raise RuntimeError("C3_V2_1_LEVEL3_ROUTER_ROLE_INVALID")
+    router_profile = summary.get("per_series_router_profile", {})
+    if router_profile.get("status") != "RETROSPECTIVE_OPTIMIZATION_ONLY":
+        raise RuntimeError("C3_V2_1_LEVEL3_ROUTER_PROFILE_STATUS_INVALID")
+    if router_profile.get("independent_validation_required") is not True:
+        raise RuntimeError("C3_V2_1_LEVEL3_ROUTER_INDEPENDENT_VALIDATION_FLAG_MISSING")
+    for series_id in EXPECTED_SERIES:
+        route = report.get("calibration", {}).get(series_id, {}).get("per_series_router", {})
+        selected_member = route.get("selected_detector")
+        if selected_member is not None:
+            if selected_member not in c3.ROUTER_MEMBER_DETECTORS:
+                raise RuntimeError(f"C3_V2_1_LEVEL3_ROUTER_MEMBER_INVALID:{series_id}:{selected_member}")
+            member_status = report["calibration"][series_id]["arms"][selected_member].get("status")
+            if member_status != "VALIDATED":
+                raise RuntimeError(f"C3_V2_1_LEVEL3_ROUTER_MEMBER_NOT_VALIDATED:{series_id}:{selected_member}")
+        elif route.get("status") != "NO_VALIDATED_MEMBER":
+            raise RuntimeError(f"C3_V2_1_LEVEL3_ROUTER_EMPTY_ROUTE_STATUS_INVALID:{series_id}")
 
     historical = report.get("historical_results", [])
     counts = Counter(row.get("detector") for row in historical)
@@ -338,7 +356,9 @@ def run_level_3_engine_output_check(
         "checks": {
             "engine_report_present_and_parseable": True,
             "all_four_real_series_processed": True,
-            "all_37_event_series_pairs_evaluated_for_six_detectors": True,
+            "all_37_event_series_pairs_evaluated_for_eight_detectors": True,
+        "per_series_router_uses_only_holdout_validated_members": True,
+        "per_series_router_marked_retrospective_not_independent": True,
             "readonly_baselines_included": True,
             "no_lookahead_prefix_audit_present_for_every_series_detector": True,
             "source_and_analysis_hashes_present": True,
