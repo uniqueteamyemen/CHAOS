@@ -188,6 +188,22 @@ def _chunks(values: list[str], size: int):
         yield values[offset : offset + size]
 
 
+def build_vintage_batch_url(
+    series_id: str,
+    vintage_dates: list[str],
+    observation_start: str,
+    observation_end: str,
+) -> str:
+    """Build a bounded ALFRED snapshot request without changing vintage semantics."""
+    query = urlencode({
+        "id": ",".join([series_id] * len(vintage_dates)),
+        "vintage_date": ",".join(vintage_dates),
+        "observation_start": observation_start,
+        "observation_end": observation_end,
+    })
+    return f"{ALFRED_GRAPH}?{query}"
+
+
 def fetch_series_initial_releases(series: dict, output_dir: Path) -> tuple[list[dict], list[dict]]:
     series_id = series["series_id"]
     observation_start = date.fromisoformat(series["observation_start"])
@@ -207,10 +223,12 @@ def fetch_series_initial_releases(series: dict, output_dir: Path) -> tuple[list[
     batch_records: list[dict] = []
 
     for batch_number, vintage_batch in enumerate(_chunks(selected, BATCH_SIZE), start=1):
-        ids = ",".join([series_id] * len(vintage_batch))
-        dates = ",".join(vintage_batch)
-        query = urlencode({"id": ids, "vintage_date": dates})
-        url = f"{ALFRED_GRAPH}?{query}"
+        url = build_vintage_batch_url(
+            series_id,
+            vintage_batch,
+            observation_start.isoformat(),
+            observation_end.isoformat(),
+        )
         raw = _http_get(url)
         raw_path = raw_dir / f"batch_{batch_number:03d}.csv"
         raw_path.write_bytes(raw)
