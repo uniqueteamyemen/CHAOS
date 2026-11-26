@@ -51,10 +51,15 @@
     ],
     "ar_selection": "minimum AIC; unstable winning order fails closed; do not fall back to a higher-AIC order",
     "no_lookahead_prefix_replay_required": true,
-    "focus_uses_40_initial_and_20_rearm_reset_policy": true,
     "a_fast_and_a_consensus_read_only": true,
     "no_causal_claim_from_calendar_matching": true,
-    "event_and_alert_matching_one_to_one": true
+    "event_and_alert_matching_one_to_one": true,
+    "focus_uses_frequency_aware_rearm_policy": {
+      "initial_observations": 40,
+      "monthly_rearm_observations": 10,
+      "weekly_rearm_observations": 20,
+      "maximum_alerts": 12
+    }
   },
   "matching_contract": {
     "matching_window_months": 12,
@@ -452,5 +457,32 @@
     "policy": "Use the existing C3 v2.0 ALFRED source archive as immutable input; apply causal transforms in memory; use monthly 10-point and weekly 20-point FOCuS re-arm windows; use an eight-observation Hybrid confirmation window; exclude members that failed Holdout from Hybrid.",
     "source_artifact_run_id": "45757611871",
     "source_artifact_name": "chaos-c3-v2-expanded-source-intake-45757611871-1"
+  },
+  "source_intake_guardrails": {
+    "initial_release_values_only": true,
+    "point_in_time_field": "available_at",
+    "first_release_definition": "Earliest ALFRED vintage date at which an observation is non-missing.",
+    "never_use_latest_revised_values_as_historical_first_prints": true,
+    "no_interpolation_or_forward_fill": true,
+    "no_observation_date_substitution_for_available_at": true,
+    "first_40_observations_only_for_ar_null_fit": true,
+    "holdout_never_used_for_threshold_selection": true,
+    "development_threshold_rule": "one-sided Wilson 95% upper bound <= 0.10",
+    "holdout_validation_rule": "one-sided Wilson 95% upper bound <= 0.10",
+    "holdout_failure_never_retunes_threshold": true,
+    "minimum_valid_replicates_per_phase_and_series": 950,
+    "development_replicates_per_series": 1000,
+    "holdout_replicates_per_series": 1000,
+    "ar_orders": [
+      1,
+      2,
+      3
+    ],
+    "ar_selection": "minimum AIC; unstable winning order fails closed; do not fall back to a higher-AIC order",
+    "no_lookahead_prefix_replay_required": true,
+    "focus_uses_40_initial_and_20_rearm_reset_policy": true,
+    "a_fast_and_a_consensus_read_only": true,
+    "no_causal_claim_from_calendar_matching": true,
+    "event_and_alert_matching_one_to_one": true
   }
 }
