@@ -1298,7 +1298,6 @@ def summarize_detector_results(
             ),
         }
 
-
     eligible = [
         (name, values) for name, values in summary.items()
         if name in CANDIDATES and values["validated_all_series"]
