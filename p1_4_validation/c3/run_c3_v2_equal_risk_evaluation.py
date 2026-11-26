@@ -923,20 +923,18 @@ def calibrate_ensemble(
 
 
 def eligible_hybrid_member_thresholds(arms: dict[str, dict]) -> dict[str, float | None]:
-    """Pass only members that have completed and passed their Holdout operating gate."""
-    names = (
-        "FOCuS (reset-rearm)",
-        "Post-Quiet Huber + MAD",
-        "Post-Quiet Huber + Bartlett LRV",
-    )
-    return {
-        name: (
-            arms.get(name, {}).get("frozen_threshold")
-            if arms.get(name, {}).get("status") == "VALIDATED"
+    """Keep the Development-calibrated FOCuS trigger; gate Huber confirmations by Holdout."""
+    focus_name = "FOCuS (reset-rearm)"
+    focus_threshold = arms.get(focus_name, {}).get("frozen_threshold")
+    thresholds = {focus_name: focus_threshold}
+    for name in ("Post-Quiet Huber + MAD", "Post-Quiet Huber + Bartlett LRV"):
+        member = arms.get(name, {})
+        thresholds[name] = (
+            member.get("frozen_threshold")
+            if member.get("status") == "VALIDATED"
             else None
         )
-        for name in names
-    }
+    return thresholds
 
 def calibrate_series(
     series_id: str, rows: list[dict], tape_sha: str, series_config: dict,
