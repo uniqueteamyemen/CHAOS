@@ -1,0 +1,25 @@
+name: CHAOS P1.4 C3 — Equal-Risk Calibration
+
+on:
+  workflow_dispatch:
+    inputs:
+      execute_c3_equal_risk_calibration:
+        description: "Select the dedicated C3 equal-risk calibration branch to run the isolated evaluation."
+        required: true
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  default-branch-registration:
+    if: ${{ github.ref == 'refs/heads/main-phase2' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Select the C3 equal-risk implementation branch
+        run: |
+          echo "This default-branch workflow only registers the manual action."
+          echo "Select feat/c3-equal-risk-calibration-v1 in the branch selector."
+          echo "No calibration or source-intake operation runs from main-phase2."
