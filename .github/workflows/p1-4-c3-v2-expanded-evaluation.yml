@@ -114,7 +114,7 @@ jobs:
           print(f"C3_V2_SOURCE_ARCHIVE_READY bytes={output.stat().st_size}")
           PY
 
-      - name: Compile C3 v2 runner and execute all governance tests
+      - name: "Level 1 — Unit tests and Python compilation"
         shell: bash
         run: |
           set -euo pipefail
@@ -122,7 +122,8 @@ jobs:
             p1_4_validation/c3/alfred_first_release_intake.py \
             p1_4_validation/c3/run_equal_risk_calibration.py \
             p1_4_validation/c3/run_historical_break_evaluation.py \
-            p1_4_validation/c3/run_c3_v2_equal_risk_evaluation.py
+            p1_4_validation/c3/run_c3_v2_equal_risk_evaluation.py \
+            p1_4_validation/c3/validate_c3_v2_1_three_levels.py
           PYTHONPATH="$GITHUB_WORKSPACE" python -m unittest discover \
             -s tests/governance -p 'test_c3_equal_risk_calibration.py' -v
           PYTHONPATH="$GITHUB_WORKSPACE" python -m unittest discover \
@@ -136,7 +137,21 @@ jobs:
           PYTHONPATH="$GITHUB_WORKSPACE" python -m unittest discover \
             -s tests/governance -p 'test_c3_v2_equal_risk_evaluation.py' -v
 
-      - name: Run independent equal-risk calibration and expanded historical replay
+      - name: "Level 2 — Real ALFRED artifact integration and causal transform"
+        shell: bash
+        env:
+          EXPECTED_SOURCE_RUN_ID: ${{ inputs.source_intake_run_id }}
+        run: |
+          set -euo pipefail
+          PYTHONPATH="$GITHUB_WORKSPACE" python -u \
+            p1_4_validation/c3/validate_c3_v2_1_three_levels.py \
+            --mode integration \
+            --source-zip /tmp/c3-v2-expanded-source-intake.zip \
+            --contract p1_4_validation/c3/c3_expanded_event_cohort_v1.json \
+            --expected-source-run-id "$EXPECTED_SOURCE_RUN_ID" \
+            --output artifacts/p1_4/c3/v2_expanded_evaluation/C3_V2_1_LEVEL2_REAL_DATA_INTEGRATION.json
+
+      - name: "Level 3 — Real-series detector engine replay"
         shell: bash
         run: |
           set -euo pipefail
@@ -146,25 +161,47 @@ jobs:
             --contract p1_4_validation/c3/c3_expanded_event_cohort_v1.json \
             --output-dir artifacts/p1_4/c3/v2_expanded_evaluation
 
-      - name: Publish C3 v2 result summary
+      - name: "Level 3 — Validate complete engine evidence and cohort coverage"
+        shell: bash
+        env:
+          EXPECTED_SOURCE_RUN_ID: ${{ inputs.source_intake_run_id }}
+        run: |
+          set -euo pipefail
+          PYTHONPATH="$GITHUB_WORKSPACE" python -u \
+            p1_4_validation/c3/validate_c3_v2_1_three_levels.py \
+            --mode engine-output \
+            --expected-source-run-id "$EXPECTED_SOURCE_RUN_ID" \
+            --evaluation-dir artifacts/p1_4/c3/v2_expanded_evaluation
+
+      - name: Publish C3 v2.1 three-level validation summary
         if: always()
         shell: bash
         run: |
           set -euo pipefail
           {
-            echo "# C3 v2 — Expanded Cohort & Self-Calibrating Thresholds"
+            echo "# C3 v2.1 — Three-Level Validation"
+            echo
+            for file in \
+              artifacts/p1_4/c3/v2_expanded_evaluation/C3_V2_1_LEVEL2_REAL_DATA_INTEGRATION.json \
+              artifacts/p1_4/c3/v2_expanded_evaluation/C3_V2_1_LEVEL3_ENGINE_CHECK.json; do
+              if [[ -s "$file" ]]; then
+                echo "`$(basename "$file")`"
+                cat "$file"
+                echo
+              fi
+            done
             if [[ -s artifacts/p1_4/c3/v2_expanded_evaluation/C3_V2_EXPANDED_EVALUATION.md ]]; then
               cat artifacts/p1_4/c3/v2_expanded_evaluation/C3_V2_EXPANDED_EVALUATION.md
             else
-              echo "C3 v2 evaluation report unavailable; inspect the job logs."
+              echo "Detector evaluation report unavailable; inspect the logs for the failed level."
             fi
           } >> "$GITHUB_STEP_SUMMARY"
 
-      - name: Upload full C3 v2 evaluation evidence
+      - name: Upload full C3 v2.1 three-level evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: chaos-c3-v2-expanded-evaluation-${{ github.run_id }}-${{ github.run_attempt }}
+          name: chaos-c3-v2-1-three-level-validation-${{ github.run_id }}-${{ github.run_attempt }}
           path: artifacts/p1_4/c3/v2_expanded_evaluation/
           retention-days: 90
           if-no-files-found: warn
