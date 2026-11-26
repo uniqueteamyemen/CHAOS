@@ -54,14 +54,7 @@
     "focus_uses_40_initial_and_20_rearm_reset_policy": true,
     "a_fast_and_a_consensus_read_only": true,
     "no_causal_claim_from_calendar_matching": true,
-    "event_and_alert_matching_one_to_one": true,
-    "focus_rearm_by_frequency": {
-      "Monthly": 10,
-      "Weekly": 20
-    },
-    "hybrid_max_confirmation_gap_observations": 8,
-    "hybrid_member_eligibility": "Only FOCuS and Huber members with status VALIDATED on the current optimization cohort may provide thresholds to Hybrid.",
-    "holdout_used_for_hybrid_member_selection": true
+    "event_and_alert_matching_one_to_one": true
   },
   "matching_contract": {
     "matching_window_months": 12,
