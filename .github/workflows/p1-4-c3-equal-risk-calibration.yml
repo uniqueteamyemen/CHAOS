@@ -1,4 +1,4 @@
-name: CHAOS P1.4 C3 — Equal-Risk Calibration
+name: CHAOS P1.4 C3 v2.1 — Operational Detector Optimization
 
 on:
   workflow_dispatch:
@@ -23,7 +23,7 @@ jobs:
     if: ${{ github.ref == 'refs/heads/main-phase2' }}
     runs-on: ubuntu-latest
     steps:
-      - name: Select the C3 equal-risk implementation branch
+      - name: Select the C3 v2.1 operational optimization branch
         run: |
           echo "This default-branch workflow only registers the manual action."
           echo "Select feat/c3-v2-expanded-cohort-self-calibrating in the branch selector."
