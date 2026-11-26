@@ -1,8 +1,8 @@
 {
-  "contract_id": "CHAOS_P1_4_C3_EXPANDED_EVENT_COHORT_V1",
-  "contract_version": "1.0.0",
+  "contract_id": "CHAOS_P1_4_C3_EXPANDED_EVENT_COHORT_V2_1",
+  "contract_version": "2.1.0",
   "status": "PRE_REGISTERED_EXPANDED_COHORT_SOURCE_INTAKE_NOT_EXECUTED",
-  "purpose": "Extend C3 from three event-series pairs groups to a broader historical cohort using unique-series first-release ALFRED tapes. Original C3 v1 remains immutable and separately reportable.",
+  "purpose": "C3 v2.1 operational tuning contract: preserve the immutable v2.0 ALFRED first-release evidence while applying registered causal analysis transforms and detector policies.",
   "cohort_design": {
     "distinct_event_anchors": 20,
     "episode_clusters": 10,
@@ -26,7 +26,8 @@
     "shock_event_contract_path": "real_data_stress_pipeline/shock_event_contract.json",
     "shock_event_contract_git_blob": "398ba3994d69c271d66115297b541e17d67aa42d",
     "shock_event_contract_sha256": "f7ee733eebedec96b0d06eae5c960edf36aee49d52edb24df549b8784a7ba18e",
-    "original_c3_v1_source_contract_sha256": "6891999cf831c5b4045e0a7d554b897cb72df8f5e5dbbb4b6154744d1e0afe0a"
+    "original_c3_v1_source_contract_sha256": "6891999cf831c5b4045e0a7d554b897cb72df8f5e5dbbb4b6154744d1e0afe0a",
+    "source_intake_contract_sha256": "ee068ca02e7fe26767d728c3af2abd8937124d0270320c5c1b3377f8809dadf5"
   },
   "guardrails": {
     "initial_release_values_only": true,
@@ -53,7 +54,14 @@
     "focus_uses_40_initial_and_20_rearm_reset_policy": true,
     "a_fast_and_a_consensus_read_only": true,
     "no_causal_claim_from_calendar_matching": true,
-    "event_and_alert_matching_one_to_one": true
+    "event_and_alert_matching_one_to_one": true,
+    "focus_rearm_by_frequency": {
+      "Monthly": 10,
+      "Weekly": 20
+    },
+    "hybrid_max_confirmation_gap_observations": 8,
+    "hybrid_member_eligibility": "Only FOCuS and Huber members with status VALIDATED on the current optimization cohort may provide thresholds to Hybrid.",
+    "holdout_used_for_hybrid_member_selection": true
   },
   "matching_contract": {
     "matching_window_months": 12,
@@ -78,7 +86,8 @@
       "frequency": "Monthly",
       "units": "Percent, seasonally adjusted",
       "minimum_observation_count": 500,
-      "series_note": "40-observation null-model fitting prefix ends before the first registered NBER peak in December 1969."
+      "series_note": "40-observation null-model fitting prefix ends before the first registered NBER peak in December 1969.",
+      "series_transform": "level"
     },
     {
       "series_id": "PAYEMS",
@@ -93,7 +102,11 @@
       "frequency": "Monthly",
       "units": "Thousands of persons, seasonally adjusted",
       "minimum_observation_count": 500,
-      "series_note": "ALFRED's PAYEMS download page confirms vintage-based historical retrieval; the configured 40-point fitting prefix precedes the first registered anchor."
+      "series_note": "C3 v2.1 converts first-release payroll employment levels to causal first differences. The July 1966 predecessor is extracted from the already archived raw ALFRED vintage CSVs so the transformed 40-point prefix ends before the December 1969 first registered anchor.",
+      "series_transform": "first_difference",
+      "analysis_units": "Monthly change in thousands of persons, seasonally adjusted",
+      "predecessor_observation_date": "1966-07-01",
+      "predecessor_source": "Existing first-release raw ALFRED vintage batches inside source artifact; no archive mutation or new ALFRED acquisition."
     },
     {
       "series_id": "WCOILBRENTEU",
@@ -108,7 +121,8 @@
       "frequency": "Weekly, ending Friday",
       "units": "Dollars per barrel, not seasonally adjusted",
       "minimum_observation_count": 400,
-      "series_note": "40-week fitting prefix precedes the June 2014 oil-decline anchor. No pre-archive first-release values are backfilled."
+      "series_note": "40-week fitting prefix precedes the June 2014 oil-decline anchor. No pre-archive first-release values are backfilled.",
+      "series_transform": "level"
     },
     {
       "series_id": "ICSA",
@@ -123,7 +137,8 @@
       "frequency": "Weekly, ending Saturday",
       "units": "Initial claims, seasonally adjusted",
       "minimum_observation_count": 250,
-      "series_note": "40-week fitting prefix predates the March 2020 COVID unemployment shock anchor."
+      "series_note": "40-week fitting prefix predates the March 2020 COVID unemployment shock anchor.",
+      "series_transform": "level"
     }
   ],
   "events": [
@@ -437,5 +452,12 @@
     "event_mapping_is_kept_in_this_contract_not_duplicated_in_the_tape": true,
     "expected_raw_vintage_batch_files_manifested": true,
     "preserve_raw_batch_sha256": true
+  },
+  "engine_optimization": {
+    "version": "C3_V2_1",
+    "objective": "Operational detector quality: detect real changes, control repeated alarms in quiet periods, detect both directions, recover after alerts, and generalize across cadence and series type.",
+    "policy": "Use the existing C3 v2.0 ALFRED source archive as immutable input; apply causal transforms in memory; use monthly 10-point and weekly 20-point FOCuS re-arm windows; use an eight-observation Hybrid confirmation window; exclude members that failed Holdout from Hybrid.",
+    "source_artifact_run_id": "45757611871",
+    "source_artifact_name": "chaos-c3-v2-expanded-source-intake-45757611871-1"
   }
 }
