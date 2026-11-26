@@ -230,8 +230,13 @@ def verify_source_bundle(
             raise ValueError("C3_V2_NORMALIZED_TAPE_CONTRACT_NAME_MISMATCH")
         if manifest.get("normalized_tape", {}).get("file") != expected_tape_name:
             raise ValueError("C3_V2_MANIFEST_TAPE_NAME_MISMATCH")
-        if manifest.get("guardrails") != contract.get("guardrails"):
-            raise ValueError("C3_V2_GUARDRAIL_MANIFEST_MISMATCH")
+        expected_manifest_guardrails = (
+            contract.get("source_intake_guardrails")
+            if manifest_contract_id == "CHAOS_P1_4_C3_EXPANDED_EVENT_COHORT_V1"
+            else contract.get("guardrails")
+        )
+        if expected_manifest_guardrails is None or manifest.get("guardrails") != expected_manifest_guardrails:
+            raise ValueError("C3_V2_SOURCE_GUARDRAIL_MANIFEST_MISMATCH")
         if sha256(tape_bytes) != manifest["normalized_tape"]["sha256"]:
             raise ValueError("C3_V2_NORMALIZED_TAPE_SHA256_MISMATCH")
         if len(tape_bytes) != int(manifest["normalized_tape"]["bytes"]):
