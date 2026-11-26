@@ -50,6 +50,32 @@ DETECTORS = (
     "A_CONSENSUS",
 )
 
+# Keep this schema aligned with score_events(); list-valued date fields are
+# serialized as JSON arrays so downstream CSV consumers can parse them safely.
+CSV_FIELDNAMES = (
+    "event_id", "series_id", "detector", "hit_miss",
+    "detection_index", "detection_available_at", "detection_lag_days",
+    "detection_lag_weeks_or_months", "lag_unit",
+    "false_alarms_before_anchor", "baseline_observations_after_quiet",
+    "false_alarms_per_100_baseline_observations", "baseline_alarm_dates",
+    "post_anchor_alarm_count", "all_post_anchor_alarm_dates",
+    "detector_status",
+)
+
+
+def csv_export_row(row: dict) -> dict:
+    metrics = dict(row["metrics"])
+    for field in ("baseline_alarm_dates", "all_post_anchor_alarm_dates"):
+        metrics[field] = json.dumps(metrics[field], ensure_ascii=False, separators=(",", ":"))
+    return {
+        "event_id": row["event_id"],
+        "series_id": row["series_id"],
+        "detector": row["detector"],
+        **metrics,
+        "detector_status": row["detector_status"],
+    }
+
+
 
 def sha256(data: bytes) -> str:
     return hashlib.sha256(data).hexdigest()
@@ -377,21 +403,10 @@ def main() -> int:
     md_path.write_text(markdown_report(report), encoding="utf-8")
     csv_path = out / "C3_HISTORICAL_BREAK_EVALUATION_V1.csv"
     with csv_path.open("w", newline="", encoding="utf-8") as handle:
-        writer = csv.DictWriter(handle, fieldnames=[
-            "event_id", "series_id", "detector", "hit_miss",
-            "detection_available_at", "detection_lag_days",
-            "detection_lag_weeks_or_months", "lag_unit",
-            "false_alarms_before_anchor", "baseline_observations_after_quiet",
-            "false_alarms_per_100_baseline_observations",
-            "post_anchor_alarm_count", "detector_status",
-        ])
+        writer = csv.DictWriter(handle, fieldnames=CSV_FIELDNAMES)
         writer.writeheader()
         for row in results:
-            writer.writerow({
-                "event_id": row["event_id"], "series_id": row["series_id"],
-                "detector": row["detector"], **row["metrics"],
-                "detector_status": row["detector_status"],
-            })
+            writer.writerow(csv_export_row(row))
     print(md_path.read_text(encoding="utf-8"), flush=True)
     print("C3_EVALUATION_OUTPUTS " + json.dumps({
         "json": str(json_path), "json_sha256": report["report_json_sha256"],
