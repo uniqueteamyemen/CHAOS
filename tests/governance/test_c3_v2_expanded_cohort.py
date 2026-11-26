@@ -1,4 +1,5 @@
 """Pre-registration checks for C3 v2's expanded historical cohort."""
+import hashlib
 import json
 import unittest
 from calendar import monthrange
@@ -32,6 +33,21 @@ class C3V2ExpandedCohortTests(unittest.TestCase):
         self.assertEqual(
             {series["series_id"] for series in self.contract["series"]},
             {"UNRATE", "PAYEMS", "WCOILBRENTEU", "ICSA"},
+        )
+
+    def test_frozen_c3_v1_source_intake_contract_path_and_sha256(self):
+        frozen = self.contract["frozen_references"]
+        relative_path = frozen["original_c3_v1_contract_path"]
+        self.assertEqual(
+            relative_path,
+            "p1_4_validation/c3/c3_source_intake_contract_v1.json",
+        )
+        source_path = ROOT / relative_path
+        self.assertTrue(source_path.is_file())
+        actual_sha256 = hashlib.sha256(source_path.read_bytes()).hexdigest()
+        self.assertEqual(
+            actual_sha256,
+            frozen["original_c3_v1_source_contract_sha256"],
         )
 
     def test_registered_anchors_cover_the_preregistered_event_types(self):
