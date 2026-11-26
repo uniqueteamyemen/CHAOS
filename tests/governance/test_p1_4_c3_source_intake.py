@@ -1,8 +1,10 @@
 from __future__ import annotations
 
 import importlib.util
+import io
 import json
 import unittest
+from unittest.mock import patch
 from pathlib import Path
 
 MODULE_PATH = (
@@ -69,6 +71,16 @@ class C3SourceIntakeTests(unittest.TestCase):
         for event in contract["events"]:
             self.assertGreaterEqual(event["minimum_pre_event_observations"], 40)
             self.assertGreater(event["minimum_post_event_observations"], 0)
+
+    def test_http_get_retries_transient_timeout(self):
+        with patch.object(runner, "urlopen", side_effect=[
+            TimeoutError("temporary read timeout"),
+            io.BytesIO(b"first-release-data"),
+        ]) as mocked_urlopen, patch.object(runner.time, "sleep") as mocked_sleep:
+            payload = runner._http_get("https://example.invalid/alfred.csv")
+        self.assertEqual(payload, b"first-release-data")
+        self.assertEqual(mocked_urlopen.call_count, 2)
+        mocked_sleep.assert_called_once_with(2.0)
 
     def test_first_release_order_is_not_reversed(self):
         ordered = ["2004-09-03", "2004-10-07", "2004-11-05"]
