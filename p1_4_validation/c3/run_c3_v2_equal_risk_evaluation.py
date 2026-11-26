@@ -501,6 +501,25 @@ def deterministic_seed(
     return int.from_bytes(hashlib.sha256(identity.encode("utf-8")).digest()[:8], "big")
 
 
+def analysis_tape_sha256(by_series: dict[str, list[dict]]) -> str:
+    """Hash the exact ordered values and release times consumed by the detectors."""
+    identity = []
+    for series_id in sorted(by_series):
+        for row in sorted(
+            by_series[series_id],
+            key=lambda item: (item["observation_date_obj"], item["available_at_obj"]),
+        ):
+            identity.append({
+                "series_id": series_id,
+                "observation_date": row["observation_date"],
+                "available_at": row["available_at"],
+                "value": format(float(row["value_float"]), ".15g"),
+                "series_transform": row.get("series_transform", "level"),
+                "units": row["units"],
+            })
+    return sha256(canonical_json(identity))
+
+
 def finite_positive_threshold(value: Any) -> float:
     if isinstance(value, (bool, np.bool_)):
         raise ValueError("C3_V2_INVALID_THRESHOLD")
@@ -1329,6 +1348,7 @@ def markdown_report(report: dict) -> str:
         "- Unique series: **" + str(report["cohort"]["series_count"]) + "**",
         "- Source archive SHA-256: " + report["source_integrity"]["archive_sha256"],
         "- First-release tape SHA-256: " + report["source_integrity"]["tape_sha256"],
+        "- Transformed analysis tape SHA-256: " + report["source_integrity"]["analysis_tape_sha256"],
         "- Development gate: one-sided Wilson U95 <= 0.10",
         "- Holdout gate: one-sided Wilson U95 <= 0.10; no threshold retuning",
         "- Replicates per series: 1000 Development + 1000 Holdout optimization traces",
@@ -1441,6 +1461,7 @@ def main() -> int:
     by_series, transform_audit = apply_causal_series_transforms(
         source_archive_path, manifest, by_series, contract
     )
+    analysis_tape_sha = analysis_tape_sha256(by_series)
     calibration = {}
     for series_id in sorted(by_series):
         series_cal = calibrate_series(
@@ -1514,7 +1535,7 @@ def main() -> int:
         for sid in calibration
     )
     report = {
-        "schema_version": "2.0.0",
+        "schema_version": "2.1.0",
         "status": (
             "C3_V2_ALL_SERIES_ALL_CANDIDATES_VALIDATED"
             if all_calibrated
@@ -1534,6 +1555,7 @@ def main() -> int:
         "source_integrity": {
             "archive_sha256": archive_sha,
             "tape_sha256": manifest["normalized_tape"]["sha256"],
+            "analysis_tape_sha256": analysis_tape_sha,
             "contract_sha256": contract_sha,
             "source_intake_run_id": manifest.get("workflow_run_id"),
             "source_intake_commit": manifest.get("source_commit"),
