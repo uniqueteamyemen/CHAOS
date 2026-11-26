@@ -96,9 +96,22 @@ def max_statistics(trace: np.ndarray) -> dict[str, float | None]:
     }
 
 
+def _finite_positive_threshold(value: Any) -> float:
+    if isinstance(value, (bool, np.bool_)):
+        raise ValueError("C3_INVALID_THRESHOLD")
+    try:
+        threshold = float(value)
+    except (TypeError, ValueError, OverflowError) as exc:
+        raise ValueError("C3_INVALID_THRESHOLD") from exc
+    if not math.isfinite(threshold) or threshold <= 0:
+        raise ValueError("C3_INVALID_THRESHOLD")
+    return threshold
+
+
 def validate_holdout(scores: list[float | None], threshold: float) -> dict:
+    threshold = _finite_positive_threshold(threshold)
     valid = [float(x) for x in scores if x is not None and math.isfinite(float(x))]
-    alarms = sum(x >= float(threshold) for x in valid)
+    alarms = sum(x >= threshold for x in valid)
     upper = wilson_upper(alarms, len(valid))
     status = (
         "INCONCLUSIVE" if len(valid) < MIN_VALID_REPLICATES
@@ -121,6 +134,9 @@ def calibrate_arm(
     holdout_scores: list[float | None],
     grid: tuple[int, ...],
 ) -> dict:
+    thresholds = sorted({_finite_positive_threshold(value) for value in grid})
+    if not thresholds:
+        raise ValueError("C3_EMPTY_THRESHOLD_GRID")
     valid_dev = [float(x) for x in development_scores if x is not None and math.isfinite(float(x))]
     valid_hold = [float(x) for x in holdout_scores if x is not None and math.isfinite(float(x))]
     if len(valid_dev) < MIN_VALID_REPLICATES:
@@ -135,7 +151,7 @@ def calibrate_arm(
 
     grid_rows = []
     selected = None
-    for threshold in sorted(float(x) for x in grid):
+    for threshold in thresholds:
         alarms = sum(x >= threshold for x in valid_dev)
         upper = wilson_upper(alarms, len(valid_dev))
         point = {
