@@ -50,6 +50,8 @@
       "frequency": "Monthly",
       "units": "Percent, seasonally adjusted",
       "expected_initial_observation_count_min": 150,
+      "minimum_pre_event_observations": 45,
+      "minimum_post_event_observations": 36,
       "initial_calibration_observations": 40,
       "mapping_note": "The recession dates are retrospective external labels. BLS household-survey observations are separate from the NBER event chronology; their first-publication dates are preserved independently."
     },
@@ -65,13 +67,15 @@
       "series_reference_url": "https://alfred.stlouisfed.org/series?seid=ICSA",
       "download_page_url": "https://alfred.stlouisfed.org/series/downloaddata?seid=ICSA",
       "expected_alfred_release_start": "2009-05-28",
-      "observation_start": "2019-05-18",
+      "observation_start": "2017-05-20",
       "observation_end": "2023-05-27",
-      "vintage_search_start": "2019-05-01",
+      "vintage_search_start": "2017-05-01",
       "vintage_search_end": "2023-07-15",
       "frequency": "Weekly, ending Saturday",
       "units": "Number of initial claims, seasonally adjusted",
       "expected_initial_observation_count_min": 150,
+      "minimum_pre_event_observations": 120,
+      "minimum_post_event_observations": 100,
       "initial_calibration_observations": 40,
       "mapping_note": "WHO's pandemic characterization is the calendar anchor. Weekly DOL initial-claims values are acquired at their first ALFRED publication vintage; NBER's retrospective recession chronology is contextual corroboration, not detector input."
     },
@@ -93,6 +97,8 @@
       "frequency": "Weekly, ending Friday",
       "units": "Dollars per barrel, not seasonally adjusted",
       "expected_initial_observation_count_min": 150,
+      "minimum_pre_event_observations": 120,
+      "minimum_post_event_observations": 100,
       "initial_calibration_observations": 40,
       "mapping_note": "IMF independently documents the Brent decline from June 2014 through January 2015. The observed series is EIA weekly Brent spot price; the EIA series is not used as the event-label authority."
     }

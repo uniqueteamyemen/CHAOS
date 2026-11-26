@@ -204,6 +204,19 @@ def fetch_series_initial_releases(series: dict, output_dir: Path) -> tuple[list[
             f"C3_INSUFFICIENT_FIRST_RELEASE_OBSERVATIONS:{series_id}:"
             f"{len(records)}<{series['expected_initial_observation_count_min']}"
         )
+    anchor = date.fromisoformat(series["anchor_date"])
+    pre_event = sum(date.fromisoformat(row["observation_date"]) < anchor for row in records)
+    post_event = sum(date.fromisoformat(row["observation_date"]) >= anchor for row in records)
+    min_pre = int(series["minimum_pre_event_observations"])
+    min_post = int(series["minimum_post_event_observations"])
+    if pre_event < min_pre:
+        raise ValueError(
+            f"C3_INSUFFICIENT_PRE_EVENT_HISTORY:{series_id}:{pre_event}<{min_pre}"
+        )
+    if post_event < min_post:
+        raise ValueError(
+            f"C3_INSUFFICIENT_POST_EVENT_HISTORY:{series_id}:{post_event}<{min_post}"
+        )
     observations = [r["observation_date"] for r in records]
     availability = [r["available_at"] for r in records]
     if len(observations) != len(set(observations)):
@@ -235,6 +248,8 @@ def write_intake(contract_path: Path, output_dir: Path) -> dict:
             "observation_start": series["observation_start"],
             "observation_end": series["observation_end"],
             "observation_count": len(records),
+            "pre_event_observations": sum(date.fromisoformat(r["observation_date"]) < date.fromisoformat(series["anchor_date"]) for r in records),
+            "post_event_observations": sum(date.fromisoformat(r["observation_date"]) >= date.fromisoformat(series["anchor_date"]) for r in records),
             "first_observation": records[0]["observation_date"],
             "last_observation": records[-1]["observation_date"],
             "first_available_at": records[0]["available_at"],

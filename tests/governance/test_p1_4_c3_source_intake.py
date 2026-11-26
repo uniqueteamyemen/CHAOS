@@ -63,6 +63,12 @@ class C3SourceIntakeTests(unittest.TestCase):
             {x["series_id"] for x in contract["events"]},
             {"UNRATE", "ICSA", "WCOILBRENTEU"},
         )
+        covid = next(x for x in contract["events"] if x["event_id"] == "COVID_2020")
+        self.assertEqual(covid["observation_start"], "2017-05-20")
+        self.assertGreaterEqual(covid["minimum_pre_event_observations"], 120)
+        for event in contract["events"]:
+            self.assertGreaterEqual(event["minimum_pre_event_observations"], 40)
+            self.assertGreater(event["minimum_post_event_observations"], 0)
 
     def test_first_release_order_is_not_reversed(self):
         ordered = ["2004-09-03", "2004-10-07", "2004-11-05"]
