@@ -164,7 +164,7 @@ def verify_source_bundle(
     frozen = contract.get("frozen_references", {})
     original_v1_path = ROOT / frozen.get(
         "original_c3_v1_contract_path",
-        "p1_4_validation/c3/c3_source_contract_v1.json",
+        "p1_4_validation/c3/c3_source_intake_contract_v1.json",
     )
     if not original_v1_path.is_file() or sha256(original_v1_path.read_bytes()) != frozen.get(
         "original_c3_v1_source_contract_sha256"
