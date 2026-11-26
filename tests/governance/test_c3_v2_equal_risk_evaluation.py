@@ -583,8 +583,8 @@ class C3V2EqualRiskTests(unittest.TestCase):
             "S1|" + c3.FOCUS4_NAME: {"unmatched_alarm_count": 5},
             "S1|Post-Quiet Huber + MAD": {"unmatched_alarm_count": 2},
         }
-        with patch.object(c3, "extract_hits", return_value=([{"index": 50, "sign": 1}], "OK", {})), \\
-             patch.object(c3, "audit_prefix_replay", return_value=1), \\
+        with patch.object(c3, "extract_hits", return_value=([{"index": 50, "sign": 1}], "OK", {})), \
+             patch.object(c3, "audit_prefix_replay", return_value=1), \
              patch.object(c3, "match_events_one_to_one", return_value=(
                  [{"detector": c3.PER_SERIES_ROUTER, "series_id": "S1",
                    "hit_miss": "HIT", "episode_id": "EP_A",
