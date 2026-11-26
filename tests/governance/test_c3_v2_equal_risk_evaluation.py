@@ -110,7 +110,7 @@ class C3V2EqualRiskTests(unittest.TestCase):
             c3.validate_registered_series_tape("TEST", rows, config, events)
 
     def test_cadence_aware_focus_rearm_windows(self):
-        self.assertEqual(c3.focus_rearm_points_for_frequency("Monthly"), 10)
+        self.assertEqual(c3.focus_rearm_points_for_frequency("Monthly"), 5)
         self.assertEqual(c3.focus_rearm_points_for_frequency("Weekly, ending Friday"), 20)
         self.assertEqual(c3.focus_rearm_points_for_frequency("Weekly, ending Saturday"), 20)
         with self.assertRaisesRegex(ValueError, "FOCUS_UNSUPPORTED_SERIES_FREQUENCY"):
@@ -131,7 +131,7 @@ class C3V2EqualRiskTests(unittest.TestCase):
             c3.focus_reset_rearm(np.zeros(180), threshold=10, frequency="Monthly")
         self.assertEqual(
             [call.kwargs["quiet_points"] for call in detector.call_args_list],
-            [40, 10],
+            [40, 5],
         )
 
         with patch(
@@ -296,7 +296,7 @@ class C3V2EqualRiskTests(unittest.TestCase):
         self.assertEqual(result["frozen_threshold"], 20.0)
         self.assertEqual(result["development"]["p0"], 0.0)
         self.assertLessEqual(
-            result["development"]["wilson_upper_95_one_sided"], c3.P0_TARGET
+            result["development"]["wilson_upper_95_one_sided"], c3.DEV_P0_TARGET
         )
         self.assertEqual(result["status"], "VALIDATED")
 
@@ -537,6 +537,72 @@ class C3V2EqualRiskTests(unittest.TestCase):
         )
         self.assertEqual(results[0]["hit_miss"], "HIT")
         self.assertLess(results[0]["detection_lag_days"], 0)
+
+
+    def test_global_winner_requires_real_historical_coverage_not_risk_only(self):
+        calibration = {
+            "S1": {"arms": {
+                name: {"status": "VALIDATED"} for name in c3.CANDIDATES
+            }}
+        }
+        historical = []
+        for index in range(4):
+            historical.append({
+                "detector": "Hybrid: FOCuS + Huber confirmation",
+                "series_id": "S1",
+                "hit_miss": "HIT" if index < 2 else "MISS",
+                "episode_id": f"EP_{index // 2}",
+                "detection_lag_days": 5 if index < 2 else None,
+            })
+        summary = c3.summarize_detector_results(calibration, historical, {})
+        self.assertTrue(summary["Hybrid: FOCuS + Huber confirmation"]["validated_all_series"])
+        self.assertEqual(summary["Hybrid: FOCuS + Huber confirmation"]["matched_event_series_pairs"], 2)
+        self.assertEqual(summary["Hybrid: FOCuS + Huber confirmation"]["matched_episode_clusters"], 1)
+        self.assertEqual(summary["global_selection"]["status"], "NO_GLOBAL_WINNER")
+        self.assertEqual(
+            summary["global_selection"]["reason"],
+            "NO_DETECTOR_PASSED_RISK_AND_HISTORICAL_COVERAGE_GATES",
+        )
+
+    def test_per_series_router_uses_only_holdout_validated_members(self):
+        calibration = {
+            "S1": {"arms": {
+                "FOCuS (reset-rearm)": {"status": "NOT_VALIDATED"},
+                c3.FOCUS4_NAME: {"status": "VALIDATED", "frozen_threshold": 20.0},
+                "Post-Quiet Huber + MAD": {"status": "VALIDATED", "frozen_threshold": 30.0},
+                "Post-Quiet Huber + Bartlett LRV": {"status": "NOT_VALIDATED"},
+            }}
+        }
+        historical = [
+            {"series_id": "S1", "detector": c3.FOCUS4_NAME, "hit_miss": "HIT",
+             "episode_id": "EP_A", "detection_lag_days": 12},
+            {"series_id": "S1", "detector": "Post-Quiet Huber + MAD", "hit_miss": "HIT",
+             "episode_id": "EP_A", "detection_lag_days": 4},
+        ]
+        unmatched = {
+            "S1|" + c3.FOCUS4_NAME: {"unmatched_alarm_count": 5},
+            "S1|Post-Quiet Huber + MAD": {"unmatched_alarm_count": 2},
+        }
+        with patch.object(c3, "extract_hits", return_value=([{"index": 50, "sign": 1}], "OK", {})), \\
+             patch.object(c3, "audit_prefix_replay", return_value=1), \\
+             patch.object(c3, "match_events_one_to_one", return_value=(
+                 [{"detector": c3.PER_SERIES_ROUTER, "series_id": "S1",
+                   "hit_miss": "HIT", "episode_id": "EP_A",
+                   "detection_lag_days": 4}],
+                 {"unmatched_alarm_count": 2},
+             )):
+            details = c3.append_per_series_router_results(
+                calibration, historical, unmatched,
+                {"S1": [{"value_float": 1.0}]},
+                {"S1": [{"event_id": "E1", "expected_sign": 1}]},
+            )
+        self.assertEqual(
+            calibration["S1"]["per_series_router"]["selected_detector"],
+            "Post-Quiet Huber + MAD",
+        )
+        self.assertTrue(details["independent_validation_required"])
+        self.assertEqual(details["status"], "RETROSPECTIVE_OPTIMIZATION_ONLY")
+
 
 
 if __name__ == "__main__":
