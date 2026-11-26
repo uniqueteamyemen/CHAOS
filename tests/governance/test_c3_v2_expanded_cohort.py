@@ -43,7 +43,8 @@ class C3V2ExpandedCohortTests(unittest.TestCase):
             runtime["focus_uses_frequency_aware_rearm_policy"],
             {
                 "initial_observations": 40,
-                "monthly_rearm_observations": 10,
+                "monthly_rearm_observations": 5,
+                "monthly_rearm_comparison_observations": [4, 5],
                 "weekly_rearm_observations": 20,
                 "maximum_alerts": 12,
             },
