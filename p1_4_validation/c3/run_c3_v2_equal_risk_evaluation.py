@@ -1350,7 +1350,7 @@ def markdown_report(report: dict) -> str:
         "- First-release tape SHA-256: " + report["source_integrity"]["tape_sha256"],
         "- Transformed analysis tape SHA-256: " + report["source_integrity"]["analysis_tape_sha256"],
         "- Development gate: one-sided Wilson U95 <= 0.10",
-        "- Holdout gate: one-sided Wilson U95 <= 0.10; no threshold retuning",
+        "- Holdout gate: one-sided Wilson U95 <= 0.10; Holdout also selects eligible Hybrid members for this optimization iteration",
         "- Replicates per series: 1000 Development + 1000 Holdout optimization traces",
         "- FOCuS policy: 40 initial observations; Monthly re-arm 10 observations; Weekly re-arm 20 observations; up to 12 alerts",
         "- Hybrid policy: FOCuS plus one or more Holdout-eligible Huber members, same direction, within eight observations",
@@ -1407,9 +1407,13 @@ def markdown_report(report: dict) -> str:
     ]
     for detector in ALL_DETECTORS:
         row = report["detector_summary"][detector]
+        validated_series_label = (
+            str(row["validated_series_count"]) + "/" + str(row["series_count"])
+            if row["role"] == "CANDIDATE" else "—"
+        )
         lines.append(
             "| " + detector + " | " + row["role"] + " | "
-            + str(row["validated_series_count"]) + "/" + str(row["series_count"]) + " | "
+            + validated_series_label + " | "
             + str(row["matched_event_series_pairs"]) + "/" + str(row["total_event_series_pairs"]) + " | "
             + str(row["matched_episode_clusters"]) + "/" + str(row["episode_clusters_with_any_registered_pair"]) + " | "
             + str(row["total_unmatched_alarm_count"]) + " | "
@@ -1537,9 +1541,9 @@ def main() -> int:
     report = {
         "schema_version": "2.1.0",
         "status": (
-            "C3_V2_ALL_SERIES_ALL_CANDIDATES_VALIDATED"
+            "C3_V2_1_ALL_SERIES_ALL_CANDIDATES_VALIDATED"
             if all_calibrated
-            else "C3_V2_COMPLETED_WITH_CALIBRATION_EXCEPTIONS"
+            else "C3_V2_1_COMPLETED_WITH_CALIBRATION_EXCEPTIONS"
         ),
         "run_id": os.environ.get("GITHUB_RUN_ID", "LOCAL_REPLAY"),
         "evaluation_commit": os.environ.get("GITHUB_SHA", "LOCAL_REPLAY"),
@@ -1570,7 +1574,7 @@ def main() -> int:
             "p0_target": P0_TARGET,
             "confidence_bound": "one-sided Wilson 95%",
             "development_selection_rule": "lowest predeclared threshold with Dev Wilson U95 <= 0.10",
-            "holdout_validation_rule": "frozen threshold; independent Holdout Wilson U95 <= 0.10",
+            "holdout_validation_rule": "Holdout Wilson U95 <= 0.10; current Holdout results also select eligible Hybrid members in this optimization iteration.",
             "holdout_retuning": False,
             "replicates_per_series_phase": REPLICATES,
             "minimum_valid_replicates_per_phase": MIN_VALID_REPLICATES,
