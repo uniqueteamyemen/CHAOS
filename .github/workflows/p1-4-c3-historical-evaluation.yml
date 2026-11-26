@@ -1,0 +1,25 @@
+name: CHAOS P1.4 C3 — Historical Break Detector Evaluation
+
+on:
+  workflow_dispatch:
+    inputs:
+      execute_c3_historical_evaluation:
+        description: "Run the frozen C3 historical detector head-to-head evaluation"
+        required: true
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  default-branch-registration:
+    if: ${{ github.ref == 'refs/heads/main-phase2' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require the active P1.4 development ref
+        run: |
+          echo "This workflow is registered on the default branch for manual dispatch."
+          echo "Select feat/p1-4-capability-envelope-pilot-v1-20261125 in the branch selector."
+          echo "No source intake or detector evaluation is run from main-phase2."
