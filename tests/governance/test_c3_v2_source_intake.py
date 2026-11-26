@@ -41,7 +41,7 @@ class C3V2SourceIntakeTests(unittest.TestCase):
 
     def test_write_intake_accepts_one_series_mapped_to_multiple_events(self):
         contract = {
-            "contract_id": "CHAOS_P1_4_C3_EXPANDED_EVENT_COHORT_V1",
+            "contract_id": "CHAOS_P1_4_C3_EXPANDED_EVENT_COHORT_V2_1",
             "contract_version": "1.0.0",
             "events": [
                 {"event_id": "EV_A", "expected_sign_by_series": {"TEST": 1}},
