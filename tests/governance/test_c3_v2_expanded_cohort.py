@@ -35,6 +35,20 @@ class C3V2ExpandedCohortTests(unittest.TestCase):
             {"UNRATE", "PAYEMS", "WCOILBRENTEU", "ICSA"},
         )
 
+    def test_frozen_source_guardrails_are_separate_from_v2_1_runtime_policy(self):
+        source = self.contract["source_intake_guardrails"]
+        runtime = self.contract["guardrails"]
+        self.assertTrue(source["focus_uses_40_initial_and_20_rearm_reset_policy"])
+        self.assertEqual(
+            runtime["focus_uses_frequency_aware_rearm_policy"],
+            {
+                "initial_observations": 40,
+                "monthly_rearm_observations": 10,
+                "weekly_rearm_observations": 20,
+                "maximum_alerts": 12,
+            },
+        )
+
     def test_registered_analysis_transforms_are_series_specific(self):
         transforms = {
             row["series_id"]: row.get("series_transform", "level")
