@@ -18,7 +18,7 @@
     "cohort_change_policy": "No event, anchor, direction, window or series may be added or removed after source intake begins without a new contract version and explicit provenance."
   },
   "frozen_references": {
-    "original_c3_v1_contract_path": "p1_4_validation/c3/c3_source_contract_v1.json",
+    "original_c3_v1_contract_path": "p1_4_validation/c3/c3_source_intake_contract_v1.json",
     "original_c3_v1_source_bundle_unchanged": true,
     "nber_cycle_chronology_url": "https://www.nber.org/research/data/us-business-cycle-expansions-and-contractions",
     "fred_alfred_vintage_date_docs": "https://fred.stlouisfed.org/docs/api/fred/series_vintagedates.html",
