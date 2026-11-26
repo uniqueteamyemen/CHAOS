@@ -6,6 +6,7 @@ import json
 import unittest
 from unittest.mock import patch
 from pathlib import Path
+from urllib.parse import parse_qs, urlsplit
 
 MODULE_PATH = (
     Path(__file__).resolve().parents[2]
@@ -20,6 +21,19 @@ SPEC.loader.exec_module(runner)
 
 
 class C3SourceIntakeTests(unittest.TestCase):
+    def test_vintage_batch_url_bounds_observations_without_changing_vintages(self):
+        url = runner.build_vintage_batch_url(
+            "ICSA",
+            ["2020-03-19", "2020-03-26"],
+            "2017-05-20",
+            "2023-05-27",
+        )
+        params = parse_qs(urlsplit(url).query)
+        self.assertEqual(params["id"], ["ICSA,ICSA"])
+        self.assertEqual(params["vintage_date"], ["2020-03-19,2020-03-26"])
+        self.assertEqual(params["observation_start"], ["2017-05-20"])
+        self.assertEqual(params["observation_end"], ["2023-05-27"])
+
     def test_extracts_only_real_vintage_dates_inside_capture_window(self):
         html = """
         <select name="vintage_dates" multiple>
