@@ -11,7 +11,6 @@ import hashlib
 import io
 import json
 import math
-import statistics
 import sys
 import zipfile
 from datetime import date
@@ -20,7 +19,7 @@ from typing import Any
 
 import numpy as np
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
@@ -71,6 +70,9 @@ def verify_bundle(zip_path: Path, contract_path: Path) -> tuple[dict, dict[str, 
     contract = json.loads(contract_bytes)
     if contract["frozen_references"]["shock_event_contract_sha256"] != PINNED["shock_contract_sha256"]:
         raise ValueError("C3_SHOCK_CONTRACT_PIN_MISMATCH")
+    shock_path = ROOT / contract["frozen_references"]["shock_event_contract_path"]
+    if sha256(shock_path.read_bytes()) != PINNED["shock_contract_sha256"]:
+        raise ValueError("C3_SHOCK_EVENT_CONTRACT_SHA256_MISMATCH")
 
     with zipfile.ZipFile(io.BytesIO(payload)) as archive:
         if archive.testzip() is not None:
