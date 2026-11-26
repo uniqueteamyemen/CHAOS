@@ -40,7 +40,10 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          test "$GITHUB_REF" = "refs/heads/feat/c3-equal-risk-calibration-v1"
+          case "$GITHUB_REF" in
+            refs/heads/feat/c3-equal-risk-calibration-v1|refs/heads/feat/p1-4-capability-envelope-pilot-v1-20261125) ;;
+            *) echo "C3_EQUAL_RISK_WRONG_BRANCH:$GITHUB_REF" >&2; exit 1 ;;
+          esac
 
       - uses: actions/checkout@v4
         with:
