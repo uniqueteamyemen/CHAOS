@@ -348,6 +348,7 @@ def run_level_3_engine_output_check(
         "matched_event_series_pairs_by_detector": matched_by_detector,
         "unmatched_alarms_by_detector": unmatched_alarms_by_detector,
         "global_selection": global_selection,
+        "per_series_router_members": router_profile.get("selected_member_by_series", {}),
         "outputs": {
             "json": json_path.name,
             "markdown": markdown_path.name,
@@ -378,6 +379,7 @@ def run_level_3_engine_output_check(
             "matched_pairs": matched_by_detector,
             "unmatched_alarms": unmatched_alarms_by_detector,
             "global_selection": global_selection.get("status"),
+            "per_series_router_members": router_profile.get("selected_member_by_series", {}),
             "report": str(output_path),
         }, sort_keys=True),
         flush=True,
