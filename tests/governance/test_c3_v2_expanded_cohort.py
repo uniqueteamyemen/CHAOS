@@ -122,7 +122,7 @@ class C3V2ExpandedCohortTests(unittest.TestCase):
     def test_risk_gate_is_wilson_upper_on_both_development_and_holdout(self):
         rules = self.contract["guardrails"]
         self.assertEqual(rules["development_threshold_rule"],
-                         "one-sided Wilson 95% upper bound <= 0.10")
+                         "one-sided Wilson 95% upper bound <= 0.085")
         self.assertEqual(rules["holdout_validation_rule"],
                          "one-sided Wilson 95% upper bound <= 0.10")
         self.assertTrue(rules["holdout_never_used_for_threshold_selection"])
