@@ -422,7 +422,7 @@ class C3V2EqualRiskTests(unittest.TestCase):
 
         self.assertEqual(result["status"], "VALIDATED")
         self.assertLessEqual(
-            result["development"]["wilson_upper_95_one_sided"], c3.P0_TARGET
+            result["development"]["wilson_upper_95_one_sided"], c3.DEV_P0_TARGET
         )
         self.assertLessEqual(
             result["holdout"]["wilson_upper_95_one_sided"], c3.P0_TARGET
@@ -563,6 +563,13 @@ class C3V2EqualRiskTests(unittest.TestCase):
             summary["global_selection"]["reason"],
             "NO_DETECTOR_PASSED_RISK_AND_HISTORICAL_COVERAGE_GATES",
         )
+
+    def test_focus_rearm_profiles_and_development_margin_are_registered(self):
+        self.assertEqual(c3.focus_rearm_points_for_frequency("Monthly"), 5)
+        self.assertEqual(c3.focus_rearm_points_for_frequency("Weekly, ending Friday"), 20)
+        self.assertIn(c3.FOCUS4_NAME, c3.CANDIDATES)
+        self.assertEqual(c3.DEV_P0_TARGET, 0.085)
+        self.assertTrue({275, 325, 450}.issubset(set(c3.FOCUS_GRID)))
 
     def test_per_series_router_uses_only_holdout_validated_members(self):
         calibration = {
