@@ -81,6 +81,17 @@ def sha256(data: bytes) -> str:
     return hashlib.sha256(data).hexdigest()
 
 
+def ensure_causal_release_order(series_id: str, rows: list[dict]) -> None:
+    previous_available = None
+    for index, row in enumerate(rows):
+        available = row["available_at_obj"]
+        if previous_available is not None and available < previous_available:
+            raise ValueError(
+                f"C3_NON_MONOTONIC_FIRST_RELEASE_AVAILABILITY:{series_id}:{index}"
+            )
+        previous_available = available
+
+
 def canonical_json(value: Any) -> bytes:
     return (json.dumps(value, ensure_ascii=False, sort_keys=True,
                        separators=(",", ":"), allow_nan=False) + "\n").encode()
@@ -161,6 +172,7 @@ def verify_bundle(zip_path: Path, contract_path: Path) -> tuple[dict, dict[str, 
         dates = [r["observation_date"] for r in values]
         if len(set(dates)) != len(dates):
             raise ValueError(f"C3_DUPLICATE_OBSERVATION_DATE:{sid}")
+        ensure_causal_release_order(sid, values)
     events = {e["series_id"]: e for e in contract["events"]}
     if set(events) != EXPECTED_SERIES:
         raise ValueError("C3_CONTRACT_SERIES_SET_MISMATCH")
