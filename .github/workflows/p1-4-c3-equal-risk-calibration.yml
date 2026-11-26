@@ -1,0 +1,110 @@
+name: CHAOS P1.4 C3 — Equal-Risk Calibration
+
+on:
+  push:
+    branches:
+      - feat/c3-equal-risk-calibration-v1
+    paths:
+      - .github/workflows/p1-4-c3-equal-risk-calibration.yml
+      - p1_4_validation/c3/run_equal_risk_calibration.py
+      - tests/governance/test_c3_equal_risk_calibration.py
+  workflow_dispatch:
+    inputs:
+      execute_c3_equal_risk_calibration:
+        description: "Run per-series C3 equal-risk calibration on the pinned first-release source bundle"
+        required: true
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: chaos-p1-4-c3-equal-risk-calibration-\${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  equal-risk-calibration:
+    if: \${{ github.event_name == 'push' || inputs.execute_c3_equal_risk_calibration == true }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      PYTHONUNBUFFERED: "1"
+      PYTHONHASHSEED: "0"
+      OMP_NUM_THREADS: "1"
+      OPENBLAS_NUM_THREADS: "1"
+      MKL_NUM_THREADS: "1"
+    steps:
+      - name: Require the isolated C3 equal-risk branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REF" = "refs/heads/feat/c3-equal-risk-calibration-v1"
+
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install frozen runtime dependencies
+        run: python -m pip install -r real_data_stress_pipeline/requirements.txt
+
+      - name: Download and verify the immutable C3 source bundle
+        env:
+          GH_TOKEN: \${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --fail --location --retry 3 \
+            -H "Authorization: Bearer \${GH_TOKEN}" \
+            -H "Accept: application/vnd.github+json" \
+            https://api.github.com/repos/\${GITHUB_REPOSITORY}/actions/artifacts/15079733940/zip \
+            -o /tmp/c3-source-intake-45738391381.zip
+          echo "8b4c7c4bc0cca7aea5a1346fdbd8f1f41076a88ae73622ff6331aad912a30c59  /tmp/c3-source-intake-45738391381.zip" | sha256sum --check
+
+      - name: Compile C3 calibration runner
+        run: python -m py_compile p1_4_validation/c3/run_equal_risk_calibration.py
+
+      - name: Run C3 calibration and source-contract tests
+        run: |
+          set -euo pipefail
+          PYTHONPATH="$GITHUB_WORKSPACE" python -m unittest discover \
+            -s tests/governance -p 'test_c3_equal_risk_calibration.py' -v
+          PYTHONPATH="$GITHUB_WORKSPACE" python -m unittest discover \
+            -s tests/governance -p 'test_c3_historical_break_evaluation.py' -v
+
+      - name: Run per-series equal-risk calibration and historical replay
+        run: |
+          set -euo pipefail
+          PYTHONPATH="$GITHUB_WORKSPACE" python -u \
+            p1_4_validation/c3/run_equal_risk_calibration.py \
+            --artifact-zip /tmp/c3-source-intake-45738391381.zip \
+            --contract p1_4_validation/c3/c3_source_contract_v1.json \
+            --output-dir artifacts/p1_4/c3/equal_risk_calibration
+
+      - name: Publish full equal-risk tables to GitHub Step Summary
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          {
+            echo "# C3 — Equal-Risk Calibration"
+            if [[ -s artifacts/p1_4/c3/equal_risk_calibration/C3_EQUAL_RISK_CALIBRATION_V1.md ]]; then
+              cat artifacts/p1_4/c3/equal_risk_calibration/C3_EQUAL_RISK_CALIBRATION_V1.md
+            else
+              echo "C3 equal-risk report unavailable; inspect job logs."
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload C3 equal-risk calibration evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: chaos-p1-4-c3-equal-risk-\${{ github.run_id }}-\${{ github.run_attempt }}
+          path: artifacts/p1_4/c3/equal_risk_calibration/
+          retention-days: 90
+          if-no-files-found: warn
