@@ -213,7 +213,7 @@ def focus_rearm_points_for_frequency(frequency: str) -> int:
     """Return the operational FOCuS re-arm window for the registered cadence."""
     normalized = str(frequency).strip()
     if normalized == "Monthly":
-        return 10
+        return 5
     if normalized.startswith("Weekly"):
         return 20
     raise ValueError(f"FOCUS_UNSUPPORTED_SERIES_FREQUENCY:{normalized}")
