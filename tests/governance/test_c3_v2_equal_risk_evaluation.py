@@ -152,7 +152,7 @@ class C3V2EqualRiskTests(unittest.TestCase):
                 rearm_quiet_points=20, frequency="Monthly",
             )
 
-    def test_hybrid_receives_only_holdout_eligible_member_thresholds(self):
+    def test_hybrid_keeps_focus_trigger_and_filters_failed_huber_members(self):
         arms = {
             "FOCuS (reset-rearm)": {"status": "NOT_VALIDATED", "frozen_threshold": 225.0},
             "Post-Quiet Huber + MAD": {"status": "NOT_VALIDATED", "frozen_threshold": 80.0},
@@ -227,6 +227,36 @@ class C3V2EqualRiskTests(unittest.TestCase):
         self.assertEqual(audit["PAYEMS"]["predecessor"]["observation_date"], "1966-07-01")
         self.assertEqual(audit["PAYEMS"]["predecessor"]["available_at"], "1966-08-08")
         self.assertFalse(audit["PAYEMS"]["source_archive_mutated"])
+
+    def test_analysis_tape_hash_is_order_stable_and_value_sensitive(self):
+        def row(value):
+            return {
+                "observation_date": "2020-01-01",
+                "observation_date_obj": date(2020, 1, 1),
+                "available_at": "2020-01-02",
+                "available_at_obj": date(2020, 1, 2),
+                "value_float": value,
+                "series_transform": "first_difference",
+                "units": "monthly change",
+            }
+
+        original = {"TEST": [row(5.0), {
+            **row(-2.0),
+            "observation_date": "2020-02-01",
+            "observation_date_obj": date(2020, 2, 1),
+            "available_at": "2020-02-03",
+            "available_at_obj": date(2020, 2, 3),
+        }]}
+        reversed_rows = {"TEST": list(reversed(original["TEST"]))}
+        changed = {"TEST": [row(6.0), original["TEST"][1]]}
+        self.assertEqual(
+            c3.analysis_tape_sha256(original),
+            c3.analysis_tape_sha256(reversed_rows),
+        )
+        self.assertNotEqual(
+            c3.analysis_tape_sha256(original),
+            c3.analysis_tape_sha256(changed),
+        )
 
     def test_markdown_comparison_includes_read_only_baselines(self):
         historical = [
