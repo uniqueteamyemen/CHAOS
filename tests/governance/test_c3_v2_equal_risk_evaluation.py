@@ -284,6 +284,8 @@ class C3V2EqualRiskTests(unittest.TestCase):
         markdown = c3.markdown_report(report)
         self.assertIn("| A_FAST | READ_ONLY |", markdown)
         self.assertIn("| A_CONSENSUS | READ_ONLY |", markdown)
+        self.assertEqual(summary["A_FAST"]["matched_event_series_pairs"], 1)
+        self.assertEqual(summary["A_CONSENSUS"]["matched_event_series_pairs"], 0)
 
     def test_development_threshold_uses_wilson_upper_not_empirical_p0(self):
         development = [10.0] * 100 + [0.0] * 900
