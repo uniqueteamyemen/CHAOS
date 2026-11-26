@@ -13,7 +13,8 @@ from typing import Any
 import numpy as np
 
 from p1_4_validation.c3.run_historical_break_evaluation import (
-    PINNED, audit_prefix_replay, extract_hits, score_events, sha256, verify_bundle,
+    PINNED, audit_prefix_replay, extract_hits, load_evaluation_contract,
+    score_events, sha256, verify_bundle,
 )
 from p1_4_validation.injection_runner import (
     generate_ar_null_trace, select_ar_model, wilson_upper,
@@ -111,7 +112,7 @@ def _finite_positive_threshold(value: Any) -> float:
 def validate_holdout(scores: list[float | None], threshold: float) -> dict:
     threshold = _finite_positive_threshold(threshold)
     valid = [float(x) for x in scores if x is not None and math.isfinite(float(x))]
-    alarms = sum(x >= threshold for x in valid)
+    alarms = sum(x >= float(threshold) for x in valid)
     upper = wilson_upper(alarms, len(valid))
     status = (
         "INCONCLUSIVE" if len(valid) < MIN_VALID_REPLICATES
@@ -134,14 +135,15 @@ def calibrate_arm(
     holdout_scores: list[float | None],
     grid: tuple[int, ...],
 ) -> dict:
+    valid_dev = [float(x) for x in development_scores if x is not None and math.isfinite(float(x))]
     thresholds = sorted({_finite_positive_threshold(value) for value in grid})
     if not thresholds:
         raise ValueError("C3_EMPTY_THRESHOLD_GRID")
-    valid_dev = [float(x) for x in development_scores if x is not None and math.isfinite(float(x))]
     valid_hold = [float(x) for x in holdout_scores if x is not None and math.isfinite(float(x))]
     if len(valid_dev) < MIN_VALID_REPLICATES:
         return {
-            "status": "INCONCLUSIVE",
+            "status": "ABSTAINED",
+            "raw_calibration_status": "INCONCLUSIVE",
             "reason": "INSUFFICIENT_VALID_DEVELOPMENT_NULL_REPLICATES",
             "valid_development_replicates": len(valid_dev),
             "valid_holdout_replicates": len(valid_hold),
@@ -162,13 +164,14 @@ def calibrate_arm(
             "wilson_upper_95_one_sided": upper,
         }
         grid_rows.append(point)
-        if upper is not None and upper <= P0_TARGET:
+        if point["p0"] <= P0_TARGET:
             selected = point
             break
 
     if selected is None:
         return {
-            "status": "NOT_CALIBRATABLE",
+            "status": "ABSTAINED",
+            "raw_calibration_status": "NOT_CALIBRATABLE",
             "reason": "NO_PREDECLARED_THRESHOLD_MET_DEVELOPMENT_P0",
             "development_grid": grid_rows,
             "valid_development_replicates": len(valid_dev),
@@ -179,15 +182,23 @@ def calibrate_arm(
 
     threshold = float(selected["threshold"])
     holdout = validate_holdout(holdout_scores, threshold)
+    validation_status = {
+        "PASS": "VALIDATED",
+        "FAIL": "NOT_VALIDATED",
+        "INCONCLUSIVE": "ABSTAINED",
+    }[holdout["status"]]
     return {
-        "status": holdout["status"],
+        "status": validation_status,
+        "raw_holdout_status": holdout["status"],
         "development_status": "CALIBRATED",
         "development": selected,
         "development_grid": grid_rows,
         "frozen_threshold": threshold,
         "holdout": holdout,
         "valid_development_replicates": len(valid_dev),
+        "invalid_development_replicates": len(development_scores) - len(valid_dev),
         "valid_holdout_replicates": len(valid_hold),
+        "invalid_holdout_replicates": len(holdout_scores) - len(valid_hold),
         "holdout_retuning": False,
     }
 
@@ -228,6 +239,8 @@ def calibrate_series(series_id: str, rows: list[dict]) -> dict:
         "quiet_points": QUIET_POINTS,
         "p0_target": P0_TARGET,
         "replicates_per_phase": REPLICATES,
+        "null_path_length": int(len(values)),
+        "monitored_post_quiet_observations_per_path": int(len(values) - QUIET_POINTS),
         "minimum_valid_replicates": MIN_VALID_REPLICATES,
         "model": summarize_model(model, rows),
         "arms": {},
@@ -235,11 +248,12 @@ def calibrate_series(series_id: str, rows: list[dict]) -> dict:
     if model.get("status") != "OK":
         for arm in CANDIDATES:
             result["arms"][arm] = {
-                "status": "NOT_CALIBRATABLE",
+                "status": "ABSTAINED",
+                "raw_calibration_status": "NOT_CALIBRATABLE",
                 "reason": model.get("reason", "AR_NULL_MODEL_NOT_ELIGIBLE"),
                 "frozen_threshold": None,
             }
-        result["calibration_status"] = "NOT_CALIBRATABLE"
+        result["calibration_status"] = "ABSTAINED"
         return result
 
     order = int(model["order"])
@@ -279,8 +293,8 @@ def calibrate_series(series_id: str, rows: list[dict]) -> dict:
 
     states = [result["arms"][arm]["status"] for arm in CANDIDATES]
     result["calibration_status"] = (
-        "ALL_CANDIDATES_PASS_HOLDOUT_P0"
-        if all(state == "PASS" for state in states)
+        "ALL_CANDIDATES_VALIDATED"
+        if all(state == "VALIDATED" for state in states)
         else "COMPLETED_WITH_CALIBRATION_EXCEPTIONS"
     )
     return result
@@ -294,18 +308,28 @@ def evaluate_series(
     for detector in ALL_ARMS:
         if detector in CANDIDATES:
             arm = calibration["arms"][detector]
-            if arm.get("status") != "PASS":
+            validation_status = str(arm["status"])
+            threshold = arm.get("frozen_threshold")
+            if threshold is None:
                 output.append({
                     "event_id": event["event_id"],
                     "series_id": series_id,
                     "detector": detector,
-                    "evaluation_status": "NOT_EVALUATED_EQUAL_RISK_NOT_VALIDATED",
-                    "calibration_status": arm.get("status"),
-                    "threshold": arm.get("frozen_threshold"),
+                    "evaluation_status": "ABSTAINED",
+                    "validation_status": "ABSTAINED",
+                    "calibration_status": "ABSTAINED",
+                    "threshold": None,
+                    "development_p0": arm.get("development", {}).get("p0"),
+                    "holdout_p0": arm.get("holdout", {}).get("p0"),
+                    "holdout_wilson_u95": arm.get("holdout", {}).get("wilson_upper_95_one_sided"),
+                    "detector_status": "NOT_RUN_NO_FROZEN_THRESHOLD",
+                    "no_lookahead_prefix_replays": 0,
                     "metrics": None,
                 })
                 continue
-            threshold = float(arm["frozen_threshold"])
+            # A failed/inconclusive Holdout never retunes the development threshold.
+            # The historical result remains visible at the exact frozen threshold.
+            threshold = float(threshold)
             hits, detector_status, metadata = extract_hits(
                 detector, values, threshold=threshold
             )
@@ -313,31 +337,47 @@ def evaluate_series(
                 audit_prefix_replay(detector, values, hits, threshold=threshold)
                 if hits else 0
             )
-            metrics = score_events(rows, event["anchor_date"], hits)
+            metrics = score_events(
+                rows, event["anchor_date"], hits,
+                expected_sign=event["expected_sign"],
+                matching_window_months=event["matching_window_months"],
+            )
             output.append({
                 "event_id": event["event_id"],
                 "series_id": series_id,
                 "detector": detector,
-                "evaluation_status": "EQUAL_RISK_HOLDOUT_VALIDATED",
-                "calibration_status": "PASS",
+                "evaluation_status": validation_status,
+                "validation_status": validation_status,
+                "calibration_status": validation_status,
                 "threshold": threshold,
+                "development_p0": arm.get("development", {}).get("p0"),
+                "holdout_p0": arm.get("holdout", {}).get("p0"),
+                "holdout_wilson_u95": arm.get("holdout", {}).get("wilson_upper_95_one_sided"),
                 "detector_status": detector_status,
                 "no_lookahead_prefix_replays": replayed,
                 "detector_metadata": metadata,
                 "metrics": metrics,
             })
         else:
-            # Frozen A_FAST / A_CONSENSUS controls are read-only and not recalibrated.
+            # A_FAST/A_CONSENSUS stay frozen and read-only.
             hits, detector_status, metadata = extract_hits(detector, values)
             replayed = audit_prefix_replay(detector, values, hits) if hits else 0
-            metrics = score_events(rows, event["anchor_date"], hits)
+            metrics = score_events(
+                rows, event["anchor_date"], hits,
+                expected_sign=event["expected_sign"],
+                matching_window_months=event["matching_window_months"],
+            )
             output.append({
                 "event_id": event["event_id"],
                 "series_id": series_id,
                 "detector": detector,
-                "evaluation_status": "FROZEN_REFERENCE_NOT_EQUAL_RISK_CALIBRATED",
-                "calibration_status": "NOT_APPLICABLE_READ_ONLY",
+                "evaluation_status": "FROZEN_REFERENCE_READ_ONLY",
+                "validation_status": "READ_ONLY",
+                "calibration_status": "READ_ONLY",
                 "threshold": None,
+                "development_p0": None,
+                "holdout_p0": None,
+                "holdout_wilson_u95": None,
                 "detector_status": detector_status,
                 "no_lookahead_prefix_replays": replayed,
                 "detector_metadata": metadata,
@@ -390,16 +430,21 @@ def markdown_report(report: dict) -> str:
         "",
         "## 2. Historical head-to-head at frozen equal-risk thresholds",
         "",
-        "| Series / event | Detector | Evaluation status | Hit / Miss | Available at | Lag | Baseline false alarms | Baseline n |",
-        "|---|---|---|---|---|---:|---:|---:|",
+        "| Series / event | Detector | Validation | Threshold | Dev P0 | Holdout Wilson U95 | HIT/MISS | Match status | Available at | Lag | Baseline false alarms | Baseline n |",
+        "|---|---|---|---:|---:|---:|---|---|---|---:|---:|---:|",
     ]
     for row in report["historical_results"]:
         metrics = row.get("metrics")
+        threshold = row.get("threshold")
+        dev_p0 = row.get("development_p0")
+        hold_u95 = row.get("holdout_wilson_u95")
+        fmt = lambda value: "—" if value is None else str(round(float(value), 4))
         if metrics is None:
             lines.append(
                 "| " + row["series_id"] + " / " + row["event_id"] + " | "
-                + row["detector"] + " | " + row["evaluation_status"]
-                + " | — | — | — | — | — |"
+                + row["detector"] + " | " + row["validation_status"] + " | "
+                + fmt(threshold) + " | " + fmt(dev_p0) + " | " + fmt(hold_u95)
+                + " | ABSTAINED | — | — | — | — | — |"
             )
             continue
         lag = (
@@ -408,8 +453,9 @@ def markdown_report(report: dict) -> str:
         )
         lines.append(
             "| " + row["series_id"] + " / " + row["event_id"] + " | "
-            + row["detector"] + " | " + row["evaluation_status"] + " | "
-            + metrics["hit_miss"] + " | "
+            + row["detector"] + " | " + row["validation_status"] + " | "
+            + fmt(threshold) + " | " + fmt(dev_p0) + " | " + fmt(hold_u95) + " | "
+            + metrics["hit_miss"] + " | " + metrics["match_status"] + " | "
             + str(metrics.get("detection_available_at") or "—") + " | "
             + lag + " | " + str(metrics["false_alarms_before_anchor"])
             + " | " + str(metrics["baseline_observations_after_quiet"]) + " |"
@@ -421,9 +467,11 @@ def markdown_report(report: dict) -> str:
         "",
         "- Only the initial 40 first-release observations fit the AR null model. Event anchors and later observations are excluded from threshold selection.",
         "- P0 is estimated as the fraction of simulated no-change traces with at least one alarm over the same post-quiet monitoring horizon.",
-        "- A candidate is historically scored only after independent holdout passes the frozen P0 gate. Failed or inconclusive arms remain unscored; no global-threshold fallback.",
+        "- Development selects the lowest predeclared threshold with empirical P0 <= 0.10; independent Holdout is checked once using one-sided Wilson U95 <= 0.10.",
+        "- Holdout failures retain the development threshold unchanged and are labeled NOT_VALIDATED; insufficient or impossible calibration is ABSTAINED.",
+        "- Historical metrics remain visible at frozen thresholds after Holdout failure, but are not presented as validated.",
+        "- FOCuS uses the existing 40-point initial calibration and 20-point reset/rearm policy after each alert; each emitted alarm is prefix-replayed.",
         "- Bartlett is a Huber scale-estimator variant, not an independent alarm detector.",
-        "- The current FOCuS primitive is single-hit with no reset/rearm; repeated-change performance is not validated.",
         "- A_FAST and A_CONSENSUS remain unchanged read-only references; no equal-risk claim is made for them.",
         "- UNRATE has only 9 post-quiet pre-anchor observations; its observed baseline count has limited resolution.",
         "- Passing this fitted-null test is not a distribution-free real-world false-alarm guarantee.",
@@ -434,7 +482,7 @@ def markdown_report(report: dict) -> str:
         "- Run ID: " + str(report["run_id"]),
         "- Evaluation commit: " + str(report["evaluation_commit"]),
         "- Report JSON SHA-256: " + str(report.get("report_json_sha256", "PENDING")),
-        "- Replay: python p1_4_validation/c3/run_equal_risk_calibration.py --artifact-zip <pinned-source.zip> --contract p1_4_validation/c3/c3_source_contract_v1.json --output-dir artifacts/p1_4/c3/equal_risk_calibration",
+        "- Replay: python p1_4_validation/c3/run_equal_risk_calibration.py --artifact-zip <pinned-source.zip> --contract p1_4_validation/c3/c3_source_contract_v1.json --intake-contract p1_4_validation/c3/c3_source_intake_contract_v1.json --output-dir artifacts/p1_4/c3/equal_risk_calibration",
         "",
     ]
     return "\n".join(lines)
@@ -444,12 +492,14 @@ def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--artifact-zip", required=True)
     parser.add_argument("--contract", default="p1_4_validation/c3/c3_source_contract_v1.json")
+    parser.add_argument("--intake-contract", default="p1_4_validation/c3/c3_source_intake_contract_v1.json")
     parser.add_argument("--output-dir", default="artifacts/p1_4/c3/equal_risk_calibration")
     args = parser.parse_args()
 
-    _manifest, series_rows, events = verify_bundle(
-        Path(args.artifact_zip), Path(args.contract)
+    _manifest, series_rows, _intake_events = verify_bundle(
+        Path(args.artifact_zip), Path(args.intake_contract)
     )
+    evaluation_contract, events = load_evaluation_contract(Path(args.contract))
     calibration = {}
     historical_results = []
     for series_id in ("UNRATE", "WCOILBRENTEU", "ICSA"):
@@ -469,12 +519,12 @@ def main() -> int:
         for sid in calibration for arm in CANDIDATES
     ]
     report_status = (
-        "EQUAL_RISK_ALL_SERIES_ALL_CANDIDATES_HOLDOUT_PASS"
-        if all(state == "PASS" for state in all_states)
-        else "EQUAL_RISK_COMPLETED_WITH_CALIBRATION_EXCEPTIONS"
+        "EQUAL_RISK_ALL_SERIES_ALL_CANDIDATES_VALIDATED"
+        if all(state == "VALIDATED" for state in all_states)
+        else "EQUAL_RISK_COMPLETED_WITH_NOT_VALIDATED_OR_ABSTAINED"
     )
     report = {
-        "schema_version": "1.0.0",
+        "schema_version": "1.1.0",
         "status": report_status,
         "run_id": os.environ.get("GITHUB_RUN_ID", "LOCAL_REPLAY"),
         "evaluation_commit": os.environ.get("GITHUB_SHA", "LOCAL_REPLAY"),
@@ -483,6 +533,7 @@ def main() -> int:
             "manifest_sha256": PINNED["manifest_sha256"],
             "tape_sha256": PINNED["tape_sha256"],
             "contract_sha256": PINNED["contract_sha256"],
+            "evaluation_contract_sha256": sha256(Path(args.contract).read_bytes()),
             "source_run_id": PINNED["source_run_id"],
             "source_commit": PINNED["source_commit"],
             "point_count": 840,
@@ -496,6 +547,10 @@ def main() -> int:
             "ar_orders": [1, 2, 3],
             "ar_selection": "minimum AIC; unstable winner fails closed",
             "model_fit_scope": "first 40 first-release observations only",
+            "matching_window_months": 12,
+            "expected_sign_enforced": True,
+            "matching_timestamp": "available_at",
+            "historical_scoring_after_holdout_failure": "diagnostic at frozen threshold; validation remains NOT_VALIDATED",
             "null_generator": "AR(p) residual bootstrap using fitted pre-quiet residual pool",
             "development_replicates_per_series": REPLICATES,
             "holdout_replicates_per_series": REPLICATES,
@@ -507,7 +562,8 @@ def main() -> int:
             },
             "threshold_selected_on": "development only",
             "holdout_retuning": False,
-            "historical_evaluation_requires_holdout_pass": True,
+            "historical_evaluation_requires_holdout_pass": False,
+            "historical_candidate_metrics_are_diagnostic_when_not_validated": True,
             "null_seed_namespace": "CHAOS:P1.4:C3_EQUAL_RISK:v2",
             "threshold_grid_revision": "v2_extended_after_development_only_search_range_shortfall",
             "independent_seed_set_from_prior_calibration_attempt": True,
@@ -518,9 +574,30 @@ def main() -> int:
             "python p1_4_validation/c3/run_equal_risk_calibration.py "
             "--artifact-zip <pinned-source.zip> "
             "--contract p1_4_validation/c3/c3_source_contract_v1.json "
+            "--intake-contract p1_4_validation/c3/c3_source_intake_contract_v1.json "
             "--output-dir artifacts/p1_4/c3/equal_risk_calibration"
         ),
     }
+
+    for row in historical_results:
+        metrics = row.get("metrics") or {}
+        print(
+            "C3_EQUAL_RISK_RESULT"
+            + " series=" + row["series_id"]
+            + " detector=" + row["detector"]
+            + " threshold=" + str(row.get("threshold"))
+            + " dev_p0=" + str(row.get("development_p0"))
+            + " holdout_p0=" + str(row.get("holdout_p0"))
+            + " holdout_wilson_u95=" + str(row.get("holdout_wilson_u95"))
+            + " validation_status=" + row["validation_status"]
+            + " hit_miss=" + str(metrics.get("hit_miss", "ABSTAINED"))
+            + " match_status=" + str(metrics.get("match_status", "NOT_SCORED"))
+            + " detection_available_at=" + str(metrics.get("detection_available_at"))
+            + " detection_lag_days=" + str(metrics.get("detection_lag_days"))
+            + " baseline_false_alarms=" + str(metrics.get("false_alarms_before_anchor"))
+            + " no_lookahead_prefix_replays=" + str(row.get("no_lookahead_prefix_replays", 0)),
+            flush=True,
+        )
 
     output = Path(args.output_dir)
     output.mkdir(parents=True, exist_ok=True)
@@ -536,7 +613,9 @@ def main() -> int:
             "series_id", "event_id", "detector", "calibration_status",
             "frozen_threshold", "development_p0", "development_wilson_upper_95",
             "holdout_p0", "holdout_wilson_upper_95", "evaluation_status",
-            "hit_miss", "detection_available_at", "detection_lag_days",
+            "validation_status", "expected_sign", "matching_window_months",
+            "hit_miss", "match_status", "detection_index",
+            "detection_available_at", "detection_lag_days",
             "detection_lag_weeks_or_months", "lag_unit",
             "false_alarms_before_anchor", "baseline_observations_after_quiet",
         ]
@@ -561,7 +640,12 @@ def main() -> int:
                     "holdout_p0": hold.get("p0"),
                     "holdout_wilson_upper_95": hold.get("wilson_upper_95_one_sided"),
                     "evaluation_status": row["evaluation_status"],
-                    "hit_miss": metrics.get("hit_miss"),
+                    "validation_status": row["validation_status"],
+                    "expected_sign": metrics.get("expected_sign"),
+                    "matching_window_months": metrics.get("matching_window_months"),
+                    "hit_miss": metrics.get("hit_miss", "ABSTAINED"),
+                    "match_status": metrics.get("match_status"),
+                    "detection_index": metrics.get("detection_index"),
                     "detection_available_at": metrics.get("detection_available_at"),
                     "detection_lag_days": metrics.get("detection_lag_days"),
                     "detection_lag_weeks_or_months": metrics.get("detection_lag_weeks_or_months"),

@@ -34,7 +34,7 @@ jobs:
         run: |
           set -euo pipefail
           case "$GITHUB_REF" in
-            refs/heads/feat/c3-equal-risk-calibration-v1|refs/heads/feat/p1-4-capability-envelope-pilot-v1-20261125) ;;
+            refs/heads/feat/c3-equal-risk-calibration-v1) ;;
             *) echo "C3_EQUAL_RISK_WRONG_BRANCH:$GITHUB_REF" >&2; exit 1 ;;
           esac
 
@@ -63,7 +63,7 @@ jobs:
           echo "8b4c7c4bc0cca7aea5a1346fdbd8f1f41076a88ae73622ff6331aad912a30c59  /tmp/c3-source-intake-45738391381.zip" | sha256sum --check
 
       - name: Compile C3 calibration runner
-        run: python -m py_compile p1_4_validation/c3/run_equal_risk_calibration.py
+        run: python -m py_compile p1_4_validation/c3/run_equal_risk_calibration.py p1_4_validation/c3/run_historical_break_evaluation.py
 
       - name: Run C3 calibration, historical evaluation, and source-intake contract tests
         run: |
@@ -82,6 +82,7 @@ jobs:
             p1_4_validation/c3/run_equal_risk_calibration.py \
             --artifact-zip /tmp/c3-source-intake-45738391381.zip \
             --contract p1_4_validation/c3/c3_source_contract_v1.json \
+            --intake-contract p1_4_validation/c3/c3_source_intake_contract_v1.json \
             --output-dir artifacts/p1_4/c3/equal_risk_calibration
 
       - name: Publish full equal-risk tables to GitHub Step Summary
