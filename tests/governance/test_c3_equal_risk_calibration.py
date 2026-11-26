@@ -1,6 +1,9 @@
 """Governance tests for C3 independent equal-risk calibration."""
 import unittest
 from pathlib import Path
+from unittest.mock import patch
+
+import numpy as np
 
 from p1_4_validation.c3.run_equal_risk_calibration import (
     CANDIDATES,
@@ -11,11 +14,39 @@ from p1_4_validation.c3.run_equal_risk_calibration import (
     REPLICATES,
     calibrate_arm,
     deterministic_seed,
+    calibrate_focus_rearm_arm,
 )
 from p1_4_validation.c3.run_historical_break_evaluation import load_evaluation_contract
 
 
 class C3EqualRiskCalibrationTests(unittest.TestCase):
+    @patch("p1_4_validation.c3.run_equal_risk_calibration.focus_reset_rearm")
+    def test_focus_null_calibration_uses_reset_rearm_on_dev_and_holdout(self, reset_rearm):
+        development = [np.asarray([float(i)]) for i in range(1000)]
+        holdout = [np.asarray([1000.0 + i]) for i in range(1000)]
+
+        def fake_rearm(values, *, threshold, quiet_points, rearm_quiet_points,
+                       max_events, min_series_length):
+            self.assertEqual(quiet_points, 40)
+            self.assertEqual(rearm_quiet_points, 20)
+            self.assertEqual(max_events, 12)
+            self.assertEqual(min_series_length, 41)
+            # Dev threshold 10 alarms on every path; threshold 20 alarms on 10%.
+            # Holdout at the frozen threshold 20 has no alarms.
+            hit = threshold == 10 or (threshold == 20 and values[0] < 100)
+            return {"status": "OK", "hits": [{"index": 50, "sign": 1}] if hit else []}
+
+        reset_rearm.side_effect = fake_rearm
+        result = calibrate_focus_rearm_arm(development, holdout, (10, 20, 30))
+        self.assertEqual(result["status"], "VALIDATED")
+        self.assertEqual(result["frozen_threshold"], 20.0)
+        self.assertEqual(result["development"]["p0"], 0.10)
+        self.assertEqual(result["holdout"]["p0"], 0.0)
+        self.assertLessEqual(result["holdout"]["wilson_upper_95_one_sided"], 0.10)
+        self.assertFalse(result["holdout_retuning"])
+        self.assertEqual(result["focus_execution"], "focus_reset_rearm_40_initial_20_rearm")
+        self.assertEqual(reset_rearm.call_count, 3000)
+
     def test_non_finite_or_empty_threshold_configuration_is_rejected(self):
         from p1_4_validation.c3.run_equal_risk_calibration import validate_holdout
         with self.assertRaisesRegex(ValueError, "C3_INVALID_THRESHOLD"):

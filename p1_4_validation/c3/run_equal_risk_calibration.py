@@ -17,9 +17,9 @@ from p1_4_validation.c3.run_historical_break_evaluation import (
     score_events, sha256, verify_bundle,
 )
 from p1_4_validation.injection_runner import (
-    generate_ar_null_trace, select_ar_model, wilson_upper,
+    focus_reset_rearm, generate_ar_null_trace, select_ar_model, wilson_upper,
 )
-from p2_b_benchmark.p2c_engine import focus_detector, post_quiet_huber_detector
+from p2_b_benchmark.p2c_engine import post_quiet_huber_detector
 
 QUIET_POINTS = 40
 REPLICATES = 1000
@@ -76,10 +76,7 @@ def deterministic_seed(series_id: str, ar_order: int, phase: str, replicate: int
 
 
 def max_statistics(trace: np.ndarray) -> dict[str, float | None]:
-    focus = focus_detector(
-        trace, quiet_points=QUIET_POINTS, threshold=1e100,
-        return_score_trace=True,
-    )
+    """Continuous null maxima for the two Huber variants; FOCuS is rearmed separately."""
     mad = post_quiet_huber_detector(
         trace, scale_mode="mad", quiet_points=QUIET_POINTS,
         threshold=1e100, return_score_trace=True,
@@ -89,11 +86,108 @@ def max_statistics(trace: np.ndarray) -> dict[str, float | None]:
         threshold=1e100, return_score_trace=True,
     )
     return {
-        "FOCuS": focus.get("max_statistic") if focus.get("status") == "OK" else None,
         "Post-Quiet Huber + MAD": mad.get("max_statistic") if mad.get("status") == "OK" else None,
         "Post-Quiet Huber + Bartlett LRV": (
             bartlett.get("max_statistic") if bartlett.get("status") == "OK" else None
         ),
+    }
+
+
+def focus_rearm_alarm_scores(
+    traces: list[np.ndarray], threshold: float,
+) -> list[float | None]:
+    """Return one Bernoulli alarm outcome per full null path using the real rearm policy."""
+    chosen = _finite_positive_threshold(threshold)
+    outcomes: list[float | None] = []
+    for trace in traces:
+        result = focus_reset_rearm(
+            trace,
+            threshold=chosen,
+            quiet_points=QUIET_POINTS,
+            rearm_quiet_points=20,
+            max_events=12,
+            min_series_length=QUIET_POINTS + 1,
+        )
+        if result.get("status") != "OK":
+            outcomes.append(None)
+        else:
+            outcomes.append(1.0 if result.get("hits") else 0.0)
+    return outcomes
+
+
+def calibrate_focus_rearm_arm(
+    development_traces: list[np.ndarray],
+    holdout_traces: list[np.ndarray],
+    grid: tuple[int, ...],
+) -> dict:
+    """Calibrate FOCuS on whole-path null alarm probability under focus_reset_rearm."""
+    thresholds = sorted({_finite_positive_threshold(value) for value in grid})
+    if not thresholds:
+        raise ValueError("C3_EMPTY_THRESHOLD_GRID")
+    grid_rows = []
+    selected = None
+    valid_dev_count = 0
+    for threshold in thresholds:
+        outcomes = focus_rearm_alarm_scores(development_traces, threshold)
+        valid = [value for value in outcomes if value is not None]
+        valid_dev_count = len(valid)
+        if valid_dev_count < MIN_VALID_REPLICATES:
+            return {
+                "status": "ABSTAINED",
+                "raw_calibration_status": "INCONCLUSIVE",
+                "reason": "INSUFFICIENT_VALID_DEVELOPMENT_NULL_REPLICATES",
+                "valid_development_replicates": valid_dev_count,
+                "frozen_threshold": None,
+                "holdout": {"status": "NOT_RUN_NO_DEVELOPMENT_THRESHOLD"},
+                "focus_execution": "focus_reset_rearm_40_initial_20_rearm",
+            }
+        alarms = int(sum(valid))
+        point = {
+            "threshold": threshold,
+            "alarm_traces": alarms,
+            "valid_traces": valid_dev_count,
+            "p0": alarms / valid_dev_count,
+            "wilson_upper_95_one_sided": wilson_upper(alarms, valid_dev_count),
+        }
+        grid_rows.append(point)
+        if point["p0"] <= P0_TARGET:
+            selected = point
+            break
+    if selected is None:
+        return {
+            "status": "ABSTAINED",
+            "raw_calibration_status": "NOT_CALIBRATABLE",
+            "reason": "NO_PREDECLARED_THRESHOLD_MET_DEVELOPMENT_P0",
+            "development_grid": grid_rows,
+            "valid_development_replicates": valid_dev_count,
+            "frozen_threshold": None,
+            "holdout": {"status": "NOT_RUN_NO_DEVELOPMENT_THRESHOLD"},
+            "focus_execution": "focus_reset_rearm_40_initial_20_rearm",
+        }
+    frozen_threshold = float(selected["threshold"])
+    holdout_outcomes = focus_rearm_alarm_scores(holdout_traces, frozen_threshold)
+    # Each outcome is 1 if the path emitted at least one alarm across all rearm cycles.
+    holdout = validate_holdout(holdout_outcomes, 0.5)
+    status = {
+        "PASS": "VALIDATED",
+        "FAIL": "NOT_VALIDATED",
+        "INCONCLUSIVE": "ABSTAINED",
+    }[holdout["status"]]
+    valid_holdout = int(holdout["valid_replicates"])
+    return {
+        "status": status,
+        "raw_holdout_status": holdout["status"],
+        "development_status": "CALIBRATED",
+        "development": selected,
+        "development_grid": grid_rows,
+        "frozen_threshold": frozen_threshold,
+        "holdout": holdout,
+        "valid_development_replicates": valid_dev_count,
+        "invalid_development_replicates": len(development_traces) - valid_dev_count,
+        "valid_holdout_replicates": valid_holdout,
+        "invalid_holdout_replicates": len(holdout_traces) - valid_holdout,
+        "holdout_retuning": False,
+        "focus_execution": "focus_reset_rearm_40_initial_20_rearm",
     }
 
 
@@ -258,9 +352,10 @@ def calibrate_series(series_id: str, rows: list[dict]) -> dict:
 
     order = int(model["order"])
     maxima = {
-        phase: {arm: [] for arm in CANDIDATES}
+        phase: {arm: [] for arm in CANDIDATES if arm != "FOCuS"}
         for phase in ("development", "holdout")
     }
+    focus_null_traces = {"development": [], "holdout": []}
     seed_hashes = {}
     for phase in ("development", "holdout"):
         seeds = [deterministic_seed(series_id, order, phase, i) for i in range(REPLICATES)]
@@ -268,7 +363,8 @@ def calibrate_series(series_id: str, rows: list[dict]) -> dict:
         for index, seed in enumerate(seeds):
             trace = generate_ar_null_trace(model, values[:order], len(values), seed)
             scores = max_statistics(trace)
-            for arm in CANDIDATES:
+            focus_null_traces[phase].append(trace)
+            for arm in maxima[phase]:
                 maxima[phase][arm].append(scores[arm])
             if (index + 1) % 250 == 0:
                 print(
@@ -286,9 +382,14 @@ def calibrate_series(series_id: str, rows: list[dict]) -> dict:
         "Post-Quiet Huber + Bartlett LRV": HUBER_GRID,
     }
     for arm in CANDIDATES:
-        result["arms"][arm] = calibrate_arm(
-            maxima["development"][arm], maxima["holdout"][arm], grids[arm]
-        )
+        if arm == "FOCuS":
+            result["arms"][arm] = calibrate_focus_rearm_arm(
+                focus_null_traces["development"], focus_null_traces["holdout"], grids[arm]
+            )
+        else:
+            result["arms"][arm] = calibrate_arm(
+                maxima["development"][arm], maxima["holdout"][arm], grids[arm]
+            )
         result["arms"][arm]["threshold_grid"] = list(grids[arm])
 
     states = [result["arms"][arm]["status"] for arm in CANDIDATES]
@@ -552,6 +653,7 @@ def main() -> int:
             "matching_timestamp": "available_at",
             "historical_scoring_after_holdout_failure": "diagnostic at frozen threshold; validation remains NOT_VALIDATED",
             "null_generator": "AR(p) residual bootstrap using fitted pre-quiet residual pool",
+            "focus_null_calibration": "whole-path alarm P0 using focus_reset_rearm with 40 initial and 20 rearm observations",
             "development_replicates_per_series": REPLICATES,
             "holdout_replicates_per_series": REPLICATES,
             "minimum_valid_replicates_per_phase_and_arm": MIN_VALID_REPLICATES,
