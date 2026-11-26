@@ -309,9 +309,6 @@ def verify_source_bundle(
     return manifest, by_series, contract, archive_sha, contract_sha
 
 
-def deterministic_seed(
-
-
 def _raw_value_is_missing(value: str | None) -> bool:
     return value is None or value.strip() in {"", ".", "NA", "N/A", "nan", "NaN"}
 
