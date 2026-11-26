@@ -10,6 +10,7 @@ from p1_4_validation.c3.run_equal_risk_calibration import (
     REPLICATES,
     calibrate_arm,
     deterministic_seed,
+    validate_holdout,
 )
 
 
@@ -53,6 +54,14 @@ class C3EqualRiskCalibrationTests(unittest.TestCase):
         h1 = deterministic_seed("UNRATE", 1, "holdout", 7)
         self.assertEqual(d1, d2)
         self.assertNotEqual(d1, h1)
+
+    def test_non_finite_or_empty_threshold_configuration_is_rejected(self):
+        with self.assertRaisesRegex(ValueError, "C3_INVALID_THRESHOLD"):
+            calibrate_arm([0.0] * 1000, [0.0] * 1000, (float("inf"),))
+        with self.assertRaisesRegex(ValueError, "C3_INVALID_THRESHOLD"):
+            validate_holdout([0.0] * 1000, float("nan"))
+        with self.assertRaisesRegex(ValueError, "C3_EMPTY_THRESHOLD_GRID"):
+            calibrate_arm([0.0] * 1000, [0.0] * 1000, ())
 
 
 if __name__ == "__main__":
