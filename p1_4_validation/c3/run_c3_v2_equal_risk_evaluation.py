@@ -1275,6 +1275,132 @@ def match_events_one_to_one(
     return results, unmatched_summary
 
 
+def append_per_series_router_results(
+    calibration: dict[str, dict],
+    historical_results: list[dict],
+    unmatched_summaries: dict[str, dict],
+    by_series: dict[str, list[dict]],
+    event_pairs_by_series: dict[str, list[dict]],
+) -> dict:
+    """Build a retrospective per-series route from risk-validated detector members.
+
+    Member selection uses the registered historical event cohort. This is an
+    optimization profile and must not be presented as independent validation.
+    """
+    selected_by_series = {}
+    for series_id in sorted(by_series):
+        candidate_scores = []
+        for detector in ROUTER_MEMBER_DETECTORS:
+            arm = calibration[series_id].get("arms", {}).get(detector, {})
+            rows = [
+                row for row in historical_results
+                if row["series_id"] == series_id and row["detector"] == detector
+            ]
+            matched = [row for row in rows if row["hit_miss"] == "HIT"]
+            episodes = {row["episode_id"] for row in matched}
+            lags = [
+                abs(int(row["detection_lag_days"]))
+                for row in matched if row["detection_lag_days"] is not None
+            ]
+            candidate_scores.append({
+                "detector": detector,
+                "validated": arm.get("status") == "VALIDATED",
+                "matched_event_series_pairs": len(matched),
+                "matched_episode_clusters": len(episodes),
+                "unmatched_alarm_count": int(
+                    unmatched_summaries.get(
+                        f"{series_id}|{detector}", {}
+                    ).get("unmatched_alarm_count", 0)
+                ),
+                "median_absolute_detection_lag_days": (
+                    float(np.median(lags)) if lags else None
+                ),
+            })
+        eligible = [row for row in candidate_scores if row["validated"]]
+        eligible.sort(key=lambda row: (
+            -row["matched_episode_clusters"],
+            -row["matched_event_series_pairs"],
+            row["unmatched_alarm_count"],
+            row["median_absolute_detection_lag_days"]
+            if row["median_absolute_detection_lag_days"] is not None else math.inf,
+            row["detector"],
+        ))
+        selected = eligible[0]["detector"] if eligible else None
+        calibration[series_id]["per_series_router"] = {
+            "status": "SELECTED_VALIDATED" if selected else "NO_VALIDATED_MEMBER",
+            "selected_detector": selected,
+            "selection_basis": "registered historical event coverage among per-series Holdout-validated members",
+            "retrospective_optimization_only": True,
+            "independent_validation_required": True,
+            "candidate_scores": candidate_scores,
+        }
+        selected_by_series[series_id] = calibration[series_id]["per_series_router"]
+
+        rows = by_series[series_id]
+        values = np.asarray([row["value_float"] for row in rows], dtype=float)
+        if selected:
+            hits, detector_status, metadata = extract_hits(
+                selected, values, calibration[series_id]
+            )
+            replayed = audit_prefix_replay(
+                selected, values, hits, calibration[series_id]
+            ) if hits else 0
+            route_metadata = {
+                "selected_member": selected,
+                "selection_mode": "RETROSPECTIVE_EVENT_COVERAGE_OPTIMIZATION",
+                "member_metadata": clean(metadata),
+            }
+        else:
+            hits, detector_status, replayed = [], "ABSTAIN", 0
+            route_metadata = {
+                "selected_member": None,
+                "reason": "NO_PER_SERIES_MEMBER_PASSED_HOLDOUT_GATE",
+            }
+        matched_rows, unmatched = match_events_one_to_one(
+            rows, event_pairs_by_series.get(series_id, []),
+            hits, PER_SERIES_ROUTER,
+        )
+        unmatched["detector_status"] = detector_status
+        unmatched["detector_metadata"] = clean(route_metadata)
+        unmatched["no_lookahead_prefix_replays"] = replayed
+        unmatched["selected_member"] = selected
+        unmatched_summaries[f"{series_id}|{PER_SERIES_ROUTER}"] = unmatched
+
+        arm = calibration[series_id].get("arms", {}).get(selected, {}) if selected else {}
+        development = arm.get("development", {})
+        holdout = arm.get("holdout", {})
+        for row in matched_rows:
+            historical_results.append({
+                **row,
+                "validation_status": "SELECTED_VALIDATED_MEMBER" if selected else "ABSTAINED",
+                "frozen_threshold": arm.get("frozen_threshold"),
+                "frozen_thresholds": arm.get("frozen_thresholds"),
+                "routed_member": selected,
+                "development_p0": development.get("p0"),
+                "development_wilson_u95": development.get("wilson_upper_95_one_sided"),
+                "holdout_p0": holdout.get("p0"),
+                "holdout_wilson_u95": holdout.get("wilson_upper_95_one_sided"),
+                "detector_status": detector_status,
+                "no_lookahead_prefix_replays": replayed,
+                "unmatched_alarm_count_for_series_detector": unmatched["unmatched_alarm_count"],
+            })
+
+    return {
+        "status": "RETROSPECTIVE_OPTIMIZATION_ONLY",
+        "selection_uses_registered_event_labels": True,
+        "independent_validation_required": True,
+        "selected_member_by_series": {
+            sid: details.get("selected_detector")
+            for sid, details in selected_by_series.items()
+        },
+        "validated_series_count": sum(
+            details.get("status") == "SELECTED_VALIDATED"
+            for details in selected_by_series.values()
+        ),
+        "series_count": len(selected_by_series),
+    }
+
+
 def summarize_detector_results(
     calibration: dict[str, dict],
     historical_results: list[dict],
@@ -1287,7 +1413,11 @@ def summarize_detector_results(
             sum(
                 calibration[sid]["arms"].get(detector, {}).get("status") == "VALIDATED"
                 for sid in calibration
-            ) if detector in CANDIDATES else 0
+            ) if detector in CANDIDATES else
+            sum(
+                calibration[sid].get("per_series_router", {}).get("status") == "SELECTED_VALIDATED"
+                for sid in calibration
+            ) if detector == PER_SERIES_ROUTER else 0
         )
         rows = [row for row in historical_results if row["detector"] == detector]
         matched = [row for row in rows if row["hit_miss"] == "HIT"]
@@ -1301,7 +1431,11 @@ def summarize_detector_results(
             for sid in calibration
         }
         summary[detector] = {
-            "role": "CANDIDATE" if detector in CANDIDATES else "READ_ONLY",
+            "role": (
+                "CANDIDATE" if detector in CANDIDATES else
+                "COMPOSITE_OPTIMIZATION" if detector == PER_SERIES_ROUTER else
+                "READ_ONLY"
+            ),
             "validated_series_count": int(validated_series),
             "series_count": total_series,
             "validated_all_series": validated_series == total_series,
@@ -1318,6 +1452,15 @@ def summarize_detector_results(
             ),
         }
 
+    summary["per_series_router_profile"] = {
+        "status": "RETROSPECTIVE_OPTIMIZATION_ONLY",
+        "selection_uses_registered_event_labels": True,
+        "independent_validation_required": True,
+        "selected_member_by_series": {
+            sid: calibration[sid].get("per_series_router", {}).get("selected_detector")
+            for sid in sorted(calibration)
+        },
+    }
     eligible = [
         (name, values) for name, values in summary.items()
         if name in CANDIDATES
@@ -1434,7 +1577,7 @@ def markdown_report(report: dict) -> str:
         row = report["detector_summary"][detector]
         validated_series_label = (
             str(row["validated_series_count"]) + "/" + str(row["series_count"])
-            if row["role"] == "CANDIDATE" else "—"
+            if row["role"] in {"CANDIDATE", "COMPOSITE_OPTIMIZATION"} else "—"
         )
         lines.append(
             "| " + detector + " | " + row["role"] + " | "
@@ -1444,6 +1587,22 @@ def markdown_report(report: dict) -> str:
             + str(row["total_unmatched_alarm_count"]) + " | "
             + str(row["median_absolute_detection_lag_days"] or "—") + " |"
         )
+    router = report["detector_summary"].get("per_series_router_profile", {})
+    lines += [
+        "",
+        "## Per-Series Router — retrospective optimization profile",
+        "",
+        "| Series | Selected member |",
+        "|---|---|",
+    ]
+    for sid in sorted(report["calibration"]):
+        selected_member = report["calibration"][sid].get("per_series_router", {}).get("selected_detector")
+        lines.append("| " + sid + " | " + str(selected_member or "NO_VALIDATED_MEMBER") + " |")
+    lines += [
+        "",
+        "- Router status: **" + str(router.get("status", "NOT_AVAILABLE")) + "**",
+        "- Independent validation required: **" + str(router.get("independent_validation_required", True)) + "**",
+    ]
     selection = report["detector_summary"]["global_selection"]
     lines += [
         "",
@@ -1522,7 +1681,7 @@ def main() -> int:
         rows = by_series[series_id]
         values = np.asarray([row["value_float"] for row in rows], dtype=float)
         series_cal = calibration[series_id]
-        for detector in ALL_DETECTORS:
+        for detector in BASE_DETECTORS:
             hits, detector_status, metadata = extract_hits(
                 detector, values, series_cal
             )
@@ -1558,9 +1717,14 @@ def main() -> int:
                     "unmatched_alarm_count_for_series_detector": unmatched["unmatched_alarm_count"],
                 })
 
+    router_profile = append_per_series_router_results(
+        calibration, historical_results, unmatched_summaries,
+        by_series, event_pairs_by_series,
+    )
     detector_summary = summarize_detector_results(
         calibration, historical_results, unmatched_summaries
     )
+    detector_summary["per_series_router_profile"] = router_profile
     all_calibrated = all(
         calibration[sid].get("status") == "ALL_CANDIDATES_VALIDATED"
         for sid in calibration
