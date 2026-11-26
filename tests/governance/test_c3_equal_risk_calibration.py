@@ -20,7 +20,9 @@ class C3EqualRiskCalibrationTests(unittest.TestCase):
         self.assertEqual(P0_TARGET, 0.10)
         self.assertEqual(len(CANDIDATES), 3)
         self.assertEqual(FOCUS_GRID[0], 15)
+        self.assertGreaterEqual(FOCUS_GRID[-1], 1200)
         self.assertEqual(HUBER_GRID[0], 4)
+        self.assertGreaterEqual(HUBER_GRID[-1], 200)
 
     def test_threshold_selected_on_development_and_holdout_cannot_retune(self):
         development = [0.0] * 1000
