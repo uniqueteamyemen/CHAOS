@@ -898,9 +898,6 @@ def calibrate_ensemble(
     }
 
 
-def calibrate_series(
-
-
 def eligible_hybrid_member_thresholds(arms: dict[str, dict]) -> dict[str, float | None]:
     """Pass only members that have completed and passed their Holdout operating gate."""
     names = (
@@ -1334,7 +1331,7 @@ def markdown_report(report: dict) -> str:
         "- First-release tape SHA-256: " + report["source_integrity"]["tape_sha256"],
         "- Development gate: one-sided Wilson U95 <= 0.10",
         "- Holdout gate: one-sided Wilson U95 <= 0.10; no threshold retuning",
-        "- Replicates per series: 1000 Development + 1000 independent Holdout",
+        "- Replicates per series: 1000 Development + 1000 Holdout optimization traces",
         "- FOCuS policy: 40 initial observations; Monthly re-arm 10 observations; Weekly re-arm 20 observations; up to 12 alerts",
         "- Hybrid policy: FOCuS plus one or more Holdout-eligible Huber members, same direction, within eight observations",
         "- PAYEMS analysis transform: causal first difference; other series remain at level",
