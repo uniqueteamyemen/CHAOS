@@ -37,10 +37,6 @@ jobs:
             refs/heads/feat/p1-4-capability-envelope-pilot-v1-20261125|refs/heads/feat/c3-historical-break-evaluation-v1) ;;
             *) echo "C3_HISTORICAL_EVALUATION_WRONG_BRANCH:$GITHUB_REF" >&2; exit 1 ;;
           esac
-          if false; then
-            echo "unreachable" >&2
-            exit 1
-          fi
 
       - uses: actions/checkout@v4
         with:
