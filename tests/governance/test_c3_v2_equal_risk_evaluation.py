@@ -116,6 +116,42 @@ class C3V2EqualRiskTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "FOCUS_UNSUPPORTED_SERIES_FREQUENCY"):
             c3.focus_rearm_points_for_frequency("Daily")
 
+    def test_focus_reset_rearm_applies_frequency_policy_inside_detector_runner(self):
+        import numpy as np
+
+        first_hit = {
+            "status": "OK",
+            "hits": [{"detection_index": 45, "estimated_change_index": 40, "sign": 1}],
+        }
+        no_more_hits = {"status": "OK", "hits": []}
+        with patch(
+            "p2_b_benchmark.p2c_engine.focus_detector",
+            side_effect=[first_hit, no_more_hits],
+        ) as detector:
+            c3.focus_reset_rearm(np.zeros(180), threshold=10, frequency="Monthly")
+        self.assertEqual(
+            [call.kwargs["quiet_points"] for call in detector.call_args_list],
+            [40, 10],
+        )
+
+        with patch(
+            "p2_b_benchmark.p2c_engine.focus_detector",
+            side_effect=[first_hit, no_more_hits],
+        ) as detector:
+            c3.focus_reset_rearm(
+                np.zeros(180), threshold=10, frequency="Weekly, ending Friday"
+            )
+        self.assertEqual(
+            [call.kwargs["quiet_points"] for call in detector.call_args_list],
+            [40, 20],
+        )
+
+        with self.assertRaisesRegex(ValueError, "FOCUS_REARM_FREQUENCY_PARAMETER_MISMATCH"):
+            c3.focus_reset_rearm(
+                np.zeros(180), threshold=10,
+                rearm_quiet_points=20, frequency="Monthly",
+            )
+
     def test_hybrid_receives_only_holdout_eligible_member_thresholds(self):
         arms = {
             "FOCuS (reset-rearm)": {"status": "VALIDATED", "frozen_threshold": 225.0},
