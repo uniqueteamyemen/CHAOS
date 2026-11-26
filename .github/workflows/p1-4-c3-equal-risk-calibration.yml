@@ -3,24 +3,11 @@ name: CHAOS P1.4 C3 v2 — Expanded Cohort & Self-Calibrating Thresholds
 "on":
   workflow_dispatch:
     inputs:
-      operation:
-        description: "Run exactly one stage: source_intake first, then expanded_evaluation."
+      execute_c3_equal_risk_calibration:
+        description: "Run C3 v2 ALFRED intake, then Dev-Wilson calibration, Holdout and historical evaluation"
         required: true
-        type: choice
-        options:
-          - source_intake
-          - expanded_evaluation
-        default: source_intake
-      source_intake_run_id:
-        description: "Required for expanded_evaluation: completed source-intake Run ID."
-        required: false
-        type: string
-        default: ""
-      source_intake_artifact_name:
-        description: "Required for expanded_evaluation: exact source artifact name."
-        required: false
-        type: string
-        default: ""
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -34,48 +21,34 @@ jobs:
   validate-dispatch:
     runs-on: ubuntu-latest
     steps:
-      - name: Require isolated C3 v2 branch and operation inputs
+      - name: Require isolated C3 v2 branch and explicit approval
         shell: bash
         env:
-          OPERATION: ${{ inputs.operation }}
-          SOURCE_RUN_ID: ${{ inputs.source_intake_run_id }}
-          SOURCE_ARTIFACT_NAME: ${{ inputs.source_intake_artifact_name }}
+          EXECUTE_C3_V2: ${{ inputs.execute_c3_equal_risk_calibration }}
         run: |
           set -euo pipefail
           test "$GITHUB_REF" = "refs/heads/feat/c3-v2-expanded-cohort-self-calibrating" || {
             echo "C3_V2_WRONG_BRANCH:$GITHUB_REF" >&2
             exit 1
           }
-          case "$OPERATION" in
-            source_intake)
-              ;;
-            expanded_evaluation)
-              [[ "$SOURCE_RUN_ID" =~ ^[0-9]+$ ]] || {
-                echo "C3_V2_INVALID_SOURCE_INTAKE_RUN_ID" >&2
-                exit 1
-              }
-              [[ "$SOURCE_ARTIFACT_NAME" == chaos-c3-v2-expanded-source-intake-* ]] || {
-                echo "C3_V2_INVALID_SOURCE_INTAKE_ARTIFACT_NAME" >&2
-                exit 1
-              }
-              ;;
-            *)
-              echo "C3_V2_UNKNOWN_OPERATION:$OPERATION" >&2
-              exit 1
-              ;;
-          esac
+          test "$EXECUTE_C3_V2" = "true" || {
+            echo "C3_V2_EXECUTION_INPUT_NOT_ENABLED" >&2
+            exit 1
+          }
 
   expanded-source-intake:
     needs: validate-dispatch
-    if: ${{ inputs.operation == 'source_intake' }}
+    if: ${{ inputs.execute_c3_equal_risk_calibration == true }}
     uses: ./.github/workflows/p1-4-c3-v2-source-intake.yml
     secrets: inherit
 
   expanded-equal-risk-evaluation:
-    needs: validate-dispatch
-    if: ${{ inputs.operation == 'expanded_evaluation' }}
+    needs:
+      - validate-dispatch
+      - expanded-source-intake
+    if: ${{ inputs.execute_c3_equal_risk_calibration == true }}
     uses: ./.github/workflows/p1-4-c3-v2-expanded-evaluation.yml
     with:
-      source_intake_run_id: ${{ inputs.source_intake_run_id }}
-      source_intake_artifact_name: ${{ inputs.source_intake_artifact_name }}
+      source_intake_run_id: ${{ github.run_id }}
+      source_intake_artifact_name: chaos-c3-v2-expanded-source-intake-${{ github.run_id }}-${{ github.run_attempt }}
     secrets: inherit
