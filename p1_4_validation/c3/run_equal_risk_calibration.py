@@ -343,8 +343,8 @@ def markdown_report(report: dict) -> str:
         "- Null design: AR(1–3), AIC selection from first 40 observations only; residual bootstrap",
         "- Replicates per series and phase: 1000 development + 1000 independent holdout",
         "- Minimum valid replicates per phase and arm: 950",
-        "- Threshold selected on development only. Holdout is validation only; never retuned.
-        - Grid v2 expands the predeclared C3 threshold search range after v1 development-only shortfalls; a new seed namespace supplies fresh development and holdout simulations.",
+        "- Threshold selected on development only. Holdout is validation only; never retuned.",
+        "- Grid v2 expands the predeclared C3 threshold search range after v1 development-only shortfalls; a new seed namespace supplies fresh development and holdout simulations.",
         "- P0 is conditional on the fitted AR model and residual-bootstrap assumptions.",
         "",
         "## 1. Per-series calibration",
