@@ -38,12 +38,17 @@ REARM_POINTS = 20
 MAX_EVENTS = 12
 REPLICATES = 1000
 MIN_VALID_REPLICATES = 950
-P0_TARGET = 0.10
+P0_TARGET = 0.10  # Holdout acceptance ceiling
+DEV_P0_TARGET = 0.085  # Calibration margin to reduce boundary-fragile Holdout failures
 WILSON_Z = 1.6448536269514722
 HYBRID_MAX_GAP = 8
+FOCUS4_NAME = "FOCuS (monthly rearm 4; weekly rearm 20)"
+PER_SERIES_ROUTER = "Per-Series Router"
+MIN_WINNER_MATCHED_PAIRS = 3
+MIN_WINNER_EPISODE_CLUSTERS = 3
 FOCUS_GRID = (
-    15, 20, 25, 30, 35, 40, 45, 50, 60, 75, 90, 110, 150, 200,
-    225, 250, 300, 350, 400, 500, 600, 800, 1000, 1200,
+    15, 20, 25, 30, 35, 40, 45, 50, 60, 75, 90, 110, 150, 175, 200,
+    225, 250, 275, 300, 325, 350, 400, 450, 500, 600, 800, 1000, 1200,
 )
 HUBER_GRID = (
     4, 6, 8, 10, 12, 14, 16, 20, 24, 32, 40, 50, 60, 70,
@@ -51,12 +56,20 @@ HUBER_GRID = (
 )
 CANDIDATES = (
     "FOCuS (reset-rearm)",
+    FOCUS4_NAME,
     "Post-Quiet Huber + MAD",
     "Post-Quiet Huber + Bartlett LRV",
     "Hybrid: FOCuS + Huber confirmation",
 )
+ROUTER_MEMBER_DETECTORS = (
+    "FOCuS (reset-rearm)",
+    FOCUS4_NAME,
+    "Post-Quiet Huber + MAD",
+    "Post-Quiet Huber + Bartlett LRV",
+)
 READ_ONLY = ("A_FAST", "A_CONSENSUS")
-ALL_DETECTORS = CANDIDATES + READ_ONLY
+BASE_DETECTORS = CANDIDATES + READ_ONLY
+ALL_DETECTORS = BASE_DETECTORS + (PER_SERIES_ROUTER,)
 
 
 def sha256(payload: bytes) -> str:
@@ -576,7 +589,7 @@ def choose_threshold_by_dev_wilson(
         point = {"threshold": threshold, **stats}
         grid_rows.append(point)
         upper = stats["wilson_upper_95_one_sided"]
-        if upper is not None and upper <= P0_TARGET:
+        if upper is not None and upper <= DEV_P0_TARGET:
             selected = point
             break
 
@@ -658,7 +671,7 @@ def calibrate_focus(
         point = {"threshold": float(threshold), **stats}
         grid_rows.append(point)
         upper = stats["wilson_upper_95_one_sided"]
-        if upper is not None and upper <= P0_TARGET:
+        if upper is not None and upper <= DEV_P0_TARGET:
             selected = point
             break
 
@@ -715,7 +728,7 @@ def extract_detector_hits(
     threshold: float | None = None,
     rearm_quiet_points: int = REARM_POINTS,
 ) -> tuple[list[dict], str, dict]:
-    if detector == "FOCuS (reset-rearm)":
+    if detector in {"FOCuS (reset-rearm)", FOCUS4_NAME}:
         if threshold is None:
             return [], "ABSTAIN", {"reason": "NO_FROZEN_THRESHOLD"}
         result = focus_reset_rearm(
@@ -888,7 +901,7 @@ def calibrate_ensemble(
         }
     dev_alarms = sum(bool(value) for value in valid_dev)
     dev_stats = wilson_stats(dev_alarms, len(valid_dev))
-    if dev_stats["wilson_upper_95_one_sided"] > P0_TARGET:
+    if dev_stats["wilson_upper_95_one_sided"] > DEV_P0_TARGET:
         return {
             "status": "ABSTAINED",
             "raw_status": "DEVELOPMENT_WILSON_GATE_FAILED",
@@ -979,6 +992,13 @@ def calibrate_series(
     )
     arms["FOCuS (reset-rearm)"]["threshold_grid"] = list(FOCUS_GRID)
     arms["FOCuS (reset-rearm)"]["rearm_quiet_points"] = rearm_quiet_points
+    focus4_rearm_points = 4 if series_config["frequency"] == "Monthly" else 20
+    arms[FOCUS4_NAME] = calibrate_focus(
+        development_traces, holdout_traces,
+        rearm_quiet_points=focus4_rearm_points,
+    )
+    arms[FOCUS4_NAME]["threshold_grid"] = list(FOCUS_GRID)
+    arms[FOCUS4_NAME]["rearm_quiet_points"] = focus4_rearm_points
     for detector, scale in (
         ("Post-Quiet Huber + MAD", "mad"),
         ("Post-Quiet Huber + Bartlett LRV", "bartlett"),
@@ -1300,17 +1320,23 @@ def summarize_detector_results(
 
     eligible = [
         (name, values) for name, values in summary.items()
-        if name in CANDIDATES and values["validated_all_series"]
+        if name in CANDIDATES
+        and values["validated_all_series"]
+        and values["matched_event_series_pairs"] >= MIN_WINNER_MATCHED_PAIRS
+        and values["matched_episode_clusters"] >= MIN_WINNER_EPISODE_CLUSTERS
     ]
     ranking_rule = (
-        "Eligible only after Holdout Wilson U95 <= 0.10 on every series; "
-        "then maximize matched episode clusters, maximize matched event-series "
-        "pairs, minimize unmatched alarms, and minimize median absolute detection lag."
+        "Eligible only after Holdout Wilson U95 <= 0.10 on every series, "
+        f"at least {MIN_WINNER_MATCHED_PAIRS} matched event-series pairs, and "
+        f"at least {MIN_WINNER_EPISODE_CLUSTERS} distinct episode clusters; "
+        "then maximize episode coverage and pairs, minimize unmatched alarms, "
+        "and minimize median absolute detection lag. The Per-Series Router is "
+        "reported separately as a retrospective optimization profile."
     )
     if not eligible:
         summary["global_selection"] = {
             "status": "NO_GLOBAL_WINNER",
-            "reason": "NO_DETECTOR_VALIDATED_ON_EVERY_EXPANDED_SERIES",
+            "reason": "NO_DETECTOR_PASSED_RISK_AND_HISTORICAL_COVERAGE_GATES",
             "ranking_rule": ranking_rule,
         }
     else:
@@ -1348,10 +1374,10 @@ def markdown_report(report: dict) -> str:
         "- Source archive SHA-256: " + report["source_integrity"]["archive_sha256"],
         "- First-release tape SHA-256: " + report["source_integrity"]["tape_sha256"],
         "- Transformed analysis tape SHA-256: " + report["source_integrity"]["analysis_tape_sha256"],
-        "- Development gate: one-sided Wilson U95 <= 0.10",
-        "- Holdout gate: one-sided Wilson U95 <= 0.10; Holdout also selects eligible Hybrid members for this optimization iteration",
+        "- Development calibration margin: one-sided Wilson U95 <= 0.085",
+        "- Holdout risk acceptance: one-sided Wilson U95 <= 0.10; Holdout also selects eligible Hybrid members for this optimization iteration",
         "- Replicates per series: 1000 Development + 1000 Holdout optimization traces",
-        "- FOCuS policy: 40 initial observations; Monthly re-arm 10 observations; Weekly re-arm 20 observations; up to 12 alerts",
+        "- FOCuS policy: 40 initial observations; primary Monthly re-arm 5 observations; explicit Monthly 4-observation comparison; Weekly re-arm 20; up to 12 alerts",
         "- Hybrid policy: FOCuS plus one or more Holdout-eligible Huber members, same direction, within eight observations",
         "- PAYEMS analysis transform: causal first difference; other series remain at level",
         "",
@@ -1434,6 +1460,8 @@ def markdown_report(report: dict) -> str:
         "- One alert can match at most one event per series and detector; unmatched alerts are counted once.",
         "- A_FAST and A_CONSENSUS are read-only comparators and are not claimed to be equal-risk calibrated.",
         "- A candidate that fails Holdout remains diagnostic only and cannot be named the global winner.",
+        "- A global winner must also detect at least three distinct episode clusters and three event-series pairs; low false-alarm risk alone is insufficient.",
+        "- The Per-Series Router is selected retrospectively against this registered event cohort and is an optimization result, not an independent validation result.",
         "",
         "## 5. Reproducibility",
         "",
@@ -1571,9 +1599,12 @@ def main() -> int:
         },
         "calibration_protocol": {
             "p0_target": P0_TARGET,
+            "development_p0_target": DEV_P0_TARGET,
+            "minimum_winner_matched_event_series_pairs": MIN_WINNER_MATCHED_PAIRS,
+            "minimum_winner_episode_clusters": MIN_WINNER_EPISODE_CLUSTERS,
             "confidence_bound": "one-sided Wilson 95%",
-            "development_selection_rule": "lowest predeclared threshold with Dev Wilson U95 <= 0.10",
-            "holdout_validation_rule": "Holdout Wilson U95 <= 0.10; current Holdout results also select eligible Hybrid members in this optimization iteration.",
+            "development_selection_rule": "lowest predeclared threshold with Dev Wilson U95 <= 0.085",
+            "holdout_validation_rule": "Holdout Wilson U95 <= 0.10; current Holdout results also select eligible Hybrid members and the per-series router profile in this optimization iteration.",
             "holdout_retuning": False,
             "replicates_per_series_phase": REPLICATES,
             "minimum_valid_replicates_per_phase": MIN_VALID_REPLICATES,
@@ -1581,10 +1612,12 @@ def main() -> int:
             "ar_orders": [1, 2, 3],
             "ar_selection": "minimum AIC; unstable winner fails closed",
             "null_generator": "AR(p) residual bootstrap",
-            "focus_policy": "40 initial; monthly rearm 10; weekly rearm 20; maximum 12 alerts",
+            "focus_policy": "40 initial; monthly primary rearm 5 with monthly rearm 4 comparison; weekly rearm 20; maximum 12 alerts",
             "huber_policy": "MAD or Bartlett LRV scale; two-sided Huber score",
             "hybrid_policy": "FOCuS + one or more Holdout-eligible Huber variants; same sign; gap <= 8 observations",
             "hybrid_member_gate": "Only members with status VALIDATED are passed into Hybrid for each series.",
+            "per_series_router": "Chooses among members that passed the per-series Holdout risk gate, ranking them by matches to the registered historical event cohort. This is a retrospective optimization profile, not independent performance validation.",
+            "independent_validation_required": True,
             "optimization_mode": "OPERATIONAL_TUNING_USING_CURRENT_DEVELOPMENT_AND_HOLDOUT_COHORTS",
             "event_matching": "one-to-one direction-constrained calendar-exact ±12 months",
             "seed_namespace": "CHAOS:C3_V2_EXPANDED",
@@ -1640,7 +1673,7 @@ def main() -> int:
     fields = [
         "event_id", "episode_id", "series_id", "detector", "anchor_date",
         "anchor_type", "expected_sign", "validation_status",
-        "frozen_threshold", "frozen_thresholds",
+        "frozen_threshold", "frozen_thresholds", "routed_member",
         "development_p0", "development_wilson_u95",
         "holdout_p0", "holdout_wilson_u95",
         "hit_miss", "match_status",
