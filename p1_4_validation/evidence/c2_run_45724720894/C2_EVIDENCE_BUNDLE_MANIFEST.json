@@ -1,0 +1,74 @@
+{
+  "artifact_type": "CHAOS_P1_4_C2_FROZEN_EVIDENCE_BUNDLE",
+  "evidence_status": "VERIFIED_RUN_SUCCESS_BUNDLE_SHA_MATCHED",
+  "stage": "C2",
+  "workflow": {
+    "run_id": 45724720894,
+    "run_url": "https://github.com/uniqueteamyemen/CHAOS/actions/runs/45724720894",
+    "name": "CHAOS P1.4 C2 Frozen Stable-Cohort Pilot",
+    "event": "workflow_dispatch",
+    "conclusion": "success",
+    "source_commit": "53dc5502e3d1c1c5e5ec670e3138a04c1d27d458",
+    "started_at_utc": "2026-11-25T23:53:21Z",
+    "completed_at_utc": "2026-11-26T00:03:57Z"
+  },
+  "github_actions_artifact": {
+    "artifact_id": 15074945015,
+    "artifact_name": "chaos-p1-4-c2-stable-pilot-45724720894-1",
+    "size_bytes": 3008171,
+    "status_at_capture": "available_not_expired",
+    "url": "https://github.com/uniqueteamyemen/CHAOS/actions/runs/45724720894",
+    "downloaded_archive_sha256": "732d0bd988d17979b84f198e594d3b8b715873c59ca4a787865afd9e408de716",
+    "downloaded_archive_filename": "c2-run-45724720894.zip"
+  },
+  "protocol": {
+    "version": "1.1.9",
+    "sha256": "d4ce2b84ade5d8662e22b4cdc020f0f39a88566aced3eff1bfefd478b75645e4",
+    "modified_during_run": false
+  },
+  "frozen_c2_series_ids": [
+    "gem:CPTOTSAXN:DEU",
+    "gem:CPTOTSAXN:IRL",
+    "gem:DXGSRMRCHNSKD:BRA",
+    "gem:DXGSRMRCHNSKD:DEV",
+    "gem:DXGSRMRCHNSKD:GRC",
+    "gem:DXGSRMRCHNSKD:HIY",
+    "gem:DXGSRMRCHNSKD:LAP",
+    "gem:DXGSRMRCHSAXD:AME",
+    "gem:DXGSRMRCHSAXD:FIN",
+    "gem:DXGSRMRCHSAXD:LAP",
+    "gem:IPTOTSAKD:AZE",
+    "gem:IPTOTSAKD:EST",
+    "gem:IPTOTSAKD:IRQ",
+    "gem:IPTOTSAKD:OMN",
+    "gem:IPTOTSAKD:SVN",
+    "gem:IPTOTSAKD:TUN",
+    "gem:IPTOTSAKD:VNM",
+    "pink:DAP",
+    "pink:Fish_meal",
+    "pink:Soybean_oil"
+  ],
+  "source_provenance": {
+    "runner_sha256": "62c4d865ae67eac5472a35c2b3868599cb15c05e8483064bc336a2d30656132d",
+    "base_pipeline_git_blob_sha": "9036a939a41ee4d4b43aa5ad4ae22461f8504aa2",
+    "injection_runner_git_blob_sha": "84144451b8fc26556a614dbc3e986987fd4ca236",
+    "p2c_engine_git_blob_sha": "5efcf408822551e00cb87c24e39502dcf0ed595a",
+    "prepared_zip_sha256": "c83f6e960296fbbdb687650a798959f08cb8d98db68de8ca713d7be278e824fe",
+    "cohort_manifest_sha256": "f869f2086c0524872be4660328219f12ca5ea643d99a36a59f92a4e309084edf",
+    "selection_json_sha256": "9ad27e0c78e3d851ec9f2c02828eadc15567f84fc1ed8f467588bb7d4f42288b",
+    "protocol_sha256": "d4ce2b84ade5d8662e22b4cdc020f0f39a88566aced3eff1bfefd478b75645e4",
+    "holdout_used_for_threshold_selection": false,
+    "production_authorization": false,
+    "protocol_or_detector_code_modified": false,
+    "replay_command": "See workflow run and artifacts; run run_c2_stable_pilot.py --phase calibrate per C2 series, then --phase postprocess."
+  },
+  "archive_internal_files": {
+    "STEP_SUMMARY.md": "e1c81aad116a0560e115abc44eb390556b83210787df36840b47e648ff248cf1",
+    "c2_calibration_and_holdout.json": "a684baf44050d1f063def762d58d34a75943a429b010c8d94aab6bc3a0850365",
+    "c2_holdout_p0_cells.csv": "f27563cae4051a0b9a30b717e7b204cc4342abcc1aecb53488d7ef5ee9a57ca5",
+    "c2_injection_metrics.json": "427bd2ef513e9f539f302dda19dec8914986e1667c25ed6ec50ec21e86dd8970",
+    "c2_injection_pilot.json": "1cc33e2e7da3e225a9659b29bdf511d72b2502eb31f92396b19b684ebd25e5fb",
+    "execution_provenance.json": "24aedf269372df1113a0460eef36a198a8e702a291f87d000f7d9b4b2b8dbc97"
+  },
+  "implementation_note": "The exact original binary ZIP remains the GitHub Actions artifact referenced above; this repository commit stores its exact SHA-256 and artifact identity alongside the durable detailed report and provenance manifest. The run artifact itself was not rewritten or re-generated."
+}
