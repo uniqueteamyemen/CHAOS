@@ -630,7 +630,7 @@ class C3V2EqualRiskTests(unittest.TestCase):
         }]
         details = c3.append_per_series_router_results(
             calibration, historical, {},
-            {"S1": [{"value_float": 0.0}]},
+            {"S1": [{"value_float": 0.0, "frequency": "Monthly"}]},
             {"S1": []},
         )
         route = calibration["S1"]["per_series_router"]
