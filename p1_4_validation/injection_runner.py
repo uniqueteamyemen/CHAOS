@@ -268,8 +268,8 @@ def focus_reset_rearm(
             intervals.append({"start_inclusive": next_start, "end_exclusive": next_end})
         if next_end >= x.size:
             break
-        # The initial 40-point calibration is retained; after a hit the next
-        # 20 observations are reserved for re-calibration before monitoring.
+        # The initial 40-point calibration is retained; after a hit the configured
+        # cadence-specific re-arm window is reserved before monitoring.
         cursor = next_start
     return {"status": "OK", "hits": hits, "event_count": len(hits),
             "rearm_intervals": intervals,
