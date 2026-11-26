@@ -1,13 +1,6 @@
 name: CHAOS P1.4 C3 — Equal-Risk Calibration
 
 on:
-  push:
-    branches:
-      - feat/c3-equal-risk-calibration-v1
-    paths:
-      - .github/workflows/p1-4-c3-equal-risk-calibration.yml
-      - p1_4_validation/c3/run_equal_risk_calibration.py
-      - tests/governance/test_c3_equal_risk_calibration.py
   workflow_dispatch:
     inputs:
       execute_c3_equal_risk_calibration:
@@ -26,7 +19,7 @@ concurrency:
 
 jobs:
   equal-risk-calibration:
-    if: ${{ github.event_name == 'push' || inputs.execute_c3_equal_risk_calibration == true }}
+    if: ${{ inputs.execute_c3_equal_risk_calibration == true }}
     runs-on: ubuntu-latest
     timeout-minutes: 45
     env:
@@ -72,13 +65,15 @@ jobs:
       - name: Compile C3 calibration runner
         run: python -m py_compile p1_4_validation/c3/run_equal_risk_calibration.py
 
-      - name: Run C3 calibration and source-contract tests
+      - name: Run C3 calibration, historical evaluation, and source-intake contract tests
         run: |
           set -euo pipefail
           PYTHONPATH="$GITHUB_WORKSPACE" python -m unittest discover \
             -s tests/governance -p 'test_c3_equal_risk_calibration.py' -v
           PYTHONPATH="$GITHUB_WORKSPACE" python -m unittest discover \
             -s tests/governance -p 'test_c3_historical_break_evaluation.py' -v
+          PYTHONPATH="$GITHUB_WORKSPACE" python -m unittest discover \
+            -s tests/governance -p 'test_p1_4_c3_source_intake.py' -v
 
       - name: Run per-series equal-risk calibration and historical replay
         run: |
