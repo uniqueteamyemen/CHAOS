@@ -1,6 +1,12 @@
 """Regression tests for C3 v2 Wilson calibration and event assignment."""
+import csv
+import hashlib
+import io
+import tempfile
 import unittest
+import zipfile
 from datetime import date
+from pathlib import Path
 from unittest.mock import patch
 
 from p1_4_validation.c3 import run_c3_v2_equal_risk_evaluation as c3
@@ -103,6 +109,111 @@ class C3V2EqualRiskTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "C3_V2_FREQUENCY_CONTRACT_MISMATCH"):
             c3.validate_registered_series_tape("TEST", rows, config, events)
 
+    def test_cadence_aware_focus_rearm_windows(self):
+        self.assertEqual(c3.focus_rearm_points_for_frequency("Monthly"), 10)
+        self.assertEqual(c3.focus_rearm_points_for_frequency("Weekly, ending Friday"), 20)
+        self.assertEqual(c3.focus_rearm_points_for_frequency("Weekly, ending Saturday"), 20)
+        with self.assertRaisesRegex(ValueError, "FOCUS_UNSUPPORTED_SERIES_FREQUENCY"):
+            c3.focus_rearm_points_for_frequency("Daily")
+
+    def test_hybrid_receives_only_holdout_eligible_member_thresholds(self):
+        arms = {
+            "FOCuS (reset-rearm)": {"status": "VALIDATED", "frozen_threshold": 225.0},
+            "Post-Quiet Huber + MAD": {"status": "NOT_VALIDATED", "frozen_threshold": 80.0},
+            "Post-Quiet Huber + Bartlett LRV": {"status": "VALIDATED", "frozen_threshold": 100.0},
+        }
+        self.assertEqual(
+            c3.eligible_hybrid_member_thresholds(arms),
+            {
+                "FOCuS (reset-rearm)": 225.0,
+                "Post-Quiet Huber + MAD": None,
+                "Post-Quiet Huber + Bartlett LRV": 100.0,
+            },
+        )
+
+    def test_payems_first_difference_uses_archived_predecessor_and_keeps_current_available_at(self):
+        raw_text = (
+            "observation_date,PAYEMS_19660808,PAYEMS_19660902,PAYEMS_19661010\n"
+            "1966-07-01,100,100,100\n"
+        )
+        raw_bytes = raw_text.encode("utf-8")
+        batch_path = "raw_vintage_batches/PAYEMS/batch_001.csv"
+        manifest = {
+            "raw_vintage_batches": [{
+                "batch": 1,
+                "requested_vintage_dates": ["1966-08-08", "1966-09-02", "1966-10-10"],
+                "file": batch_path,
+                "bytes": len(raw_bytes),
+                "sha256": hashlib.sha256(raw_bytes).hexdigest(),
+            }]
+        }
+        with tempfile.TemporaryDirectory() as directory:
+            archive_path = Path(directory) / "source.zip"
+            with zipfile.ZipFile(archive_path, "w", zipfile.ZIP_DEFLATED) as archive:
+                archive.writestr(batch_path, raw_bytes)
+            by_series = {
+                "PAYEMS": [
+                    {
+                        "series_id": "PAYEMS", "observation_date": "1966-08-01",
+                        "available_at": "1966-09-02", "value": "110",
+                        "value_float": 110.0,
+                        "observation_date_obj": date(1966, 8, 1),
+                        "available_at_obj": date(1966, 9, 2),
+                        "frequency": "Monthly", "units": "Thousands of persons",
+                        "value_semantics": "FIRST_ALFRED_VINTAGE_VALUE",
+                    },
+                    {
+                        "series_id": "PAYEMS", "observation_date": "1966-09-01",
+                        "available_at": "1966-10-10", "value": "107",
+                        "value_float": 107.0,
+                        "observation_date_obj": date(1966, 9, 1),
+                        "available_at_obj": date(1966, 10, 10),
+                        "frequency": "Monthly", "units": "Thousands of persons",
+                        "value_semantics": "FIRST_ALFRED_VINTAGE_VALUE",
+                    },
+                ]
+            }
+            contract = {"series": [{
+                "series_id": "PAYEMS",
+                "frequency": "Monthly",
+                "units": "Thousands of persons",
+                "analysis_units": "Monthly change in thousands of persons",
+                "series_transform": "first_difference",
+            }]}
+            transformed, audit = c3.apply_causal_series_transforms(
+                archive_path, manifest, by_series, contract
+            )
+
+        rows = transformed["PAYEMS"]
+        self.assertEqual([row["value_float"] for row in rows], [10.0, -3.0])
+        self.assertEqual([row["available_at"] for row in rows], ["1966-09-02", "1966-10-10"])
+        self.assertEqual(rows[0]["value_semantics"], "CAUSAL_FIRST_DIFFERENCE_OF_FIRST_ALFRED_RELEASES")
+        self.assertEqual(audit["PAYEMS"]["predecessor"]["observation_date"], "1966-07-01")
+        self.assertEqual(audit["PAYEMS"]["predecessor"]["available_at"], "1966-08-08")
+        self.assertFalse(audit["PAYEMS"]["source_archive_mutated"])
+
+    def test_markdown_comparison_includes_read_only_baselines(self):
+        historical = [
+            {"detector": "A_FAST", "hit_miss": "HIT", "episode_id": "EP_A", "detection_lag_days": 7},
+            {"detector": "A_CONSENSUS", "hit_miss": "MISS", "episode_id": "EP_B", "detection_lag_days": None},
+        ]
+        summary = c3.summarize_detector_results({}, historical, {})
+        report = {
+            "status": "OPTIMIZATION_RUN",
+            "run_id": "TEST",
+            "evaluation_commit": "TEST",
+            "cohort": {"event_count": 1, "episode_clusters": 1, "event_series_pairs": 1, "series_count": 0},
+            "source_integrity": {"archive_sha256": "A", "tape_sha256": "B"},
+            "calibration": {},
+            "historical_results": [],
+            "detector_summary": summary,
+            "replay_command": "python replay.py",
+            "report_json_sha256": "TEST",
+        }
+        markdown = c3.markdown_report(report)
+        self.assertIn("| A_FAST | READ_ONLY |", markdown)
+        self.assertIn("| A_CONSENSUS | READ_ONLY |", markdown)
+
     def test_development_threshold_uses_wilson_upper_not_empirical_p0(self):
         development = [10.0] * 100 + [0.0] * 900
         holdout = [0.0] * 1000
@@ -154,17 +265,17 @@ class C3V2EqualRiskTests(unittest.TestCase):
         self.assertEqual([hit["index"] for hit in hits], [60, 120, 180])
         self.assertEqual(detector.call_args.kwargs["max_events"], c3.MAX_EVENTS)
 
-    def test_hybrid_requires_focus_and_one_huber_same_sign_within_one_point(self):
-        def fake_extract(detector, values, threshold=None):
+    def test_hybrid_confirms_same_sign_within_eight_observations(self):
+        def fake_extract(detector, values, threshold=None, rearm_quiet_points=c3.REARM_POINTS):
             if detector == "FOCuS (reset-rearm)":
                 return [
                     {"index": 10, "sign": 1},
                     {"index": 20, "sign": -1},
                 ], "OK", {}
             if detector == "Post-Quiet Huber + MAD":
-                return [{"index": 11, "sign": 1}], "OK", {}
+                return [{"index": 18, "sign": 1}], "OK", {}
             if detector == "Post-Quiet Huber + Bartlett LRV":
-                return [{"index": 21, "sign": -1}], "OK", {}
+                return [{"index": 28, "sign": -1}], "OK", {}
             raise AssertionError(detector)
 
         thresholds = {
@@ -176,13 +287,14 @@ class C3V2EqualRiskTests(unittest.TestCase):
             hits, metadata = c3.hybrid_confirmation_hits(
                 __import__("numpy").arange(40.0), thresholds
             )
-        self.assertEqual([(row["index"], row["sign"]) for row in hits], [(11, 1), (21, -1)])
+        self.assertEqual([(row["index"], row["sign"]) for row in hits], [(18, 1), (28, -1)])
         self.assertEqual(metadata["status"], "OK")
+        self.assertEqual(c3.HYBRID_MAX_GAP, 8)
 
     def test_available_hybrid_members_with_no_alert_are_not_abstentions(self):
         import numpy as np
 
-        def fake_extract(detector, values, threshold=None):
+        def fake_extract(detector, values, threshold=None, rearm_quiet_points=c3.REARM_POINTS):
             return [], "OK", {}
 
         thresholds = {
@@ -199,7 +311,7 @@ class C3V2EqualRiskTests(unittest.TestCase):
         self.assertEqual(metadata["huber_members"], ["Post-Quiet Huber + MAD"])
 
     def test_wrong_direction_does_not_confirm_hybrid(self):
-        def fake_extract(detector, values, threshold=None):
+        def fake_extract(detector, values, threshold=None, rearm_quiet_points=c3.REARM_POINTS):
             if detector == "FOCuS (reset-rearm)":
                 return [{"index": 10, "sign": 1}], "OK", {}
             if detector == "Post-Quiet Huber + MAD":
@@ -229,7 +341,7 @@ class C3V2EqualRiskTests(unittest.TestCase):
             "Post-Quiet Huber + Bartlett LRV": None,
         }
 
-        def fake_hybrid(trace, _thresholds):
+        def fake_hybrid(trace, _thresholds, rearm_quiet_points=c3.REARM_POINTS):
             return ([{"index": 0, "sign": 1}] if trace[0] else []), {"status": "OK"}
 
         with patch.object(c3, "hybrid_confirmation_hits", side_effect=fake_hybrid):
@@ -282,7 +394,7 @@ class C3V2EqualRiskTests(unittest.TestCase):
             "Post-Quiet Huber + Bartlett LRV": None,
         }
 
-        def fake_hybrid(trace, _thresholds):
+        def fake_hybrid(trace, _thresholds, rearm_quiet_points=c3.REARM_POINTS):
             return ([{"index": 0, "sign": 1}] if trace[0] else []), {"status": "OK"}
 
         with patch.object(c3, "hybrid_confirmation_hits", side_effect=fake_hybrid):
