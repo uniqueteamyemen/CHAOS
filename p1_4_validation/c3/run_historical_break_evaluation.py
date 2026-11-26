@@ -167,15 +167,24 @@ def verify_bundle(zip_path: Path, contract_path: Path) -> tuple[dict, dict[str, 
     return manifest, by_series, events
 
 
-def extract_hits(detector: str, values: np.ndarray) -> tuple[list[dict], str, dict]:
+def extract_hits(detector: str, values: np.ndarray, threshold: float | None = None) -> tuple[list[dict], str, dict]:
     if detector == "Post-Quiet Huber + MAD":
-        result = post_quiet_huber_detector(values, scale_mode="mad")
+        kwargs = {"scale_mode": "mad"}
+        if threshold is not None:
+            kwargs["threshold"] = float(threshold)
+        result = post_quiet_huber_detector(values, **kwargs)
         hits = result.get("hits", [])
     elif detector == "Post-Quiet Huber + Bartlett LRV":
-        result = post_quiet_huber_detector(values, scale_mode="bartlett")
+        kwargs = {"scale_mode": "bartlett"}
+        if threshold is not None:
+            kwargs["threshold"] = float(threshold)
+        result = post_quiet_huber_detector(values, **kwargs)
         hits = result.get("hits", [])
     elif detector == "FOCuS":
-        result = focus_detector(values)
+        kwargs = {}
+        if threshold is not None:
+            kwargs["threshold"] = float(threshold)
+        result = focus_detector(values, **kwargs)
         hits = result.get("hits", [])
     elif detector in {"A_FAST", "A_CONSENSUS"}:
         mode = "fast" if detector == "A_FAST" else "consensus"
@@ -204,10 +213,10 @@ def extract_hits(detector: str, values: np.ndarray) -> tuple[list[dict], str, di
     return normalized, status, metadata
 
 
-def audit_prefix_replay(detector: str, values: np.ndarray, hits: list[dict]) -> int:
+def audit_prefix_replay(detector: str, values: np.ndarray, hits: list[dict], threshold: float | None = None) -> int:
     for hit in hits:
         idx = hit["index"]
-        prefix_hits, status, _ = extract_hits(detector, values[:idx + 1])
+        prefix_hits, status, _ = extract_hits(detector, values[:idx + 1], threshold=threshold)
         if status == "ABSTAIN" or not any(
             h["index"] == idx and h["sign"] == hit["sign"] for h in prefix_hits
         ):
