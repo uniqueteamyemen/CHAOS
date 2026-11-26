@@ -270,7 +270,11 @@ class C3V2EqualRiskTests(unittest.TestCase):
             "run_id": "TEST",
             "evaluation_commit": "TEST",
             "cohort": {"event_count": 1, "episode_clusters": 1, "event_series_pairs": 1, "series_count": 0},
-            "source_integrity": {"archive_sha256": "A", "tape_sha256": "B"},
+            "source_integrity": {
+                "archive_sha256": "A",
+                "tape_sha256": "B",
+                "analysis_tape_sha256": "C",
+            },
             "calibration": {},
             "historical_results": [],
             "detector_summary": summary,
