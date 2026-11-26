@@ -154,7 +154,7 @@ class C3V2EqualRiskTests(unittest.TestCase):
 
     def test_hybrid_receives_only_holdout_eligible_member_thresholds(self):
         arms = {
-            "FOCuS (reset-rearm)": {"status": "VALIDATED", "frozen_threshold": 225.0},
+            "FOCuS (reset-rearm)": {"status": "NOT_VALIDATED", "frozen_threshold": 225.0},
             "Post-Quiet Huber + MAD": {"status": "NOT_VALIDATED", "frozen_threshold": 80.0},
             "Post-Quiet Huber + Bartlett LRV": {"status": "VALIDATED", "frozen_threshold": 100.0},
         }
