@@ -29,11 +29,13 @@ EXPECTED_TRANSFORMS = {
 }
 EXPECTED_DETECTORS = (
     "FOCuS (reset-rearm)",
+    c3.FOCUS4_NAME,
     "Post-Quiet Huber + MAD",
     "Post-Quiet Huber + Bartlett LRV",
     "Hybrid: FOCuS + Huber confirmation",
     "A_FAST",
     "A_CONSENSUS",
+    c3.PER_SERIES_ROUTER,
 )
 
 
