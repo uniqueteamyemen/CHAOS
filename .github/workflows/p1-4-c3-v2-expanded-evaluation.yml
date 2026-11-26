@@ -90,7 +90,11 @@ jobs:
           manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
           if str(manifest.get("workflow_run_id")) != os.environ["SOURCE_INTAKE_RUN_ID"]:
               raise SystemExit("C3_V2_SOURCE_INTAKE_RUN_ID_MISMATCH")
-          if manifest.get("contract_id") != "CHAOS_P1_4_C3_EXPANDED_EVENT_COHORT_V1":
+          accepted_contract_ids = {
+              "CHAOS_P1_4_C3_EXPANDED_EVENT_COHORT_V1",
+              "CHAOS_P1_4_C3_EXPANDED_EVENT_COHORT_V2_1",
+          }
+          if manifest.get("contract_id") not in accepted_contract_ids:
               raise SystemExit("C3_V2_SOURCE_CONTRACT_ID_MISMATCH")
           if manifest.get("status") != "SOURCE_TAPES_ACQUIRED_NOT_DETECTOR_EXECUTED":
               raise SystemExit("C3_V2_SOURCE_INTAKE_STATUS_MISMATCH")
