@@ -318,6 +318,7 @@ def write_intake(contract_path: Path, output_dir: Path) -> dict:
     supported_contracts = {
         "CHAOS_P1_4_C3_POINT_IN_TIME_SOURCE_INTAKE_V1",
         "CHAOS_P1_4_C3_EXPANDED_EVENT_COHORT_V1",
+        "CHAOS_P1_4_C3_EXPANDED_EVENT_COHORT_V2_1",
     }
     if contract_id not in supported_contracts:
         raise ValueError("C3_SOURCE_CONTRACT_ID_MISMATCH")
