@@ -38,7 +38,7 @@
     "no_observation_date_substitution_for_available_at": true,
     "first_40_observations_only_for_ar_null_fit": true,
     "holdout_never_used_for_threshold_selection": true,
-    "development_threshold_rule": "one-sided Wilson 95% upper bound <= 0.10",
+    "development_threshold_rule": "one-sided Wilson 95% upper bound <= 0.085",
     "holdout_validation_rule": "one-sided Wilson 95% upper bound <= 0.10",
     "holdout_failure_never_retunes_threshold": true,
     "minimum_valid_replicates_per_phase_and_series": 950,
@@ -56,7 +56,8 @@
     "event_and_alert_matching_one_to_one": true,
     "focus_uses_frequency_aware_rearm_policy": {
       "initial_observations": 40,
-      "monthly_rearm_observations": 10,
+      "monthly_rearm_observations": 5,
+      "monthly_rearm_comparison_observations": [4, 5],
       "weekly_rearm_observations": 20,
       "maximum_alerts": 12
     }
