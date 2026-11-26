@@ -454,7 +454,7 @@
   "engine_optimization": {
     "version": "C3_V2_1",
     "objective": "Operational detector quality: detect real changes, control repeated alarms in quiet periods, detect both directions, recover after alerts, and generalize across cadence and series type.",
-    "policy": "Use the existing C3 v2.0 ALFRED source archive as immutable input; apply causal transforms in memory; use monthly 10-point and weekly 20-point FOCuS re-arm windows; use an eight-observation Hybrid confirmation window; exclude members that failed Holdout from Hybrid.",
+    "policy": "Use the existing C3 v2.0 ALFRED source archive as immutable input; apply causal transforms in memory; use monthly 10-point and weekly 20-point FOCuS re-arm windows; use an eight-observation Hybrid confirmation window; keep the Development-calibrated FOCuS trigger available; pass only Huber confirmation thresholds whose members achieved VALIDATED on the current series Holdout.",
     "source_artifact_run_id": "45757611871",
     "source_artifact_name": "chaos-c3-v2-expanded-source-intake-45757611871-1"
   },
