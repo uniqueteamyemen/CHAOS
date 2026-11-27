@@ -861,10 +861,12 @@ def hybrid_confirmation_hits(
     focus_threshold = thresholds.get("FOCuS (reset-rearm)")
     if focus_threshold is None:
         return [], {"status": "ABSTAIN", "reason": "FOCUS_THRESHOLD_UNAVAILABLE"}
+    focus_kwargs = {"rearm_quiet_points": int(rearm_quiet_points)}
+    if rearm_scale_points is not None:
+        focus_kwargs["rearm_scale_points"] = int(rearm_scale_points)
     focus_hits, focus_status, focus_meta = extract_detector_hits(
         "FOCuS (reset-rearm)", values, float(focus_threshold),
-        rearm_quiet_points=int(rearm_quiet_points),
-        rearm_scale_points=rearm_scale_points,
+        **focus_kwargs,
     )
     if focus_status != "OK":
         return [], {
@@ -1987,7 +1989,7 @@ def main() -> int:
     parser.add_argument("--source-zip", required=True)
     parser.add_argument(
         "--contract",
-        default="p1_4_validation/c3/c3_expanded_event_cohort_v1.json",
+        default="p1_4_validation/c3/c3_expanded_event_cohort_v2_2.json",
     )
     parser.add_argument(
         "--output-dir",
