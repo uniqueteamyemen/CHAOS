@@ -1,113 +1,69 @@
-name: CHAOS P1.4 C3 — Equal-Risk Calibration
+name: CHAOS P1.4 C3 v2.1 — Operational Detector Optimization
 
-on:
-  push:
-    branches:
-      - feat/c3-equal-risk-calibration-v1
-    paths:
-      - .github/workflows/p1-4-c3-equal-risk-calibration.yml
-      - p1_4_validation/c3/run_equal_risk_calibration.py
-      - tests/governance/test_c3_equal_risk_calibration.py
+"on":
   workflow_dispatch:
     inputs:
       execute_c3_equal_risk_calibration:
-        description: "Run per-series C3 equal-risk calibration on the pinned first-release source bundle"
+        description: "Run C3 v2.1 optimization, reusing the saved ALFRED artifact when a source run ID is provided"
         required: true
         type: boolean
         default: false
+      reuse_source_intake_run_id:
+        description: "Optional completed source-intake run ID. Set 45757611871 to reuse chaos-c3-v2-expanded-source-intake-45757611871-1 without another ALFRED download."
+        required: false
+        type: string
+        default: ""
 
 permissions:
   contents: read
   actions: read
 
 concurrency:
-  group: chaos-p1-4-c3-equal-risk-calibration-${{ github.ref }}
+  group: chaos-c3-v2-1-optimization-${{ github.ref }}
   cancel-in-progress: false
 
 jobs:
-  equal-risk-calibration:
-    if: ${{ github.event_name == 'push' || inputs.execute_c3_equal_risk_calibration == true }}
+  validate-dispatch:
     runs-on: ubuntu-latest
-    timeout-minutes: 45
-    env:
-      PYTHONUNBUFFERED: "1"
-      PYTHONHASHSEED: "0"
-      OMP_NUM_THREADS: "1"
-      OPENBLAS_NUM_THREADS: "1"
-      MKL_NUM_THREADS: "1"
     steps:
-      - name: Require the isolated C3 equal-risk branch
+      - name: Require isolated C3 v2.1 branch and explicit approval
         shell: bash
-        run: |
-          set -euo pipefail
-          case "$GITHUB_REF" in
-            refs/heads/feat/c3-equal-risk-calibration-v1|refs/heads/feat/p1-4-capability-envelope-pilot-v1-20261125) ;;
-            *) echo "C3_EQUAL_RISK_WRONG_BRANCH:$GITHUB_REF" >&2; exit 1 ;;
-          esac
-
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 1
-
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.11"
-
-      - name: Install frozen runtime dependencies
-        run: python -m pip install -r real_data_stress_pipeline/requirements.txt
-
-      - name: Download and verify the immutable C3 source bundle
         env:
-          GH_TOKEN: ${{ github.token }}
-        shell: bash
+          EXECUTE_C3_V2: ${{ inputs.execute_c3_equal_risk_calibration }}
+          REUSE_SOURCE_INTAKE_RUN_ID: ${{ inputs.reuse_source_intake_run_id }}
         run: |
           set -euo pipefail
-          curl --fail --location --retry 3 \
-            -H "Authorization: Bearer ${GH_TOKEN}" \
-            -H "Accept: application/vnd.github+json" \
-            https://api.github.com/repos/${GITHUB_REPOSITORY}/actions/artifacts/15079733940/zip \
-            -o /tmp/c3-source-intake-45738391381.zip
-          echo "8b4c7c4bc0cca7aea5a1346fdbd8f1f41076a88ae73622ff6331aad912a30c59  /tmp/c3-source-intake-45738391381.zip" | sha256sum --check
+          test "$GITHUB_REF" = "refs/heads/feat/c3-v2-expanded-cohort-self-calibrating" || {
+            echo "C3_V2_WRONG_BRANCH:$GITHUB_REF" >&2
+            exit 1
+          }
+          test "$EXECUTE_C3_V2" = "true" || {
+            echo "C3_V2_EXECUTION_INPUT_NOT_ENABLED" >&2
+            exit 1
+          }
+          if [[ -n "$REUSE_SOURCE_INTAKE_RUN_ID" && ! "$REUSE_SOURCE_INTAKE_RUN_ID" =~ ^[0-9]+$ ]]; then
+            echo "C3_V2_INVALID_REUSE_SOURCE_INTAKE_RUN_ID:$REUSE_SOURCE_INTAKE_RUN_ID" >&2
+            exit 1
+          fi
 
-      - name: Compile C3 calibration runner
-        run: python -m py_compile p1_4_validation/c3/run_equal_risk_calibration.py
+  expanded-source-intake:
+    needs: validate-dispatch
+    if: ${{ inputs.execute_c3_equal_risk_calibration == true && inputs.reuse_source_intake_run_id == '' }}
+    uses: ./.github/workflows/p1-4-c3-v2-source-intake.yml
+    secrets: inherit
 
-      - name: Run C3 calibration and source-contract tests
-        run: |
-          set -euo pipefail
-          PYTHONPATH="$GITHUB_WORKSPACE" python -m unittest discover \
-            -s tests/governance -p 'test_c3_equal_risk_calibration.py' -v
-          PYTHONPATH="$GITHUB_WORKSPACE" python -m unittest discover \
-            -s tests/governance -p 'test_c3_historical_break_evaluation.py' -v
-
-      - name: Run per-series equal-risk calibration and historical replay
-        run: |
-          set -euo pipefail
-          PYTHONPATH="$GITHUB_WORKSPACE" python -u \
-            p1_4_validation/c3/run_equal_risk_calibration.py \
-            --artifact-zip /tmp/c3-source-intake-45738391381.zip \
-            --contract p1_4_validation/c3/c3_source_contract_v1.json \
-            --output-dir artifacts/p1_4/c3/equal_risk_calibration
-
-      - name: Publish full equal-risk tables to GitHub Step Summary
-        if: always()
-        shell: bash
-        run: |
-          set -euo pipefail
-          {
-            echo "# C3 — Equal-Risk Calibration"
-            if [[ -s artifacts/p1_4/c3/equal_risk_calibration/C3_EQUAL_RISK_CALIBRATION_V1.md ]]; then
-              cat artifacts/p1_4/c3/equal_risk_calibration/C3_EQUAL_RISK_CALIBRATION_V1.md
-            else
-              echo "C3 equal-risk report unavailable; inspect job logs."
-            fi
-          } >> "$GITHUB_STEP_SUMMARY"
-
-      - name: Upload C3 equal-risk calibration evidence
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: chaos-p1-4-c3-equal-risk-${{ github.run_id }}-${{ github.run_attempt }}
-          path: artifacts/p1_4/c3/equal_risk_calibration/
-          retention-days: 90
-          if-no-files-found: warn
+  expanded-equal-risk-evaluation:
+    needs:
+      - validate-dispatch
+      - expanded-source-intake
+    if: >-
+      ${{ always() &&
+          inputs.execute_c3_equal_risk_calibration == true &&
+          needs.validate-dispatch.result == 'success' &&
+          (needs.expanded-source-intake.result == 'success' ||
+           inputs.reuse_source_intake_run_id != '') }}
+    uses: ./.github/workflows/p1-4-c3-v2-expanded-evaluation.yml
+    with:
+      source_intake_run_id: ${{ inputs.reuse_source_intake_run_id != '' && inputs.reuse_source_intake_run_id || github.run_id }}
+      source_intake_artifact_name: chaos-c3-v2-expanded-source-intake-${{ inputs.reuse_source_intake_run_id != '' && inputs.reuse_source_intake_run_id || github.run_id }}-${{ inputs.reuse_source_intake_run_id != '' && '1' || github.run_attempt }}
+    secrets: inherit

@@ -13,6 +13,7 @@ import json
 import math
 import sys
 import zipfile
+from calendar import monthrange
 from datetime import date
 from pathlib import Path
 from typing import Any
@@ -27,9 +28,9 @@ from p2_b_benchmark.p2c_engine import (  # noqa: E402
     FOCUS_THRESHOLD,
     HUBER_THRESHOLD,
     QUIET_POINTS,
-    focus_detector,
     post_quiet_huber_detector,
 )
+from p1_4_validation.injection_runner import focus_reset_rearm  # noqa: E402
 from structural_engine.isolated_break_detector_v1 import BreakDetectorV1  # noqa: E402
 
 PINNED = {
@@ -59,13 +60,17 @@ CSV_FIELDNAMES = (
     "false_alarms_before_anchor", "baseline_observations_after_quiet",
     "false_alarms_per_100_baseline_observations", "baseline_alarm_dates",
     "post_anchor_alarm_count", "all_post_anchor_alarm_dates",
+    "expected_sign", "matching_window_months", "match_status",
+    "matching_window_start", "matching_window_end",
+    "eligible_matching_alarm_count", "wrong_sign_within_window_count",
+    "out_of_window_alarm_count", "wrong_sign_alarm_dates", "out_of_window_alarm_dates",
     "detector_status",
 )
 
 
 def csv_export_row(row: dict) -> dict:
     metrics = dict(row["metrics"])
-    for field in ("baseline_alarm_dates", "all_post_anchor_alarm_dates"):
+    for field in ("baseline_alarm_dates", "all_post_anchor_alarm_dates", "wrong_sign_alarm_dates", "out_of_window_alarm_dates"):
         metrics[field] = json.dumps(metrics[field], ensure_ascii=False, separators=(",", ":"))
     return {
         "event_id": row["event_id"],
@@ -79,6 +84,17 @@ def csv_export_row(row: dict) -> dict:
 
 def sha256(data: bytes) -> str:
     return hashlib.sha256(data).hexdigest()
+
+
+def ensure_causal_release_order(series_id: str, rows: list[dict]) -> None:
+    previous_available = None
+    for index, row in enumerate(rows):
+        available = row["available_at_obj"]
+        if previous_available is not None and available < previous_available:
+            raise ValueError(
+                f"C3_NON_MONOTONIC_FIRST_RELEASE_AVAILABILITY:{series_id}:{index}"
+            )
+        previous_available = available
 
 
 def canonical_json(value: Any) -> bytes:
@@ -161,10 +177,33 @@ def verify_bundle(zip_path: Path, contract_path: Path) -> tuple[dict, dict[str, 
         dates = [r["observation_date"] for r in values]
         if len(set(dates)) != len(dates):
             raise ValueError(f"C3_DUPLICATE_OBSERVATION_DATE:{sid}")
+        ensure_causal_release_order(sid, values)
     events = {e["series_id"]: e for e in contract["events"]}
     if set(events) != EXPECTED_SERIES:
         raise ValueError("C3_CONTRACT_SERIES_SET_MISMATCH")
     return manifest, by_series, events
+
+
+def load_evaluation_contract(contract_path: Path) -> tuple[dict, dict[str, dict]]:
+    """Load evaluation-only rules without altering the SHA-pinned intake contract."""
+    contract = json.loads(contract_path.read_bytes())
+    frozen = contract.get("frozen_references", {})
+    if frozen.get("source_intake_contract_sha256") != PINNED["contract_sha256"]:
+        raise ValueError("C3_EVALUATION_CONTRACT_INTAKE_SHA_PIN_MISMATCH")
+    if frozen.get("source_intake_contract_path") != "p1_4_validation/c3/c3_source_intake_contract_v1.json":
+        raise ValueError("C3_EVALUATION_CONTRACT_INTAKE_PATH_MISMATCH")
+    window = contract.get("matching_contract", {}).get("matching_window_months")
+    if isinstance(window, bool) or window != 12:
+        raise ValueError("C3_MATCHING_WINDOW_MUST_BE_12_MONTHS")
+    events = {event["series_id"]: dict(event) for event in contract.get("events", [])}
+    if set(events) != EXPECTED_SERIES:
+        raise ValueError("C3_EVALUATION_CONTRACT_SERIES_SET_MISMATCH")
+    for series_id, event in events.items():
+        sign = event.get("expected_sign")
+        if isinstance(sign, bool) or sign not in (-1, 1):
+            raise ValueError("C3_EXPECTED_SIGN_MISSING_OR_INVALID:" + series_id)
+        event["matching_window_months"] = int(window)
+    return contract, events
 
 
 def extract_hits(detector: str, values: np.ndarray, threshold: float | None = None) -> tuple[list[dict], str, dict]:
@@ -181,10 +220,13 @@ def extract_hits(detector: str, values: np.ndarray, threshold: float | None = No
         result = post_quiet_huber_detector(values, **kwargs)
         hits = result.get("hits", [])
     elif detector == "FOCuS":
-        kwargs = {}
-        if threshold is not None:
-            kwargs["threshold"] = float(threshold)
-        result = focus_detector(values, **kwargs)
+        result = focus_reset_rearm(
+            values,
+            threshold=float(FOCUS_THRESHOLD if threshold is None else threshold),
+            quiet_points=QUIET_POINTS,
+            max_events=12,
+            min_series_length=QUIET_POINTS + 1,
+        )
         hits = result.get("hits", [])
     elif detector in {"A_FAST", "A_CONSENSUS"}:
         mode = "fast" if detector == "A_FAST" else "consensus"
@@ -200,6 +242,13 @@ def extract_hits(detector: str, values: np.ndarray, threshold: float | None = No
         raise ValueError(f"UNKNOWN_DETECTOR:{detector}")
     status = str(result.get("status", "OK"))
     metadata = result.get("metadata", {})
+    if detector == "FOCuS":
+        metadata = {
+            "reset_rearm": True,
+            "initial_calibration_observations": result.get("initial_calibration_observations"),
+            "rearm_calibration_observations": result.get("rearm_calibration_observations"),
+            "rearm_intervals": result.get("rearm_intervals", []),
+        }
     normalized = []
     for hit in hits:
         idx = hit.get("index", hit.get("detection_index"))
@@ -217,39 +266,101 @@ def audit_prefix_replay(detector: str, values: np.ndarray, hits: list[dict], thr
     for hit in hits:
         idx = hit["index"]
         prefix_hits, status, _ = extract_hits(detector, values[:idx + 1], threshold=threshold)
-        if status == "ABSTAIN" or not any(
+        if status in {"ABSTAIN", "NOT_ELIGIBLE"} or not any(
             h["index"] == idx and h["sign"] == hit["sign"] for h in prefix_hits
         ):
             raise ValueError(f"NO_LOOKAHEAD_PREFIX_REPLAY_FAILED:{detector}:{idx}")
     return len(hits)
 
 
-def score_events(rows: list[dict], anchor: str, hits: list[dict], quiet_points: int = QUIET_POINTS) -> dict:
+def add_calendar_months(value: date, months: int) -> date:
+    """Calendar-exact month offset with month-end and leap-day clipping."""
+    absolute = value.year * 12 + value.month - 1 + int(months)
+    year, month_zero = divmod(absolute, 12)
+    month = month_zero + 1
+    return date(year, month, min(value.day, monthrange(year, month)[1]))
+
+
+def score_events(
+    rows: list[dict],
+    anchor: str,
+    hits: list[dict],
+    quiet_points: int = QUIET_POINTS,
+    *,
+    expected_sign: int,
+    matching_window_months: int = 12,
+) -> dict:
+    if isinstance(expected_sign, bool) or expected_sign not in (-1, 1):
+        raise ValueError("C3_EXPECTED_SIGN_MUST_BE_PLUS_OR_MINUS_ONE")
+    if isinstance(matching_window_months, bool) or int(matching_window_months) != 12:
+        raise ValueError("C3_MATCHING_WINDOW_MUST_BE_12_MONTHS")
     anchor_date = date.fromisoformat(anchor)
+    window_start = add_calendar_months(anchor_date, -int(matching_window_months))
+    window_end = add_calendar_months(anchor_date, int(matching_window_months))
     valid_hits = []
     for hit in hits:
         idx = int(hit["index"])
         if idx < quiet_points:
             raise ValueError(f"DETECTOR_ALARM_DURING_RESERVED_QUIET:{idx}")
+        if not 0 <= idx < len(rows):
+            raise ValueError(f"DETECTOR_ALARM_INDEX_OUT_OF_RANGE:{idx}")
+        sign = int(hit["sign"])
+        if sign not in (-1, 1):
+            raise ValueError(f"DETECTOR_ALARM_SIGN_INVALID:{idx}:{sign}")
         available = rows[idx]["available_at_obj"]
-        valid_hits.append({**hit, "available_at": available.isoformat()})
-    baseline = [h for h in valid_hits if date.fromisoformat(h["available_at"]) < anchor_date]
-    post = [h for h in valid_hits if date.fromisoformat(h["available_at"]) >= anchor_date]
-    first = post[0] if post else None
-    lag_days = (
-        (date.fromisoformat(first["available_at"]) - anchor_date).days if first else None
-    )
+        valid_hits.append({**hit, "index": idx, "sign": sign,
+                           "available_at": available.isoformat(),
+                           "available_at_obj": available})
+    in_window = [h for h in valid_hits if window_start <= h["available_at_obj"] <= window_end]
+    eligible = [h for h in in_window if h["sign"] == expected_sign]
+    wrong_sign = [h for h in in_window if h["sign"] != expected_sign]
+    outside = [
+        h for h in valid_hits
+        if h["available_at_obj"] < window_start or h["available_at_obj"] > window_end
+    ]
+    matched = min(
+        eligible,
+        key=lambda h: (abs((h["available_at_obj"] - anchor_date).days),
+                       h["available_at_obj"], h["index"]),
+    ) if eligible else None
+    if matched is not None:
+        match_status = "MATCHED"
+    elif outside:
+        match_status = "OUT_OF_WINDOW"
+    elif wrong_sign:
+        match_status = "WRONG_SIGN"
+    else:
+        match_status = "NO_MATCH"
+    baseline = [
+        h for h in valid_hits
+        if h["available_at_obj"] < anchor_date
+        and (matched is None or h["index"] != matched["index"])
+    ]
+    post = [h for h in valid_hits if h["available_at_obj"] >= anchor_date]
+    lag_days = (matched["available_at_obj"] - anchor_date).days if matched else None
     frequency = rows[0]["frequency"]
-    lag = (lag_days / 7.0 if lag_days is not None and "Weekly" in frequency
-           else lag_days / 30.4375 if lag_days is not None else None)
+    lag = (
+        lag_days / 7.0 if lag_days is not None and "Weekly" in frequency
+        else lag_days / 30.4375 if lag_days is not None else None
+    )
     baseline_n = sum(
         1 for i, row in enumerate(rows)
         if i >= quiet_points and row["available_at_obj"] < anchor_date
     )
     return {
-        "hit_miss": "HIT" if first else "MISS",
-        "detection_index": first["index"] if first else None,
-        "detection_available_at": first["available_at"] if first else None,
+        "hit_miss": "HIT" if matched else "MISS",
+        "match_status": match_status,
+        "expected_sign": int(expected_sign),
+        "matching_window_months": int(matching_window_months),
+        "matching_window_start": window_start.isoformat(),
+        "matching_window_end": window_end.isoformat(),
+        "eligible_matching_alarm_count": len(eligible),
+        "wrong_sign_within_window_count": len(wrong_sign),
+        "out_of_window_alarm_count": len(outside),
+        "wrong_sign_alarm_dates": [h["available_at"] for h in wrong_sign],
+        "out_of_window_alarm_dates": [h["available_at"] for h in outside],
+        "detection_index": matched["index"] if matched else None,
+        "detection_available_at": matched["available_at"] if matched else None,
         "detection_lag_days": lag_days,
         "detection_lag_weeks_or_months": round(lag, 3) if lag is not None else None,
         "lag_unit": "weeks" if "Weekly" in frequency else "months",
@@ -281,20 +392,20 @@ def markdown_report(report: dict) -> str:
         "- Initial 40 observations are calibration-only and excluded from baseline alarm counts.",
         "- Detection timestamps use `available_at`, never observation dates or retrospective onset estimates.",
         "- Event anchors are calendar references, not proof of a series-specific causal break.",
-        "- Evaluation window is anchor through the frozen contract's observation_end.",
+        "- Event matching requires the pre-registered expected direction and an inclusive calendar-exact ±12-month window using available_at.",
         "- Thresholds are frozen implementation defaults; no threshold fitting or holdout tuning is performed here.",
         "- A_FAST and A_CONSENSUS are read-only frozen reference implementations.",
         "",
         "## 2. Full head-to-head results",
         "",
-        "| Series / event | Detector | Hit / Miss | Detection available_at | Lag | Baseline false alarms | Baseline n | Alarms / 100 baseline n |",
+        "| Series / event | Detector | Hit / Miss | Match status | Detection available_at | Lag | Baseline false alarms | Baseline n | Alarms / 100 baseline n |",
         "|---|---|---:|---|---:|---:|---:|---:|",
     ]
     for row in report["results"]:
         r = row["metrics"]
         lag = f"{r['detection_lag_weeks_or_months']} {r['lag_unit']}" if r["detection_lag_weeks_or_months"] is not None else "—"
         lines.append(
-            f"| {row['series_id']} / {row['event_id']} | {row['detector']} | {r['hit_miss']} | "
+            f"| {row['series_id']} / {row['event_id']} | {row['detector']} | {r['hit_miss']} | {r['match_status']} | "
             f"{r['detection_available_at'] or '—'} | {lag} | {r['false_alarms_before_anchor']} | "
             f"{r['baseline_observations_after_quiet']} | "
             f"{r['false_alarms_per_100_baseline_observations'] if r['false_alarms_per_100_baseline_observations'] is not None else '—'} |"
@@ -345,11 +456,13 @@ def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--artifact-zip", required=True)
     parser.add_argument("--contract", default="p1_4_validation/c3/c3_source_contract_v1.json")
+    parser.add_argument("--intake-contract", default="p1_4_validation/c3/c3_source_intake_contract_v1.json")
     parser.add_argument("--output-dir", default="artifacts/p1_4/c3/historical_evaluation")
     args = parser.parse_args()
 
     zip_path = Path(args.artifact_zip)
-    manifest, by_series, events = verify_bundle(zip_path, Path(args.contract))
+    manifest, by_series, _intake_events = verify_bundle(zip_path, Path(args.intake_contract))
+    evaluation_contract, events = load_evaluation_contract(Path(args.contract))
     results = []
     event_rows = []
     for sid in ("UNRATE", "WCOILBRENTEU", "ICSA"):
@@ -361,7 +474,11 @@ def main() -> int:
         for detector in DETECTORS:
             hits, status, metadata = extract_hits(detector, values)
             replayed = audit_prefix_replay(detector, values, hits) if hits else 0
-            metrics = score_events(rows, event["anchor_date"], hits)
+            metrics = score_events(
+                rows, event["anchor_date"], hits,
+                expected_sign=event["expected_sign"],
+                matching_window_months=event["matching_window_months"],
+            )
             results.append({
                 "event_id": event["event_id"], "series_id": sid,
                 "detector": detector, "detector_status": status,
@@ -375,6 +492,8 @@ def main() -> int:
             "observation_start": event["observation_start"],
             "observation_end": event["observation_end"],
             "frequency": event["frequency"],
+            "expected_sign": event["expected_sign"],
+            "matching_window_months": event["matching_window_months"],
         })
         print(f"C3_PROGRESS series={sid} observations={len(rows)} detectors={len(DETECTORS)}", flush=True)
 
@@ -388,6 +507,7 @@ def main() -> int:
             "manifest_sha256": PINNED["manifest_sha256"],
             "tape_sha256": PINNED["tape_sha256"],
             "contract_sha256": PINNED["contract_sha256"],
+            "evaluation_contract_sha256": sha256(Path(args.contract).read_bytes()),
             "source_run_id": PINNED["source_run_id"],
             "source_commit": PINNED["source_commit"],
             "point_count": 840, "series_count": 3, "raw_batch_count": 87,

@@ -1,15 +1,17 @@
 {
   "contract_id": "CHAOS_P1_4_C3_POINT_IN_TIME_SOURCE_INTAKE_V1",
-  "contract_version": "1.0.0",
-  "status": "SOURCE_MAP_PRE_REGISTERED_INTAKE_NOT_EXECUTED",
-  "purpose": "Acquire an external historical event/series map with point-in-time first-release observations. This phase does not execute any detector.",
+  "contract_version": "1.1.0",
+  "status": "EVALUATION_MATCHING_CONTRACT_PRE_REGISTERED",
+  "purpose": "Acquire an external historical event/series map with point-in-time first-release observations. This phase does not execute any detector. Evaluation extension adds explicit expected directions and calendar-exact matching; the byte-identical intake contract snapshot remains separately SHA-pinned.",
   "frozen_references": {
     "pilot_protocol_version": "1.1.9",
     "pilot_protocol_git_blob": "2ad0db0654bd1d9dd42c87c5cdb531f9b2aa3a2d",
     "cohort_manifest_git_blob": "2a9ca14b501567f06840d047597d3a24398c31f2",
     "shock_event_contract_path": "real_data_stress_pipeline/shock_event_contract.json",
     "shock_event_contract_git_blob": "398ba3994d69c271d66115297b541e17d67aa42d",
-    "shock_event_contract_sha256": "f7ee733eebedec96b0d06eae5c960edf36aee49d52edb24df549b8784a7ba18e"
+    "shock_event_contract_sha256": "f7ee733eebedec96b0d06eae5c960edf36aee49d52edb24df549b8784a7ba18e",
+    "source_intake_contract_path": "p1_4_validation/c3/c3_source_intake_contract_v1.json",
+    "source_intake_contract_sha256": "6891999cf831c5b4045e0a7d554b897cb72df8f5e5dbbb4b6154744d1e0afe0a"
   },
   "guardrails": {
     "preserve_frozen_p1_4_protocol": true,
@@ -28,7 +30,9 @@
     "source_path": "real_data_stress_pipeline/shock_event_contract.json",
     "matching_window_months": 12,
     "matching_rule": "Greedy minimum-absolute-calendar-distance one-to-one matching per series and detector mode; each alarm and each anchor may be used at most once.",
-    "detection_time_rule": "Use the timestamp when the released observation became available. Never substitute observation_period or estimated_onset for availability time."
+    "detection_time_rule": "Use the timestamp when the released observation became available. Never substitute observation_period or estimated_onset for availability time.",
+    "expected_sign_rule": "Only alarms with sign equal to the event expected_sign may match; opposite-sign alarms are MISS.",
+    "matching_window_interpretation": "Inclusive calendar interval from anchor_date minus 12 calendar months through anchor_date plus 12 calendar months; matching uses available_at."
   },
   "events": [
     {
@@ -53,7 +57,9 @@
       "minimum_pre_event_observations": 45,
       "minimum_post_event_observations": 36,
       "initial_calibration_observations": 40,
-      "mapping_note": "The recession dates are retrospective external labels. BLS household-survey observations are separate from the NBER event chronology; their first-publication dates are preserved independently."
+      "mapping_note": "The recession dates are retrospective external labels. BLS household-survey observations are separate from the NBER event chronology; their first-publication dates are preserved independently.",
+      "expected_sign": 1,
+      "expected_sign_rationale": "Expected U.S. unemployment-rate direction around the GFC calendar anchor is upward; an evaluation hypothesis, not causal attribution."
     },
     {
       "event_id": "COVID_2020",
@@ -77,7 +83,9 @@
       "minimum_pre_event_observations": 120,
       "minimum_post_event_observations": 100,
       "initial_calibration_observations": 40,
-      "mapping_note": "WHO's pandemic characterization is the calendar anchor. Weekly DOL initial-claims values are acquired at their first ALFRED publication vintage; NBER's retrospective recession chronology is contextual corroboration, not detector input."
+      "mapping_note": "WHO's pandemic characterization is the calendar anchor. Weekly DOL initial-claims values are acquired at their first ALFRED publication vintage; NBER's retrospective recession chronology is contextual corroboration, not detector input.",
+      "expected_sign": 1,
+      "expected_sign_rationale": "Expected U.S. initial-claims direction around the COVID calendar anchor is upward; an evaluation hypothesis, not causal attribution."
     },
     {
       "event_id": "OIL_2014",
@@ -100,7 +108,9 @@
       "minimum_pre_event_observations": 120,
       "minimum_post_event_observations": 100,
       "initial_calibration_observations": 40,
-      "mapping_note": "IMF independently documents the Brent decline from June 2014 through January 2015. The observed series is EIA weekly Brent spot price; the EIA series is not used as the event-label authority."
+      "mapping_note": "IMF independently documents the Brent decline from June 2014 through January 2015. The observed series is EIA weekly Brent spot price; the EIA series is not used as the event-label authority.",
+      "expected_sign": -1,
+      "expected_sign_rationale": "Expected Brent spot-price direction around the 2014 oil-decline calendar anchor is downward; an evaluation hypothesis, not causal attribution."
     }
   ],
   "intake_output": {

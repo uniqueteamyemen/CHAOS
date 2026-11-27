@@ -208,12 +208,32 @@ def calibrate_threshold(
             "valid_replicates": int(valid.size), "grid": rows}
 
 
+
+def focus_rearm_points_for_frequency(frequency: str) -> int:
+    """Return the operational FOCuS re-arm window for the registered cadence."""
+    normalized = str(frequency).strip()
+    if normalized == "Monthly":
+        return 5
+    if normalized.startswith("Weekly"):
+        return 20
+    raise ValueError(f"FOCUS_UNSUPPORTED_SERIES_FREQUENCY:{normalized}")
+
 def focus_reset_rearm(
     values: Sequence[float], *, threshold: float, quiet_points: int = FOCUS_INITIAL_QUIET_POINTS,
-    rearm_quiet_points: int = FOCUS_REARM_QUIET_POINTS, max_events: int = 12,
-    min_series_length: int = FOCUS_MIN_N,
+    rearm_quiet_points: int | None = None, max_events: int = 12,
+    min_series_length: int = FOCUS_MIN_N, frequency: str | None = None,
 ) -> dict[str, Any]:
-    """Re-arm FOCuS with 40 initial calibration points and 20 after each hit."""
+    """Re-arm FOCuS with an explicit cadence-aware post-alert calibration window."""
+    if frequency is not None:
+        cadence_points = focus_rearm_points_for_frequency(frequency)
+        if rearm_quiet_points is not None and int(rearm_quiet_points) != cadence_points:
+            raise ValueError("FOCUS_REARM_FREQUENCY_PARAMETER_MISMATCH")
+        rearm_points = cadence_points
+    else:
+        rearm_points = (
+            FOCUS_REARM_QUIET_POINTS
+            if rearm_quiet_points is None else int(rearm_quiet_points)
+        )
     x = _values(values)
     if x.size < int(min_series_length):
         return {
@@ -225,12 +245,12 @@ def focus_reset_rearm(
             "event_count": 0,
             "rearm_intervals": [],
         }
-    if int(quiet_points) < 1 or int(rearm_quiet_points) < 1:
+    if int(quiet_points) < 1 or int(rearm_points) < 1:
         raise ValueError("FOCUS_CALIBRATION_WINDOWS_MUST_BE_POSITIVE")
     from p2_b_benchmark.p2c_engine import focus_detector
     hits, intervals, cursor = [], [], 0
-    while x.size - cursor > (quiet_points if not hits else rearm_quiet_points) and len(hits) < max_events:
-        active_quiet = quiet_points if not hits else rearm_quiet_points
+    while x.size - cursor > (quiet_points if not hits else rearm_points) and len(hits) < max_events:
+        active_quiet = quiet_points if not hits else rearm_points
         result = focus_detector(x[cursor:], quiet_points=active_quiet, threshold=float(threshold))
         if result.get("status") == "ABSTAIN" or not result.get("hits"):
             break
@@ -243,18 +263,18 @@ def focus_reset_rearm(
         hits.append({**local, "index": global_index, "detection_index": global_index,
                      "estimated_change_index": estimated})
         next_start = global_index + 1
-        next_end = min(int(x.size), next_start + int(rearm_quiet_points))
+        next_end = min(int(x.size), next_start + int(rearm_points))
         if next_start < next_end:
             intervals.append({"start_inclusive": next_start, "end_exclusive": next_end})
         if next_end >= x.size:
             break
-        # The initial 40-point calibration is retained; after a hit the next
-        # 20 observations are reserved for re-calibration before monitoring.
+        # The initial 40-point calibration is retained; after a hit the configured
+        # cadence-specific re-arm window is reserved before monitoring.
         cursor = next_start
     return {"status": "OK", "hits": hits, "event_count": len(hits),
             "rearm_intervals": intervals,
             "initial_calibration_observations": int(quiet_points),
-            "rearm_calibration_observations": int(rearm_quiet_points)}
+            "rearm_calibration_observations": int(rearm_points)}
 
 
 def break_is_unmonitored(break_index: int, intervals: Sequence[Mapping[str, int]]) -> bool:
