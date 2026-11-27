@@ -1819,6 +1819,7 @@ def evaluate_payems_transform_profiles(
         )
         profiles[profile_id] = {
             "status": "EXPERIMENTAL_DIAGNOSTIC_PROFILE",
+            "analysis_tape_sha256": analysis_tape_sha256({profile_id: rows}),
             "selection_uses_registered_payems_event_labels": True,
             "independent_validation_required": True,
             "baseline_profile_unchanged": True,
