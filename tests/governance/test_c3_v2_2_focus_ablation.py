@@ -49,6 +49,7 @@ class C3V22FocusAblationTests(unittest.TestCase):
             {
                 "observation_date": (date(2020, 1, 1) + timedelta(days=7 * i)).isoformat(),
                 "observation_date_obj": date(2020, 1, 1) + timedelta(days=7 * i),
+                "available_at_obj": date(2020, 1, 1) + timedelta(days=7 * i + 3),
             }
             for i in range(60)
         ]
@@ -60,7 +61,9 @@ class C3V22FocusAblationTests(unittest.TestCase):
                 "end_exclusive": 49,
             }]},
             rearm_points=4,
-            target_anchor=None,
+            # The observation date is on the anchor, but its first release is
+            # three days later. The window must not be labelled pre-event.
+            target_anchor=date(2020, 1, 1) + timedelta(days=7 * 48),
         )
         self.assertEqual(len(diagnostics), 1)
         self.assertEqual(diagnostics[0]["legacy_scale_window"]["mad"]["n"], 4)
@@ -68,6 +71,11 @@ class C3V22FocusAblationTests(unittest.TestCase):
         self.assertEqual(
             diagnostics[0]["scale40_window"]["start_index"], 9
         )
+        self.assertEqual(
+            diagnostics[0]["rearm_end_available_at"],
+            (date(2020, 1, 1) + timedelta(days=7 * 48 + 3)).isoformat(),
+        )
+        self.assertFalse(diagnostics[0]["window_ends_before_target_event"])
         self.assertNotEqual(
             diagnostics[0]["legacy_scale_window"]["mad"]["mad_sigma"],
             diagnostics[0]["scale40_window"]["mad"]["mad_sigma"],
