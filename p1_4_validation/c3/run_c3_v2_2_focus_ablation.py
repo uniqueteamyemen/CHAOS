@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import argparse
 import json
-import math
+import os
 from datetime import date
 from pathlib import Path
 
@@ -389,8 +389,8 @@ def run(args: argparse.Namespace) -> dict:
             "scale_arms": ["legacy_scale_none", "causal_scale_40"],
         },
         "arms": arms,
-        "evaluation_commit": __import__("os").environ.get("GITHUB_SHA", "LOCAL_REPLAY"),
-        "run_id": __import__("os").environ.get("GITHUB_RUN_ID", "LOCAL_ABLATION"),
+        "evaluation_commit": os.environ.get("GITHUB_SHA", "LOCAL_REPLAY"),
+        "run_id": os.environ.get("GITHUB_RUN_ID", "LOCAL_ABLATION"),
         "replay_command": (
             "python p1_4_validation/c3/run_c3_v2_2_focus_ablation.py "
             "--source-zip <c3-v2-expanded-source-intake.zip> "
