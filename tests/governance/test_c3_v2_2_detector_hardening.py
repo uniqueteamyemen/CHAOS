@@ -173,6 +173,20 @@ class C3V22HardeningTests(unittest.TestCase):
             "CAUSAL_TRAILING_MEAN_OF_FIRST_ALFRED_DIFFERENCES",
         )
 
+        d6 = c3.causal_rolling_mean_rows(rows + [
+            {
+                "observation_date": "2020-06-01",
+                "available_at": "2020-06-05",
+                "value": "18",
+                "value_float": 18.0,
+                "series_transform": "first_difference",
+                "units": "monthly change",
+            }
+        ], 6)
+        self.assertEqual(len(d6), 1)
+        self.assertAlmostEqual(d6[0]["value_float"], 10.5)
+        self.assertEqual(d6[0]["available_at"], "2020-06-05")
+
         changed_future = [dict(row) for row in rows]
         changed_future[-1]["value_float"] = 150.0
         changed_d3 = c3.causal_rolling_mean_rows(changed_future, 3)
