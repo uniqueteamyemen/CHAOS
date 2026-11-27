@@ -227,7 +227,7 @@ def run_level_3_engine_output_check(
             raise RuntimeError(f"C3_V2_1_LEVEL3_OUTPUT_MISSING:{path.name}")
 
     report = json.loads(json_path.read_text(encoding="utf-8"))
-    if report.get("schema_version") not in {"2.1.0", "2.2.0"}:
+    if report.get("schema_version") != "2.1.0":
         raise RuntimeError("C3_V2_1_LEVEL3_REPORT_SCHEMA_MISMATCH")
     if str(report.get("source_integrity", {}).get("source_intake_run_id")) != str(
         expected_source_run_id
@@ -403,7 +403,7 @@ def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--mode", choices=("integration", "engine-output"), required=True)
     parser.add_argument("--source-zip", default="")
-    parser.add_argument("--contract", default="p1_4_validation/c3/c3_expanded_event_cohort_v2_2.json")
+    parser.add_argument("--contract", default="p1_4_validation/c3/c3_expanded_event_cohort_v1.json")
     parser.add_argument("--expected-source-run-id", required=True)
     parser.add_argument("--output", default="")
     parser.add_argument("--evaluation-dir", default="artifacts/p1_4/c3/v2_expanded_evaluation")
