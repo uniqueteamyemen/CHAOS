@@ -60,13 +60,13 @@ def run_level_2_integration(
     actual_source_run_id = str(manifest.get("workflow_run_id", ""))
     if actual_source_run_id != str(expected_source_run_id):
         raise RuntimeError(
-            "C3_V2_1_LEVEL2_SOURCE_RUN_ID_MISMATCH:"
+            "C3_V2_2_LEVEL2_SOURCE_RUN_ID_MISMATCH:"
             f"{actual_source_run_id}:{expected_source_run_id}"
         )
 
     if set(raw_by_series) != EXPECTED_SERIES:
         raise RuntimeError(
-            "C3_V2_1_LEVEL2_SERIES_SET_MISMATCH:"
+            "C3_V2_2_LEVEL2_SERIES_SET_MISMATCH:"
             f"{sorted(raw_by_series)}"
         )
 
@@ -76,7 +76,7 @@ def run_level_2_integration(
     }
     if contract_transforms != EXPECTED_TRANSFORMS:
         raise RuntimeError(
-            f"C3_V2_1_LEVEL2_TRANSFORM_CONTRACT_MISMATCH:{contract_transforms}"
+            f"C3_V2_2_LEVEL2_TRANSFORM_CONTRACT_MISMATCH:{contract_transforms}"
         )
 
     transformed, audit = c3.apply_causal_series_transforms(
@@ -85,7 +85,7 @@ def run_level_2_integration(
     analysis_sha = c3.analysis_tape_sha256(transformed)
 
     if set(transformed) != EXPECTED_SERIES:
-        raise RuntimeError("C3_V2_1_LEVEL2_TRANSFORMED_SERIES_SET_MISMATCH")
+        raise RuntimeError("C3_V2_2_LEVEL2_TRANSFORMED_SERIES_SET_MISMATCH")
 
     series_checks = {}
     for series_id in sorted(EXPECTED_SERIES):
@@ -93,27 +93,27 @@ def run_level_2_integration(
         analysis_rows = transformed[series_id]
         if len(raw_rows) != len(analysis_rows):
             raise RuntimeError(
-                f"C3_V2_1_LEVEL2_OBSERVATION_COUNT_CHANGED:{series_id}:"
+                f"C3_V2_2_LEVEL2_OBSERVATION_COUNT_CHANGED:{series_id}:"
                 f"{len(raw_rows)}:{len(analysis_rows)}"
             )
         for index, (raw_row, analysis_row) in enumerate(zip(raw_rows, analysis_rows)):
             if raw_row["observation_date"] != analysis_row["observation_date"]:
                 raise RuntimeError(
-                    f"C3_V2_1_LEVEL2_OBSERVATION_DATE_CHANGED:{series_id}:{index}"
+                    f"C3_V2_2_LEVEL2_OBSERVATION_DATE_CHANGED:{series_id}:{index}"
                 )
             if raw_row["available_at"] != analysis_row["available_at"]:
                 raise RuntimeError(
-                    f"C3_V2_1_LEVEL2_AVAILABLE_AT_CHANGED:{series_id}:{index}"
+                    f"C3_V2_2_LEVEL2_AVAILABLE_AT_CHANGED:{series_id}:{index}"
                 )
             if not math.isfinite(float(analysis_row["value_float"])):
                 raise RuntimeError(
-                    f"C3_V2_1_LEVEL2_NON_FINITE_ANALYSIS_VALUE:{series_id}:{index}"
+                    f"C3_V2_2_LEVEL2_NON_FINITE_ANALYSIS_VALUE:{series_id}:{index}"
                 )
             if series_id != "PAYEMS" and (
                 float(raw_row["value_float"]) != float(analysis_row["value_float"])
             ):
                 raise RuntimeError(
-                    f"C3_V2_1_LEVEL2_LEVEL_SERIES_VALUE_CHANGED:{series_id}:{index}"
+                    f"C3_V2_2_LEVEL2_LEVEL_SERIES_VALUE_CHANGED:{series_id}:{index}"
                 )
 
         series_checks[series_id] = {
@@ -129,12 +129,12 @@ def run_level_2_integration(
     predecessor = payems_audit.get("predecessor", {})
     if predecessor.get("observation_date") != "1966-07-01":
         raise RuntimeError(
-            "C3_V2_1_LEVEL2_PAYEMS_PREDECESSOR_DATE_MISMATCH:"
+            "C3_V2_2_LEVEL2_PAYEMS_PREDECESSOR_DATE_MISMATCH:"
             + str(predecessor.get("observation_date"))
         )
     if predecessor.get("available_at") != "1966-08-08":
         raise RuntimeError(
-            "C3_V2_1_LEVEL2_PAYEMS_PREDECESSOR_RELEASE_MISMATCH:"
+            "C3_V2_2_LEVEL2_PAYEMS_PREDECESSOR_RELEASE_MISMATCH:"
             + str(predecessor.get("available_at"))
         )
 
@@ -149,15 +149,15 @@ def run_level_2_integration(
         rel_tol=0.0,
         abs_tol=1e-9,
     ):
-        raise RuntimeError("C3_V2_1_LEVEL2_PAYEMS_FIRST_DIFFERENCE_MISMATCH")
+        raise RuntimeError("C3_V2_2_LEVEL2_PAYEMS_FIRST_DIFFERENCE_MISMATCH")
 
     final_archive_sha = c3.sha256(source_zip.read_bytes())
     if final_archive_sha != initial_archive_sha or archive_sha != initial_archive_sha:
-        raise RuntimeError("C3_V2_1_LEVEL2_SOURCE_ARCHIVE_CHANGED")
+        raise RuntimeError("C3_V2_2_LEVEL2_SOURCE_ARCHIVE_CHANGED")
 
     total_points = sum(len(rows) for rows in raw_by_series.values())
     if total_points != int(manifest.get("point_count", -1)):
-        raise RuntimeError("C3_V2_1_LEVEL2_POINT_COUNT_MISMATCH")
+        raise RuntimeError("C3_V2_2_LEVEL2_POINT_COUNT_MISMATCH")
 
     report = {
         "schema_version": "1.0.0",
@@ -227,7 +227,7 @@ def run_level_3_engine_output_check(
             raise RuntimeError(f"C3_V2_2_LEVEL3_OUTPUT_MISSING:{path.name}")
 
     report = json.loads(json_path.read_text(encoding="utf-8"))
-    if report.get("schema_version") not in {"2.1.0", "2.2.0"}:
+    if report.get("schema_version") != "2.2.0":
         raise RuntimeError("C3_V2_2_LEVEL3_REPORT_SCHEMA_MISMATCH")
     if str(report.get("source_integrity", {}).get("source_intake_run_id")) != str(
         expected_source_run_id
