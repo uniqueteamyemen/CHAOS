@@ -1891,6 +1891,41 @@ def evaluate_payems_transform_profiles(
     return profiles
 
 
+def payems_detector_rows(profile: dict) -> list[dict]:
+    """Return explicit per-detector evidence rows for PAYEMS D3/D6 profiles."""
+    rows = []
+    detector_summary = profile.get("detector_summary", {})
+    for detector_name, summary in sorted(detector_summary.items()):
+        if detector_name in {"global_selection", "per_series_router_profile"}:
+            continue
+        if not isinstance(summary, dict) or "matched_event_series_pairs" not in summary:
+            continue
+        role = str(summary.get("role", "UNKNOWN"))
+        if role == "CANDIDATE":
+            validation = (
+                "VALIDATED"
+                if summary.get("validated_all_series") else "NOT_VALIDATED"
+            )
+        elif role == "READ_ONLY":
+            validation = "READ_ONLY"
+        elif role == "COMPOSITE_OPTIMIZATION":
+            validation = "RETROSPECTIVE_ONLY"
+        else:
+            validation = role
+        rows.append({
+            "detector": detector_name,
+            "role": role,
+            "validation": validation,
+            "matched_pairs": int(summary.get("matched_event_series_pairs", 0)),
+            "total_pairs": int(summary.get("total_event_series_pairs", 0)),
+            "matched_episodes": int(summary.get("matched_episode_clusters", 0)),
+            "total_episodes": int(summary.get("episode_clusters_with_any_registered_pair", 0)),
+            "unmatched_alarms": int(summary.get("total_unmatched_alarm_count", 0)),
+            "median_absolute_lag_days": summary.get("median_absolute_detection_lag_days"),
+        })
+    return rows
+
+
 def markdown_report(report: dict) -> str:
     lines = [
         "# CHAOS C3 v2.2 — Experimental Detector Hardening",
@@ -2000,18 +2035,21 @@ def markdown_report(report: dict) -> str:
         "",
         "## 4. PAYEMS causal smoothing experiments (diagnostic only)",
         "",
-        "| Profile | Window | Matched pairs | Matched episodes | Unmatched alarms | Excluded initialization-overlap events |",
-        "|---|---:|---:|---:|---:|---|",
+        "| Profile | Window | Detector | Validation | Matched pairs | Matched episodes | Unmatched alarms | Median abs lag (days) | Excluded initialization-overlap events |",
+        "|---|---:|---|---|---:|---:|---:|---:|---|",
         *[
             "| " + profile_id + " | " + str(profile.get("window_points", "—")) + " | "
-            + str(profile.get("detector_summary", {}).get("Post-Quiet Huber + Bartlett LRV", {}).get("matched_event_series_pairs", "—")) + " | "
-            + str(profile.get("detector_summary", {}).get("Post-Quiet Huber + Bartlett LRV", {}).get("matched_episode_clusters", "—")) + " | "
-            + str(profile.get("detector_summary", {}).get("Post-Quiet Huber + Bartlett LRV", {}).get("total_unmatched_alarm_count", "—")) + " | "
+            + row["detector"] + " | " + row["validation"] + " | "
+            + str(row["matched_pairs"]) + "/" + str(row["total_pairs"]) + " | "
+            + str(row["matched_episodes"]) + "/" + str(row["total_episodes"]) + " | "
+            + str(row["unmatched_alarms"]) + " | "
+            + str(row["median_absolute_lag_days"] if row["median_absolute_lag_days"] is not None else "—") + " | "
             + ", ".join(
                 event.get("event_id", "unknown")
                 for event in profile.get("excluded_events_for_initialization_overlap", [])
             ) + " |"
             for profile_id, profile in sorted(report.get("payems_transform_experiments", {}).items())
+            for row in payems_detector_rows(profile)
         ],
         "",
         "- PAYEMS D3/D6 profiles use only current and past first-release differences; each output keeps the right-edge available_at.",
