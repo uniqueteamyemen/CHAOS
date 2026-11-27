@@ -198,6 +198,24 @@ def historical_event_evidence(
 ) -> dict:
     result = run_focus(values, config)
     hits = result.get("hits", []) if result.get("status") == "OK" else []
+    calibration = {
+        "arms": {
+            "FOCuS (reset-rearm)": {
+                "frozen_threshold": float(config["threshold"]),
+                "rearm_quiet_points": int(config["rearm_points"]),
+                "rearm_scale_points": (
+                    int(config["scale_points"])
+                    if config["scale_points"] is not None else None
+                ),
+            }
+        }
+    }
+    prefix_replays = (
+        c3.audit_prefix_replay(
+            "FOCuS (reset-rearm)", values, hits, calibration
+        )
+        if hits else 0
+    )
     matched_rows, unmatched = c3.match_events_one_to_one(
         rows, events, hits, config["arm_id"]
     )
@@ -227,6 +245,7 @@ def historical_event_evidence(
         "target_events": targets,
         "matched_event_series_pairs": unmatched.get("matched_event_count", 0),
         "unmatched_alarm_count": unmatched.get("unmatched_alarm_count", 0),
+        "no_lookahead_prefix_replays": prefix_replays,
         "all_hits": [
             {
                 "index": int(hit["index"]),
