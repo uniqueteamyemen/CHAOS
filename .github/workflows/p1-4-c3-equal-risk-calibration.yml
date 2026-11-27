@@ -1,4 +1,4 @@
-name: CHAOS P1.4 C3 v2.1 — Operational Detector Optimization
+name: CHAOS P1.4 C3 v2.2 — Experimental Detector Hardening
 
 "on":
   workflow_dispatch:
@@ -12,7 +12,7 @@ name: CHAOS P1.4 C3 v2.1 — Operational Detector Optimization
         description: "Optional completed source-intake run ID. Set 45757611871 to reuse chaos-c3-v2-expanded-source-intake-45757611871-1 without another ALFRED download."
         required: false
         type: string
-        default: ""
+        default: "45757611871"
 
 permissions:
   contents: read
@@ -33,10 +33,10 @@ jobs:
           REUSE_SOURCE_INTAKE_RUN_ID: ${{ inputs.reuse_source_intake_run_id }}
         run: |
           set -euo pipefail
-          test "$GITHUB_REF" = "refs/heads/feat/c3-v2-expanded-cohort-self-calibrating" || {
-            echo "C3_V2_WRONG_BRANCH:$GITHUB_REF" >&2
-            exit 1
-          }
+          case "$GITHUB_REF" in
+            refs/heads/feat/c3-v2-expanded-cohort-self-calibrating|refs/heads/experiment/c3-v2-2-detector-calibration-hardening) ;;
+            *) echo "C3_V2_WRONG_BRANCH:$GITHUB_REF" >&2; exit 1 ;;
+          esac
           test "$EXECUTE_C3_V2" = "true" || {
             echo "C3_V2_EXECUTION_INPUT_NOT_ENABLED" >&2
             exit 1
