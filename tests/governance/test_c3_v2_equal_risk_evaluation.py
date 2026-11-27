@@ -404,22 +404,21 @@ class C3V2EqualRiskTests(unittest.TestCase):
         self.assertEqual(metadata["status"], "OK")
 
     def test_hybrid_must_pass_development_and_holdout_wilson_gates(self):
-        dev = [__import__("numpy").asarray([1.0 if index < 50 else 0.0]) for index in range(1000)]
-        holdout = [__import__("numpy").asarray([1.0 if index < 50 else 0.0]) for index in range(1000)]
+        import numpy as np
 
-        def fake_extract(detector, values, threshold=None,
-                         rearm_quiet_points=c3.REARM_POINTS,
-                         rearm_scale_points=None):
-            if detector in {"FOCuS (reset-rearm)", "Post-Quiet Huber + MAD",
-                            "Post-Quiet Huber + Bartlett LRV"}:
-                return ([{"index": 0, "sign": 1}] if values[0] else []), "OK", {}
-            raise AssertionError(detector)
+        dev = [np.asarray([1.0 if index < 50 else 0.0]) for index in range(1000)]
+        holdout = [np.asarray([1.0 if index < 50 else 0.0]) for index in range(1000)]
+        thresholds = {
+            "FOCuS (reset-rearm)": 100.0,
+            "Post-Quiet Huber + MAD": 20.0,
+            "Post-Quiet Huber + Bartlett LRV": None,
+        }
 
-        with patch.object(c3, "extract_detector_hits", side_effect=fake_extract):
-            result = c3.calibrate_ensemble(
-                dev, holdout, rearm_quiet_points=4, rearm_scale_points=40,
-                focus_grid=(10,), huber_grid=(20,),
-            )
+        def fake_hybrid(trace, _thresholds, rearm_quiet_points=c3.REARM_POINTS):
+            return ([{"index": 0, "sign": 1}] if trace[0] else []), {"status": "OK"}
+
+        with patch.object(c3, "hybrid_confirmation_hits", side_effect=fake_hybrid):
+            result = c3.calibrate_ensemble(dev, holdout, thresholds)
 
         self.assertEqual(result["status"], "VALIDATED")
         self.assertLessEqual(
@@ -428,25 +427,22 @@ class C3V2EqualRiskTests(unittest.TestCase):
         self.assertLessEqual(
             result["holdout"]["wilson_upper_95_one_sided"], c3.P0_TARGET
         )
-        self.assertEqual(result["joint_calibration"]["tested_threshold_pairs"], 2)
         self.assertFalse(result["holdout_retuning"])
-
 
     def test_hybrid_no_alert_paths_are_valid_zero_alarm_replicates(self):
         import numpy as np
 
         traces = [np.zeros(40, dtype=float) for _ in range(1000)]
-
-        def no_alerts(detector, values, threshold=None,
-                      rearm_quiet_points=c3.REARM_POINTS,
-                      rearm_scale_points=None):
-            return [], "OK", {}
-
-        with patch.object(c3, "extract_detector_hits", side_effect=no_alerts):
-            result = c3.calibrate_ensemble(
-                traces, traces, rearm_quiet_points=4, rearm_scale_points=40,
-                focus_grid=(10,), huber_grid=(20,),
-            )
+        thresholds = {
+            "FOCuS (reset-rearm)": 100.0,
+            "Post-Quiet Huber + MAD": 20.0,
+            "Post-Quiet Huber + Bartlett LRV": None,
+        }
+        with patch.object(
+            c3, "hybrid_confirmation_hits",
+            return_value=([], {"status": "OK"}),
+        ):
+            result = c3.calibrate_ensemble(traces, traces, thresholds)
 
         self.assertEqual(result["status"], "VALIDATED")
         self.assertEqual(result["development"]["valid_replicates"], 1000)
@@ -454,35 +450,34 @@ class C3V2EqualRiskTests(unittest.TestCase):
         self.assertEqual(result["holdout"]["valid_replicates"], 1000)
         self.assertEqual(result["holdout"]["alarm_traces"], 0)
         self.assertLessEqual(
-            result["development"]["wilson_upper_95_one_sided"], c3.DEV_P0_TARGET
+            result["development"]["wilson_upper_95_one_sided"], c3.P0_TARGET
         )
         self.assertLessEqual(
             result["holdout"]["wilson_upper_95_one_sided"], c3.P0_TARGET
         )
 
-
     def test_hybrid_abstains_when_development_wilson_gate_fails(self):
         import numpy as np
 
-        traces = [np.ones(40, dtype=float) for _ in range(1000)]
+        dev = [np.asarray([1.0 if index < 100 else 0.0]) for index in range(1000)]
+        holdout = [np.asarray([0.0]) for _ in range(1000)]
+        thresholds = {
+            "FOCuS (reset-rearm)": 100.0,
+            "Post-Quiet Huber + MAD": 20.0,
+            "Post-Quiet Huber + Bartlett LRV": None,
+        }
 
-        def always_alarm(detector, values, threshold=None,
-                         rearm_quiet_points=c3.REARM_POINTS,
-                         rearm_scale_points=None):
-            return [{"index": 10, "sign": 1}], "OK", {}
+        def fake_hybrid(trace, _thresholds, rearm_quiet_points=c3.REARM_POINTS):
+            return ([{"index": 0, "sign": 1}] if trace[0] else []), {"status": "OK"}
 
-        with patch.object(c3, "extract_detector_hits", side_effect=always_alarm):
-            result = c3.calibrate_ensemble(
-                traces, traces, rearm_quiet_points=4, rearm_scale_points=40,
-                focus_grid=(10,), huber_grid=(20,),
-            )
+        with patch.object(c3, "hybrid_confirmation_hits", side_effect=fake_hybrid):
+            result = c3.calibrate_ensemble(dev, holdout, thresholds)
 
         self.assertEqual(result["status"], "ABSTAINED")
-        self.assertEqual(
-            result["raw_status"], "NO_JOINT_PAIR_MET_DEVELOPMENT_WILSON_GATE"
+        self.assertEqual(result["raw_status"], "DEVELOPMENT_WILSON_GATE_FAILED")
+        self.assertGreater(
+            result["development"]["wilson_upper_95_one_sided"], c3.P0_TARGET
         )
-        self.assertEqual(result["holdout"]["status"], "NOT_RUN")
-
 
     def test_one_alert_cannot_be_reused_for_two_overlapping_event_windows(self):
         rows = data_rows([
