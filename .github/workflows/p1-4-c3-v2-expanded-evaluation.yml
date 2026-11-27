@@ -1,4 +1,4 @@
-name: CHAOS P1.4 C3 v2.1 — Three-Level Validation
+name: CHAOS P1.4 C3 v2.2 — Three-Level Validation
 
 "on":
   workflow_call:
@@ -38,10 +38,10 @@ jobs:
           SOURCE_INTAKE_ARTIFACT_NAME: ${{ inputs.source_intake_artifact_name }}
         run: |
           set -euo pipefail
-          test "$GITHUB_REF" = "refs/heads/feat/c3-v2-expanded-cohort-self-calibrating" || {
-            echo "C3_V2_WRONG_BRANCH:$GITHUB_REF" >&2
-            exit 1
-          }
+          case "$GITHUB_REF" in
+            refs/heads/feat/c3-v2-expanded-cohort-self-calibrating|refs/heads/experiment/c3-v2-2-detector-calibration-hardening) ;;
+            *) echo "C3_V2_WRONG_BRANCH:$GITHUB_REF" >&2; exit 1 ;;
+          esac
           [[ "$SOURCE_INTAKE_RUN_ID" =~ ^[0-9]+$ ]] || {
             echo "C3_V2_INVALID_SOURCE_INTAKE_RUN_ID" >&2
             exit 1
@@ -136,6 +136,8 @@ jobs:
             -s tests/governance -p 'test_c3_v2_source_intake.py' -v
           PYTHONPATH="$GITHUB_WORKSPACE" python -m unittest discover \
             -s tests/governance -p 'test_c3_v2_equal_risk_evaluation.py' -v
+          PYTHONPATH="$GITHUB_WORKSPACE" python -m unittest discover \
+            -s tests/governance -p 'test_c3_v2_2_detector_hardening.py' -v
 
       - name: "Level 2 — Real ALFRED artifact integration and causal transform"
         shell: bash
@@ -147,7 +149,7 @@ jobs:
             p1_4_validation/c3/validate_c3_v2_1_three_levels.py \
             --mode integration \
             --source-zip /tmp/c3-v2-expanded-source-intake.zip \
-            --contract p1_4_validation/c3/c3_expanded_event_cohort_v1.json \
+            --contract p1_4_validation/c3/c3_expanded_event_cohort_v2_2.json \
             --expected-source-run-id "$EXPECTED_SOURCE_RUN_ID" \
             --output artifacts/p1_4/c3/v2_expanded_evaluation/C3_V2_1_LEVEL2_REAL_DATA_INTEGRATION.json
 
@@ -158,7 +160,7 @@ jobs:
           PYTHONPATH="$GITHUB_WORKSPACE" python -u \
             p1_4_validation/c3/run_c3_v2_equal_risk_evaluation.py \
             --source-zip /tmp/c3-v2-expanded-source-intake.zip \
-            --contract p1_4_validation/c3/c3_expanded_event_cohort_v1.json \
+            --contract p1_4_validation/c3/c3_expanded_event_cohort_v2_2.json \
             --output-dir artifacts/p1_4/c3/v2_expanded_evaluation
 
       - name: "Level 3 — Validate complete engine evidence and cohort coverage"
