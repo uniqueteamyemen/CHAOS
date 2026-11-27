@@ -1,0 +1,138 @@
+{
+  "schema_version": "1.0.0",
+  "protocol_id": "CHAOS_P1_4_C3_V2_4_MULTISCALE_ADAPTIVE_2000X2_V1",
+  "experiment_id": "C3_V2_4_MULTISCALE_ADAPTIVE_2000X2_V1",
+  "status": "PRE_REGISTERED",
+  "registered_date": "2026-11-28",
+  "purpose": "Evaluate representation-specific causal multi-scale detectors and calibrated existing BOCPD on the frozen first-release ALFRED cohort; retain Post-Quiet Huber + MAD as the historical comparison baseline.",
+  "source": {
+    "source_intake_run_id": "45757611871",
+    "source_artifact_id": 15088960800,
+    "source_artifact_name": "chaos-c3-v2-expanded-source-intake-45757611871-1",
+    "source_artifact_zip_sha256": "e9760015cad58c96171fb45c486345b8a4ded64f9c5379b59192e435366c45d3",
+    "normalized_tape_sha256": "f81a4e802e62ff5effaeae2240d1f3835d2e3650037887cdea4aaf79816959c1",
+    "evaluation_contract_path": "p1_4_validation/c3/c3_expanded_event_cohort_v2_2.json",
+    "evaluation_contract_sha256": "0da3b68ead082157eb586dd1952afc3f7006dc85bbc7edf2ef1e702951360d49",
+    "source_policy": "Reuse exact source artifact and validate its manifest, normalized first-release tape, every raw ALFRED batch hash and contract; no new acquisition or source mutation."
+  },
+  "analysis": {
+    "target_series": ["UNRATE", "ICSA", "PAYEMS"],
+    "representations": {
+      "UNRATE": "level",
+      "ICSA": "level",
+      "PAYEMS": "causal first difference of first-release levels, as already declared by the frozen evaluation contract"
+    },
+    "historical_matching": "Use the existing one-to-one maximum-cardinality/minimum-absolute-calendar-lag contract matcher with a symmetric +/-12-calendar-month window. Report post_break_recall only where detection_lag_days >= 0; report early_warning_matches separately where detection_lag_days < 0.",
+    "expected_event_series_pairs": 35,
+    "expected_episode_id_clusters": 8,
+    "historical_matching_is_diagnostic_only": true,
+    "required_historical_diagnostics": [
+      "post_break_recall (lag >= 0)",
+      "early_warning_matches (lag < 0)",
+      "unmatched_alarms_per_year",
+      "episode_id coverage across the eight registered clusters"
+    ],
+    "available_at_policy": "Every hit maps to the row's first-release available_at. All scores, scales, confirmation and re-arm decisions use only values available at or before the hit row."
+  },
+  "series_parameters": {
+    "UNRATE": {
+      "representation": "level",
+      "detector": "CausalMultiScaleExcursionDetector",
+      "windows": [3, 6],
+      "baseline_points": 24,
+      "baseline_quantiles": [0.15, 0.85],
+      "guard_points": 2,
+      "scale": "MAD_40 of first differences, using only differences ending strictly before the current window",
+      "confirm_points": 2,
+      "initial_quiet_points": 40,
+      "directional_tracks": "armed_pos and armed_neg independent",
+      "rearm": "re-arm each direction after two consecutive scores for that direction fall below 0.5 times its frozen threshold"
+    },
+    "ICSA": {
+      "representation": "level",
+      "detector": "CausalMultiScaleExcursionDetector",
+      "windows": [4, 12],
+      "baseline_points": 24,
+      "baseline_quantiles": [0.15, 0.85],
+      "guard_points": 3,
+      "scale": "MAD_40 of first differences, using only differences ending strictly before the current window",
+      "confirm_points": 2,
+      "initial_quiet_points": 40,
+      "directional_tracks": "armed_pos and armed_neg independent",
+      "rearm": "re-arm each direction after two consecutive scores for that direction fall below 0.5 times its frozen threshold"
+    },
+    "PAYEMS": {
+      "representation": "first_difference",
+      "detector": "CausalMultiScaleFlowDetector",
+      "windows": [3, 12],
+      "baseline_points": 24,
+      "baseline_center": "median",
+      "guard_points": 2,
+      "scale": "MAD_40 of delta_x values; do not apply np.diff to delta_x",
+      "confirm_points": 2,
+      "initial_quiet_points": 40,
+      "rearm_quiet_points": 6,
+      "directional_tracks": "armed_pos and armed_neg independent"
+    }
+  },
+  "detectors": {
+    "Causal MultiScale (representation-specific)": {
+      "method": "Use the series-specific level-excursion or first-difference-flow equations above. Score both directions across all registered windows and use the maximum directional score. Require two consecutive same-direction threshold crossings. Calibrate the maximum confirmed null score over either direction and every window.",
+      "threshold_grid_by_series": {
+        "UNRATE": [3.0, 3.5, 4.0, 4.5, 5.0, 5.5, 6.0, 6.5, 7.0, 7.5, 8.0, 9.0, 10.0, 12.0, 14.0],
+        "ICSA": [2.5, 3.0, 3.5, 4.0, 4.5, 5.0, 5.5, 6.0, 6.5, 7.0, 8.0, 9.0, 10.0, 12.0, 14.0],
+        "PAYEMS": [2.5, 3.0, 3.5, 4.0, 4.5, 5.0, 5.5, 6.0, 6.5, 7.0, 8.0, 9.0, 10.0, 12.0, 14.0]
+      },
+      "no_max_event_cap": true
+    },
+    "Calibrated BOCPD": {
+      "method": "Call the existing p2_b_benchmark.p2c_engine.bocpd_detector without modifying its implementation. Set persistence=3 and calibrate only short_mass_threshold on the preregistered grid; all other BOCPD parameters and internal gates remain the existing defaults.",
+      "persistence": 3,
+      "short_mass_threshold_grid": [0.25, 0.30, 0.35, 0.40],
+      "holdout_policy": "Open Holdout only for the single short_mass_threshold selected by the Development gate."
+    },
+    "Post-Quiet Huber + MAD": {
+      "method": "Existing p2_b_benchmark.p2c_engine.post_quiet_huber_detector with scale_mode=mad; implementation unchanged. Reference baseline only.",
+      "quiet_points": 40,
+      "threshold_grid": [4, 6, 8, 10, 12, 14, 16, 20, 24, 32, 40, 50, 60, 70, 80, 90, 100, 110, 125, 150, 200, 250, 300]
+    }
+  },
+  "null_protocol": {
+    "replicates_per_phase": 2000,
+    "minimum_valid_replicates": 1900,
+    "phases": ["development", "holdout"],
+    "seed_namespace": "CHAOS:C3_V2_4_MULTISCALE_ADAPTIVE_2000X2_V1_PREREG_20261128",
+    "seed_identity": "SHA256(seed_namespace, normalized_tape_sha256, series_id, selected_AR_order, phase, replicate_index), first 64 bits as integer",
+    "null_generator": "Existing stable AR(p) residual bootstrap; p=1..3 selected by minimum AIC using only the first 40 analysis observations; same generated null trace shared by every arm for a series/replicate.",
+    "phase_separation": "Development and Holdout use disjoint phase identities and a new namespace. Holdout is generated independently and never used for threshold selection.",
+    "paired_comparison": true,
+    "no_lookahead": true,
+    "holdout_opening_rule": "Select the lowest registered threshold/short_mass_threshold meeting the Development Wilson U95 gate first. Then score Holdout only at that single frozen setting. Do not score alternative thresholds on Holdout."
+  },
+  "risk_gates": {
+    "confidence_interval": "one-sided Wilson 95% upper bound",
+    "development_wilson_u95_max": 0.085,
+    "holdout_wilson_u95_max": 0.10,
+    "threshold_selection": "For each applicable arm and series, select the lowest preregistered threshold meeting Development U95 <= 0.085. Evaluate that frozen setting once on independent Holdout.",
+    "holdout_retuning": false,
+    "promotion_policy": "No automatic production promotion. Risk validation and historical post-break recall are separate results."
+  },
+  "historical_comparison": {
+    "references": {
+      "C3_V2_3_Causal_Local_Slope_Shift": {"post_break_pairs": 3, "total_pairs": 35},
+      "C3_V2_3_Post_Quiet_Huber_MAD": {"matched_pairs": 5, "total_pairs": 35}
+    },
+    "report_counts_and_rates_separately": true,
+    "unmatched_alarm_exposure": "sum of per-series available_at exposure years across UNRATE, ICSA and PAYEMS",
+    "episode_coverage": "Report matched episode_id set, count, and denominator of eight; distinguish post-break episode coverage from any matched coverage."
+  },
+  "immutability": {
+    "main_phase2": "READ_ONLY",
+    "p2c_engine_py": "READ_ONLY",
+    "injection_runner_py": "READ_ONLY",
+    "a_fast": "READ_ONLY",
+    "a_consensus": "READ_ONLY",
+    "pr_70": "KEEP_OPEN_DRAFT_UNCHANGED",
+    "source_artifact": "READ_ONLY"
+  }
+}
