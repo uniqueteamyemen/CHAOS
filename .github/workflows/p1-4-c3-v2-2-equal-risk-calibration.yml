@@ -1,0 +1,69 @@
+name: CHAOS P1.4 C3 v2.2 — Experimental Detector Hardening
+
+"on":
+  workflow_dispatch:
+    inputs:
+      execute_c3_v2_2_experiment:
+        description: "Run isolated C3 v2.2 hardening against the frozen ALFRED cohort"
+        required: true
+        type: boolean
+        default: false
+      reuse_source_intake_run_id:
+        description: "Completed immutable C3 source-intake run ID. Default reuses 45757611871; clear only to acquire a new source snapshot."
+        required: false
+        type: string
+        default: "45757611871"
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: chaos-c3-v2-2-experiment-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  validate-dispatch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require isolated C3 v2.2 branch and explicit approval
+        shell: bash
+        env:
+          EXECUTE_C3_V2_2: ${{ inputs.execute_c3_v2_2_experiment }}
+          REUSE_SOURCE_INTAKE_RUN_ID: ${{ inputs.reuse_source_intake_run_id }}
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REF" = "refs/heads/experiment/c3-v2-2-detector-calibration-hardening" || {
+            echo "C3_V2_2_WRONG_BRANCH:$GITHUB_REF" >&2
+            exit 1
+          }
+          test "$EXECUTE_C3_V2_2" = "true" || {
+            echo "C3_V2_2_EXECUTION_INPUT_NOT_ENABLED" >&2
+            exit 1
+          }
+          if [[ -n "$REUSE_SOURCE_INTAKE_RUN_ID" && ! "$REUSE_SOURCE_INTAKE_RUN_ID" =~ ^[0-9]+$ ]]; then
+            echo "C3_V2_2_INVALID_REUSE_SOURCE_INTAKE_RUN_ID:$REUSE_SOURCE_INTAKE_RUN_ID" >&2
+            exit 1
+          fi
+
+  expanded-source-intake:
+    needs: validate-dispatch
+    if: ${{ inputs.execute_c3_v2_2_experiment == true && inputs.reuse_source_intake_run_id == '' }}
+    uses: ./.github/workflows/p1-4-c3-v2-2-source-intake.yml
+    secrets: inherit
+
+  expanded-equal-risk-evaluation:
+    needs:
+      - validate-dispatch
+      - expanded-source-intake
+    if: >-
+      ${{ always() &&
+          inputs.execute_c3_v2_2_experiment == true &&
+          needs.validate-dispatch.result == 'success' &&
+          (needs.expanded-source-intake.result == 'success' ||
+           inputs.reuse_source_intake_run_id != '') }}
+    uses: ./.github/workflows/p1-4-c3-v2-2-expanded-evaluation.yml
+    with:
+      source_intake_run_id: ${{ inputs.reuse_source_intake_run_id != '' && inputs.reuse_source_intake_run_id || github.run_id }}
+      source_intake_artifact_name: chaos-c3-v2-expanded-source-intake-${{ inputs.reuse_source_intake_run_id != '' && inputs.reuse_source_intake_run_id || github.run_id }}-${{ inputs.reuse_source_intake_run_id != '' && '1' || github.run_attempt }}
+    secrets: inherit
