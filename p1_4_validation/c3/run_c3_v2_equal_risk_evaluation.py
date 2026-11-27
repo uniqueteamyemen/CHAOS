@@ -1045,17 +1045,23 @@ def calibrate_ensemble(
         ),
     )
 
-    # Holdout is generated from its own v2.2 seed namespace and is evaluated
-    # exactly once after the Development-selected pair has been frozen.
-    focus_hold, huber_hold = cache_paths(holdout_traces)
+    # Holdout is generated from its own v2.2 seed namespace and only the
+    # Development-selected pair is executed and scored once.
     focus_threshold = float(selected["focus_threshold"])
     huber_detector = str(selected["huber_detector"])
     huber_threshold = float(selected["huber_threshold"])
     outcomes = []
-    for focus_hits, huber_hits in zip(
-        focus_hold[focus_threshold], huber_hold[huber_detector][huber_threshold]
-    ):
-        if focus_hits is None or huber_hits is None:
+    for trace in holdout_traces:
+        focus_hits, focus_status, _ = extract_detector_hits(
+            "FOCuS (reset-rearm)", trace, focus_threshold,
+            rearm_quiet_points=int(rearm_quiet_points),
+            rearm_scale_points=rearm_scale_points,
+        )
+        huber_hits, huber_status, _ = extract_detector_hits(
+            huber_detector, trace, huber_threshold,
+            rearm_quiet_points=int(rearm_quiet_points),
+        )
+        if focus_status != "OK" or huber_status != "OK":
             outcomes.append(None)
         else:
             outcomes.append(bool(
