@@ -1,0 +1,533 @@
+{
+  "contract_id": "CHAOS_P1_4_C3_EXPANDED_EVENT_COHORT_V2_2",
+  "contract_version": "2.2.0",
+  "status": "EXPERIMENTAL_DETECTOR_HARDENING_PRE_REGISTERED",
+  "purpose": "C3 v2.2 experimental detector hardening on the immutable C3 v2.1 ALFRED first-release source. This revision separates FOCuS re-arm wait from dispersion estimation, calibrates Hybrid threshold pairs jointly on Development then validates once on a fresh Holdout seed namespace, and evaluates causal PAYEMS rolling-mean profiles. The original source artifact and source-intake contract remain immutable.",
+  "cohort_design": {
+    "distinct_event_anchors": 20,
+    "episode_clusters": 10,
+    "unique_series": 4,
+    "event_series_pairs": 37,
+    "observation_frequencies": [
+      "Monthly",
+      "Weekly"
+    ],
+    "primary_unit": "event-series pair",
+    "dependence_policy": "Event anchors within the same NBER cycle are dependent. Report event-anchor, event-series-pair and episode-cluster coverage separately. Do not treat 37 pairs as 37 independent shocks or use naive iid confidence intervals across them.",
+    "calibration_unit": "One independent equal-risk calibration per unique series across its full registered monitoring horizon.",
+    "cohort_change_policy": "No event, anchor, direction, window or series may be added or removed after source intake begins without a new contract version and explicit provenance."
+  },
+  "frozen_references": {
+    "original_c3_v1_contract_path": "p1_4_validation/c3/c3_source_intake_contract_v1.json",
+    "original_c3_v1_source_bundle_unchanged": true,
+    "nber_cycle_chronology_url": "https://www.nber.org/research/data/us-business-cycle-expansions-and-contractions",
+    "fred_alfred_vintage_date_docs": "https://fred.stlouisfed.org/docs/api/fred/series_vintagedates.html",
+    "fred_alfred_observation_initial_release_docs": "https://fred.stlouisfed.org/docs/api/fred/series_observations.html",
+    "shock_event_contract_path": "real_data_stress_pipeline/shock_event_contract.json",
+    "shock_event_contract_git_blob": "398ba3994d69c271d66115297b541e17d67aa42d",
+    "shock_event_contract_sha256": "f7ee733eebedec96b0d06eae5c960edf36aee49d52edb24df549b8784a7ba18e",
+    "original_c3_v1_source_contract_sha256": "6891999cf831c5b4045e0a7d554b897cb72df8f5e5dbbb4b6154744d1e0afe0a",
+    "source_intake_contract_sha256": "ee068ca02e7fe26767d728c3af2abd8937124d0270320c5c1b3377f8809dadf5"
+  },
+  "guardrails": {
+    "initial_release_values_only": true,
+    "point_in_time_field": "available_at",
+    "first_release_definition": "Earliest ALFRED vintage date at which an observation is non-missing.",
+    "never_use_latest_revised_values_as_historical_first_prints": true,
+    "no_interpolation_or_forward_fill": true,
+    "no_observation_date_substitution_for_available_at": true,
+    "first_40_observations_only_for_ar_null_fit": true,
+    "holdout_never_used_for_threshold_selection": true,
+    "development_threshold_rule": "one-sided Wilson 95% upper bound <= 0.085",
+    "holdout_validation_rule": "one-sided Wilson 95% upper bound <= 0.10",
+    "holdout_failure_never_retunes_threshold": true,
+    "minimum_valid_replicates_per_phase_and_series": 950,
+    "development_replicates_per_series": 1000,
+    "holdout_replicates_per_series": 1000,
+    "ar_orders": [
+      1,
+      2,
+      3
+    ],
+    "ar_selection": "minimum AIC; unstable winning order fails closed; do not fall back to a higher-AIC order",
+    "no_lookahead_prefix_replay_required": true,
+    "a_fast_and_a_consensus_read_only": true,
+    "no_causal_claim_from_calendar_matching": true,
+    "event_and_alert_matching_one_to_one": true,
+    "focus_uses_frequency_aware_rearm_policy": {
+      "initial_observations": 40,
+      "monthly_rearm_observations": 5,
+      "monthly_rearm_comparison_observations": [
+        4,
+        5
+      ],
+      "weekly_rearm_observations": 20,
+      "maximum_alerts": 12
+    }
+  },
+  "matching_contract": {
+    "matching_window_months": 12,
+    "window_bounds": "inclusive calendar-exact ±12 months around each event anchor, using available_at",
+    "direction_rule": "Only alerts matching the event's pre-registered expected_sign are eligible.",
+    "one_to_one_rule": "Within each series and detector, candidate alert-event matches are ordered by absolute calendar distance, then available_at, event_id and detection index. Greedy assignment uses each alert and each event at most once.",
+    "overlapping_windows": "An alert cannot be reused across overlapping windows; unmatched alerts are counted once, not once per event.",
+    "early_warning_policy": "A correctly directed alert inside the pre-registered window before the anchor is a match and carries a negative detection lag.",
+    "episode_reporting": "Aggregate event-level matches to episode_id. A cluster counts as detected if one or more of its registered anchors are matched; do not claim independent evidence for multiple anchors in one cluster."
+  },
+  "series": [
+    {
+      "series_id": "UNRATE",
+      "series_source": "U.S. Bureau of Labor Statistics",
+      "series_reference_url": "https://fred.stlouisfed.org/series/UNRATE",
+      "download_page_url": "https://alfred.stlouisfed.org/series/downloaddata?seid=UNRATE",
+      "expected_alfred_release_start": "1960-03-15",
+      "observation_start": "1966-08-01",
+      "observation_end": "2021-04-01",
+      "vintage_search_start": "1966-06-02",
+      "vintage_search_end": "2021-06-30",
+      "frequency": "Monthly",
+      "units": "Percent, seasonally adjusted",
+      "minimum_observation_count": 500,
+      "series_note": "40-observation null-model fitting prefix ends before the first registered NBER peak in December 1969.",
+      "series_transform": "level"
+    },
+    {
+      "series_id": "PAYEMS",
+      "series_source": "U.S. Bureau of Labor Statistics",
+      "series_reference_url": "https://fred.stlouisfed.org/series/PAYEMS",
+      "download_page_url": "https://alfred.stlouisfed.org/series/downloaddata?seid=PAYEMS",
+      "expected_alfred_release_start": "1955-05-06",
+      "observation_start": "1966-08-01",
+      "observation_end": "2021-04-01",
+      "vintage_search_start": "1966-06-02",
+      "vintage_search_end": "2021-06-30",
+      "frequency": "Monthly",
+      "units": "Thousands of persons, seasonally adjusted",
+      "minimum_observation_count": 500,
+      "series_note": "C3 v2.1 converts first-release payroll employment levels to causal first differences. The July 1966 predecessor is extracted from the already archived raw ALFRED vintage CSVs so the transformed 40-point prefix ends before the December 1969 first registered anchor.",
+      "series_transform": "first_difference",
+      "analysis_units": "Monthly change in thousands of persons, seasonally adjusted",
+      "predecessor_observation_date": "1966-07-01",
+      "predecessor_source": "Existing first-release raw ALFRED vintage batches inside source artifact; no archive mutation or new ALFRED acquisition."
+    },
+    {
+      "series_id": "WCOILBRENTEU",
+      "series_source": "U.S. Energy Information Administration",
+      "series_reference_url": "https://fred.stlouisfed.org/series/WCOILBRENTEU",
+      "download_page_url": "https://alfred.stlouisfed.org/series/downloaddata?seid=WCOILBRENTEU",
+      "expected_alfred_release_start": "2011-04-06",
+      "observation_start": "2013-05-10",
+      "observation_end": "2023-02-24",
+      "vintage_search_start": "2013-04-08",
+      "vintage_search_end": "2023-04-25",
+      "frequency": "Weekly, ending Friday",
+      "units": "Dollars per barrel, not seasonally adjusted",
+      "minimum_observation_count": 400,
+      "series_note": "40-week fitting prefix precedes the June 2014 oil-decline anchor. No pre-archive first-release values are backfilled.",
+      "series_transform": "level"
+    },
+    {
+      "series_id": "ICSA",
+      "series_source": "U.S. Employment and Training Administration",
+      "series_reference_url": "https://fred.stlouisfed.org/series/ICSA",
+      "download_page_url": "https://alfred.stlouisfed.org/series/downloaddata?seid=ICSA",
+      "expected_alfred_release_start": "2009-05-28",
+      "observation_start": "2017-05-20",
+      "observation_end": "2023-05-27",
+      "vintage_search_start": "2017-03-21",
+      "vintage_search_end": "2023-07-31",
+      "frequency": "Weekly, ending Saturday",
+      "units": "Initial claims, seasonally adjusted",
+      "minimum_observation_count": 250,
+      "series_note": "40-week fitting prefix predates the March 2020 COVID unemployment shock anchor.",
+      "series_transform": "level"
+    }
+  ],
+  "events": [
+    {
+      "event_id": "NBER_19691970_PEAK",
+      "episode_id": "NBER_1969_1970",
+      "anchor_date": "1969-12-01",
+      "anchor_type": "NBER_CYCLE_PEAK",
+      "label": "NBER business-cycle peak 1969-12",
+      "expected_sign_by_series": {
+        "UNRATE": 1,
+        "PAYEMS": -1
+      },
+      "sign_rationale": "Pre-registered directional hypothesis: unemployment increases and payroll employment decreases around a cycle peak. This is a testable direction hypothesis, not a claim that monthly releases turn in the peak month.",
+      "reference_urls": [
+        "https://www.nber.org/research/data/us-business-cycle-expansions-and-contractions"
+      ]
+    },
+    {
+      "event_id": "NBER_19691970_TROUGH",
+      "episode_id": "NBER_1969_1970",
+      "anchor_date": "1970-11-01",
+      "anchor_type": "NBER_CYCLE_TROUGH",
+      "label": "NBER business-cycle trough 1970-11",
+      "expected_sign_by_series": {
+        "UNRATE": -1,
+        "PAYEMS": 1
+      },
+      "sign_rationale": "Pre-registered directional hypothesis: unemployment decreases and payroll employment increases around a cycle trough. Labour indicators may lag the NBER chronology.",
+      "reference_urls": [
+        "https://www.nber.org/research/data/us-business-cycle-expansions-and-contractions"
+      ]
+    },
+    {
+      "event_id": "NBER_19731975_PEAK",
+      "episode_id": "NBER_1973_1975",
+      "anchor_date": "1973-11-01",
+      "anchor_type": "NBER_CYCLE_PEAK",
+      "label": "NBER business-cycle peak 1973-11",
+      "expected_sign_by_series": {
+        "UNRATE": 1,
+        "PAYEMS": -1
+      },
+      "sign_rationale": "Pre-registered directional hypothesis: unemployment increases and payroll employment decreases around a cycle peak. This is a testable direction hypothesis, not a claim that monthly releases turn in the peak month.",
+      "reference_urls": [
+        "https://www.nber.org/research/data/us-business-cycle-expansions-and-contractions"
+      ]
+    },
+    {
+      "event_id": "NBER_19731975_TROUGH",
+      "episode_id": "NBER_1973_1975",
+      "anchor_date": "1975-03-01",
+      "anchor_type": "NBER_CYCLE_TROUGH",
+      "label": "NBER business-cycle trough 1975-03",
+      "expected_sign_by_series": {
+        "UNRATE": -1,
+        "PAYEMS": 1
+      },
+      "sign_rationale": "Pre-registered directional hypothesis: unemployment decreases and payroll employment increases around a cycle trough. Labour indicators may lag the NBER chronology.",
+      "reference_urls": [
+        "https://www.nber.org/research/data/us-business-cycle-expansions-and-contractions"
+      ]
+    },
+    {
+      "event_id": "NBER_1980_PEAK",
+      "episode_id": "NBER_1980",
+      "anchor_date": "1980-01-01",
+      "anchor_type": "NBER_CYCLE_PEAK",
+      "label": "NBER business-cycle peak 1980-01",
+      "expected_sign_by_series": {
+        "UNRATE": 1,
+        "PAYEMS": -1
+      },
+      "sign_rationale": "Pre-registered directional hypothesis: unemployment increases and payroll employment decreases around a cycle peak. This is a testable direction hypothesis, not a claim that monthly releases turn in the peak month.",
+      "reference_urls": [
+        "https://www.nber.org/research/data/us-business-cycle-expansions-and-contractions"
+      ]
+    },
+    {
+      "event_id": "NBER_1980_TROUGH",
+      "episode_id": "NBER_1980",
+      "anchor_date": "1980-07-01",
+      "anchor_type": "NBER_CYCLE_TROUGH",
+      "label": "NBER business-cycle trough 1980-07",
+      "expected_sign_by_series": {
+        "UNRATE": -1,
+        "PAYEMS": 1
+      },
+      "sign_rationale": "Pre-registered directional hypothesis: unemployment decreases and payroll employment increases around a cycle trough. Labour indicators may lag the NBER chronology.",
+      "reference_urls": [
+        "https://www.nber.org/research/data/us-business-cycle-expansions-and-contractions"
+      ]
+    },
+    {
+      "event_id": "NBER_19811982_PEAK",
+      "episode_id": "NBER_1981_1982",
+      "anchor_date": "1981-07-01",
+      "anchor_type": "NBER_CYCLE_PEAK",
+      "label": "NBER business-cycle peak 1981-07",
+      "expected_sign_by_series": {
+        "UNRATE": 1,
+        "PAYEMS": -1
+      },
+      "sign_rationale": "Pre-registered directional hypothesis: unemployment increases and payroll employment decreases around a cycle peak. This is a testable direction hypothesis, not a claim that monthly releases turn in the peak month.",
+      "reference_urls": [
+        "https://www.nber.org/research/data/us-business-cycle-expansions-and-contractions"
+      ]
+    },
+    {
+      "event_id": "NBER_19811982_TROUGH",
+      "episode_id": "NBER_1981_1982",
+      "anchor_date": "1982-11-01",
+      "anchor_type": "NBER_CYCLE_TROUGH",
+      "label": "NBER business-cycle trough 1982-11",
+      "expected_sign_by_series": {
+        "UNRATE": -1,
+        "PAYEMS": 1
+      },
+      "sign_rationale": "Pre-registered directional hypothesis: unemployment decreases and payroll employment increases around a cycle trough. Labour indicators may lag the NBER chronology.",
+      "reference_urls": [
+        "https://www.nber.org/research/data/us-business-cycle-expansions-and-contractions"
+      ]
+    },
+    {
+      "event_id": "NBER_19901991_PEAK",
+      "episode_id": "NBER_1990_1991",
+      "anchor_date": "1990-07-01",
+      "anchor_type": "NBER_CYCLE_PEAK",
+      "label": "NBER business-cycle peak 1990-07",
+      "expected_sign_by_series": {
+        "UNRATE": 1,
+        "PAYEMS": -1
+      },
+      "sign_rationale": "Pre-registered directional hypothesis: unemployment increases and payroll employment decreases around a cycle peak. This is a testable direction hypothesis, not a claim that monthly releases turn in the peak month.",
+      "reference_urls": [
+        "https://www.nber.org/research/data/us-business-cycle-expansions-and-contractions"
+      ]
+    },
+    {
+      "event_id": "NBER_19901991_TROUGH",
+      "episode_id": "NBER_1990_1991",
+      "anchor_date": "1991-03-01",
+      "anchor_type": "NBER_CYCLE_TROUGH",
+      "label": "NBER business-cycle trough 1991-03",
+      "expected_sign_by_series": {
+        "UNRATE": -1,
+        "PAYEMS": 1
+      },
+      "sign_rationale": "Pre-registered directional hypothesis: unemployment decreases and payroll employment increases around a cycle trough. Labour indicators may lag the NBER chronology.",
+      "reference_urls": [
+        "https://www.nber.org/research/data/us-business-cycle-expansions-and-contractions"
+      ]
+    },
+    {
+      "event_id": "NBER_2001_PEAK",
+      "episode_id": "NBER_2001",
+      "anchor_date": "2001-03-01",
+      "anchor_type": "NBER_CYCLE_PEAK",
+      "label": "NBER business-cycle peak 2001-03",
+      "expected_sign_by_series": {
+        "UNRATE": 1,
+        "PAYEMS": -1
+      },
+      "sign_rationale": "Pre-registered directional hypothesis: unemployment increases and payroll employment decreases around a cycle peak. This is a testable direction hypothesis, not a claim that monthly releases turn in the peak month.",
+      "reference_urls": [
+        "https://www.nber.org/research/data/us-business-cycle-expansions-and-contractions"
+      ]
+    },
+    {
+      "event_id": "NBER_2001_TROUGH",
+      "episode_id": "NBER_2001",
+      "anchor_date": "2001-11-01",
+      "anchor_type": "NBER_CYCLE_TROUGH",
+      "label": "NBER business-cycle trough 2001-11",
+      "expected_sign_by_series": {
+        "UNRATE": -1,
+        "PAYEMS": 1
+      },
+      "sign_rationale": "Pre-registered directional hypothesis: unemployment decreases and payroll employment increases around a cycle trough. Labour indicators may lag the NBER chronology.",
+      "reference_urls": [
+        "https://www.nber.org/research/data/us-business-cycle-expansions-and-contractions"
+      ]
+    },
+    {
+      "event_id": "NBER_20072009_PEAK",
+      "episode_id": "NBER_2007_2009",
+      "anchor_date": "2007-12-01",
+      "anchor_type": "NBER_CYCLE_PEAK",
+      "label": "NBER business-cycle peak 2007-12",
+      "expected_sign_by_series": {
+        "UNRATE": 1,
+        "PAYEMS": -1
+      },
+      "sign_rationale": "Pre-registered directional hypothesis: unemployment increases and payroll employment decreases around a cycle peak. This is a testable direction hypothesis, not a claim that monthly releases turn in the peak month.",
+      "reference_urls": [
+        "https://www.nber.org/research/data/us-business-cycle-expansions-and-contractions"
+      ]
+    },
+    {
+      "event_id": "NBER_20072009_TROUGH",
+      "episode_id": "NBER_2007_2009",
+      "anchor_date": "2009-06-01",
+      "anchor_type": "NBER_CYCLE_TROUGH",
+      "label": "NBER business-cycle trough 2009-06",
+      "expected_sign_by_series": {
+        "UNRATE": -1,
+        "PAYEMS": 1
+      },
+      "sign_rationale": "Pre-registered directional hypothesis: unemployment decreases and payroll employment increases around a cycle trough. Labour indicators may lag the NBER chronology.",
+      "reference_urls": [
+        "https://www.nber.org/research/data/us-business-cycle-expansions-and-contractions"
+      ]
+    },
+    {
+      "event_id": "NBER_2020_PEAK",
+      "episode_id": "NBER_2020",
+      "anchor_date": "2020-02-01",
+      "anchor_type": "NBER_CYCLE_PEAK",
+      "label": "NBER business-cycle peak 2020-02",
+      "expected_sign_by_series": {
+        "UNRATE": 1,
+        "PAYEMS": -1
+      },
+      "sign_rationale": "Pre-registered directional hypothesis: unemployment increases and payroll employment decreases around a cycle peak. This is a testable direction hypothesis, not a claim that monthly releases turn in the peak month.",
+      "reference_urls": [
+        "https://www.nber.org/research/data/us-business-cycle-expansions-and-contractions"
+      ]
+    },
+    {
+      "event_id": "NBER_2020_TROUGH",
+      "episode_id": "NBER_2020",
+      "anchor_date": "2020-04-01",
+      "anchor_type": "NBER_CYCLE_TROUGH",
+      "label": "NBER business-cycle trough 2020-04",
+      "expected_sign_by_series": {
+        "UNRATE": -1,
+        "PAYEMS": 1
+      },
+      "sign_rationale": "Pre-registered directional hypothesis: unemployment decreases and payroll employment increases around a cycle trough. Labour indicators may lag the NBER chronology.",
+      "reference_urls": [
+        "https://www.nber.org/research/data/us-business-cycle-expansions-and-contractions"
+      ]
+    },
+    {
+      "event_id": "GFC_LEHMAN_2008",
+      "episode_id": "NBER_2007_2009",
+      "anchor_date": "2008-09-15",
+      "anchor_type": "FINANCIAL_CRISIS_MILESTONE",
+      "label": "Lehman Brothers bankruptcy / global financial crisis milestone",
+      "expected_sign_by_series": {
+        "UNRATE": 1,
+        "PAYEMS": -1
+      },
+      "sign_rationale": "Pre-registered labour-market direction hypothesis after the financial crisis milestone; not causal attribution to the named date.",
+      "reference_urls": [
+        "https://www.federalreservehistory.org/essays/great-recession-of-200709",
+        "https://www.nber.org/research/data/us-business-cycle-expansions-and-contractions"
+      ]
+    },
+    {
+      "event_id": "COVID_INITIAL_CLAIMS_2020",
+      "episode_id": "NBER_2020",
+      "anchor_date": "2020-03-11",
+      "anchor_type": "PUBLIC_HEALTH_AND_UNEMPLOYMENT_SHOCK",
+      "label": "WHO characterization of COVID-19 as a pandemic",
+      "expected_sign_by_series": {
+        "ICSA": 1
+      },
+      "sign_rationale": "Pre-registered upward initial-claims hypothesis after the WHO pandemic characterization; the series is weekly and actual publication timestamps are preserved.",
+      "reference_urls": [
+        "https://www.who.int/director-general/speeches/detail/who-director-general-s-opening-remarks-at-the-media-briefing-on-covid-19---11-march-2020",
+        "https://alfred.stlouisfed.org/series?seid=ICSA"
+      ]
+    },
+    {
+      "event_id": "OIL_PRICE_DECLINE_2014",
+      "episode_id": "ENERGY_SHOCK_2014",
+      "anchor_date": "2014-06-01",
+      "anchor_type": "ENERGY_PRICE_SHOCK",
+      "label": "2014 international crude-oil price decline",
+      "expected_sign_by_series": {
+        "WCOILBRENTEU": -1
+      },
+      "sign_rationale": "Pre-registered downward Brent price direction around the documented 2014 oil-price decline; not causal attribution.",
+      "reference_urls": [
+        "https://www.elibrary.imf.org/view/journals/006/2015/015/article-A001-en.xml",
+        "https://www.eia.gov/dnav/pet/hist/LeafHandler.ashx?n=PET&s=RBRTE&f=M"
+      ]
+    },
+    {
+      "event_id": "UKRAINE_ENERGY_SUPPLY_SHOCK_2022",
+      "episode_id": "ENERGY_SHOCK_2022",
+      "anchor_date": "2022-02-24",
+      "anchor_type": "GEOPOLITICAL_SUPPLY_SHOCK",
+      "label": "Russia's full-scale invasion of Ukraine / energy-supply shock",
+      "expected_sign_by_series": {
+        "WCOILBRENTEU": 1
+      },
+      "sign_rationale": "Pre-registered upward Brent price direction for the post-invasion energy shock; EIA documents the subsequent price rise. Not causal attribution.",
+      "reference_urls": [
+        "https://news.un.org/en/story/2022/02/1112602",
+        "https://www.eia.gov/TodayinEnergy/detail.php?id=51498"
+      ]
+    }
+  ],
+  "intake_output": {
+    "normalized_file": "expanded_initial_release_tape.csv",
+    "raw_directory": "raw_vintage_batches",
+    "manifest_file": "expanded_source_intake_manifest.json",
+    "one_row_per_series_observation": true,
+    "event_mapping_is_kept_in_this_contract_not_duplicated_in_the_tape": true,
+    "expected_raw_vintage_batch_files_manifested": true,
+    "preserve_raw_batch_sha256": true
+  },
+  "engine_optimization": {
+    "version": "C3_V2_1",
+    "objective": "Operational detector quality: detect real changes, control repeated alarms in quiet periods, detect both directions, recover after alerts, and generalize across cadence and series type.",
+    "policy": "Use the existing C3 v2.0 ALFRED source archive as immutable input; apply causal transforms in memory; use monthly 10-point and weekly 20-point FOCuS re-arm windows; use an eight-observation Hybrid confirmation window; keep the Development-calibrated FOCuS trigger available; pass only Huber confirmation thresholds whose members achieved VALIDATED on the current series Holdout.",
+    "source_artifact_run_id": "45757611871",
+    "source_artifact_name": "chaos-c3-v2-expanded-source-intake-45757611871-1"
+  },
+  "source_intake_guardrails": {
+    "initial_release_values_only": true,
+    "point_in_time_field": "available_at",
+    "first_release_definition": "Earliest ALFRED vintage date at which an observation is non-missing.",
+    "never_use_latest_revised_values_as_historical_first_prints": true,
+    "no_interpolation_or_forward_fill": true,
+    "no_observation_date_substitution_for_available_at": true,
+    "first_40_observations_only_for_ar_null_fit": true,
+    "holdout_never_used_for_threshold_selection": true,
+    "development_threshold_rule": "one-sided Wilson 95% upper bound <= 0.10",
+    "holdout_validation_rule": "one-sided Wilson 95% upper bound <= 0.10",
+    "holdout_failure_never_retunes_threshold": true,
+    "minimum_valid_replicates_per_phase_and_series": 950,
+    "development_replicates_per_series": 1000,
+    "holdout_replicates_per_series": 1000,
+    "ar_orders": [
+      1,
+      2,
+      3
+    ],
+    "ar_selection": "minimum AIC; unstable winning order fails closed; do not fall back to a higher-AIC order",
+    "no_lookahead_prefix_replay_required": true,
+    "focus_uses_40_initial_and_20_rearm_reset_policy": true,
+    "a_fast_and_a_consensus_read_only": true,
+    "no_causal_claim_from_calendar_matching": true,
+    "event_and_alert_matching_one_to_one": true
+  },
+  "experiment_policy": {
+    "seed_namespace": "CHAOS:C3_V2_2",
+    "focus_rearm": {
+      "initial_calibration_observations": 40,
+      "rearm_wait_observations_by_frequency": {
+        "Monthly": 4,
+        "Weekly": 20
+      },
+      "causal_dispersion_window_observations": 40,
+      "center_estimator": "median of cadence-specific post-alert re-arm observations",
+      "scale_estimator": "MAD sigma from the trailing 40 causal observations ending immediately before monitoring resumes",
+      "calibration_construction": "translate the trailing scale window to the re-arm center; preserve its dispersion; no future observations",
+      "maximum_alerts": 12
+    },
+    "hybrid_joint_calibration": {
+      "same_sign_confirmation": true,
+      "maximum_gap_observations": 8,
+      "focus_threshold_grid": "registered FOCUS_GRID",
+      "huber_threshold_grid": "registered HUBER_GRID",
+      "calibration": "Cartesian threshold-pair evaluation on Development null paths",
+      "development_gate": "one-sided Wilson U95 <= 0.085",
+      "pair_selection": "maximize Development null alarm traces subject to the registered risk gate; deterministic threshold tie-break",
+      "holdout": "validate the single selected pair once on a newly seeded Holdout; no retuning"
+    },
+    "payems_experimental_profiles": [
+      {
+        "profile_id": "PAYEMS_D3",
+        "transform": "causal trailing mean of 3 first-difference observations",
+        "window_points": 3,
+        "availability_time": "retain available_at of the right-edge observation"
+      },
+      {
+        "profile_id": "PAYEMS_D6",
+        "transform": "causal trailing mean of 6 first-difference observations",
+        "window_points": 6,
+        "availability_time": "retain available_at of the right-edge observation"
+      }
+    ],
+    "payems_profiles_are_diagnostic_only": true,
+    "a_fast_and_a_consensus": "READ_ONLY"
+  }
+}
