@@ -1761,7 +1761,11 @@ def split_events_after_initialization(
     excluded = []
     for event in events:
         anchor = date.fromisoformat(event["anchor_date"])
-        (excluded if anchor <= calibration_end else eligible).append(event)
+        matching_months = int(event.get("matching_window_months", 12))
+        window_start = add_calendar_months(anchor, -matching_months)
+        # Do not score a historical event when any part of its registered
+        # matching window falls inside the transform's initialization prefix.
+        (excluded if window_start <= calibration_end else eligible).append(event)
     return eligible, excluded, calibration_end
 
 
@@ -1857,7 +1861,11 @@ def evaluate_payems_transform_profiles(
                 {
                     "event_id": event["event_id"],
                     "anchor_date": event["anchor_date"],
-                    "reason": "ANCHOR_ON_OR_BEFORE_TRANSFORMED_INITIALIZATION_END",
+                    "matching_window_start": add_calendar_months(
+                        date.fromisoformat(event["anchor_date"]),
+                        -int(event.get("matching_window_months", 12)),
+                    ).isoformat(),
+                    "reason": "MATCHING_WINDOW_OVERLAPS_TRANSFORMED_INITIALIZATION_PREFIX",
                 }
                 for event in excluded_events
             ],
