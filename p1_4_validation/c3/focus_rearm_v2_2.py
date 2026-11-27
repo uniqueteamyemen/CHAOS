@@ -88,6 +88,10 @@ def focus_reset_rearm_v2_2(
         else:
             rearm_start = int(cursor)
             monitor_start = rearm_start + int(rearm_points)
+            intervals.append({
+                "start_inclusive": rearm_start,
+                "end_exclusive": min(int(x.size), monitor_start),
+            })
             if monitor_start >= x.size:
                 break
             scale_start = monitor_start - scale_points
@@ -109,10 +113,6 @@ def focus_reset_rearm_v2_2(
                 x[monitor_start:],
             ))
             detector_quiet = scale_points
-            intervals.append({
-                "start_inclusive": rearm_start,
-                "end_exclusive": monitor_start,
-            })
             map_global = lambda local_index: monitor_start + (
                 int(local_index) - scale_points
             )
