@@ -2000,17 +2000,22 @@ def markdown_report(report: dict) -> str:
         "",
         "## 4. PAYEMS causal smoothing experiments (diagnostic only)",
         "",
-        "| Profile | Window | Matched pairs | Matched episodes | Unmatched alarms |",
-        "|---|---:|---:|---:|---:|",
+        "| Profile | Window | Matched pairs | Matched episodes | Unmatched alarms | Excluded initialization-overlap events |",
+        "|---|---:|---:|---:|---:|---|",
         *[
             "| " + profile_id + " | " + str(profile.get("window_points", "—")) + " | "
             + str(profile.get("detector_summary", {}).get("Post-Quiet Huber + Bartlett LRV", {}).get("matched_event_series_pairs", "—")) + " | "
             + str(profile.get("detector_summary", {}).get("Post-Quiet Huber + Bartlett LRV", {}).get("matched_episode_clusters", "—")) + " | "
-            + str(profile.get("detector_summary", {}).get("Post-Quiet Huber + Bartlett LRV", {}).get("total_unmatched_alarm_count", "—")) + " |"
+            + str(profile.get("detector_summary", {}).get("Post-Quiet Huber + Bartlett LRV", {}).get("total_unmatched_alarm_count", "—")) + " | "
+            + ", ".join(
+                event.get("event_id", "unknown")
+                for event in profile.get("excluded_events_for_initialization_overlap", [])
+            ) + " |"
             for profile_id, profile in sorted(report.get("payems_transform_experiments", {}).items())
         ],
         "",
         "- PAYEMS D3/D6 profiles use only current and past first-release differences; each output keeps the right-edge available_at.",
+        "- Event anchors whose full registered ±12-month matching window intersects the transformed 40-point initialization prefix are excluded, not counted as misses.",
         "- These profiles are separate diagnostic comparisons and do not enter the global winner gate.",
         "- Independent out-of-cohort validation is required before selecting a production transform.",
         "",
@@ -2208,6 +2213,10 @@ def main() -> int:
             "event_matching": "one-to-one direction-constrained calendar-exact ±12 months",
             "seed_namespace": seed_namespace,
             "rearm_scale_points": rearm_scale_points,
+            "payems_initialization_overlap_policy": (
+                "For D3/D6 diagnostics, exclude events whose full registered matching window "
+                "starts on or before the transformed initial 40-observation calibration end."
+            ),
         },
         "registered_series": [
             {
