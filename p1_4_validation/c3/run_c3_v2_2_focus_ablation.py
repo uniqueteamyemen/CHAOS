@@ -166,14 +166,19 @@ def rearm_mad_diagnostics(
         legacy_window = values[start:end]
         scale40_start = max(0, end - 40)
         scale40_window = values[scale40_start:end]
-        end_date = rows[end - 1]["observation_date_obj"]
-        before_target = target_anchor is None or end_date <= target_anchor
+        end_observation_date = rows[end - 1]["observation_date_obj"]
+        end_available_at = rows[end - 1]["available_at_obj"]
+        # The detector can only use a point at its ALFRED first-release time.
+        # Event-boundary diagnostics must therefore use available_at, not the
+        # observation date, which may precede publication.
+        before_target = target_anchor is None or end_available_at <= target_anchor
         diagnostics.append({
             "rearm_number": interval_number,
             "rearm_start_index": start,
             "rearm_end_exclusive": end,
             "rearm_start_observation": rows[start]["observation_date"],
             "rearm_end_observation": rows[end - 1]["observation_date"],
+            "rearm_end_available_at": end_available_at.isoformat(),
             "legacy_scale_window": {
                 "start_index": start,
                 "end_exclusive": end,
