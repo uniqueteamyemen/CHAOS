@@ -5,9 +5,14 @@ import hashlib
 import json
 import os
 from pathlib import Path
+import sys
 from typing import Any
 
 import numpy as np
+
+ROOT = Path(__file__).resolve().parents[2]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
 
 from p1_4_validation.c3 import run_c3_v2_2_equal_risk_evaluation as c3
 from p1_4_validation.c3.causal_multiscale_adaptive import (
