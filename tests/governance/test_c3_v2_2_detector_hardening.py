@@ -1,5 +1,6 @@
 """Regression tests for the isolated C3 v2.2 detector-hardening experiment."""
 import unittest
+from datetime import date
 from unittest.mock import patch
 
 import numpy as np
@@ -196,6 +197,59 @@ class C3V22HardeningTests(unittest.TestCase):
             [row["value_float"] for row in d3[:-1]],
         )
         self.assertNotEqual(changed_d3[-1]["value_float"], d3[-1]["value_float"])
+
+    def test_payems_events_with_matching_windows_overlapping_initialization_are_excluded(self):
+        rows_d3 = [
+            {"observation_date_obj": date(1970, 1, 1)}
+            for _ in range(c3.QUIET_POINTS)
+        ]
+        events = [
+            {
+                "event_id": "NBER_19691970_PEAK",
+                "anchor_date": "1969-12-01",
+                "matching_window_months": 12,
+            },
+            {
+                "event_id": "NBER_19691970_TROUGH",
+                "anchor_date": "1970-11-01",
+                "matching_window_months": 12,
+            },
+            {
+                "event_id": "NBER_19731975_PEAK",
+                "anchor_date": "1973-11-01",
+                "matching_window_months": 12,
+            },
+        ]
+        eligible, excluded, calibration_end = c3.split_events_after_initialization(
+            rows_d3, events
+        )
+
+        self.assertEqual(calibration_end, date(1970, 1, 1))
+        self.assertEqual(
+            [event["event_id"] for event in excluded],
+            ["NBER_19691970_PEAK", "NBER_19691970_TROUGH"],
+        )
+        self.assertEqual(
+            [event["event_id"] for event in eligible],
+            ["NBER_19731975_PEAK"],
+        )
+
+        rows_d6 = [
+            {"observation_date_obj": date(1970, 4, 1)}
+            for _ in range(c3.QUIET_POINTS)
+        ]
+        eligible_d6, excluded_d6, calibration_end_d6 = c3.split_events_after_initialization(
+            rows_d6, events
+        )
+        self.assertEqual(calibration_end_d6, date(1970, 4, 1))
+        self.assertEqual(
+            [event["event_id"] for event in excluded_d6],
+            ["NBER_19691970_PEAK", "NBER_19691970_TROUGH"],
+        )
+        self.assertEqual(
+            [event["event_id"] for event in eligible_d6],
+            ["NBER_19731975_PEAK"],
+        )
 
     def test_v2_2_seed_namespace_is_independent_from_v2_1(self):
         old = c3.deterministic_seed("TAPE", "UNRATE", 2, "holdout", 7)
