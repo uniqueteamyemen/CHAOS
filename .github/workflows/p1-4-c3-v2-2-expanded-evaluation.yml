@@ -187,7 +187,7 @@ jobs:
               artifacts/p1_4/c3/v2_expanded_evaluation/C3_V2_2_LEVEL2_REAL_DATA_INTEGRATION.json \
               artifacts/p1_4/c3/v2_expanded_evaluation/C3_V2_2_LEVEL3_ENGINE_CHECK.json; do
               if [[ -s "$file" ]]; then
-                echo "`$(basename "$file")`"
+                printf '`%s`\n' "$(basename "$file")"
                 cat "$file"
                 echo
               fi
