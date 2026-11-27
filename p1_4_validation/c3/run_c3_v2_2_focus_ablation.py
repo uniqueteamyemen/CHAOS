@@ -308,8 +308,14 @@ def run(args: argparse.Namespace) -> dict:
         }
 
     arms = []
-    for config in configs:
+    for arm_index, config in enumerate(configs, 1):
         cached = series_cache[config["series_id"]]
+        print(
+            "FOCUS_ABLATION_ARM "
+            + str(arm_index) + "/" + str(len(configs))
+            + " id=" + config["arm_id"],
+            flush=True,
+        )
         development = false_alarm_stats(
             cached["traces"]["development"], config, "development"
         )
@@ -350,7 +356,12 @@ def run(args: argparse.Namespace) -> dict:
         "status": (
             "FULL_REPLICATE_ABLATION"
             if int(args.replicates) == c3.REPLICATES
-            else "SMOKE_OR_NONSTANDARD_REPLICATE_COUNT"
+            and all(
+                arm["development"]["valid_replicates"] >= c3.MIN_VALID_REPLICATES
+                and arm["holdout"]["valid_replicates"] >= c3.MIN_VALID_REPLICATES
+                for arm in arms
+            )
+            else "SMOKE_OR_INCOMPLETE_REPLICATE_EVIDENCE"
         ),
         "source_integrity": {
             "source_intake_run_id": manifest.get("workflow_run_id"),
@@ -409,15 +420,35 @@ def main() -> int:
     report = run(args)
     output = Path(args.output)
     output.parent.mkdir(parents=True, exist_ok=True)
-    output.write_text(
-        json.dumps(c3.clean(report), ensure_ascii=False, sort_keys=True, indent=2) + "\n",
+    payload = (
+        json.dumps(c3.clean(report), ensure_ascii=False, sort_keys=True, indent=2) + "\n"
+    ).encode("utf-8")
+    output.write_bytes(payload)
+    output_manifest = {
+        "schema_version": "1.0.0",
+        "run_id": report["run_id"],
+        "evaluation_commit": report["evaluation_commit"],
+        "report_path": str(output),
+        "report_sha256": c3.sha256(payload),
+        "source_archive_sha256": report["source_integrity"]["source_archive_sha256"],
+        "contract_sha256": report["source_integrity"]["contract_sha256"],
+        "seed_namespace": report["seed_protocol"]["seed_namespace"],
+        "replay_command": report["replay_command"],
+    }
+    manifest_path = output.with_suffix(".manifest.json")
+    manifest_path.write_text(
+        json.dumps(output_manifest, ensure_ascii=False, sort_keys=True, indent=2) + "\n",
         encoding="utf-8",
     )
     print(json.dumps({
         "status": report["status"],
         "output": str(output),
+        "output_manifest": str(manifest_path),
+        "report_sha256": output_manifest["report_sha256"],
         "arm_count": len(report["arms"]),
         "source_run_id": report["source_integrity"]["source_intake_run_id"],
+        "evaluation_commit": report["evaluation_commit"],
+        "replay_command": report["replay_command"],
     }, sort_keys=True))
     return 0
 
