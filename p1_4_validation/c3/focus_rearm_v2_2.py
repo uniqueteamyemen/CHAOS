@@ -35,7 +35,9 @@ def focus_reset_rearm_v2_2(
     its MAD while avoiding the noisy 4/5-observation scale estimate.
     """
     if rearm_scale_points is None:
-        return legacy_focus_reset_rearm(
+        # Preserve the legacy detector behavior while keeping the v2.2 result
+        # schema stable for callers that always serialize scale diagnostics.
+        legacy_result = legacy_focus_reset_rearm(
             values,
             threshold=threshold,
             quiet_points=quiet_points,
@@ -44,6 +46,9 @@ def focus_reset_rearm_v2_2(
             min_series_length=min_series_length,
             frequency=frequency,
         )
+        legacy_result.setdefault("rearm_scale_observations", None)
+        legacy_result.setdefault("rearm_scale_policy", None)
+        return legacy_result
 
     if frequency is not None:
         from p1_4_validation.injection_runner import focus_rearm_points_for_frequency
