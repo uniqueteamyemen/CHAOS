@@ -530,6 +530,13 @@
       }
     ],
     "payems_profiles_are_diagnostic_only": true,
-    "a_fast_and_a_consensus": "READ_ONLY"
+    "a_fast_and_a_consensus": "READ_ONLY",
+    "payems_initialization_overlap_rule": {
+      "calibration_prefix_points": 40,
+      "event_matching_window_months": 12,
+      "eligibility": "Score only PAYEMS profile events whose full registered matching window starts strictly after the transformed calibration-prefix end date.",
+      "excluded_event_treatment": "Record excluded event IDs and reasons; never count them as misses.",
+      "no_lookahead": true
+    }
   }
 }
