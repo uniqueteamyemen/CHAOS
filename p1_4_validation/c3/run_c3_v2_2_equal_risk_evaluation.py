@@ -1748,6 +1748,23 @@ def causal_rolling_mean_rows(
     return output
 
 
+def split_events_after_initialization(
+    rows: list[dict],
+    events: list[dict],
+    quiet_points: int = QUIET_POINTS,
+) -> tuple[list[dict], list[dict], date]:
+    """Exclude historical anchors at or before the transformed initialization end."""
+    if len(rows) < int(quiet_points):
+        raise ValueError("C3_V2_PAYEMS_INITIALIZATION_PREFIX_TOO_SHORT")
+    calibration_end = rows[int(quiet_points) - 1]["observation_date_obj"]
+    eligible = []
+    excluded = []
+    for event in events:
+        anchor = date.fromisoformat(event["anchor_date"])
+        (excluded if anchor <= calibration_end else eligible).append(event)
+    return eligible, excluded, calibration_end
+
+
 def evaluate_payems_transform_profiles(
     baseline_rows: list[dict],
     base_series_config: dict,
@@ -1781,7 +1798,12 @@ def evaluate_payems_transform_profiles(
             seed_namespace=f"{seed_namespace}:{profile_id}",
             rearm_scale_points=rearm_scale_points,
         )
-        profile_events = [{**event, "series_id": profile_id} for event in payems_events]
+        eligible_events, excluded_events, calibration_end = split_events_after_initialization(
+            rows, payems_events, QUIET_POINTS
+        )
+        profile_events = [
+            {**event, "series_id": profile_id} for event in eligible_events
+        ]
         values = np.asarray([row["value_float"] for row in rows], dtype=float)
         historical_results = []
         unmatched_summaries = {}
@@ -1823,6 +1845,24 @@ def evaluate_payems_transform_profiles(
             "selection_uses_registered_payems_event_labels": True,
             "independent_validation_required": True,
             "baseline_profile_unchanged": True,
+            "initialization_window": {
+                "observations": QUIET_POINTS,
+                "first_observation": rows[0]["observation_date"],
+                "last_observation": rows[QUIET_POINTS - 1]["observation_date"],
+                "last_available_at": rows[QUIET_POINTS - 1]["available_at"],
+                "causal_source_window_end": rows[QUIET_POINTS - 1].get("source_window_end_observation"),
+                "calibration_end_date": calibration_end.isoformat(),
+            },
+            "excluded_events_for_initialization_overlap": [
+                {
+                    "event_id": event["event_id"],
+                    "anchor_date": event["anchor_date"],
+                    "reason": "ANCHOR_ON_OR_BEFORE_TRANSFORMED_INITIALIZATION_END",
+                }
+                for event in excluded_events
+            ],
+            "eligible_event_count": len(eligible_events),
+            "eligible_event_ids": [event["event_id"] for event in eligible_events],
             "source_series_id": "PAYEMS",
             "transform": f"causal trailing mean of {window_points} first-difference observations",
             "window_points": window_points,
