@@ -494,7 +494,8 @@
     "focus_rearm": {
       "initial_calibration_observations": 40,
       "rearm_wait_observations_by_frequency": {
-        "Monthly": 4,
+        "Monthly_primary": 5,
+        "Monthly_comparison": 4,
         "Weekly": 20
       },
       "causal_dispersion_window_observations": 40,
@@ -511,7 +512,8 @@
       "calibration": "Cartesian threshold-pair evaluation on Development null paths",
       "development_gate": "one-sided Wilson U95 <= 0.085",
       "pair_selection": "maximize Development null alarm traces subject to the registered risk gate; deterministic threshold tie-break",
-      "holdout": "validate the single selected pair once on a newly seeded Holdout; no retuning"
+      "holdout": "validate the single selected pair once on a newly seeded Holdout; no retuning",
+      "huber_member_policy": "Select exactly one Huber family (MAD or Bartlett LRV) for the joint pair; do not combine Huber families as multiple independent votes."
     },
     "payems_experimental_profiles": [
       {
