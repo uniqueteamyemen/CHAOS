@@ -4,8 +4,8 @@ from unittest.mock import patch
 
 import numpy as np
 
-from p1_4_validation import injection_runner
-from p1_4_validation.c3 import run_c3_v2_equal_risk_evaluation as c3
+from p1_4_validation.c3.focus_rearm_v2_2 import focus_reset_rearm_v2_2
+from p1_4_validation.c3 import run_c3_v2_2_equal_risk_evaluation as c3
 
 
 class C3V22HardeningTests(unittest.TestCase):
@@ -34,7 +34,7 @@ class C3V22HardeningTests(unittest.TestCase):
             }
 
         with patch("p2_b_benchmark.p2c_engine.focus_detector", side_effect=fake_focus_detector):
-            result = injection_runner.focus_reset_rearm(
+            result = focus_reset_rearm_v2_2(
                 values,
                 threshold=100.0,
                 quiet_points=40,
@@ -81,7 +81,7 @@ class C3V22HardeningTests(unittest.TestCase):
             return {"status": "OK", "hits": []}
 
         with patch("p2_b_benchmark.p2c_engine.focus_detector", side_effect=fake_focus_detector):
-            result = injection_runner.focus_reset_rearm(
+            result = focus_reset_rearm_v2_2(
                 values, threshold=100.0, quiet_points=40,
                 rearm_quiet_points=4, max_events=12, min_series_length=41,
             )
