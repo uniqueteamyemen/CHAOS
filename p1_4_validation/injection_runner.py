@@ -220,18 +220,10 @@ def focus_rearm_points_for_frequency(frequency: str) -> int:
 
 def focus_reset_rearm(
     values: Sequence[float], *, threshold: float, quiet_points: int = FOCUS_INITIAL_QUIET_POINTS,
-    rearm_quiet_points: int | None = None, rearm_scale_points: int | None = None,
-    max_events: int = 12, min_series_length: int = FOCUS_MIN_N,
-    frequency: str | None = None,
+    rearm_quiet_points: int | None = None, max_events: int = 12,
+    min_series_length: int = FOCUS_MIN_N, frequency: str | None = None,
 ) -> dict[str, Any]:
-    """Re-arm FOCuS, optionally separating re-arm wait from robust scale estimation.
-
-    When rearm_scale_points is None, the historical reset/re-arm behavior is
-    retained exactly. When supplied, the re-arm observations estimate the new
-    center, while a longer causal trailing window estimates dispersion. The
-    historical scale window is translated to the new center and used only as
-    the detector's calibration prefix; monitoring begins after the re-arm wait.
-    """
+    """Re-arm FOCuS with an explicit cadence-aware post-alert calibration window."""
     if frequency is not None:
         cadence_points = focus_rearm_points_for_frequency(frequency)
         if rearm_quiet_points is not None and int(rearm_quiet_points) != cadence_points:
@@ -255,104 +247,34 @@ def focus_reset_rearm(
         }
     if int(quiet_points) < 1 or int(rearm_points) < 1:
         raise ValueError("FOCUS_CALIBRATION_WINDOWS_MUST_BE_POSITIVE")
-    if rearm_scale_points is not None and (
-        int(rearm_scale_points) < int(rearm_points)
-        or int(rearm_scale_points) < 3
-    ):
-        raise ValueError("FOCUS_REARM_SCALE_WINDOW_TOO_SHORT")
-
     from p2_b_benchmark.p2c_engine import focus_detector
-
     hits, intervals, cursor = [], [], 0
-    while len(hits) < int(max_events):
-        if not hits:
-            detector_values = x[cursor:]
-            detector_quiet = int(quiet_points)
-            map_global = lambda local_index: cursor + int(local_index)
-        elif rearm_scale_points is None:
-            # Frozen C3 v2.1 behavior: re-estimate center and scale from the
-            # short cadence-specific re-arm prefix.
-            detector_values = x[cursor:]
-            detector_quiet = int(rearm_points)
-            map_global = lambda local_index: cursor + int(local_index)
-        else:
-            # Wait the cadence-specific re-arm observations, estimate the new
-            # center from those observations, and estimate dispersion from a
-            # longer trailing window ending immediately before monitoring.
-            rearm_start = int(cursor)
-            monitor_start = rearm_start + int(rearm_points)
-            if monitor_start >= x.size:
-                break
-            scale_start = monitor_start - int(rearm_scale_points)
-            if scale_start < 0:
-                raise ValueError("FOCUS_REARM_SCALE_HISTORY_UNAVAILABLE")
-            rearm_values = x[rearm_start:monitor_start]
-            scale_values = x[scale_start:monitor_start]
-            if rearm_values.size != int(rearm_points):
-                raise RuntimeError("FOCUS_REARM_WINDOW_INVALID")
-            if scale_values.size != int(rearm_scale_points):
-                raise RuntimeError("FOCUS_REARM_SCALE_WINDOW_INVALID")
-            center = float(np.median(rearm_values))
-            scale_center = float(np.median(scale_values))
-            shifted_reference = scale_values - scale_center + center
-            detector_values = np.concatenate((shifted_reference, x[monitor_start:]))
-            detector_quiet = int(rearm_scale_points)
-            intervals.append({
-                "start_inclusive": rearm_start,
-                "end_exclusive": monitor_start,
-            })
-            map_global = lambda local_index: monitor_start + (
-                int(local_index) - int(rearm_scale_points)
-            )
-
-        if detector_values.size <= detector_quiet:
-            break
-        result = focus_detector(
-            detector_values, quiet_points=detector_quiet,
-            threshold=float(threshold),
-        )
+    while x.size - cursor > (quiet_points if not hits else rearm_points) and len(hits) < max_events:
+        active_quiet = quiet_points if not hits else rearm_points
+        result = focus_detector(x[cursor:], quiet_points=active_quiet, threshold=float(threshold))
         if result.get("status") == "ABSTAIN" or not result.get("hits"):
             break
         local = dict(result["hits"][0])
         local_index = int(local["detection_index"])
-        if local_index < detector_quiet or local_index >= detector_values.size:
+        if local_index < active_quiet or local_index >= x.size - cursor:
             raise RuntimeError("FOCUS_REARM_INDEX_INVALID")
-        global_index = map_global(local_index)
-        estimated_local = int(local.get("estimated_change_index", local_index))
-        estimated = map_global(estimated_local)
-        if not 0 <= global_index < x.size:
-            raise RuntimeError("FOCUS_REARM_GLOBAL_INDEX_INVALID")
-        hits.append({
-            **local,
-            "index": global_index,
-            "detection_index": global_index,
-            "estimated_change_index": estimated,
-        })
-        if rearm_scale_points is None:
-            next_start = global_index + 1
-            next_end = min(int(x.size), next_start + int(rearm_points))
-            if next_start < next_end:
-                intervals.append({
-                    "start_inclusive": next_start,
-                    "end_exclusive": next_end,
-                })
-        cursor = global_index + 1
-
-    return {
-        "status": "OK",
-        "hits": hits,
-        "event_count": len(hits),
-        "rearm_intervals": intervals,
-        "initial_calibration_observations": int(quiet_points),
-        "rearm_calibration_observations": int(rearm_points),
-        "rearm_scale_observations": (
-            int(rearm_scale_points) if rearm_scale_points is not None else None
-        ),
-        "rearm_scale_policy": (
-            "TRAILING_CAUSAL_SCALE_WINDOW_TRANSLATED_TO_REARM_CENTER"
-            if rearm_scale_points is not None else "SHORT_REARM_WINDOW_CENTER_AND_SCALE"
-        ),
-    }
+        global_index = cursor + local_index
+        estimated = cursor + int(local.get("estimated_change_index", local_index))
+        hits.append({**local, "index": global_index, "detection_index": global_index,
+                     "estimated_change_index": estimated})
+        next_start = global_index + 1
+        next_end = min(int(x.size), next_start + int(rearm_points))
+        if next_start < next_end:
+            intervals.append({"start_inclusive": next_start, "end_exclusive": next_end})
+        if next_end >= x.size:
+            break
+        # The initial 40-point calibration is retained; after a hit the configured
+        # cadence-specific re-arm window is reserved before monitoring.
+        cursor = next_start
+    return {"status": "OK", "hits": hits, "event_count": len(hits),
+            "rearm_intervals": intervals,
+            "initial_calibration_observations": int(quiet_points),
+            "rearm_calibration_observations": int(rearm_points)}
 
 
 def break_is_unmonitored(break_index: int, intervals: Sequence[Mapping[str, int]]) -> bool:
