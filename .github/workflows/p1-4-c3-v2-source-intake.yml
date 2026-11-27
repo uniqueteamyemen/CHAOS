@@ -23,10 +23,10 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          test "$GITHUB_REF" = "refs/heads/feat/c3-v2-expanded-cohort-self-calibrating" || {
-            echo "C3_V2_WRONG_BRANCH:$GITHUB_REF" >&2
-            exit 1
-          }
+          case "$GITHUB_REF" in
+            refs/heads/feat/c3-v2-expanded-cohort-self-calibrating|refs/heads/experiment/c3-v2-2-detector-calibration-hardening) ;;
+            *) echo "C3_V2_WRONG_BRANCH:$GITHUB_REF" >&2; exit 1 ;;
+          esac
 
       - uses: actions/checkout@v4
         with:
