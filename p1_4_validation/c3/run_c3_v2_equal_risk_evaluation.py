@@ -42,6 +42,8 @@ P0_TARGET = 0.10  # Holdout acceptance ceiling
 DEV_P0_TARGET = 0.085  # Calibration margin to reduce boundary-fragile Holdout failures
 WILSON_Z = 1.6448536269514722
 HYBRID_MAX_GAP = 8
+FOCUS_REARM_SCALE_POINTS = 40
+C3_V2_2_SEED_NAMESPACE = "CHAOS:C3_V2_2"
 FOCUS4_NAME = "FOCuS (monthly rearm 4; weekly rearm 20)"
 PER_SERIES_ROUTER = "Per-Series Router"
 MIN_WINNER_MATCHED_PAIRS = 3
@@ -172,7 +174,10 @@ def verify_source_bundle(
     archive_sha = sha256(payload)
     contract_bytes = contract_path.read_bytes()
     contract = json.loads(contract_bytes)
-    if contract.get("contract_id") != "CHAOS_P1_4_C3_EXPANDED_EVENT_COHORT_V2_1":
+    if contract.get("contract_id") not in {
+        "CHAOS_P1_4_C3_EXPANDED_EVENT_COHORT_V2_1",
+        "CHAOS_P1_4_C3_EXPANDED_EVENT_COHORT_V2_2",
+    }:
         raise ValueError("C3_V2_EXPANDED_CONTRACT_ID_MISMATCH")
     contract_sha = sha256(contract_bytes)
     frozen = contract.get("frozen_references", {})
@@ -506,11 +511,14 @@ def apply_causal_series_transforms(
 
 def deterministic_seed(
     tape_sha: str, series_id: str, ar_order: int, phase: str, replicate: int,
+    namespace: str = "CHAOS:C3_V2_EXPANDED",
 ) -> int:
     if phase not in {"development", "holdout"}:
         raise ValueError("C3_V2_INVALID_SEED_PHASE")
+    if not str(namespace).strip():
+        raise ValueError("C3_V2_EMPTY_SEED_NAMESPACE")
     identity = (
-        "CHAOS:C3_V2_EXPANDED:" + tape_sha + ":" + series_id + ":"
+        str(namespace) + ":" + tape_sha + ":" + series_id + ":"
         + str(int(ar_order)) + ":" + phase + ":" + str(int(replicate))
     )
     return int.from_bytes(hashlib.sha256(identity.encode("utf-8")).digest()[:8], "big")
@@ -632,12 +640,16 @@ def choose_threshold_by_dev_wilson(
 
 def focus_path_alarm(
     trace: np.ndarray, threshold: float, rearm_quiet_points: int = REARM_POINTS,
+    rearm_scale_points: int | None = None,
 ) -> bool | None:
     result = focus_reset_rearm(
         trace,
         threshold=finite_positive_threshold(threshold),
         quiet_points=QUIET_POINTS,
         rearm_quiet_points=int(rearm_quiet_points),
+        rearm_scale_points=(
+            int(rearm_scale_points) if rearm_scale_points is not None else None
+        ),
         max_events=MAX_EVENTS,
         min_series_length=QUIET_POINTS + 1,
     )
@@ -650,11 +662,12 @@ def calibrate_focus(
     development_traces: list[np.ndarray],
     holdout_traces: list[np.ndarray],
     rearm_quiet_points: int = REARM_POINTS,
+    rearm_scale_points: int | None = None,
 ) -> dict:
     grid_rows = []
     selected = None
     for threshold in FOCUS_GRID:
-        outcomes = [focus_path_alarm(trace, threshold, rearm_quiet_points) for trace in development_traces]
+        outcomes = [focus_path_alarm(trace, threshold, rearm_quiet_points, rearm_scale_points) for trace in development_traces]
         valid = [value for value in outcomes if value is not None]
         if len(valid) < MIN_VALID_REPLICATES:
             return {
@@ -664,7 +677,10 @@ def calibrate_focus(
                 "frozen_threshold": None,
                 "development_grid": grid_rows,
                 "holdout": {"status": "NOT_RUN_NO_DEVELOPMENT_THRESHOLD"},
-                "execution_policy": f"40_initial_{int(rearm_quiet_points)}_rearm_max_12_hits",
+                "execution_policy": (
+                        f"40_initial_{int(rearm_quiet_points)}_rearm_"
+                        f"scale_{int(rearm_scale_points) if rearm_scale_points is not None else 'cadence'}_max_12_hits"
+                    ),
             }
         alarms = sum(bool(value) for value in valid)
         stats = wilson_stats(alarms, len(valid))
@@ -683,11 +699,14 @@ def calibrate_focus(
             "frozen_threshold": None,
             "development_grid": grid_rows,
             "holdout": {"status": "NOT_RUN_NO_DEVELOPMENT_THRESHOLD"},
-            "execution_policy": f"40_initial_{int(rearm_quiet_points)}_rearm_max_12_hits",
+            "execution_policy": (
+                        f"40_initial_{int(rearm_quiet_points)}_rearm_"
+                        f"scale_{int(rearm_scale_points) if rearm_scale_points is not None else 'cadence'}_max_12_hits"
+                    ),
         }
 
     threshold = float(selected["threshold"])
-    holdout_outcomes = [focus_path_alarm(trace, threshold, rearm_quiet_points) for trace in holdout_traces]
+    holdout_outcomes = [focus_path_alarm(trace, threshold, rearm_quiet_points, rearm_scale_points) for trace in holdout_traces]
     valid_hold = [value for value in holdout_outcomes if value is not None]
     alarms = sum(bool(value) for value in valid_hold)
     stats = wilson_stats(alarms, len(valid_hold))
@@ -706,7 +725,10 @@ def calibrate_focus(
         "development_grid": grid_rows,
         "holdout": {"status": holdout_status, **stats},
         "holdout_retuning": False,
-        "execution_policy": f"40_initial_{int(rearm_quiet_points)}_rearm_max_12_hits",
+        "execution_policy": (
+                        f"40_initial_{int(rearm_quiet_points)}_rearm_"
+                        f"scale_{int(rearm_scale_points) if rearm_scale_points is not None else 'cadence'}_max_12_hits"
+                    ),
     }
 
 
@@ -727,6 +749,7 @@ def extract_detector_hits(
     values: np.ndarray,
     threshold: float | None = None,
     rearm_quiet_points: int = REARM_POINTS,
+    rearm_scale_points: int | None = None,
 ) -> tuple[list[dict], str, dict]:
     if detector in {"FOCuS (reset-rearm)", FOCUS4_NAME}:
         if threshold is None:
@@ -736,6 +759,9 @@ def extract_detector_hits(
             threshold=float(threshold),
             quiet_points=QUIET_POINTS,
             rearm_quiet_points=int(rearm_quiet_points),
+            rearm_scale_points=(
+                int(rearm_scale_points) if rearm_scale_points is not None else None
+            ),
             max_events=MAX_EVENTS,
             min_series_length=QUIET_POINTS + 1,
         )
@@ -744,6 +770,8 @@ def extract_detector_hits(
             "reset_rearm": True,
             "initial_calibration_observations": result.get("initial_calibration_observations"),
             "rearm_calibration_observations": result.get("rearm_calibration_observations"),
+            "rearm_scale_observations": result.get("rearm_scale_observations"),
+            "rearm_scale_policy": result.get("rearm_scale_policy"),
             "rearm_intervals": result.get("rearm_intervals", []),
         }
         status = str(result.get("status", "OK"))
@@ -789,129 +817,251 @@ def extract_detector_hits(
     return normalized, status, metadata
 
 
+def combine_hybrid_hits(
+    focus_hits: list[dict],
+    huber_hits: list[dict],
+    huber_detector: str,
+) -> list[dict]:
+    """Pair same-direction FOCuS and one Huber member within the registered gap."""
+    used: set[tuple[int, int]] = set()
+    output = []
+    for focus in focus_hits:
+        focus_index = int(focus["index"])
+        candidates = []
+        for huber in huber_hits:
+            key = (int(huber["index"]), int(huber["sign"]))
+            if key in used or int(huber["sign"]) != int(focus["sign"]):
+                continue
+            distance = abs(int(huber["index"]) - focus_index)
+            if distance <= HYBRID_MAX_GAP:
+                candidates.append((
+                    distance, max(focus_index, int(huber["index"])),
+                    int(huber["index"]), int(huber["sign"]), key,
+                ))
+        if not candidates:
+            continue
+        chosen = min(candidates, key=lambda row: row[:4])
+        used.add(chosen[4])
+        output.append({
+            "index": int(chosen[1]),
+            "sign": int(chosen[3]),
+            "components": ["FOCuS (reset-rearm)", huber_detector],
+            "max_confirmation_gap_observations": HYBRID_MAX_GAP,
+        })
+    output.sort(key=lambda row: (row["index"], row["sign"]))
+    return output
+
+
 def hybrid_confirmation_hits(
     values: np.ndarray,
     thresholds: dict[str, float | None],
     rearm_quiet_points: int = REARM_POINTS,
+    rearm_scale_points: int | None = None,
 ) -> tuple[list[dict], dict]:
     focus_threshold = thresholds.get("FOCuS (reset-rearm)")
     if focus_threshold is None:
         return [], {"status": "ABSTAIN", "reason": "FOCUS_THRESHOLD_UNAVAILABLE"}
     focus_hits, focus_status, focus_meta = extract_detector_hits(
         "FOCuS (reset-rearm)", values, float(focus_threshold),
-        rearm_quiet_points=int(rearm_quiet_points)
+        rearm_quiet_points=int(rearm_quiet_points),
+        rearm_scale_points=rearm_scale_points,
     )
-    huber_hits: list[tuple[str, dict]] = []
-    used_huber_arms = []
-    for detector in ("Post-Quiet Huber + MAD", "Post-Quiet Huber + Bartlett LRV"):
-        threshold = thresholds.get(detector)
-        if threshold is None:
-            continue
-        hits, status, _ = extract_detector_hits(
-            detector, values, float(threshold),
-            rearm_quiet_points=int(rearm_quiet_points),
-        )
-        if status == "OK":
-            huber_hits.extend((detector, hit) for hit in hits)
-            used_huber_arms.append(detector)
-    if focus_status != "OK" or not used_huber_arms:
+    if focus_status != "OK":
         return [], {
             "status": "ABSTAIN",
-            "reason": "FOCUS_OR_HUBER_MEMBER_UNAVAILABLE",
+            "reason": "FOCUS_MEMBER_UNAVAILABLE",
             "focus_status": focus_status,
-            "huber_members": used_huber_arms,
         }
-    # An available Huber member that emits no alert is a valid zero outcome,
-    # not an abstention. Keep it in the Bernoulli null denominator.
 
-    # Require FOCuS plus one Huber variant; MAD and Bartlett are not counted
-    # as two independent votes against one another.
-    used: set[tuple[str, int, int]] = set()
-    output = []
-    for focus in focus_hits:
-        focus_index = int(focus["index"])
-        candidates = []
-        for detector, huber in huber_hits:
-            key = (detector, int(huber["index"]), int(huber["sign"]))
-            if key in used or int(huber["sign"]) != int(focus["sign"]):
-                continue
-            distance = abs(int(huber["index"]) - focus_index)
-            if distance <= HYBRID_MAX_GAP:
-                detection_index = max(focus_index, int(huber["index"]))
-                candidates.append((
-                    distance, detection_index, detector, int(huber["index"]),
-                    int(huber["sign"]), key,
-                ))
-        if not candidates:
-            continue
-        chosen = min(candidates, key=lambda row: row[:5])
-        used.add(chosen[5])
-        output.append({
-            "index": int(chosen[1]),
-            "sign": int(chosen[4]),
-            "components": ["FOCuS (reset-rearm)", chosen[2]],
-            "max_confirmation_gap_observations": HYBRID_MAX_GAP,
-        })
-    output.sort(key=lambda row: (row["index"], row["sign"]))
-    return output, {
+    selected_huber = [
+        detector for detector in (
+            "Post-Quiet Huber + MAD", "Post-Quiet Huber + Bartlett LRV"
+        )
+        if thresholds.get(detector) is not None
+    ]
+    if not selected_huber:
+        return [], {"status": "ABSTAIN", "reason": "HUBER_THRESHOLD_UNAVAILABLE"}
+
+    all_output = []
+    member_statuses = {}
+    for detector in selected_huber:
+        hits, status, _ = extract_detector_hits(
+            detector, values, float(thresholds[detector]),
+            rearm_quiet_points=int(rearm_quiet_points),
+        )
+        member_statuses[detector] = status
+        if status == "OK":
+            all_output.extend(combine_hybrid_hits(focus_hits, hits, detector))
+    if not any(status == "OK" for status in member_statuses.values()):
+        return [], {
+            "status": "ABSTAIN",
+            "reason": "ALL_HUBER_MEMBERS_UNAVAILABLE",
+            "focus_status": focus_status,
+            "huber_statuses": member_statuses,
+        }
+    all_output.sort(key=lambda row: (row["index"], row["sign"], row["components"][1]))
+    return all_output, {
         "status": "OK",
-        "confirmation_rule": "FOCuS plus one Holdout-eligible Huber variant; same sign; max gap 8 observations",
+        "confirmation_rule": (
+            "FOCuS plus one Huber variant; same sign; max gap 8 observations"
+        ),
         "focus_metadata": focus_meta,
-        "huber_members": used_huber_arms,
+        "huber_members": [
+            detector for detector, status in member_statuses.items() if status == "OK"
+        ],
     }
 
 
 def calibrate_ensemble(
     development_traces: list[np.ndarray],
     holdout_traces: list[np.ndarray],
-    thresholds: dict[str, float | None],
+    thresholds: dict[str, float | None] | None = None,
     rearm_quiet_points: int = REARM_POINTS,
+    rearm_scale_points: int | None = None,
+    focus_grid: tuple[int, ...] = FOCUS_GRID,
+    huber_grid: tuple[int, ...] = HUBER_GRID,
 ) -> dict:
-    if thresholds.get("FOCuS (reset-rearm)") is None or not any(
-        thresholds.get(name) is not None
-        for name in ("Post-Quiet Huber + MAD", "Post-Quiet Huber + Bartlett LRV")
-    ):
+    """Jointly calibrate FOCuS/Huber threshold pairs on Development only.
+
+    The selected pair is frozen before a single independent Holdout evaluation.
+    Standalone member Holdout status is not used to choose Hybrid thresholds.
+    """
+    focus_thresholds = sorted({
+        finite_positive_threshold(value) for value in focus_grid
+    })
+    huber_thresholds = sorted({
+        finite_positive_threshold(value) for value in huber_grid
+    })
+    if not focus_thresholds or not huber_thresholds:
         return {
             "status": "ABSTAINED",
-            "raw_status": "MEMBER_THRESHOLD_UNAVAILABLE",
-            "frozen_thresholds": thresholds,
+            "raw_status": "EMPTY_JOINT_THRESHOLD_GRID",
             "development": {},
             "holdout": {"status": "NOT_RUN"},
-            "reason": "HYBRID_REQUIRES_FOCUS_AND_AT_LEAST_ONE_HUBER_MEMBER",
         }
 
-    def outcomes(traces):
-        result = []
-        for trace in traces:
-            hits, metadata = hybrid_confirmation_hits(
-                trace, thresholds, rearm_quiet_points=int(rearm_quiet_points)
-            )
-            result.append(None if metadata.get("status") != "OK" else bool(hits))
-        return result
+    def cache_paths(traces: list[np.ndarray]) -> tuple[dict, dict]:
+        focus_cache = {}
+        huber_cache = {
+            "Post-Quiet Huber + MAD": {},
+            "Post-Quiet Huber + Bartlett LRV": {},
+        }
+        for threshold in focus_thresholds:
+            path_rows = []
+            for trace in traces:
+                hits, status, _ = extract_detector_hits(
+                    "FOCuS (reset-rearm)", trace, threshold,
+                    rearm_quiet_points=int(rearm_quiet_points),
+                    rearm_scale_points=rearm_scale_points,
+                )
+                path_rows.append(hits if status == "OK" else None)
+            focus_cache[threshold] = path_rows
+        for detector in huber_cache:
+            for threshold in huber_thresholds:
+                path_rows = []
+                for trace in traces:
+                    hits, status, _ = extract_detector_hits(
+                        detector, trace, threshold,
+                        rearm_quiet_points=int(rearm_quiet_points),
+                    )
+                    path_rows.append(hits if status == "OK" else None)
+                huber_cache[detector][threshold] = path_rows
+        return focus_cache, huber_cache
 
-    dev_outcomes = outcomes(development_traces)
-    valid_dev = [value for value in dev_outcomes if value is not None]
-    if len(valid_dev) < MIN_VALID_REPLICATES:
+    focus_dev, huber_dev = cache_paths(development_traces)
+    valid_development_counts = [
+        sum(value is not None for value in focus_dev[threshold])
+        for threshold in focus_thresholds
+    ]
+    if not valid_development_counts or min(valid_development_counts) < MIN_VALID_REPLICATES:
         return {
             "status": "ABSTAINED",
             "raw_status": "INCONCLUSIVE",
-            "frozen_thresholds": thresholds,
-            "development": wilson_stats(0, len(valid_dev)),
+            "reason": "INSUFFICIENT_VALID_HYBRID_DEVELOPMENT_REPLICATES",
+            "development": {},
             "holdout": {"status": "NOT_RUN"},
         }
-    dev_alarms = sum(bool(value) for value in valid_dev)
-    dev_stats = wilson_stats(dev_alarms, len(valid_dev))
-    if dev_stats["wilson_upper_95_one_sided"] > DEV_P0_TARGET:
+
+    eligible_pairs = []
+    tested_pairs = 0
+    family_counts = {}
+    for detector in huber_dev:
+        for focus_threshold in focus_thresholds:
+            focus_paths = focus_dev[focus_threshold]
+            for huber_threshold in huber_thresholds:
+                tested_pairs += 1
+                huber_paths = huber_dev[detector][huber_threshold]
+                outcomes = []
+                for focus_hits, huber_hits in zip(focus_paths, huber_paths):
+                    if focus_hits is None or huber_hits is None:
+                        outcomes.append(None)
+                    else:
+                        outcomes.append(bool(
+                            combine_hybrid_hits(focus_hits, huber_hits, detector)
+                        ))
+                valid = [value for value in outcomes if value is not None]
+                if len(valid) < MIN_VALID_REPLICATES:
+                    continue
+                alarms = sum(bool(value) for value in valid)
+                stats = wilson_stats(alarms, len(valid))
+                if stats["wilson_upper_95_one_sided"] <= DEV_P0_TARGET:
+                    candidate = {
+                        "focus_threshold": float(focus_threshold),
+                        "huber_detector": detector,
+                        "huber_threshold": float(huber_threshold),
+                        "development": stats,
+                    }
+                    eligible_pairs.append(candidate)
+                    family_counts[detector] = family_counts.get(detector, 0) + 1
+
+    if not eligible_pairs:
         return {
             "status": "ABSTAINED",
-            "raw_status": "DEVELOPMENT_WILSON_GATE_FAILED",
-            "frozen_thresholds": thresholds,
-            "development": dev_stats,
-            "holdout": {"status": "NOT_RUN_DEVELOPMENT_GATE_FAILED"},
+            "raw_status": "NO_JOINT_PAIR_MET_DEVELOPMENT_WILSON_GATE",
+            "development": {},
+            "holdout": {"status": "NOT_RUN"},
+            "joint_calibration": {
+                "tested_threshold_pairs": tested_pairs,
+                "eligible_threshold_pairs": 0,
+                "selected_pair": None,
+                "development_gate": DEV_P0_TARGET,
+                "selection_rule": "maximise Development alarm traces subject to Wilson U95 gate",
+            },
         }
 
-    hold_outcomes = outcomes(holdout_traces)
-    valid_hold = [value for value in hold_outcomes if value is not None]
+    # Maximize usable Development alert probability under the registered risk
+    # cap. Ties resolve deterministically toward lower member thresholds.
+    detector_order = {
+        "Post-Quiet Huber + MAD": 0,
+        "Post-Quiet Huber + Bartlett LRV": 1,
+    }
+    selected = max(
+        eligible_pairs,
+        key=lambda row: (
+            int(row["development"]["alarm_traces"]),
+            -float(row["focus_threshold"]),
+            -float(row["huber_threshold"]),
+            -detector_order[row["huber_detector"]],
+        ),
+    )
+
+    # Holdout is generated from its own v2.2 seed namespace and is evaluated
+    # exactly once after the Development-selected pair has been frozen.
+    focus_hold, huber_hold = cache_paths(holdout_traces)
+    focus_threshold = float(selected["focus_threshold"])
+    huber_detector = str(selected["huber_detector"])
+    huber_threshold = float(selected["huber_threshold"])
+    outcomes = []
+    for focus_hits, huber_hits in zip(
+        focus_hold[focus_threshold], huber_hold[huber_detector][huber_threshold]
+    ):
+        if focus_hits is None or huber_hits is None:
+            outcomes.append(None)
+        else:
+            outcomes.append(bool(
+                combine_hybrid_hits(focus_hits, huber_hits, huber_detector)
+            ))
+    valid_hold = [value for value in outcomes if value is not None]
     hold_alarms = sum(bool(value) for value in valid_hold)
     hold_stats = wilson_stats(hold_alarms, len(valid_hold))
     if len(valid_hold) < MIN_VALID_REPLICATES:
@@ -920,34 +1070,57 @@ def calibrate_ensemble(
         hold_status = "PASS"
     else:
         hold_status = "FAIL"
+
+    frozen_thresholds = {
+        "FOCuS (reset-rearm)": focus_threshold,
+        "Post-Quiet Huber + MAD": (
+            huber_threshold if huber_detector == "Post-Quiet Huber + MAD" else None
+        ),
+        "Post-Quiet Huber + Bartlett LRV": (
+            huber_threshold if huber_detector == "Post-Quiet Huber + Bartlett LRV" else None
+        ),
+    }
     return {
-        "status": {"PASS": "VALIDATED", "FAIL": "NOT_VALIDATED",
-                   "INCONCLUSIVE": "ABSTAINED"}[hold_status],
+        "status": {
+            "PASS": "VALIDATED",
+            "FAIL": "NOT_VALIDATED",
+            "INCONCLUSIVE": "ABSTAINED",
+        }[hold_status],
         "raw_status": hold_status,
-        "frozen_thresholds": thresholds,
-        "development": dev_stats,
+        "frozen_thresholds": frozen_thresholds,
+        "development": selected["development"],
         "holdout": {"status": hold_status, **hold_stats},
         "holdout_retuning": False,
-        "confirmation_rule": "FOCuS plus at least one Holdout-eligible Huber scale variant, same sign, gap <= 8 observations",
+        "joint_calibration": {
+            "method": "DEVELOPMENT_ONLY_CARTESIAN_THRESHOLD_PAIR_SEARCH",
+            "tested_threshold_pairs": tested_pairs,
+            "eligible_threshold_pairs": len(eligible_pairs),
+            "eligible_pairs_by_huber_family": family_counts,
+            "selected_pair": {
+                "focus_threshold": focus_threshold,
+                "huber_detector": huber_detector,
+                "huber_threshold": huber_threshold,
+            },
+            "development_selection_rule": (
+                "maximize Development alarm traces subject to one-sided Wilson U95 <= 0.085; "
+                "ties prefer lower thresholds, then MAD"
+            ),
+            "holdout_policy": "single frozen pair validation; no holdout retuning",
+        },
+        "confirmation_rule": (
+            "FOCuS plus one jointly calibrated Huber variant; same sign; gap <= 8 observations"
+        ),
+        "rearm_scale_points": (
+            int(rearm_scale_points) if rearm_scale_points is not None else None
+        ),
     }
 
 
-def eligible_hybrid_member_thresholds(arms: dict[str, dict]) -> dict[str, float | None]:
-    """Keep the Development-calibrated FOCuS trigger; gate Huber confirmations by Holdout."""
-    focus_name = "FOCuS (reset-rearm)"
-    focus_threshold = arms.get(focus_name, {}).get("frozen_threshold")
-    thresholds = {focus_name: focus_threshold}
-    for name in ("Post-Quiet Huber + MAD", "Post-Quiet Huber + Bartlett LRV"):
-        member = arms.get(name, {})
-        thresholds[name] = (
-            member.get("frozen_threshold")
-            if member.get("status") == "VALIDATED"
-            else None
-        )
-    return thresholds
 
 def calibrate_series(
     series_id: str, rows: list[dict], tape_sha: str, series_config: dict,
+    seed_namespace: str = "CHAOS:C3_V2_EXPANDED",
+    rearm_scale_points: int | None = None,
 ) -> dict:
     values = np.asarray([row["value_float"] for row in rows], dtype=float)
     rearm_quiet_points = focus_rearm_points_for_frequency(series_config["frequency"])
@@ -972,7 +1145,8 @@ def calibrate_series(
     for phase, target in (("development", development_traces), ("holdout", holdout_traces)):
         for replicate in range(REPLICATES):
             seed = deterministic_seed(
-                tape_sha, series_id, int(model["order"]), phase, replicate
+                tape_sha, series_id, int(model["order"]), phase, replicate,
+                namespace=seed_namespace,
             )
             seed_material.append(f"{phase}:{replicate}:{seed}")
             target.append(generate_ar_null_trace(
@@ -988,17 +1162,22 @@ def calibrate_series(
 
     arms = {}
     arms["FOCuS (reset-rearm)"] = calibrate_focus(
-        development_traces, holdout_traces, rearm_quiet_points=rearm_quiet_points
+        development_traces, holdout_traces,
+        rearm_quiet_points=rearm_quiet_points,
+        rearm_scale_points=rearm_scale_points,
     )
     arms["FOCuS (reset-rearm)"]["threshold_grid"] = list(FOCUS_GRID)
     arms["FOCuS (reset-rearm)"]["rearm_quiet_points"] = rearm_quiet_points
+    arms["FOCuS (reset-rearm)"]["rearm_scale_points"] = rearm_scale_points
     focus4_rearm_points = 4 if series_config["frequency"] == "Monthly" else 20
     arms[FOCUS4_NAME] = calibrate_focus(
         development_traces, holdout_traces,
         rearm_quiet_points=focus4_rearm_points,
+        rearm_scale_points=rearm_scale_points,
     )
     arms[FOCUS4_NAME]["threshold_grid"] = list(FOCUS_GRID)
     arms[FOCUS4_NAME]["rearm_quiet_points"] = focus4_rearm_points
+    arms[FOCUS4_NAME]["rearm_scale_points"] = rearm_scale_points
     for detector, scale in (
         ("Post-Quiet Huber + MAD", "mad"),
         ("Post-Quiet Huber + Bartlett LRV", "bartlett"),
@@ -1010,12 +1189,13 @@ def calibrate_series(
         )
         arms[detector]["threshold_grid"] = list(HUBER_GRID)
 
-    member_thresholds = eligible_hybrid_member_thresholds(arms)
     arms["Hybrid: FOCuS + Huber confirmation"] = calibrate_ensemble(
-        development_traces, holdout_traces, member_thresholds,
+        development_traces, holdout_traces,
         rearm_quiet_points=rearm_quiet_points,
+        rearm_scale_points=rearm_scale_points,
     )
     arms["Hybrid: FOCuS + Huber confirmation"]["rearm_quiet_points"] = rearm_quiet_points
+    arms["Hybrid: FOCuS + Huber confirmation"]["rearm_scale_points"] = rearm_scale_points
     validated = all(arms[name]["status"] == "VALIDATED" for name in CANDIDATES)
     return {
         "status": "ALL_CANDIDATES_VALIDATED" if validated
@@ -1028,9 +1208,11 @@ def calibrate_series(
             )
         },
         "seed_ledger_sha256": sha256("\n".join(seed_material).encode("utf-8")),
+        "seed_namespace": seed_namespace,
         "series_transform": series_config.get("series_transform", "level"),
         "analysis_units": series_config.get("analysis_units", series_config["units"]),
         "rearm_quiet_points": rearm_quiet_points,
+        "rearm_scale_points": rearm_scale_points,
         "valid_null_replicates_per_phase": {
             "development": REPLICATES, "holdout": REPLICATES,
         },
@@ -1045,17 +1227,25 @@ def extract_hits(
     if detector in CANDIDATES:
         arm = arms.get(detector, {})
         rearm_quiet_points = int(arm.get("rearm_quiet_points", REARM_POINTS))
+        rearm_scale_points = arm.get("rearm_scale_points")
         if detector == "Hybrid: FOCuS + Huber confirmation":
             hits, metadata = hybrid_confirmation_hits(
                 values, arm.get("frozen_thresholds", {}),
                 rearm_quiet_points=rearm_quiet_points,
+                rearm_scale_points=(
+                    int(rearm_scale_points) if rearm_scale_points is not None else None
+                ),
             )
             return hits, metadata.get("status", "ABSTAIN"), metadata
         threshold = arm.get("frozen_threshold")
         if threshold is None:
             return [], "ABSTAIN", {"reason": "NO_FROZEN_THRESHOLD"}
         return extract_detector_hits(
-            detector, values, float(threshold), rearm_quiet_points=rearm_quiet_points
+            detector, values, float(threshold),
+            rearm_quiet_points=rearm_quiet_points,
+            rearm_scale_points=(
+                int(rearm_scale_points) if rearm_scale_points is not None else None
+            ),
         )
     return extract_detector_hits(detector, values)
 
@@ -1513,9 +1703,138 @@ def summarize_detector_results(
     return summary
 
 
+def causal_rolling_mean_rows(
+    rows: list[dict], window_points: int,
+) -> list[dict]:
+    """Build a trailing causal mean of first-difference observations."""
+    window = int(window_points)
+    if window < 1:
+        raise ValueError("C3_V2_INVALID_PAYEMS_ROLLING_WINDOW")
+    if len(rows) < window:
+        return []
+    output = []
+    for end_index in range(window - 1, len(rows)):
+        start_index = end_index - window + 1
+        window_rows = rows[start_index:end_index + 1]
+        values = [float(row["value_float"]) for row in window_rows]
+        mean_value = math.fsum(values) / float(window)
+        right_edge = window_rows[-1]
+        if not math.isfinite(mean_value):
+            raise ValueError("C3_V2_NON_FINITE_PAYEMS_ROLLING_MEAN")
+        output.append({
+            **right_edge,
+            "value": format(mean_value, ".15g"),
+            "value_float": mean_value,
+            "series_transform": f"first_difference_trailing_mean_{window}",
+            "value_semantics": "CAUSAL_TRAILING_MEAN_OF_FIRST_ALFRED_DIFFERENCES",
+            "causal_window_points": window,
+            "source_window_start_observation": window_rows[0]["observation_date"],
+            "source_window_start_available_at": window_rows[0]["available_at"],
+            "source_window_end_observation": right_edge["observation_date"],
+            "source_window_end_available_at": right_edge["available_at"],
+            "source_window_values": values,
+            "units": f"Trailing {window}-observation mean of monthly payroll change (thousands)",
+        })
+    return output
+
+
+def evaluate_payems_transform_profiles(
+    baseline_rows: list[dict],
+    base_series_config: dict,
+    payems_events: list[dict],
+    tape_sha: str,
+    seed_namespace: str,
+    rearm_scale_points: int | None,
+) -> dict:
+    """Evaluate causal PAYEMS smoothing profiles as diagnostics, never as a global winner."""
+    profiles = {}
+    for window_points in (3, 6):
+        profile_id = f"PAYEMS_D{window_points}"
+        rows = causal_rolling_mean_rows(baseline_rows, window_points)
+        if len(rows) <= QUIET_POINTS:
+            profiles[profile_id] = {
+                "status": "ABSTAINED",
+                "reason": "INSUFFICIENT_POINTS_AFTER_CAUSAL_ROLLING_TRANSFORM",
+                "analysis_observation_count": len(rows),
+            }
+            continue
+        profile_config = {
+            **base_series_config,
+            "series_id": profile_id,
+            "series_transform": f"first_difference_trailing_mean_{window_points}",
+            "analysis_units": (
+                f"Trailing {window_points}-observation mean of monthly payroll change (thousands)"
+            ),
+        }
+        calibration = calibrate_series(
+            profile_id, rows, tape_sha, profile_config,
+            seed_namespace=f"{seed_namespace}:{profile_id}",
+            rearm_scale_points=rearm_scale_points,
+        )
+        profile_events = [{**event, "series_id": profile_id} for event in payems_events]
+        values = np.asarray([row["value_float"] for row in rows], dtype=float)
+        historical_results = []
+        unmatched_summaries = {}
+        for detector in BASE_DETECTORS:
+            hits, detector_status, metadata = extract_hits(detector, values, calibration)
+            replayed = audit_prefix_replay(
+                detector, values, hits, calibration
+            ) if hits else 0
+            matched_rows, unmatched = match_events_one_to_one(
+                rows, profile_events, hits, detector
+            )
+            unmatched["detector_status"] = detector_status
+            unmatched["detector_metadata"] = clean(metadata)
+            unmatched["no_lookahead_prefix_replays"] = replayed
+            unmatched_summaries[f"{profile_id}|{detector}"] = unmatched
+            arm = calibration.get("arms", {}).get(detector, {}) if detector in CANDIDATES else {}
+            development = arm.get("development", {})
+            holdout = arm.get("holdout", {})
+            for result in matched_rows:
+                historical_results.append({
+                    **result,
+                    "validation_status": arm.get("status", "READ_ONLY"),
+                    "frozen_threshold": arm.get("frozen_threshold"),
+                    "frozen_thresholds": arm.get("frozen_thresholds"),
+                    "development_p0": development.get("p0"),
+                    "development_wilson_u95": development.get("wilson_upper_95_one_sided"),
+                    "holdout_p0": holdout.get("p0"),
+                    "holdout_wilson_u95": holdout.get("wilson_upper_95_one_sided"),
+                    "detector_status": detector_status,
+                    "no_lookahead_prefix_replays": replayed,
+                    "unmatched_alarm_count_for_series_detector": unmatched["unmatched_alarm_count"],
+                })
+        summary = summarize_detector_results(
+            {profile_id: calibration}, historical_results, unmatched_summaries
+        )
+        profiles[profile_id] = {
+            "status": "EXPERIMENTAL_DIAGNOSTIC_PROFILE",
+            "selection_uses_registered_payems_event_labels": True,
+            "independent_validation_required": True,
+            "baseline_profile_unchanged": True,
+            "source_series_id": "PAYEMS",
+            "transform": f"causal trailing mean of {window_points} first-difference observations",
+            "window_points": window_points,
+            "analysis_observation_count": len(rows),
+            "leading_observations_omitted": window_points - 1,
+            "availability_policy": (
+                "Each smoothed value retains available_at from its right-edge first-release observation."
+            ),
+            "no_lookahead_prefix_replays": sum(
+                int(row.get("no_lookahead_prefix_replays", 0))
+                for row in unmatched_summaries.values()
+            ),
+            "calibration": calibration,
+            "historical_results": historical_results,
+            "unmatched_alarm_summary": unmatched_summaries,
+            "detector_summary": summary,
+        }
+    return profiles
+
+
 def markdown_report(report: dict) -> str:
     lines = [
-        "# CHAOS C3 v2.1 — Operational Detector Optimization",
+        "# CHAOS C3 v2.2 — Experimental Detector Hardening",
         "",
         "- Status: **" + report["status"] + "**",
         "- Run ID: " + str(report["run_id"]),
@@ -1530,9 +1849,9 @@ def markdown_report(report: dict) -> str:
         "- Development calibration margin: one-sided Wilson U95 <= 0.085",
         "- Holdout risk acceptance: one-sided Wilson U95 <= 0.10; Holdout also selects eligible Hybrid members for this optimization iteration",
         "- Replicates per series: 1000 Development + 1000 Holdout optimization traces",
-        "- FOCuS policy: 40 initial observations; primary Monthly re-arm 5 observations; explicit Monthly 4-observation comparison; Weekly re-arm 20; up to 12 alerts",
-        "- Hybrid policy: FOCuS plus one or more Holdout-eligible Huber members, same direction, within eight observations",
-        "- PAYEMS analysis transform: causal first difference; other series remain at level",
+        "- FOCuS policy: 40 initial observations; cadence-specific re-arm wait; dispersion estimated from a separate trailing 40-observation causal window; up to 12 alerts",
+        "- Hybrid policy: jointly calibrated FOCuS/Huber threshold pair; Development selection only; one fresh Holdout validation; same sign within eight observations",
+        "- PAYEMS baseline remains causal first difference; additional causal 3- and 6-observation trailing-mean profiles are diagnostic only",
         "",
         "## 1. Per-series calibration",
         "",
@@ -1620,7 +1939,23 @@ def markdown_report(report: dict) -> str:
         "- Winner: **" + str(selection.get("winner", "none")) + "**",
         "- Ranking: " + selection["ranking_rule"],
         "",
-        "## 4. Interpretation and safeguards",
+        "## 4. PAYEMS causal smoothing experiments (diagnostic only)",
+        "",
+        "| Profile | Window | Matched pairs | Matched episodes | Unmatched alarms |",
+        "|---|---:|---:|---:|---:|",
+        *[
+            "| " + profile_id + " | " + str(profile.get("window_points", "—")) + " | "
+            + str(profile.get("detector_summary", {}).get("Post-Quiet Huber + Bartlett LRV", {}).get("matched_event_series_pairs", "—")) + " | "
+            + str(profile.get("detector_summary", {}).get("Post-Quiet Huber + Bartlett LRV", {}).get("matched_episode_clusters", "—")) + " | "
+            + str(profile.get("detector_summary", {}).get("Post-Quiet Huber + Bartlett LRV", {}).get("total_unmatched_alarm_count", "—")) + " |"
+            for profile_id, profile in sorted(report.get("payems_transform_experiments", {}).items())
+        ],
+        "",
+        "- PAYEMS D3/D6 profiles use only current and past first-release differences; each output keeps the right-edge available_at.",
+        "- These profiles are separate diagnostic comparisons and do not enter the global winner gate.",
+        "- Independent out-of-cohort validation is required before selecting a production transform.",
+        "",
+        "## 5. Interpretation and safeguards",
         "",
         "- Development thresholds are selected only when one-sided Wilson U95 is <= 0.10; Holdout applies the same bound once and cannot retune.",
         "- Each source series has its own AR(1–3) model, fitted on the first 40 first-release observations only.",
@@ -1662,12 +1997,22 @@ def main() -> int:
         source_archive_path, manifest, by_series, contract
     )
     analysis_tape_sha = analysis_tape_sha256(by_series)
+    experiment_policy = contract.get("experiment_policy", {})
+    seed_namespace = str(experiment_policy.get(
+        "seed_namespace", C3_V2_2_SEED_NAMESPACE
+    ))
+    rearm_scale_points = int(experiment_policy.get(
+        "focus_rearm", {}
+    ).get("causal_dispersion_window_observations", FOCUS_REARM_SCALE_POINTS))
     calibration = {}
+    series_configs = {row["series_id"]: row for row in contract["series"]}
     for series_id in sorted(by_series):
         series_cal = calibrate_series(
             series_id, by_series[series_id],
             manifest["normalized_tape"]["sha256"],
-            {row["series_id"]: row for row in contract["series"]}[series_id],
+            series_configs[series_id],
+            seed_namespace=seed_namespace,
+            rearm_scale_points=rearm_scale_points,
         )
         calibration[series_id] = series_cal
         print(
@@ -1727,6 +2072,14 @@ def main() -> int:
                     "unmatched_alarm_count_for_series_detector": unmatched["unmatched_alarm_count"],
                 })
 
+    payems_profiles = evaluate_payems_transform_profiles(
+        by_series["PAYEMS"],
+        series_configs["PAYEMS"],
+        event_pairs_by_series.get("PAYEMS", []),
+        manifest["normalized_tape"]["sha256"],
+        seed_namespace,
+        rearm_scale_points,
+    )
     router_profile = append_per_series_router_results(
         calibration, historical_results, unmatched_summaries,
         by_series, event_pairs_by_series,
@@ -1740,11 +2093,11 @@ def main() -> int:
         for sid in calibration
     )
     report = {
-        "schema_version": "2.1.0",
+        "schema_version": "2.2.0",
         "status": (
-            "C3_V2_1_ALL_SERIES_ALL_CANDIDATES_VALIDATED"
+            "C3_V2_2_ALL_BASE_SERIES_ALL_CANDIDATES_VALIDATED"
             if all_calibrated
-            else "C3_V2_1_COMPLETED_WITH_CALIBRATION_EXCEPTIONS"
+            else "C3_V2_2_COMPLETED_WITH_CALIBRATION_EXCEPTIONS"
         ),
         "run_id": os.environ.get("GITHUB_RUN_ID", "LOCAL_REPLAY"),
         "evaluation_commit": os.environ.get("GITHUB_SHA", "LOCAL_REPLAY"),
@@ -1778,7 +2131,7 @@ def main() -> int:
             "minimum_winner_episode_clusters": MIN_WINNER_EPISODE_CLUSTERS,
             "confidence_bound": "one-sided Wilson 95%",
             "development_selection_rule": "lowest predeclared threshold with Dev Wilson U95 <= 0.085",
-            "holdout_validation_rule": "Holdout Wilson U95 <= 0.10; current Holdout results also select eligible Hybrid members and the per-series router profile in this optimization iteration.",
+            "holdout_validation_rule": "Holdout Wilson U95 <= 0.10; each Development-selected detector threshold or joint Hybrid pair is frozen before one fresh Holdout validation. Holdout is not used to select Hybrid members or retune thresholds.",
             "holdout_retuning": False,
             "replicates_per_series_phase": REPLICATES,
             "minimum_valid_replicates_per_phase": MIN_VALID_REPLICATES,
@@ -1786,15 +2139,16 @@ def main() -> int:
             "ar_orders": [1, 2, 3],
             "ar_selection": "minimum AIC; unstable winner fails closed",
             "null_generator": "AR(p) residual bootstrap",
-            "focus_policy": "40 initial; monthly primary rearm 5 with monthly rearm 4 comparison; weekly rearm 20; maximum 12 alerts",
+            "focus_policy": "40 initial; cadence-specific re-arm wait; independent trailing 40-observation causal dispersion window; maximum 12 alerts",
             "huber_policy": "MAD or Bartlett LRV scale; two-sided Huber score",
-            "hybrid_policy": "FOCuS + one or more Holdout-eligible Huber variants; same sign; gap <= 8 observations",
-            "hybrid_member_gate": "Only members with status VALIDATED are passed into Hybrid for each series.",
+            "hybrid_policy": "FOCuS plus one jointly calibrated Huber variant; same sign; gap <= 8 observations",
+            "hybrid_member_gate": "Hybrid jointly calibrates a FOCuS threshold and one Huber-family threshold as a pair; standalone member Holdout status is not used to select the pair.",
             "per_series_router": "Chooses among members that passed the per-series Holdout risk gate, ranking them by matches to the registered historical event cohort. This is a retrospective optimization profile, not independent performance validation.",
             "independent_validation_required": True,
-            "optimization_mode": "OPERATIONAL_TUNING_USING_CURRENT_DEVELOPMENT_AND_HOLDOUT_COHORTS",
+            "optimization_mode": "C3_V2_2_EXPERIMENTAL_HARDENING; Dev-only threshold/pair selection; fresh Holdout risk validation; historical labels remain diagnostic optimization evidence",
             "event_matching": "one-to-one direction-constrained calendar-exact ±12 months",
-            "seed_namespace": "CHAOS:C3_V2_EXPANDED",
+            "seed_namespace": seed_namespace,
+            "rearm_scale_points": rearm_scale_points,
         },
         "registered_series": [
             {
@@ -1825,13 +2179,14 @@ def main() -> int:
             for event in contract["events"]
         ],
         "calibration": calibration,
+        "payems_transform_experiments": payems_profiles,
         "historical_results": historical_results,
         "unmatched_alarm_summary": unmatched_summaries,
         "detector_summary": detector_summary,
         "replay_command": (
             "python p1_4_validation/c3/run_c3_v2_equal_risk_evaluation.py "
             "--source-zip <c3-v2-expanded-source-intake.zip> "
-            "--contract p1_4_validation/c3/c3_expanded_event_cohort_v1.json "
+            "--contract p1_4_validation/c3/c3_expanded_event_cohort_v2_2.json "
             "--output-dir artifacts/p1_4/c3/v2_expanded_evaluation"
         ),
     }
