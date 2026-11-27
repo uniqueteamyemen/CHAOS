@@ -2021,7 +2021,7 @@ def markdown_report(report: dict) -> str:
         "",
         "## 5. Interpretation and safeguards",
         "",
-        "- Development thresholds are selected only when one-sided Wilson U95 is <= 0.10; Holdout applies the same bound once and cannot retune.",
+        "- Development thresholds are selected only when one-sided Wilson U95 is <= 0.085; Holdout applies the <= 0.10 acceptance bound once and cannot retune.",
         "- Each source series has its own AR(1–3) model, fitted on the first 40 first-release observations only.",
         "- Event anchors are external historical labels; matching is not causal attribution or proof of exact structural-break onset.",
         "- The 20 anchors are clustered into 10 episodes. Event-series pairs are not treated as independent shocks.",
@@ -2252,7 +2252,7 @@ def main() -> int:
         "unmatched_alarm_summary": unmatched_summaries,
         "detector_summary": detector_summary,
         "replay_command": (
-            "python p1_4_validation/c3/run_c3_v2_equal_risk_evaluation.py "
+            "python p1_4_validation/c3/run_c3_v2_2_equal_risk_evaluation.py "
             "--source-zip <c3-v2-expanded-source-intake.zip> "
             "--contract p1_4_validation/c3/c3_expanded_event_cohort_v2_2.json "
             "--output-dir artifacts/p1_4/c3/v2_expanded_evaluation"
