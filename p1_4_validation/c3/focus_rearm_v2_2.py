@@ -67,6 +67,10 @@ def focus_reset_rearm_v2_2(
         }
     if int(quiet_points) < 1 or int(rearm_points) < 1:
         raise ValueError("FOCUS_CALIBRATION_WINDOWS_MUST_BE_POSITIVE")
+    if isinstance(threshold, bool) or not np.isfinite(float(threshold)) or float(threshold) <= 0:
+        raise ValueError("C3_V2_2_INVALID_FOCUS_THRESHOLD")
+    if int(max_events) < 1:
+        raise ValueError("FOCUS_MAX_EVENTS_MUST_BE_POSITIVE")
     scale_points = int(rearm_scale_points)
     if scale_points < int(rearm_points) or scale_points < 3:
         raise ValueError("FOCUS_REARM_SCALE_WINDOW_TOO_SHORT")
