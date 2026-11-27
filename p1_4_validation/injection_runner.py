@@ -328,6 +328,14 @@ def focus_reset_rearm(
             "detection_index": global_index,
             "estimated_change_index": estimated,
         })
+        if rearm_scale_points is None:
+            next_start = global_index + 1
+            next_end = min(int(x.size), next_start + int(rearm_points))
+            if next_start < next_end:
+                intervals.append({
+                    "start_inclusive": next_start,
+                    "end_exclusive": next_end,
+                })
         cursor = global_index + 1
 
     return {
